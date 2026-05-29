@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Luminara Princess Map ADV</title>
+    <link rel="stylesheet" href="styles.css?v=20260529-mapadv-png1" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <div>
+            <strong>Luminara Princess Map ADV</strong>
+            <small>Map quests, dress-up, and simple English</small>
+          </div>
+        </div>
+        <nav class="nav-tabs" aria-label="Main menu">
+          <button class="tab-button active" data-view="home" type="button">Room</button>
+          <button class="tab-button" data-view="map" type="button">Map</button>
+          <button class="tab-button" data-view="diary" type="button">Diary</button>
+          <button class="tab-button" data-view="settings" type="button">Settings</button>
+        </nav>
+        <div class="save-actions">
+          <button class="soft-button" id="saveButton" type="button">Save MD</button>
+          <button class="soft-button" id="loadButton" type="button">Load MD</button>
+          <input id="loadFileInput" type="file" accept=".md,text/markdown,text/plain" hidden />
+        </div>
+      </header>
+
+      <main class="game-layout">
+        <aside class="side-panel" aria-label="Princess status">
+          <div class="mini-doll-frame">
+            <div class="paper-doll side-doll" data-doll="side"></div>
+          </div>
+          <h1>Princess Lumi</h1>
+          <p class="subtitle">A little princess who helps people around the kingdom.</p>
+          <div class="status-grid">
+            <div class="stat"><span>Coins</span><strong id="coinValue">0</strong></div>
+            <div class="stat"><span>Energy</span><strong id="energyValue">0</strong></div>
+            <div class="stat"><span>Words</span><strong id="vocabValue">0</strong></div>
+            <div class="stat"><span>Talk</span><strong id="expressionValue">0</strong></div>
+            <div class="stat"><span>Kind</span><strong id="kindnessValue">0</strong></div>
+            <div class="stat"><span>Mood</span><strong id="moodValue">OK</strong></div>
+          </div>
+          <div class="equipped-box">
+            <h2>Equipped</h2>
+            <p id="outfitSummary">Pink academy dress</p>
+          </div>
+          <div class="notice-box" id="statusMessage" aria-live="polite">
+            Go to the map and help someone in the kingdom.
+          </div>
+        </aside>
+
+        <section class="view-stack">
+          <section class="view active" id="homeView" aria-labelledby="homeTitle">
+            <div class="room-stage">
+              <img src="assets/bedroom.png" alt="Princess bedroom" />
+              <div class="room-shade"></div>
+              <div class="room-title-panel">
+                <h2 id="homeTitle">Princess Room</h2>
+                <p>Dress Lumi like a doll, then go out for map quests.</p>
+                <button class="primary-button" id="goMapButton" type="button">Go to Map</button>
+              </div>
+              <div class="room-paper-doll">
+                <div class="paper-doll big-doll" data-doll="room"></div>
+              </div>
+              <div class="room-prop room-prop-desk" id="roomPropDesk" aria-hidden="true"></div>
+              <div class="room-prop room-prop-lamp" id="roomPropLamp" aria-hidden="true"></div>
+              <div class="wardrobe-drawer">
+                <div class="drawer-heading">
+                  <strong>Wardrobe</strong>
+                  <span id="wardrobeCount">0 items</span>
+                </div>
+                <div class="category-tabs" id="wardrobeTabs"></div>
+                <div class="wardrobe-grid" id="wardrobeGrid"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="view" id="mapView" aria-labelledby="mapTitle">
+            <div class="map-toolbar">
+              <div>
+                <h2 id="mapTitle">Luminara Kingdom Map</h2>
+                <p id="mapObjective">Explore the kingdom map. Press Enter or Space near a place.</p>
+              </div>
+              <button class="soft-button" id="returnHomeButton" type="button">Back to Room</button>
+            </div>
+            <div class="map-stage" id="mapStage" tabindex="0" aria-label="Kingdom map. Use keyboard to explore and interact near places.">
+              <img src="assets/kingdom-map.png" alt="Original Luminara kingdom map" />
+              <svg class="route-layer" id="routeLayer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+              <div id="nodeLayer"></div>
+              <div class="map-marker player" id="playerToken" aria-label="Princess Lumi">
+                <div class="paper-doll map-doll" data-doll="map"></div>
+              </div>
+              <div id="hotspotLayer"></div>
+              <div class="nearby-card" id="nearbyCard">
+                <strong id="nearbyName">Castle Gate</strong>
+                <span id="nearbyHint">Move to a place node.</span>
+                <button class="primary-button" id="interactButton" type="button">Talk</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="view" id="diaryView" aria-labelledby="diaryTitle">
+            <div class="simple-panel">
+              <div class="section-heading">
+                <div>
+                  <h2 id="diaryTitle">Diary</h2>
+                  <p>Save MD keeps these records and your progress.</p>
+                </div>
+                <button class="soft-button" id="clearDiaryButton" type="button">Clear Diary</button>
+              </div>
+              <div class="collection-summary" id="collectionSummary"></div>
+              <div class="diary-list" id="diaryList"></div>
+            </div>
+          </section>
+
+          <section class="view" id="settingsView" aria-labelledby="settingsTitle">
+            <div class="simple-panel settings-card">
+              <h2 id="settingsTitle">Settings</h2>
+              <label for="difficultySelect">Word Level</label>
+              <select id="difficultySelect">
+                <option value="100">Common English 100 words</option>
+                <option value="250">Common English 250 words</option>
+                <option value="500">Common English 500 words</option>
+                <option value="750">Common English 750 words</option>
+                <option value="1000">Common English 1000 words</option>
+              </select>
+              <p>The level changes words, sentence length, choice similarity, and stat rewards.</p>
+              <div class="settings-actions">
+                <button class="soft-button" id="speakToggleButton" type="button">Voice: On</button>
+                <button class="danger-button" id="resetButton" type="button">Reset Progress</button>
+              </div>
+              <div class="openai-settings">
+                <h3>Help Teacher</h3>
+                <p>For local family use only. Public GitHub Pages should use a backend proxy instead of a browser key.</p>
+                <label for="openaiOrgInput">OpenAI Org ID</label>
+                <input id="openaiOrgInput" type="text" autocomplete="off" placeholder="org_..." />
+                <label for="openaiKeyInput">OpenAI API Key</label>
+                <input id="openaiKeyInput" type="password" autocomplete="off" placeholder="sk-..." />
+                <div class="settings-actions">
+                  <button class="soft-button" id="saveOpenAIButton" type="button">Save Help Key</button>
+                  <button class="soft-button" id="clearOpenAIButton" type="button">Clear Help Key</button>
+                </div>
+                <p id="aiStatus">No help key saved. The ? button will use local hints.</p>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <section class="adv-modal" id="advModal" aria-hidden="true" aria-labelledby="advTitle">
+      <div class="adv-backdrop"></div>
+      <div class="adv-scene scene-garden" id="advScene" role="dialog" aria-modal="true">
+        <div class="adv-location" id="advTitle">Castle Garden</div>
+        <button class="help-button" id="helpButton" type="button" aria-label="Help">?</button>
+        <div class="adv-portraits">
+          <div class="adv-princess" aria-label="Princess Lumi">
+            <div class="paper-doll adv-doll" data-doll="adv"></div>
+          </div>
+          <div class="portrait-card adv-npc" id="advNpcPortrait" aria-label="NPC portrait"></div>
+        </div>
+        <div class="adv-box">
+          <div class="dialog-title">
+            <span id="advSpeaker">Guide</span>
+            <button class="speaker-button" id="speakPromptButton" type="button" aria-label="Read English line aloud">🔊</button>
+          </div>
+          <p class="english-line" id="advLine">Hello, Princess.</p>
+          <p class="task-line" id="advPrompt">Choose a short answer.</p>
+          <div class="choice-list" id="choiceList"></div>
+          <div class="shop-area" id="shopArea">
+            <div class="category-tabs" id="advShopTabs"></div>
+            <div class="shop-grid compact-shop" id="advShopGrid"></div>
+          </div>
+          <p class="lesson-feedback" id="advFeedback"></p>
+          <div class="adv-actions">
+            <span id="keyboardHint">Arrows/WASD: move / 1-4: answer / Enter: next / Esc: close</span>
+            <button class="soft-button" id="advCloseButton" type="button">Close</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script src="script.js?v=20260529-mapadv-png1"></script>
+  </body>
+</html>

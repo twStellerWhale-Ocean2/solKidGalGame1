@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1420 820" role="img" aria-label="Lighthouse scene">
+  <rect width="1420" height="820" fill="#a9e2f5"/>
+  <path d="M0 435 C220 370 480 440 710 375 C950 305 1160 375 1420 320 L1420 820 L0 820Z" fill="#1d85b3"/>
+  <path d="M760 715 C920 560 1025 420 1125 230 C1190 405 1290 545 1420 700 L1420 820 L760 820Z" fill="#f1eadf"/>
+  <rect x="1030" y="170" width="150" height="430" rx="26" fill="#fff8ef" stroke="#bf9c75" stroke-width="8"/>
+  <path d="M1010 170 H1200 L1150 95 H1060Z" fill="#d8678c" stroke="#bf9c75" stroke-width="8"/>
+  <rect x="1065" y="230" width="80" height="65" rx="8" fill="#ffd36b"/>
+  <path d="M1105 260 L830 205" stroke="#fff2a8" stroke-width="24" stroke-linecap="round" opacity=".75"/>
+  <path d="M1105 260 L820 325" stroke="#fff2a8" stroke-width="24" stroke-linecap="round" opacity=".6"/>
+  <circle cx="220" cy="170" r="55" fill="#fff5bd"/>
+  <path d="M180 640 C380 570 590 585 800 640" fill="none" stroke="#fff4d6" stroke-width="42" stroke-linecap="round"/>
+</svg>

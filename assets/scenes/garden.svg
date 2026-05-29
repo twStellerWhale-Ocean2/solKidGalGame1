@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1420 820" role="img" aria-label="Castle garden scene">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#bfe7ff"/>
+      <stop offset="1" stop-color="#fff3f8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1420" height="820" fill="url(#sky)"/>
+  <path d="M0 530 C210 440 370 470 540 400 C760 310 930 360 1420 250 L1420 820 L0 820Z" fill="#96cf86"/>
+  <path d="M100 700 C310 610 560 620 760 520 C930 435 1120 445 1420 375 L1420 820 L0 820Z" fill="#74b974"/>
+  <rect x="560" y="180" width="300" height="170" rx="18" fill="#f9f2e7" stroke="#cfa46e" stroke-width="8"/>
+  <path d="M535 180 L710 70 L885 180Z" fill="#eaa0b8" stroke="#c47d9a" stroke-width="8"/>
+  <rect x="670" y="235" width="76" height="115" rx="38" fill="#9a6b57"/>
+  <circle cx="335" cy="525" r="90" fill="#ffd1df"/>
+  <circle cx="1085" cy="500" r="78" fill="#ffc3d7"/>
+  <path d="M150 720 C430 640 810 650 1250 720" fill="none" stroke="#ffe7b8" stroke-width="44" stroke-linecap="round"/>
+  <circle cx="710" cy="600" r="84" fill="#b7e4ef" stroke="#fff8e1" stroke-width="20"/>
+</svg>

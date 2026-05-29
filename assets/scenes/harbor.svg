@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1420 820" role="img" aria-label="Harbor dock scene">
+  <rect width="1420" height="820" fill="#9fe2f0"/>
+  <path d="M0 420 C230 355 450 430 680 360 C920 285 1120 370 1420 310 L1420 820 L0 820Z" fill="#1785b2"/>
+  <path d="M0 500 C270 440 470 515 730 455 C980 400 1160 455 1420 410 L1420 820 L0 820Z" fill="#0f6f9f"/>
+  <rect x="140" y="505" width="940" height="82" rx="12" fill="#a77043" stroke="#6d4328" stroke-width="8"/>
+  <rect x="230" y="585" width="32" height="175" fill="#6d4328"/>
+  <rect x="570" y="585" width="32" height="175" fill="#6d4328"/>
+  <rect x="910" y="585" width="32" height="175" fill="#6d4328"/>
+  <path d="M900 520 C1010 455 1160 450 1255 520 C1180 570 1000 585 900 520Z" fill="#8e5d37" stroke="#5e3822" stroke-width="7"/>
+  <path d="M1080 490 L1080 260 L1210 470Z" fill="#fff5e0" stroke="#d7a64b" stroke-width="6"/>
+  <path d="M360 470 C430 435 540 435 610 470 C545 505 425 515 360 470Z" fill="#8e5d37" stroke="#5e3822" stroke-width="7"/>
+  <circle cx="210" cy="335" r="52" fill="#fff7d0"/>
+</svg>

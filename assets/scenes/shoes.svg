@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1420 820" role="img" aria-label="Shoe shop scene">
+  <rect width="1420" height="820" fill="#f5e4d3"/>
+  <rect y="520" width="1420" height="300" fill="#d3a67f"/>
+  <rect x="110" y="130" width="1180" height="430" rx="20" fill="#fff8ef" stroke="#b98663" stroke-width="8"/>
+  <g stroke="#b98663" stroke-width="12">
+    <path d="M170 245 H1230"/>
+    <path d="M170 375 H1230"/>
+    <path d="M170 505 H1230"/>
+  </g>
+  <g fill="#7b4a38">
+    <path d="M210 225 C260 205 325 210 350 242 C305 260 240 265 210 225Z"/>
+    <path d="M410 225 C460 205 525 210 550 242 C505 260 440 265 410 225Z"/>
+    <path d="M745 355 C800 330 870 340 895 375 C840 395 775 395 745 355Z"/>
+  </g>
+  <g fill="#4b668c">
+    <path d="M250 470 H325 V515 H235 C230 500 235 480 250 470Z"/>
+    <path d="M440 470 H515 V515 H425 C420 500 425 480 440 470Z"/>
+    <path d="M950 470 H1030 V515 H935 C930 500 935 480 950 470Z"/>
+  </g>
+  <rect x="540" y="585" width="360" height="90" rx="16" fill="#fff1d7" stroke="#b98663" stroke-width="8"/>
+</svg>
