@@ -35,6 +35,7 @@ const shopItems = [
 ];
 
 const hotspots = [
+  { id: "castleRoom", node: "castle", label: "Princess Room", icon: "🏰", npcClass: "npc-garden", npc: "Lumi", scene: "scene-garden", kind: "room", hint: "The castle room is nearby. Press Enter to go back and dress Lumi." },
   { id: "garden", node: "garden", label: "Castle Garden", icon: "🌷", npcClass: "npc-garden", npc: "Mira", scene: "scene-garden", hint: "The garden is quiet. A small cat may be hiding near the roses." },
   { id: "market", node: "market", label: "Market Square", icon: "🥖", npcClass: "npc-market", npc: "Auntie Pom", scene: "scene-market", hint: "The bakery smells sweet. Auntie Pom often needs help." },
   { id: "harbor", node: "harbor", label: "Harbor Dock", icon: "🐟", npcClass: "npc-harbor", npc: "Nami", scene: "scene-harbor", hint: "It seems the harbor sells fish. Lumi can buy one for dinner." },
@@ -119,6 +120,7 @@ let activeShopHotspot = null;
 let wardrobeCategory = "dress";
 let princessExpression = "normal";
 let npcExpression = "normal";
+let advFocusIndex = 0;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -126,6 +128,7 @@ const $$ = (selector) => [...document.querySelectorAll(selector)];
 const elements = {
   tabs: $$(".tab-button"),
   views: $$(".view"),
+  homeView: $("#homeView"),
   saveButton: $("#saveButton"),
   loadButton: $("#loadButton"),
   loadFileInput: $("#loadFileInput"),
@@ -164,6 +167,7 @@ const elements = {
   advShopTabs: $("#advShopTabs"),
   advShopGrid: $("#advShopGrid"),
   advFeedback: $("#advFeedback"),
+  keyboardHint: $("#keyboardHint"),
   speakPromptButton: $("#speakPromptButton"),
   helpButton: $("#helpButton"),
   advCloseButton: $("#advCloseButton"),
@@ -548,6 +552,7 @@ function renderHotspots() {
     const marker = document.createElement("div");
     const isTarget = state.activeQuest.place === hotspot.id;
     marker.className = `map-marker hotspot ${hotspot.npcClass}${isTarget ? " target" : ""}${hotspot.kind === "shop" ? " shop" : ""}`;
+    marker.dataset.hotspotId = hotspot.id;
     marker.dataset.label = hotspot.label;
     marker.style.left = `${node.x}%`;
     marker.style.top = `${node.y}%`;
@@ -563,12 +568,14 @@ function updatePlayerPosition() {
 
 function updateNearbyHotspot() {
   activeHotspot = nearbyHotspot();
+  elements.nearbyCard.classList.remove("show");
+  updateHotspotFocus();
   if (!activeHotspot) {
-    elements.nearbyCard.classList.remove("show");
+    const target = hotspotById(state.activeQuest.place);
+    elements.mapObjective.textContent = `Current quest: ${state.activeQuest.title}. Target: ${target.icon} ${target.label}.`;
     return;
   }
   const isTarget = activeHotspot.id === state.activeQuest.place;
-  elements.nearbyCard.classList.add("show");
   elements.nearbyName.textContent = activeHotspot.label;
   if (activeHotspot.kind === "shop") {
     elements.nearbyHint.textContent = isTarget ? `${activeHotspot.npc} has today's quest and the shop is open.` : activeHotspot.hint;
@@ -580,6 +587,21 @@ function updateNearbyHotspot() {
     elements.nearbyHint.textContent = `${activeHotspot.hint} It seems ${hotspotById(state.activeQuest.place).label} needs Lumi next.`;
     elements.interactButton.textContent = "Talk";
   }
+  if (activeHotspot.kind === "room") {
+    elements.mapObjective.textContent = "Princess Room: Press Enter to go inside.";
+  } else if (isTarget) {
+    elements.mapObjective.textContent = `${activeHotspot.icon} ${activeHotspot.label}: Press Enter to start Lumi's task.`;
+  } else if (activeHotspot.kind === "shop") {
+    elements.mapObjective.textContent = `${activeHotspot.icon} ${activeHotspot.label}: Press Enter to shop.`;
+  } else {
+    elements.mapObjective.textContent = `${activeHotspot.icon} ${activeHotspot.label}: ${activeHotspot.hint}`;
+  }
+}
+
+function updateHotspotFocus() {
+  document.querySelectorAll(".hotspot").forEach((marker) => {
+    marker.classList.toggle("nearby", activeHotspot?.id === marker.dataset.hotspotId);
+  });
 }
 
 function nearbyHotspot() {
@@ -593,7 +615,7 @@ function nearbyHotspot() {
       bestDistance = distance;
     }
   });
-  return bestDistance <= 7.5 ? best : null;
+  return bestDistance <= 10.5 ? best : null;
 }
 
 function moveOnMap(dx, dy) {
@@ -639,6 +661,10 @@ function isWalkable(x, y) {
 
 function interactNearby() {
   if (!activeHotspot) return;
+  if (activeHotspot.kind === "room") {
+    changeView("home");
+    return;
+  }
   if (activeHotspot.kind === "shop" && activeHotspot.id !== state.activeQuest.place) {
     openShopAdv(activeHotspot);
     return;
@@ -654,6 +680,7 @@ function openAdvBase(hotspot, mode) {
   advMode = mode;
   activeLesson = null;
   activeShopHotspot = null;
+  advFocusIndex = 0;
   setExpressions("normal", "normal");
   elements.advModal.classList.add("show");
   elements.advModal.setAttribute("aria-hidden", "false");
@@ -666,8 +693,54 @@ function openAdvBase(hotspot, mode) {
   elements.advShopGrid.innerHTML = "";
   elements.shopArea.classList.remove("show");
   elements.advFeedback.textContent = "";
-  elements.advCloseButton.textContent = "Close";
+  elements.advCloseButton.textContent = "Leave";
+  elements.keyboardHint.textContent = "↑↓ Select / Enter Confirm / 1-4 Quick Pick / Esc Leave";
   renderPaperDolls();
+}
+
+function addAdvOption(label, onClick, options = {}) {
+  const button = document.createElement("button");
+  button.className = `choice-button${options.leave ? " leave-choice" : ""}`;
+  button.type = "button";
+  button.textContent = options.number ? `${options.number}. ${label}` : label;
+  if (options.choice) button.dataset.choice = options.choice;
+  button.addEventListener("click", onClick);
+  elements.choiceList.appendChild(button);
+  return button;
+}
+
+function advFocusableButtons() {
+  if (!elements.advModal.classList.contains("show")) return [];
+  const selectors = [
+    "#choiceList .choice-button:not(:disabled)",
+    "#advShopGrid .item-card:not(:disabled)",
+    "#advShopGrid .shop-leave-button:not(:disabled)",
+    "#advCloseButton:not(:disabled)"
+  ];
+  return selectors.flatMap((selector) => [...document.querySelectorAll(selector)]).filter((button) => button.offsetParent !== null);
+}
+
+function setAdvFocus(index = 0) {
+  const buttons = advFocusableButtons();
+  document.querySelectorAll(".adv-focus").forEach((button) => button.classList.remove("adv-focus"));
+  if (!buttons.length) return;
+  advFocusIndex = (index + buttons.length) % buttons.length;
+  const button = buttons[advFocusIndex];
+  button.classList.add("adv-focus");
+  button.focus({ preventScroll: true });
+}
+
+function moveAdvFocus(delta) {
+  const buttons = advFocusableButtons();
+  if (!buttons.length) return;
+  setAdvFocus(advFocusIndex + delta);
+}
+
+function confirmAdvFocus() {
+  const buttons = advFocusableButtons();
+  if (!buttons.length) return false;
+  buttons[advFocusIndex]?.click();
+  return true;
 }
 
 function openQuestAdv(hotspot) {
@@ -682,14 +755,11 @@ function openQuestAdv(hotspot) {
   elements.advLine.textContent = state.activeQuest.opening;
   elements.advPrompt.textContent = `${state.activeQuest.title}: ${lesson.prompt}`;
   shuffled(lesson.choices).forEach((choice, index) => {
-    const button = document.createElement("button");
-    button.className = "choice-button";
-    button.type = "button";
-    button.textContent = `${index + 1}. ${choice}`;
-    button.dataset.choice = choice;
-    button.addEventListener("click", () => answerLesson(button, choice));
-    elements.choiceList.appendChild(button);
+    let button;
+    button = addAdvOption(choice, () => answerLesson(button, choice), { number: index + 1, choice });
   });
+  addAdvOption("Leave", closeAdv, { leave: true });
+  window.setTimeout(() => setAdvFocus(0), 0);
   speak(state.activeQuest.opening);
 }
 
@@ -698,7 +768,9 @@ function openHintAdv(hotspot, line = hotspot.hint) {
   setExpressions("thinking", "normal");
   elements.advLine.textContent = line;
   elements.advPrompt.textContent = `Hint: today's quest is at ${hotspotById(state.activeQuest.place).label}.`;
-  elements.advFeedback.textContent = "Press Esc or Close to return to the map.";
+  elements.advFeedback.textContent = "Choose Leave to return to the map.";
+  addAdvOption("Leave", closeAdv, { leave: true });
+  window.setTimeout(() => setAdvFocus(0), 0);
 }
 
 function openShopAdv(hotspot) {
@@ -708,9 +780,10 @@ function openShopAdv(hotspot) {
   const firstCategory = hotspot.defaultCategory || hotspot.shopCategories?.[0] || "dress";
   shopCategory = allowedShopCategories(hotspot).includes(shopCategory) ? shopCategory : firstCategory;
   elements.advLine.textContent = shopGreeting(hotspot);
-  elements.advPrompt.textContent = "Buy an item to add it to the wardrobe. Bought clothing equips right away.";
+  elements.advPrompt.textContent = "Choose a treasure, try it on, then buy it for Lumi.";
   elements.shopArea.classList.add("show");
   renderAdvShop();
+  window.setTimeout(() => setAdvFocus(0), 0);
   speak(elements.advLine.textContent);
 }
 
@@ -741,11 +814,20 @@ function renderAdvShop() {
       action: () => buyItemInAdv(item)
     }));
   });
+  const leave = document.createElement("button");
+  leave.type = "button";
+  leave.className = "shop-leave-button";
+  leave.textContent = "Leave";
+  leave.addEventListener("click", closeAdv);
+  elements.advShopGrid.appendChild(leave);
+  window.setTimeout(() => setAdvFocus(0), 0);
 }
 
 function buyItemInAdv(item) {
   if (state.owned.includes(item.id)) {
     if (item.type !== "room") toggleEquip(item);
+    renderAdvShop();
+    window.setTimeout(() => setAdvFocus(advFocusIndex), 0);
     return;
   }
   if (state.coins < item.cost) {
@@ -821,16 +903,25 @@ function answerLesson(button, choice) {
     difficulty: state.difficulty
   });
   const oldPlace = state.activeQuest.place;
+  const completedHotspot = hotspotById(oldPlace);
   elements.advLine.textContent = state.activeQuest.ending;
   elements.advPrompt.textContent = "Quest complete. Lumi earned 100 coins.";
-  elements.advFeedback.textContent = `${effectText(reward)}. Press Enter or Close to continue.`;
-  elements.advCloseButton.textContent = "Continue";
+  elements.advFeedback.textContent = `${effectText(reward)}.`;
+  elements.advCloseButton.textContent = "Leave";
   state.activeQuest = createRandomQuest(oldPlace);
   activeLesson = null;
   advMode = "complete";
+  elements.choiceList.innerHTML = "";
+  if (completedHotspot?.kind === "shop") {
+    addAdvOption("Shop", () => openShopAdv(completedHotspot));
+    addAdvOption("Leave", closeAdv, { leave: true });
+  } else {
+    addAdvOption("Continue", closeAdv);
+  }
   elements.statusMessage.textContent = `Quest complete. New target: ${hotspotById(state.activeQuest.place).label}.`;
   persist();
   render();
+  window.setTimeout(() => setAdvFocus(0), 0);
   speak(elements.advLine.textContent);
 }
 
@@ -1141,19 +1232,36 @@ function bindEvents() {
     }
   });
   window.addEventListener("keydown", (event) => {
-    if (!elements.advModal.classList.contains("show")) return;
+    if (!elements.advModal.classList.contains("show")) {
+      if ((event.key === "g" || event.key === "G") && elements.homeView?.classList.contains("active")) {
+        event.preventDefault();
+        changeView("map");
+      }
+      return;
+    }
     if (event.key === "Escape") {
       event.preventDefault();
       closeAdv();
       return;
     }
-    if (event.key === "Enter" && advMode === "complete") {
+    if (event.key === "ArrowUp" || event.key.toLowerCase() === "w") {
       event.preventDefault();
-      closeAdv();
+      moveAdvFocus(-1);
       return;
     }
-    if (/^[1-4]$/.test(event.key) && advMode === "quest") {
-      const button = elements.choiceList.querySelectorAll("button")[Number(event.key) - 1];
+    if (event.key === "ArrowDown" || event.key.toLowerCase() === "s") {
+      event.preventDefault();
+      moveAdvFocus(1);
+      return;
+    }
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      if (!confirmAdvFocus() && advMode === "complete") closeAdv();
+      return;
+    }
+    if (/^[1-9]$/.test(event.key) && advMode === "quest") {
+      const answerButtons = [...elements.choiceList.querySelectorAll("button[data-choice]")];
+      const button = answerButtons[Number(event.key) - 1];
       if (button && !button.disabled) {
         event.preventDefault();
         button.click();
@@ -1161,6 +1269,46 @@ function bindEvents() {
     }
   });
 }
+
+Object.defineProperty(window, "__luminaraTest", {
+  value: {
+    saveRoundtrip() {
+      const before = {
+        coins: state.coins,
+        energy: state.energy,
+        vocab: state.vocab,
+        expression: state.expression,
+        kindness: state.kindness,
+        difficulty: state.difficulty,
+        outfit: { ...state.outfit },
+        owned: [...state.owned],
+        activeQuest: state.activeQuest?.id || ""
+      };
+      const markdown = buildSaveMarkdown();
+      const hasMarkers = markdown.includes(saveMarkerStart) && markdown.includes(saveMarkerEnd);
+      const hasNoOpenAIKey = !markdown.includes(openAISettings.apiKey || "___NO_KEY___");
+      loadMarkdownText(markdown);
+      const after = {
+        coins: state.coins,
+        energy: state.energy,
+        vocab: state.vocab,
+        expression: state.expression,
+        kindness: state.kindness,
+        difficulty: state.difficulty,
+        outfit: { ...state.outfit },
+        owned: [...state.owned],
+        activeQuest: state.activeQuest?.id || ""
+      };
+      return {
+        hasMarkers,
+        hasNoOpenAIKey,
+        roundtripSame: JSON.stringify(before) === JSON.stringify(after),
+        before,
+        after
+      };
+    }
+  }
+});
 
 bindEvents();
 render();

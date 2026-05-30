@@ -1300,7 +1300,7 @@ p {
   display: none;
   position: fixed;
   inset: 0;
-  z-index: 20;
+  z-index: 80;
 }
 
 .adv-modal.show {
@@ -1586,6 +1586,553 @@ p {
   }
 }
 
+/* Game scene shell pass: keep the app as one PC ADV stage instead of a website layout. */
+html,
+body {
+  min-width: 1100px;
+  overflow: hidden;
+}
+
+.app-shell {
+  position: relative;
+  width: min(1800px, 100vw);
+  height: min(960px, 100vh);
+  min-height: min(960px, 100vh);
+  padding: 0;
+  display: block;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: #f8edf0;
+}
+
+.topbar {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  z-index: 30;
+  width: 232px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 10px;
+  background: rgba(255, 250, 246, 0.78);
+  border-color: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+}
+
+.brand {
+  gap: 8px;
+}
+
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  border-width: 2px;
+}
+
+.brand strong {
+  font-size: 0.82rem;
+}
+
+.brand small {
+  display: none;
+}
+
+.nav-tabs,
+.save-actions {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.tab-button,
+.soft-button {
+  min-height: 30px;
+  padding: 6px 9px;
+  border-radius: 7px;
+  font-size: 0.78rem;
+}
+
+.game-layout {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.side-panel {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  z-index: 22;
+  width: 222px;
+  max-height: 392px;
+  padding: 10px;
+  background: rgba(255, 250, 246, 0.76);
+  border-color: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(10px);
+}
+
+.mini-doll-frame {
+  height: 88px;
+}
+
+.side-doll {
+  width: 78px;
+  height: 104px;
+  margin-top: -6px;
+}
+
+.side-panel h1 {
+  margin-top: 6px;
+  font-size: 1rem;
+}
+
+.subtitle,
+.equipped-box {
+  display: none;
+}
+
+.status-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.stat {
+  padding: 6px;
+}
+
+.stat span {
+  font-size: 0.56rem;
+}
+
+.stat strong {
+  font-size: 0.86rem;
+}
+
+.notice-box {
+  margin-top: 6px;
+  padding: 8px;
+  font-size: 0.78rem;
+}
+
+.view-stack,
+.view {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+}
+
+.view {
+  display: none;
+}
+
+.view.active {
+  display: block;
+}
+
+.room-stage {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+.room-stage > img {
+  filter: saturate(1.05);
+}
+
+.room-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 41% 22%, rgba(255, 255, 255, 0.5), transparent 15%),
+    linear-gradient(105deg, transparent 0 34%, rgba(255, 246, 214, 0.25) 42%, transparent 56%);
+  animation: roomLight 7s ease-in-out infinite alternate;
+}
+
+@keyframes roomLight {
+  from { opacity: 0.45; transform: translateX(-8px); }
+  to { opacity: 0.78; transform: translateX(8px); }
+}
+
+.room-title-panel {
+  left: auto;
+  right: 20.5%;
+  top: 43%;
+  width: 128px;
+  min-height: 86px;
+  padding: 10px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  background: rgba(85, 52, 65, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(8px);
+}
+
+.room-title-panel h2 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.room-title-panel p {
+  display: none;
+}
+
+.room-title-panel .primary-button {
+  width: 100%;
+}
+
+.room-title-panel .primary-button::after {
+  content: " (G)";
+}
+
+.room-paper-doll {
+  left: 50%;
+  bottom: 23%;
+  width: min(390px, 28vw);
+  height: min(560px, 62vh);
+  transform: translateX(-50%);
+  z-index: 4;
+}
+
+.big-doll {
+  animation: dollIdle 3.8s ease-in-out infinite;
+}
+
+@keyframes dollIdle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.wardrobe-drawer {
+  left: 50%;
+  right: auto;
+  bottom: 18px;
+  width: min(1020px, calc(100vw - 340px));
+  height: 190px;
+  transform: translateX(-50%);
+  z-index: 12;
+  background: rgba(255, 250, 246, 0.86);
+  backdrop-filter: blur(8px);
+}
+
+.wardrobe-grid {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.wardrobe-grid .item-card {
+  flex: 0 0 168px;
+}
+
+.map-toolbar {
+  position: absolute;
+  left: 258px;
+  top: 18px;
+  z-index: 16;
+  width: min(610px, calc(100vw - 560px));
+  height: auto;
+  min-height: 56px;
+  padding: 10px 14px;
+  background: rgba(255, 250, 246, 0.76);
+  border-color: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(10px);
+}
+
+.map-toolbar h2 {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.map-toolbar p {
+  margin-top: 3px;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+#returnHomeButton {
+  display: none;
+}
+
+.map-stage {
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.map-stage::before,
+.map-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.map-stage::before {
+  background:
+    repeating-radial-gradient(ellipse at 82% 60%, rgba(255, 255, 255, 0.32) 0 2px, transparent 3px 18px),
+    repeating-radial-gradient(ellipse at 40% 88%, rgba(255, 255, 255, 0.24) 0 2px, transparent 4px 20px);
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  animation: seaShimmer 5.5s linear infinite;
+}
+
+.map-stage::after {
+  background: radial-gradient(circle at 75% 24%, rgba(255,255,210,.2), transparent 18%);
+  animation: windGlow 6s ease-in-out infinite alternate;
+}
+
+@keyframes seaShimmer {
+  from { transform: translateX(-18px) translateY(8px); }
+  to { transform: translateX(22px) translateY(-8px); }
+}
+
+@keyframes windGlow {
+  from { opacity: 0.25; }
+  to { opacity: 0.5; }
+}
+
+#hotspotLayer {
+  z-index: 8;
+}
+
+.player {
+  width: 76px;
+  height: 96px;
+  z-index: 18;
+  transition: left 0.18s ease, top 0.18s ease;
+}
+
+.map-doll {
+  width: 76px;
+  height: 96px;
+  animation: mapIdle 3.2s ease-in-out infinite;
+}
+
+@keyframes mapIdle {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-3px) rotate(1deg); }
+}
+
+.player.walking {
+  animation: none;
+}
+
+.hotspot {
+  z-index: 9;
+  transition: transform 0.16s ease, filter 0.16s ease, box-shadow 0.16s ease;
+}
+
+.hotspot.nearby {
+  transform: translate(-50%, -50%) scale(1.18);
+  z-index: 12;
+  filter: saturate(1.18);
+  box-shadow: 0 0 0 8px rgba(255, 242, 153, 0.36), 0 0 22px rgba(255, 255, 255, 0.92), 0 12px 22px rgba(82, 61, 37, 0.28);
+}
+
+.hotspot.nearby::after {
+  content: attr(data-label) "  Enter";
+}
+
+.nearby-card {
+  display: none !important;
+}
+
+.map-doll[data-dress="blueDress"] .avatar-dress,
+.map-doll[data-dress="roseDress"] .avatar-dress,
+.map-doll[data-dress="snowDress"] .avatar-dress,
+.map-doll[data-hat="goldCrown"] .avatar-hat,
+.map-doll[data-hat="silkRibbon"] .avatar-hat,
+.map-doll[data-accessory="starCape"] .avatar-accessory,
+.map-doll[data-accessory="pearlBag"] .avatar-accessory {
+  display: block !important;
+}
+
+.item-card {
+  position: relative;
+  min-height: 118px;
+  grid-template-rows: 52px auto auto auto;
+  border-width: 2px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+.item-card:hover,
+.item-card:focus,
+.item-card.adv-focus {
+  transform: translateY(-2px);
+  border-color: var(--rose);
+  box-shadow: 0 0 0 4px rgba(216, 103, 140, 0.18), var(--shadow);
+  outline: none;
+}
+
+.item-preview {
+  min-height: 52px;
+  background:
+    radial-gradient(circle at 24% 22%, rgba(255,255,255,.55), transparent 15%),
+    linear-gradient(135deg, var(--c1), var(--c2));
+}
+
+.compact-shop {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  max-height: 244px;
+  gap: 8px;
+  padding-right: 4px;
+}
+
+.compact-shop .item-card {
+  min-height: 82px;
+  grid-template-columns: 88px 1fr auto;
+  grid-template-rows: repeat(3, auto);
+  align-items: center;
+  column-gap: 12px;
+}
+
+.compact-shop .item-preview {
+  grid-row: 1 / 4;
+  width: 88px;
+  height: 64px;
+}
+
+.compact-shop .item-card strong {
+  font-size: 1rem;
+}
+
+.shop-leave-button {
+  min-height: 54px;
+  padding: 10px 14px;
+  text-align: left;
+  color: var(--ink);
+  background: #fff8fb;
+  border: 2px solid rgba(216, 103, 140, 0.18);
+  border-radius: var(--radius);
+  font-size: 1.12rem;
+  font-weight: 900;
+}
+
+.shop-leave-button.adv-focus,
+.shop-leave-button:focus {
+  border-color: var(--rose);
+  box-shadow: 0 0 0 4px rgba(216, 103, 140, 0.18);
+  outline: none;
+}
+
+.adv-scene {
+  width: min(1800px, 100vw);
+  height: min(960px, 100vh);
+  border: 0;
+  border-radius: 0;
+}
+
+.adv-princess,
+.adv-npc {
+  width: min(420px, 30vw);
+  height: min(560px, 58vh);
+}
+
+.adv-princess {
+  left: 42px;
+}
+
+.adv-npc {
+  right: 42px;
+}
+
+.adv-box {
+  margin: 0 24px 24px;
+  padding: 18px;
+  background: rgba(255, 250, 246, 0.92);
+  backdrop-filter: blur(6px);
+}
+
+.adv-princess .paper-doll,
+.adv-npc .paper-doll {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+
+.adv-doll {
+  width: 100%;
+  height: 100%;
+}
+
+.english-line {
+  font-size: 1.42rem;
+}
+
+.task-line {
+  font-size: 1rem;
+}
+
+.choice-list {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 9px;
+}
+
+.choice-button {
+  min-height: 56px;
+  padding: 12px 16px;
+  font-size: 1.22rem;
+  border-width: 2px;
+}
+
+.choice-button::before,
+.shop-leave-button::before {
+  content: "";
+}
+
+.choice-button.adv-focus::before,
+.shop-leave-button.adv-focus::before {
+  content: "▶ ";
+  color: var(--rose-dark);
+}
+
+.choice-button:focus,
+.choice-button.adv-focus {
+  outline: none;
+  border-color: var(--rose);
+  box-shadow: 0 0 0 4px rgba(216, 103, 140, 0.18);
+  background: #fff8fb;
+}
+
+.leave-choice {
+  color: var(--muted);
+  background: #fffaf6;
+}
+
+.adv-actions .soft-button {
+  min-width: 92px;
+}
+
+@media (max-height: 820px) {
+  .wardrobe-drawer {
+    height: 164px;
+  }
+
+  .room-paper-doll {
+    bottom: 20%;
+    height: min(500px, 59vh);
+  }
+
+  .adv-princess,
+  .adv-npc {
+    height: min(610px, 70vh);
+  }
+
+  .choice-button {
+    min-height: 48px;
+    font-size: 1.08rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1593,5 +2140,105 @@ p {
     scroll-behavior: auto !important;
     transition: none !important;
     animation: none !important;
+  }
+}
+
+/* Left command column: status and system menu are part of the shell, not overlays on the map. */
+.app-shell {
+  display: grid;
+  grid-template-columns: 254px minmax(0, 1fr);
+  grid-template-rows: 1fr;
+  gap: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 245, 249, 0.96), rgba(244, 225, 232, 0.98)) left / 254px 100% no-repeat,
+    #f8edf0;
+}
+
+.game-layout {
+  display: contents;
+  position: static;
+}
+
+.side-panel {
+  grid-column: 1;
+  grid-row: 1;
+  position: relative;
+  left: auto;
+  top: auto;
+  z-index: 4;
+  width: auto;
+  max-height: none;
+  height: auto;
+  margin: 18px 14px 0;
+  align-self: start;
+  background: rgba(255, 250, 246, 0.86);
+}
+
+.topbar {
+  grid-column: 1;
+  grid-row: 1;
+  position: relative;
+  left: auto;
+  bottom: auto;
+  z-index: 5;
+  width: auto;
+  margin: 0 14px 18px;
+  align-self: end;
+  background: rgba(255, 250, 246, 0.88);
+}
+
+.view-stack {
+  grid-column: 2;
+  grid-row: 1;
+  position: relative;
+  inset: auto;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.view {
+  position: absolute;
+  inset: 0;
+}
+
+.map-toolbar {
+  left: 18px;
+  top: 18px;
+  width: min(610px, calc(100% - 36px));
+}
+
+.map-stage,
+.room-stage {
+  width: 100%;
+  height: 100%;
+}
+
+.wardrobe-drawer {
+  width: min(980px, calc(100% - 48px));
+}
+
+.adv-scene {
+  width: min(1800px, 100vw);
+  height: min(960px, 100vh);
+}
+
+@media (max-height: 760px) {
+  .mini-doll-frame {
+    height: 70px;
+  }
+
+  .side-doll {
+    width: 64px;
+    height: 88px;
+  }
+
+  .status-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .topbar {
+    gap: 6px;
   }
 }
