@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Luminara Princess Map ADV</title>
-    <link rel="stylesheet" href="styles.css?v=20260530-gameshell1" />
+    <title>solKidGalGame</title>
+    <link rel="stylesheet" href="styles.css?v=20260530-folder-layout1" />
   </head>
   <body>
     <div class="app-shell">
@@ -12,7 +12,7 @@
         <div class="brand">
           <span class="brand-mark" aria-hidden="true">L</span>
           <div>
-            <strong>Luminara Princess Map ADV</strong>
+            <strong>solKidGalGame</strong>
             <small>Map quests, dress-up, and simple English</small>
           </div>
         </div>
@@ -61,7 +61,6 @@
               <div class="room-title-panel">
                 <h2 id="homeTitle">Princess Room</h2>
                 <p>Dress Lumi like a doll, then go out for map quests.</p>
-                <button class="primary-button" id="goMapButton" type="button">Go to Map</button>
               </div>
               <div class="room-paper-doll">
                 <div class="paper-doll big-doll" data-doll="room"></div>
@@ -75,6 +74,7 @@
                 </div>
                 <div class="category-tabs" id="wardrobeTabs"></div>
                 <div class="wardrobe-grid" id="wardrobeGrid"></div>
+                <button class="primary-button wardrobe-exit-button" id="goMapButton" type="button">Go to Map</button>
               </div>
             </div>
           </section>
@@ -89,6 +89,7 @@
             </div>
             <div class="map-stage" id="mapStage" tabindex="0" aria-label="Kingdom map. Use keyboard to explore and interact near places.">
               <img src="assets/kingdom-map.png" alt="Original Luminara kingdom map" />
+              <div class="map-life-layer" id="mapLifeLayer" aria-hidden="true"></div>
               <svg class="route-layer" id="routeLayer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
               <div id="nodeLayer"></div>
               <div class="map-marker player" id="playerToken" aria-label="Princess Lumi">
@@ -178,12 +179,11 @@
           <p class="lesson-feedback" id="advFeedback"></p>
           <div class="adv-actions">
             <span id="keyboardHint">Arrows/WASD: move / 1-4: answer / Enter: next / Esc: close</span>
-            <button class="soft-button" id="advCloseButton" type="button">Close</button>
           </div>
         </div>
       </div>
     </section>
 
-    <script src="script.js?v=20260530-gameshell2"></script>
+    <script src="script.js?v=20260530-folder-layout1"></script>
   </body>
 </html>

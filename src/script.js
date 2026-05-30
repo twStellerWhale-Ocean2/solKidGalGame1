@@ -12,51 +12,66 @@ const difficultyConfig = {
 };
 
 const categories = [
-  { id: "dress", label: "Dresses" },
+  { id: "outfit", label: "Dresses" },
   { id: "shoes", label: "Shoes" },
-  { id: "hat", label: "Hats" },
   { id: "accessory", label: "Accessories" },
-  { id: "room", label: "Room" }
+  { id: "room", label: "Room Treasures" }
 ];
 
 const shopItems = [
-  { id: "pinkDress", type: "dress", name: "Pink academy dress", cost: 0, colors: ["#f6a1bf", "#ffd8e8"], shape: "dress-ball" },
-  { id: "blueDress", type: "dress", name: "Blue harbor dress", cost: 100, colors: ["#82b9dc", "#d8f0ff"], shape: "dress-sailor" },
-  { id: "roseDress", type: "dress", name: "Rose festival dress", cost: 200, colors: ["#cf5d89", "#ffc1d7"], shape: "dress-rose" },
-  { id: "snowDress", type: "dress", name: "Snowflake gown", cost: 260, colors: ["#bde9ff", "#ffffff"], shape: "dress-snow" },
-  { id: "maryJanes", type: "shoes", name: "Brown Mary Janes", cost: 80, colors: ["#7b4a38", "#f4d5bd"], shape: "shoes-round" },
-  { id: "blueBoots", type: "shoes", name: "Blue winter boots", cost: 130, colors: ["#4b668c", "#b8d9ef"], shape: "shoes-boots" },
-  { id: "goldCrown", type: "hat", name: "Gold crown", cost: 160, colors: ["#d7a64b", "#fff0a8"], shape: "crown" },
-  { id: "silkRibbon", type: "hat", name: "Silk ribbon", cost: 120, colors: ["#c98dd6", "#ffe1fb"], shape: "ribbon" },
-  { id: "pearlBag", type: "accessory", name: "Pearl shoulder bag", cost: 140, colors: ["#fff0f5", "#d7a64b"], shape: "bag" },
-  { id: "starCape", type: "accessory", name: "Starry cape", cost: 180, colors: ["#5b6fa6", "#f8e7a0"], shape: "cape" },
-  { id: "studyDesk", type: "room", name: "New study desk", cost: 180, colors: ["#b98963", "#f2c083"], shape: "desk" },
-  { id: "seaLamp", type: "room", name: "Sea glass lamp", cost: 220, colors: ["#70bfc9", "#e0fbff"], shape: "lamp" }
+  { id: "pinkDress", type: "outfit", name: "Pink academy dress", cost: 0, icon: "👗", colors: ["#f6a1bf", "#ffd8e8"], shape: "dress-ball", sprite: "0%" },
+  { id: "blueDress", type: "outfit", name: "Blue harbor dress", cost: 100, icon: "👗", colors: ["#82b9dc", "#d8f0ff"], shape: "dress-sailor", sprite: "33.333%" },
+  { id: "roseDress", type: "outfit", name: "Rose festival dress", cost: 200, icon: "👗", colors: ["#cf5d89", "#ffc1d7"], shape: "dress-rose", sprite: "66.666%" },
+  { id: "snowDress", type: "outfit", name: "Snowflake gown", cost: 260, icon: "👗", colors: ["#bde9ff", "#ffffff"], shape: "dress-snow", sprite: "100%" },
+  { id: "pinkSlippers", type: "shoes", name: "Ribbon walking shoes", cost: 90, icon: "👞", colors: ["#f19ab7", "#ffe1ec"], shape: "shoes-round" },
+  { id: "blueBoots", type: "shoes", name: "Blue seaside boots", cost: 150, icon: "🥾", colors: ["#4b668c", "#b7d8f2"], shape: "shoes-boots" },
+  { id: "goldCrown", type: "accessory", name: "Tiny gold crown", cost: 140, icon: "👑", colors: ["#d7a64b", "#fff2a6"], shape: "crown" },
+  { id: "silkRibbon", type: "accessory", name: "Silk party ribbon", cost: 120, icon: "🎀", colors: ["#c98dd6", "#ffe4fb"], shape: "ribbon" },
+  { id: "pearlBag", type: "accessory", name: "Pearl shell bag", cost: 170, icon: "👜", colors: ["#fff0f5", "#d7a64b"], shape: "bag" },
+  { id: "starCape", type: "accessory", name: "Starry helper cape", cost: 240, icon: "✨", colors: ["#5b6fa6", "#d9e4ff"], shape: "cape" },
+  { id: "studyDesk", type: "room", name: "New study desk", cost: 180, icon: "🪑", colors: ["#b98963", "#f2c083"], shape: "desk" },
+  { id: "seaLamp", type: "room", name: "Sea glass lamp", cost: 220, icon: "💡", colors: ["#70bfc9", "#e0fbff"], shape: "lamp" }
 ];
 
 const hotspots = [
-  { id: "castleRoom", node: "castle", label: "Princess Room", icon: "🏰", npcClass: "npc-garden", npc: "Lumi", scene: "scene-garden", kind: "room", hint: "The castle room is nearby. Press Enter to go back and dress Lumi." },
+  { id: "castleRoom", node: "castleRoom", label: "Princess Room", icon: "🚪", npcClass: "npc-garden", npc: "Lumi", scene: "scene-garden", kind: "room", focusRadius: 5.8, hint: "The castle room door is here. Press Enter to go back and dress Lumi." },
   { id: "garden", node: "garden", label: "Castle Garden", icon: "🌷", npcClass: "npc-garden", npc: "Mira", scene: "scene-garden", hint: "The garden is quiet. A small cat may be hiding near the roses." },
-  { id: "market", node: "market", label: "Market Square", icon: "🥖", npcClass: "npc-market", npc: "Auntie Pom", scene: "scene-market", hint: "The bakery smells sweet. Auntie Pom often needs help." },
+  { id: "market", node: "market", label: "Market Square", icon: "🥖", npcClass: "npc-market", npc: "Auntie Pom", scene: "scene-market", kind: "shop", shopCategories: ["room"], defaultCategory: "room", hint: "The bakery smells sweet. Auntie Pom also has room treasures." },
   { id: "harbor", node: "harbor", label: "Harbor Dock", icon: "🐟", npcClass: "npc-harbor", npc: "Nami", scene: "scene-harbor", hint: "It seems the harbor sells fish. Lumi can buy one for dinner." },
-  { id: "boutique", node: "boutique", label: "Dress Boutique", icon: "🎀", npcClass: "npc-boutique", npc: "Rena", scene: "scene-boutique", kind: "shop", shopCategories: ["dress", "room"], defaultCategory: "dress", hint: "Rena's boutique has dresses and room treasures." },
-  { id: "shoeShop", node: "shoeShop", label: "Shoe Shop", icon: "👞", npcClass: "npc-shoes", npc: "Mina", scene: "scene-shoes", kind: "shop", shopCategories: ["shoes"], defaultCategory: "shoes", hint: "Mina fits soft shoes for long walks." },
-  { id: "accessoryShop", node: "accessoryShop", label: "Accessory Shop", icon: "💎", npcClass: "npc-accessory", npc: "Lili", scene: "scene-accessory", kind: "shop", shopCategories: ["hat", "accessory"], defaultCategory: "hat", hint: "Lili sells crowns, ribbons, bags, and capes." },
+  { id: "boutique", node: "boutique", label: "Dress Boutique", icon: "👗", npcClass: "npc-boutique", npc: "Rena", scene: "scene-boutique", kind: "shop", shopCategories: ["outfit"], defaultCategory: "outfit", hint: "Rena's boutique has dresses for doll play." },
+  { id: "shoeShop", node: "shoeShop", label: "Shoe Shop", icon: "👞", npcClass: "npc-shoes", npc: "Mina", scene: "scene-shoes", kind: "shop", shopCategories: ["shoes"], defaultCategory: "shoes", hint: "Mina shows shoes for long walks." },
+  { id: "accessoryShop", node: "accessoryShop", label: "Accessory Shop", icon: "🎀", npcClass: "npc-accessory", npc: "Lili", scene: "scene-accessory", kind: "shop", shopCategories: ["accessory"], defaultCategory: "accessory", hint: "Lili sells crowns, ribbons, bags, and capes." },
   { id: "farm", node: "farm", label: "Sunny Farm", icon: "🐄", npcClass: "npc-farm", npc: "Theo", scene: "scene-farm", hint: "The farm is busy. Theo is brushing the big cow." },
   { id: "lighthouse", node: "lighthouse", label: "Lighthouse", icon: "⛵", npcClass: "npc-lighthouse", npc: "Captain Sol", scene: "scene-lighthouse", hint: "The lighthouse watches the sea before ships sail." }
 ];
 
 const mapNodes = {
-  castle: { id: "castle", label: "Castle Gate", x: 48, y: 35, links: ["garden", "market", "farm"] },
-  garden: { id: "garden", label: "Castle Garden", x: 45, y: 43, links: ["castle", "market"] },
-  market: { id: "market", label: "Market Square", x: 52, y: 59, links: ["garden", "boutique", "shoeShop", "harbor"] },
-  boutique: { id: "boutique", label: "Dress Boutique", x: 63, y: 56, links: ["market", "shoeShop", "accessoryShop", "farm"] },
-  shoeShop: { id: "shoeShop", label: "Shoe Shop", x: 58, y: 66, links: ["market", "harbor", "boutique"] },
-  accessoryShop: { id: "accessoryShop", label: "Accessory Shop", x: 68, y: 50, links: ["boutique", "farm"] },
-  farm: { id: "farm", label: "Sunny Farm", x: 75, y: 24, links: ["castle", "accessoryShop", "boutique"] },
-  harbor: { id: "harbor", label: "Harbor Dock", x: 42, y: 74, links: ["market", "shoeShop", "lighthouse"] },
-  lighthouse: { id: "lighthouse", label: "Lighthouse", x: 70, y: 76, links: ["harbor"] }
+  castleRoom: { id: "castleRoom", label: "Princess Room Door", x: 50, y: 29.2, links: ["garden", "market", "farm"] },
+  garden: { id: "garden", label: "Castle Garden", x: 43, y: 44, links: ["castleRoom", "market"] },
+  market: { id: "market", label: "Market Square", x: 51, y: 60, links: ["garden", "boutique", "shoeShop", "harbor"] },
+  boutique: { id: "boutique", label: "Dress Boutique", x: 65, y: 55, links: ["market", "shoeShop", "accessoryShop", "farm"] },
+  shoeShop: { id: "shoeShop", label: "Shoe Shop", x: 58, y: 69, links: ["market", "harbor", "boutique"] },
+  accessoryShop: { id: "accessoryShop", label: "Accessory Shop", x: 72, y: 47, links: ["boutique", "farm"] },
+  farm: { id: "farm", label: "Sunny Farm", x: 77, y: 24, links: ["castleRoom", "accessoryShop", "boutique"] },
+  harbor: { id: "harbor", label: "Harbor Dock", x: 38, y: 75, links: ["market", "shoeShop", "lighthouse"] },
+  lighthouse: { id: "lighthouse", label: "Lighthouse", x: 73, y: 78, links: ["harbor"] }
 };
+
+const mapImageSize = { width: 1672, height: 941 };
+
+const mapActors = [
+  { id: "river-flow", type: "water", src: "assets/map-layers/river-flow.png", x: 21.1, y: 31.9, w: 10.2, h: 45.7, z: 2, phase: 0.3 },
+  { id: "harbor-flow", type: "water", src: "assets/map-layers/harbor-flow.png", x: 38.9, y: 84.6, w: 33.5, h: 26.6, z: 2, phase: 1.1 },
+  { id: "ocean-flow", type: "water", src: "assets/map-layers/ocean-flow.png", x: 85.8, y: 54.2, w: 25.7, h: 55.3, z: 2, phase: 1.8 },
+  { id: "harbor-ship-large", type: "ship", src: "assets/map-layers/harbor-ship-large.png", x: 40.9, y: 87.1, w: 16.8, h: 15.9, z: 3, phase: 0.2 },
+  { id: "harbor-ship-small", type: "ship", src: "assets/map-layers/harbor-ship-small.png", x: 28.6, y: 88.5, w: 5.0, h: 7.9, z: 3, phase: 1.4 },
+  { id: "lighthouse-boat", type: "ship", src: "assets/map-layers/lighthouse-boat.png", x: 54.7, y: 92.5, w: 5.1, h: 7.7, z: 3, phase: 2.0 },
+  { id: "castle-flag", type: "flag", src: "assets/map-layers/castle-flag.png", x: 50.1, y: 3.0, w: 3.8, h: 5.7, anchorX: 0.5, anchorY: 0.95, z: 6 },
+  { id: "farm-windmill", type: "windmill", src: "assets/map-layers/windmill-blades.png", x: 84.8, y: 16.8, w: 5.7, h: 10.2, z: 4 },
+  { id: "lighthouse-glow", type: "glow", x: 82.0, y: 71.5, w: 13, h: 13, z: 1 },
+  { id: "sea-bird-a", type: "bird", x: 42.8, y: 84.7, w: 3.7, h: 1.6, z: 5, phase: 0.4 },
+  { id: "sea-bird-b", type: "bird", x: 64.5, y: 83.3, w: 3.2, h: 1.4, z: 5, phase: 1.6 }
+];
 
 const questTemplates = [
   { id: "harborFish", place: "harbor", title: "Buy a fish at the harbor", opening: "Good morning, Princess! We have fresh fish today.", ending: "Thank you, Princess. Dinner will be delicious tonight." },
@@ -99,15 +114,15 @@ const defaultState = {
   difficulty: 100,
   speechEnabled: true,
   owned: ["pinkDress"],
-  outfit: { dress: "pinkDress", shoes: "none", hat: "none", accessory: "none", room: "none" },
+  outfit: { outfit: "pinkDress", shoes: "none", accessory: "none", room: "none" },
   diary: [],
   completedLessons: [],
   metNpcs: [],
   learnedWords: [],
   badges: [],
   activeQuest: null,
-  player: { x: 48, y: 43 },
-  playerNode: "castle"
+  player: { x: 49, y: 28 },
+  playerNode: "castleRoom"
 };
 
 let state = loadLocalState();
@@ -115,12 +130,13 @@ let openAISettings = loadOpenAISettings();
 let activeHotspot = null;
 let activeLesson = null;
 let advMode = "closed";
-let shopCategory = "dress";
+let shopCategory = "outfit";
 let activeShopHotspot = null;
-let wardrobeCategory = "dress";
+let wardrobeCategory = "outfit";
 let princessExpression = "normal";
 let npcExpression = "normal";
 let advFocusIndex = 0;
+let mapLifeFrame = null;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -150,6 +166,7 @@ const elements = {
   nodeLayer: $("#nodeLayer"),
   routeLayer: $("#routeLayer"),
   nearbyCard: $("#nearbyCard"),
+  mapLifeLayer: $("#mapLifeLayer"),
   nearbyName: $("#nearbyName"),
   nearbyHint: $("#nearbyHint"),
   interactButton: $("#interactButton"),
@@ -170,7 +187,6 @@ const elements = {
   keyboardHint: $("#keyboardHint"),
   speakPromptButton: $("#speakPromptButton"),
   helpButton: $("#helpButton"),
-  advCloseButton: $("#advCloseButton"),
   collectionSummary: $("#collectionSummary"),
   diaryList: $("#diaryList"),
   clearDiaryButton: $("#clearDiaryButton"),
@@ -224,8 +240,13 @@ function normalizeState(candidate = {}) {
   const base = freshState();
   const merged = { ...base, ...candidate };
   merged.owned = Array.isArray(candidate.owned) ? [...new Set(["pinkDress", ...candidate.owned])] : base.owned;
-  merged.outfit = { ...base.outfit, ...(candidate.outfit || {}) };
-  if (merged.outfit.pants && !candidate.outfit?.shoes) merged.outfit.shoes = "none";
+  const candidateOutfit = candidate.outfit || {};
+  merged.outfit = { ...base.outfit, ...candidateOutfit };
+  if (candidateOutfit.dress && !candidateOutfit.outfit) merged.outfit.outfit = candidateOutfit.dress;
+  delete merged.outfit.dress;
+  delete merged.outfit.hat;
+  delete merged.outfit.pants;
+  delete merged.outfit.head;
   merged.diary = Array.isArray(candidate.diary) ? candidate.diary : [];
   merged.completedLessons = Array.isArray(candidate.completedLessons) ? candidate.completedLessons : [];
   merged.metNpcs = Array.isArray(candidate.metNpcs) ? [...new Set(candidate.metNpcs)] : [];
@@ -246,13 +267,13 @@ function normalizePlayer(player, nodeId) {
   if (player && typeof player.x === "number" && typeof player.y === "number") {
     return { x: clamp(player.x, 6, 94), y: clamp(player.y, 8, 92) };
   }
-  const node = mapNodes[nodeId] || mapNodes.castle;
+  const node = mapNodes[nodeId] || mapNodes.castleRoom;
   return { x: node.x, y: node.y };
 }
 
 function closestNodeFromLegacy(player) {
-  if (!player || typeof player.x !== "number") return "castle";
-  let best = "castle";
+  if (!player || typeof player.x !== "number") return "castleRoom";
+  let best = "castleRoom";
   let bestDistance = Infinity;
   Object.values(mapNodes).forEach((node) => {
     const distance = Math.hypot(node.x - player.x, node.y - player.y);
@@ -324,7 +345,12 @@ function changeView(viewName) {
   if (location.hash.slice(1) !== viewName) {
     history.replaceState(null, "", `#${viewName}`);
   }
-  if (viewName === "map") setTimeout(() => elements.mapStage.focus({ preventScroll: true }), 0);
+  if (viewName === "map") {
+    setTimeout(() => {
+      renderMap();
+      elements.mapStage.focus({ preventScroll: true });
+    }, 0);
+  }
 }
 
 function applyEffects(effects = {}) {
@@ -406,7 +432,8 @@ function moodLabel(mood) {
 
 function outfitSummary() {
   const labels = [];
-  ["dress", "shoes", "hat", "accessory", "room"].forEach((type) => {
+  categories.map((category) => category.id).forEach((type) => {
+    if (type === "room") return;
     const item = itemById(state.outfit[type]);
     if (item) labels.push(item.name);
   });
@@ -416,22 +443,20 @@ function outfitSummary() {
 function renderPaperDolls() {
   document.querySelectorAll("[data-doll]").forEach((doll) => {
     doll.innerHTML = avatarMarkup(doll.dataset.doll || "side");
-    doll.dataset.dress = state.outfit.dress || "none";
+    doll.dataset.outfit = state.outfit.outfit || "none";
     doll.dataset.shoes = state.outfit.shoes || "none";
-    doll.dataset.hat = state.outfit.hat || "none";
     doll.dataset.accessory = state.outfit.accessory || "none";
     doll.dataset.expression = princessExpression;
   });
 }
 
 function avatarMarkup(surface) {
-  const pose = avatarPoseFor(surface);
+  const outfit = itemById(state.outfit.outfit) || itemById("pinkDress");
+  const spritePosition = outfit?.sprite || "0%";
   return `
     <div class="avatar-shadow"></div>
-    <img class="avatar-base" src="assets/characters/princess-${pose}.png" alt="" />
-    <span class="avatar-layer avatar-dress" aria-hidden="true"></span>
+    <span class="avatar-base avatar-sprite" style="--sprite-x:${spritePosition}" aria-hidden="true"></span>
     <span class="avatar-layer avatar-shoes" aria-hidden="true"></span>
-    <span class="avatar-layer avatar-hat" aria-hidden="true"></span>
     <span class="avatar-layer avatar-accessory" aria-hidden="true"></span>
   `;
 }
@@ -447,11 +472,24 @@ function renderHome() {
   elements.wardrobeCount.textContent = `${state.owned.length} owned`;
   elements.roomPropDesk.classList.toggle("show", state.owned.includes("studyDesk"));
   elements.roomPropLamp.classList.toggle("show", state.owned.includes("seaLamp"));
-  renderCategoryTabs(elements.wardrobeTabs, wardrobeCategory, (category) => {
-    wardrobeCategory = category;
-    renderWardrobe();
-  }, true);
   renderWardrobe();
+}
+
+function renderWardrobeTabs() {
+  elements.wardrobeTabs.innerHTML = "";
+  categories.forEach((category) => {
+    const ownedCount = shopItems.filter((item) => item.type === category.id && state.owned.includes(item.id)).length;
+    if (!ownedCount) return;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `category-tab wardrobe-accordion-tab${wardrobeCategory === category.id ? " active" : ""}`;
+    button.textContent = `${category.label} ${ownedCount}`;
+    button.addEventListener("click", () => {
+      wardrobeCategory = wardrobeCategory === category.id ? "" : category.id;
+      renderHome();
+    });
+    elements.wardrobeTabs.appendChild(button);
+  });
 }
 
 function renderCategoryTabs(container, active, onClick, includeOwnedOnly = false, allowedCategories = null) {
@@ -469,15 +507,36 @@ function renderCategoryTabs(container, active, onClick, includeOwnedOnly = false
 }
 
 function renderWardrobe() {
-  if (!shopItems.some((item) => item.type === wardrobeCategory && state.owned.includes(item.id))) {
-    wardrobeCategory = state.owned.map((id) => itemById(id)).find(Boolean)?.type || "dress";
-  }
+  renderWardrobeTabs();
   elements.wardrobeGrid.innerHTML = "";
-  shopItems.filter((item) => item.type === wardrobeCategory && state.owned.includes(item.id)).forEach((item) => {
-    elements.wardrobeGrid.appendChild(createItemCard(item, {
-      mode: "wardrobe",
-      action: () => toggleEquip(item)
-    }));
+  const ownedGroups = categories.map((category) => ({
+    category,
+    items: shopItems.filter((item) => item.type === category.id && state.owned.includes(item.id))
+  })).filter((group) => group.items.length);
+
+  if (!ownedGroups.length) {
+    elements.wardrobeGrid.innerHTML = `<div class="wardrobe-empty">Buy treasures in town.</div>`;
+    return;
+  }
+
+  ownedGroups.forEach((group) => {
+    const section = document.createElement("section");
+    section.className = "wardrobe-section";
+    section.innerHTML = `
+      <div class="wardrobe-section-title">
+        <strong>${group.category.label}</strong>
+        <span>${group.items.length}</span>
+      </div>
+      <div class="wardrobe-section-items"></div>
+    `;
+    const list = section.querySelector(".wardrobe-section-items");
+    group.items.forEach((item) => {
+      list.appendChild(createItemCard(item, {
+        mode: "wardrobe",
+        action: () => toggleEquip(item)
+      }));
+    });
+    elements.wardrobeGrid.appendChild(section);
   });
 }
 
@@ -488,17 +547,32 @@ function createItemCard(item, options = {}) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = `item-card ${item.type}${owned ? " owned" : ""}${equipped ? " equipped" : ""}${!owned && !affordable ? " locked" : ""}`;
+  const previewStyle = item.type === "outfit"
+    ? `--sprite-x:${item.sprite || "0%"};--c1:${item.colors[0]};--c2:${item.colors[1]}`
+    : `--c1:${item.colors[0]};--c2:${item.colors[1]}`;
   button.innerHTML = `
-    <span class="item-preview ${item.shape}" style="--c1:${item.colors[0]};--c2:${item.colors[1]}"></span>
+    <span class="item-preview item-art ${item.type === "outfit" ? "outfit-preview" : ""} ${item.shape}" style="${previewStyle}">
+      <span aria-hidden="true">${item.icon || "✦"}</span>
+    </span>
     <strong>${item.name}</strong>
     <span>${owned ? equipped ? "Equipped" : "Owned" : `${item.cost} coins`}</span>
-    <small>${item.type}</small>
+    <small>${categoryLabel(item.type)}</small>
   `;
   button.addEventListener("click", options.action || (() => {}));
   return button;
 }
 
+function categoryLabel(type) {
+  return categories.find((category) => category.id === type)?.label || type;
+}
+
 function toggleEquip(item) {
+  if (item.type === "room") {
+    elements.statusMessage.textContent = `${item.name} is placed in Lumi's room.`;
+    persist();
+    render();
+    return;
+  }
   state.outfit[item.type] = state.outfit[item.type] === item.id ? "none" : item.id;
   elements.statusMessage.textContent = state.outfit[item.type] === item.id ? `${item.name} equipped.` : `${item.name} removed.`;
   persist();
@@ -510,9 +584,116 @@ function renderMap() {
   elements.mapObjective.textContent = `Current quest: ${state.activeQuest.title}. Target: ${target.icon} ${target.label}.`;
   elements.routeLayer.innerHTML = "";
   elements.nodeLayer.innerHTML = "";
+  renderMapActors();
   renderHotspots();
   updatePlayerPosition();
   updateNearbyHotspot();
+  startMapLife();
+}
+
+function mapCoverMetrics() {
+  const rect = elements.mapStage.getBoundingClientRect();
+  const imageRatio = mapImageSize.width / mapImageSize.height;
+  const stageRatio = rect.width / rect.height;
+  const displayWidth = stageRatio > imageRatio ? rect.height * imageRatio : rect.width;
+  const displayHeight = stageRatio > imageRatio ? rect.height : rect.width / imageRatio;
+  return {
+    width: rect.width,
+    height: rect.height,
+    displayWidth,
+    displayHeight,
+    offsetX: (rect.width - displayWidth) / 2,
+    offsetY: (rect.height - displayHeight) / 2
+  };
+}
+
+function mapPointToStage(x, y, metrics = mapCoverMetrics()) {
+  return {
+    x: metrics.offsetX + (x / 100) * metrics.displayWidth,
+    y: metrics.offsetY + (y / 100) * metrics.displayHeight
+  };
+}
+
+function positionMapElement(element, x, y, metrics = mapCoverMetrics()) {
+  const point = mapPointToStage(x, y, metrics);
+  element.style.left = `${point.x}px`;
+  element.style.top = `${point.y}px`;
+}
+
+function renderMapActors() {
+  if (!elements.mapLifeLayer) return;
+  const metrics = mapCoverMetrics();
+  if (!metrics.width || !metrics.height) return;
+  elements.mapLifeLayer.innerHTML = "";
+  mapActors.forEach((actor) => {
+    const point = mapPointToStage(actor.x, actor.y, metrics);
+    const item = document.createElement("span");
+    item.className = `map-actor map-actor-${actor.type}${actor.src ? " map-actor-image" : ""}`;
+    item.dataset.actorId = actor.id;
+    item.dataset.actorType = actor.type;
+    item.dataset.phase = String(actor.phase || 0);
+    item.dataset.scale = String(actor.scale || 1);
+    item.dataset.anchorX = String(actor.anchorX ?? 0.5);
+    item.dataset.anchorY = String(actor.anchorY ?? 0.5);
+    item.style.left = `${point.x}px`;
+    item.style.top = `${point.y}px`;
+    item.style.width = `${(actor.w / 100) * metrics.displayWidth}px`;
+    item.style.height = `${(actor.h / 100) * metrics.displayHeight}px`;
+    item.style.zIndex = String(actor.z || 1);
+    if (actor.src) item.style.backgroundImage = `url("${actor.src}")`;
+    elements.mapLifeLayer.appendChild(item);
+  });
+}
+
+function startMapLife() {
+  if (mapLifeFrame) return;
+  const tick = (time) => {
+    const t = time / 1000;
+    document.querySelectorAll(".map-actor").forEach((item) => {
+      const type = item.dataset.actorType;
+      const phase = Number(item.dataset.phase || 0);
+      const scale = Number(item.dataset.scale || 1);
+      const anchorX = Number(item.dataset.anchorX || 0.5) * -100;
+      const anchorY = Number(item.dataset.anchorY || 0.5) * -100;
+      let dx = 0;
+      let dy = 0;
+      let rotate = 0;
+      let skew = 0;
+      let pulse = 1;
+      if (type === "water") {
+        dx = Math.sin(t * 0.34 + phase) * 7;
+        dy = Math.cos(t * 0.28 + phase) * 4;
+        pulse = 1 + Math.sin(t * 0.42 + phase) * 0.012;
+        item.style.opacity = String(0.18 + Math.sin(t * 0.46 + phase) * 0.05);
+      } else if (type === "ship") {
+        dx = Math.sin(t * 0.48 + phase) * 0.9;
+        dy = Math.sin(t * 0.72 + phase) * 1.8;
+        rotate = Math.sin(t * 0.55 + phase) * 0.18;
+        item.style.opacity = "0.38";
+      } else if (type === "wave") {
+        dx = Math.sin(t * 1.7 + phase) * 10;
+        dy = Math.cos(t * 1.3 + phase) * 4;
+        pulse = 1 + Math.sin(t * 1.4 + phase) * 0.07;
+        item.style.opacity = String(0.44 + Math.sin(t * 1.4 + phase) * 0.22);
+      } else if (type === "windmill") {
+        rotate = (t * 72 + phase * 90) % 360;
+        item.style.opacity = "0.8";
+      } else if (type === "flag") {
+        skew = Math.sin(t * 3.2 + phase) * 5;
+        dx = Math.sin(t * 2.4 + phase) * 1.2;
+        item.style.opacity = "0.76";
+      } else if (type === "glow") {
+        pulse = 1 + Math.sin(t * 1.6 + phase) * 0.16;
+        item.style.opacity = String(0.34 + Math.sin(t * 1.6 + phase) * 0.14);
+      } else if (type === "bird") {
+        dx = ((t * 18 + phase * 40) % 70) - 20;
+        dy = Math.sin(t * 2.1 + phase) * 5;
+      }
+      item.style.transform = `translate(${anchorX}%, ${anchorY}%) translate(${dx}px, ${dy}px) rotate(${rotate}deg) skewY(${skew}deg) scale(${scale * pulse})`;
+    });
+    mapLifeFrame = requestAnimationFrame(tick);
+  };
+  mapLifeFrame = requestAnimationFrame(tick);
 }
 
 function renderRoutes() {
@@ -535,17 +716,18 @@ function renderRoutes() {
 }
 
 function renderNodes() {
+  const metrics = mapCoverMetrics();
   elements.nodeLayer.innerHTML = "";
   Object.values(mapNodes).forEach((node) => {
     const marker = document.createElement("div");
     marker.className = `road-node${node.id === state.playerNode ? " current" : ""}${mapNodes[state.playerNode].links.includes(node.id) ? " reachable" : ""}`;
-    marker.style.left = `${node.x}%`;
-    marker.style.top = `${node.y}%`;
+    positionMapElement(marker, node.x, node.y, metrics);
     elements.nodeLayer.appendChild(marker);
   });
 }
 
 function renderHotspots() {
+  const metrics = mapCoverMetrics();
   elements.hotspotLayer.innerHTML = "";
   hotspots.forEach((hotspot) => {
     const node = mapNodes[hotspot.node];
@@ -554,16 +736,14 @@ function renderHotspots() {
     marker.className = `map-marker hotspot ${hotspot.npcClass}${isTarget ? " target" : ""}${hotspot.kind === "shop" ? " shop" : ""}`;
     marker.dataset.hotspotId = hotspot.id;
     marker.dataset.label = hotspot.label;
-    marker.style.left = `${node.x}%`;
-    marker.style.top = `${node.y}%`;
+    positionMapElement(marker, node.x, node.y, metrics);
     marker.innerHTML = `<span class="hotspot-icon" aria-hidden="true">${hotspot.icon}</span>`;
     elements.hotspotLayer.appendChild(marker);
   });
 }
 
 function updatePlayerPosition() {
-  elements.playerToken.style.left = `${state.player.x}%`;
-  elements.playerToken.style.top = `${state.player.y}%`;
+  positionMapElement(elements.playerToken, state.player.x, state.player.y);
 }
 
 function updateNearbyHotspot() {
@@ -605,17 +785,16 @@ function updateHotspotFocus() {
 }
 
 function nearbyHotspot() {
-  let best = null;
-  let bestDistance = Infinity;
-  hotspots.forEach((hotspot) => {
+  const candidates = hotspots.map((hotspot) => {
     const node = mapNodes[hotspot.node];
-    const distance = Math.hypot(node.x - state.player.x, (node.y - state.player.y) * 1.25);
-    if (distance < bestDistance) {
-      best = hotspot;
-      bestDistance = distance;
-    }
-  });
-  return bestDistance <= 10.5 ? best : null;
+    const radius = hotspot.focusRadius || 6.8;
+    const distance = Math.hypot(node.x - state.player.x, (node.y - state.player.y) * 1.18);
+    const score = distance / radius;
+    return { hotspot, distance, score, radius };
+  }).filter((candidate) => candidate.distance <= candidate.radius);
+  if (!candidates.length) return null;
+  candidates.sort((a, b) => a.score - b.score || a.distance - b.distance);
+  return candidates[0].hotspot;
 }
 
 function moveOnMap(dx, dy) {
@@ -642,17 +821,18 @@ function isWalkable(x, y) {
   if (x < 16 && y < 24) return false;
   if (x > 84 && y < 17) return false;
   const zones = [
-    [58, 51, 34, 30],
-    [55, 68, 32, 16],
-    [70, 35, 18, 23],
-    [48, 43, 16, 11],
-    [52, 59, 25, 14],
-    [42, 74, 19, 9],
-    [70, 76, 10, 8],
-    [75, 24, 20, 12],
-    [63, 56, 15, 11],
-    [58, 66, 16, 9],
-    [68, 50, 16, 10],
+    [58, 51, 36, 31],
+    [55, 68, 35, 18],
+    [70, 35, 21, 24],
+    [49, 28, 12, 10],
+    [43, 44, 16, 12],
+    [51, 60, 25, 15],
+    [38, 75, 19, 10],
+    [73, 78, 11, 9],
+    [77, 24, 20, 13],
+    [65, 55, 15, 11],
+    [58, 69, 16, 10],
+    [72, 47, 16, 11],
     [30, 52, 18, 12],
     [38, 61, 17, 11]
   ];
@@ -677,6 +857,7 @@ function interactNearby() {
 }
 
 function openAdvBase(hotspot, mode) {
+  changeView("map");
   advMode = mode;
   activeLesson = null;
   activeShopHotspot = null;
@@ -693,9 +874,12 @@ function openAdvBase(hotspot, mode) {
   elements.advShopGrid.innerHTML = "";
   elements.shopArea.classList.remove("show");
   elements.advFeedback.textContent = "";
-  elements.advCloseButton.textContent = "Leave";
   elements.keyboardHint.textContent = "↑↓ Select / Enter Confirm / 1-4 Quick Pick / Esc Leave";
   renderPaperDolls();
+  requestAnimationFrame(() => {
+    elements.advModal.classList.toggle("show", advMode !== "closed");
+    elements.advModal.setAttribute("aria-hidden", advMode === "closed" ? "true" : "false");
+  });
 }
 
 function addAdvOption(label, onClick, options = {}) {
@@ -713,9 +897,7 @@ function advFocusableButtons() {
   if (!elements.advModal.classList.contains("show")) return [];
   const selectors = [
     "#choiceList .choice-button:not(:disabled)",
-    "#advShopGrid .item-card:not(:disabled)",
-    "#advShopGrid .shop-leave-button:not(:disabled)",
-    "#advCloseButton:not(:disabled)"
+    "#advShopGrid .item-card:not(:disabled)"
   ];
   return selectors.flatMap((selector) => [...document.querySelectorAll(selector)]).filter((button) => button.offsetParent !== null);
 }
@@ -777,7 +959,7 @@ function openShopAdv(hotspot) {
   openAdvBase(hotspot, "shop");
   activeShopHotspot = hotspot;
   addUnique("metNpcs", [hotspot.npc]);
-  const firstCategory = hotspot.defaultCategory || hotspot.shopCategories?.[0] || "dress";
+  const firstCategory = hotspot.defaultCategory || hotspot.shopCategories?.[0] || "outfit";
   shopCategory = allowedShopCategories(hotspot).includes(shopCategory) ? shopCategory : firstCategory;
   elements.advLine.textContent = shopGreeting(hotspot);
   elements.advPrompt.textContent = "Choose a treasure, try it on, then buy it for Lumi.";
@@ -793,7 +975,8 @@ function allowedShopCategories(hotspot = activeShopHotspot) {
 
 function shopGreeting(hotspot) {
   const greetings = {
-    boutique: "Welcome, Princess. Dresses are ready for a bright day.",
+    market: "Auntie Pom has cozy treasures for Lumi's room.",
+    boutique: "Welcome, Princess. Outfits are ready for a bright day.",
     shoeShop: "Hello, Princess. Try shoes for the road.",
     accessoryShop: "Good day, Princess. Pick a ribbon, crown, bag, or cape."
   };
@@ -802,7 +985,7 @@ function shopGreeting(hotspot) {
 
 function renderAdvShop() {
   const allowed = allowedShopCategories();
-  if (!allowed.includes(shopCategory)) shopCategory = allowed[0] || "dress";
+  if (!allowed.includes(shopCategory)) shopCategory = allowed[0] || "outfit";
   renderCategoryTabs(elements.advShopTabs, shopCategory, (category) => {
     shopCategory = category;
     renderAdvShop();
@@ -814,18 +997,19 @@ function renderAdvShop() {
       action: () => buyItemInAdv(item)
     }));
   });
-  const leave = document.createElement("button");
-  leave.type = "button";
-  leave.className = "shop-leave-button";
-  leave.textContent = "Leave";
-  leave.addEventListener("click", closeAdv);
-  elements.advShopGrid.appendChild(leave);
+  elements.choiceList.innerHTML = "";
+  addAdvOption("Leave", closeAdv, { leave: true });
   window.setTimeout(() => setAdvFocus(0), 0);
 }
 
 function buyItemInAdv(item) {
+  if (!item) return;
   if (state.owned.includes(item.id)) {
-    if (item.type !== "room") toggleEquip(item);
+    if (item.type !== "room") {
+      toggleEquip(item);
+    } else {
+      elements.advFeedback.textContent = `${item.name} is already in Lumi's room.`;
+    }
     renderAdvShop();
     window.setTimeout(() => setAdvFocus(advFocusIndex), 0);
     return;
@@ -839,12 +1023,12 @@ function buyItemInAdv(item) {
   state.coins -= item.cost;
   playTone("buy");
   state.owned.push(item.id);
-  state.outfit[item.type] = item.id;
+  if (item.type !== "room") state.outfit[item.type] = item.id;
   awardBadge("First Shopping");
   updateProgressBadges();
   addDiary({ type: "shop", title: activeShopHotspot?.label || "Shop", body: `Bought ${item.name}.`, result: `-${item.cost} coins` });
   elements.advLine.textContent = `${item.name} is yours now. It looks wonderful.`;
-  elements.advFeedback.textContent = `${item.name} bought and equipped.`;
+  elements.advFeedback.textContent = item.type === "room" ? `${item.name} bought for Lumi's room.` : `${item.name} bought and equipped.`;
   elements.statusMessage.textContent = `${item.name} bought.`;
   persist();
   render();
@@ -907,7 +1091,6 @@ function answerLesson(button, choice) {
   elements.advLine.textContent = state.activeQuest.ending;
   elements.advPrompt.textContent = "Quest complete. Lumi earned 100 coins.";
   elements.advFeedback.textContent = `${effectText(reward)}.`;
-  elements.advCloseButton.textContent = "Leave";
   state.activeQuest = createRandomQuest(oldPlace);
   activeLesson = null;
   advMode = "complete";
@@ -1067,7 +1250,7 @@ function buildSaveMarkdown() {
     ? state.diary.map((entry) => `| ${entry.title} | ${entry.body.replaceAll("|", "/")} | ${entry.result || ""} |`).join("\n")
     : "| - | - | - |";
   const payload = JSON.stringify(exportState, null, 2);
-  return `# Luminara Princess Map ADV Save
+  return `# solKidGalGame Save
 
 - Saved at: ${new Date().toLocaleString("en-US")}
 - Difficulty: ${difficultyConfig[state.difficulty].label}
@@ -1166,7 +1349,6 @@ function bindEvents() {
   elements.goMapButton.addEventListener("click", () => changeView("map"));
   elements.returnHomeButton.addEventListener("click", () => changeView("home"));
   elements.interactButton.addEventListener("click", interactNearby);
-  elements.advCloseButton.addEventListener("click", closeAdv);
   elements.helpButton.addEventListener("click", showHelp);
   elements.speakPromptButton.addEventListener("click", () => speak(elements.advLine.textContent));
   elements.saveButton.addEventListener("click", saveMarkdown);
@@ -1193,11 +1375,15 @@ function bindEvents() {
     renderSettings();
   });
   elements.clearDiaryButton.addEventListener("click", () => {
+    if (!window.confirm("Clear Lumi's diary pages?")) return;
     state.diary = [];
     persist();
     render();
   });
-  elements.resetButton.addEventListener("click", resetProgress);
+  elements.resetButton.addEventListener("click", () => {
+    if (!window.confirm("Reset Lumi's coins, clothes, quests, and diary?")) return;
+    resetProgress();
+  });
   elements.saveOpenAIButton.addEventListener("click", () => {
     const typedKey = elements.openaiKeyInput.value.trim();
     openAISettings = {
@@ -1212,22 +1398,30 @@ function bindEvents() {
     localStorage.removeItem(openAISettingsKey);
     renderSettings();
   });
+  window.addEventListener("resize", () => {
+    if (elements.mapStage?.offsetParent !== null) renderMap();
+  });
   elements.mapStage.addEventListener("keydown", (event) => {
     const key = event.key.toLowerCase();
     if (event.key === "ArrowUp" || key === "w") {
       event.preventDefault();
+      event.stopPropagation();
       moveOnMap(0, -1);
     } else if (event.key === "ArrowDown" || key === "s") {
       event.preventDefault();
+      event.stopPropagation();
       moveOnMap(0, 1);
     } else if (event.key === "ArrowLeft" || key === "a") {
       event.preventDefault();
+      event.stopPropagation();
       moveOnMap(-1, 0);
     } else if (event.key === "ArrowRight" || key === "d") {
       event.preventDefault();
+      event.stopPropagation();
       moveOnMap(1, 0);
     } else if ((event.key === "Enter" || event.key === " ") && activeHotspot) {
       event.preventDefault();
+      event.stopPropagation();
       interactNearby();
     }
   });
@@ -1400,6 +1594,21 @@ function runMonkeyTestIfRequested() {
     () => {
       const owned = shopItems.filter((item) => state.owned.includes(item.id));
       if (owned.length) toggleEquip(owned[Math.floor(Math.random() * owned.length)]);
+    },
+    () => {
+      const visibleButtons = [...document.querySelectorAll("button")].filter((button) => {
+        const rect = button.getBoundingClientRect();
+        const style = getComputedStyle(button);
+        return !button.disabled && rect.width > 0 && rect.height > 0 && style.visibility !== "hidden" && style.display !== "none";
+      });
+      if (visibleButtons.length) visibleButtons[Math.floor(Math.random() * visibleButtons.length)].click();
+    },
+    () => {
+      const keys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter", " ", "g", "1", "2", "3", "Escape"];
+      document.dispatchEvent(new KeyboardEvent("keydown", {
+        key: keys[Math.floor(Math.random() * keys.length)],
+        bubbles: true
+      }));
     }
   ];
 

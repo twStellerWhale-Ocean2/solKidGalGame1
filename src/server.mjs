@@ -99,7 +99,12 @@ async function handleHelp(request, response) {
 
 async function serveStatic(request, response) {
   const url = new URL(request.url, `http://${request.headers.host}`);
-  const pathname = decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname);
+  if (url.pathname === "/") {
+    response.writeHead(302, { Location: `/src/${url.search}` });
+    response.end();
+    return;
+  }
+  const pathname = decodeURIComponent(url.pathname === "/src/" ? "/src/index.html" : url.pathname);
   const normalized = normalize(pathname).replace(/^(\.\.[/\\])+/, "");
   const filePath = join(root, normalized);
   if (!filePath.startsWith(root)) {
