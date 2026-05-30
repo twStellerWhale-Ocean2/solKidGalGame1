@@ -5,7 +5,7 @@
 ## 讀取順序
 
 1. 先讀本檔。
-2. 再讀 `README.md`，並以它作為設計內容 source of truth。
+2. 必須研讀 `README.md`，並以它作為設計內容、遊戲流程、部署方式與驗證方式的 source of truth。
 3. 需要追蹤稽核細節時，再讀 `doc/AUDIT-111.md` 與 `doc/AUDIT-IMAGE-ISSUES.md`。
 
 ## 硬性操作規則
@@ -24,6 +24,8 @@
 ## 專案入口
 
 - 專案路徑：`C:\Users\User\Documents\Github\solKidGalGame`
+- 主要發布目標：GitHub Pages。
+- 主要遊玩裝置：手機瀏覽器；修改 UI/操作時必須優先考慮手機螢幕、觸控操作與直向/小螢幕可讀性。
 - 本地 server：`server.mjs`
 - 預設 URL：`http://127.0.0.1:4174/`
 - 完整設計與操作說明：`README.md`
