@@ -184,7 +184,6 @@ const elements = {
   advShopTabs: $("#advShopTabs"),
   advShopGrid: $("#advShopGrid"),
   advFeedback: $("#advFeedback"),
-  keyboardHint: $("#keyboardHint"),
   speakPromptButton: $("#speakPromptButton"),
   helpButton: $("#helpButton"),
   collectionSummary: $("#collectionSummary"),
@@ -874,7 +873,6 @@ function openAdvBase(hotspot, mode) {
   elements.advShopGrid.innerHTML = "";
   elements.shopArea.classList.remove("show");
   elements.advFeedback.textContent = "";
-  elements.keyboardHint.textContent = "↑↓ Select / Enter Confirm / 1-4 Quick Pick / Esc Leave";
   renderPaperDolls();
   requestAnimationFrame(() => {
     elements.advModal.classList.toggle("show", advMode !== "closed");
@@ -910,6 +908,7 @@ function setAdvFocus(index = 0) {
   const button = buttons[advFocusIndex];
   button.classList.add("adv-focus");
   button.focus({ preventScroll: true });
+  button.scrollIntoView({ block: "nearest" });
 }
 
 function moveAdvFocus(delta) {
@@ -950,7 +949,7 @@ function openHintAdv(hotspot, line = hotspot.hint) {
   setExpressions("thinking", "normal");
   elements.advLine.textContent = line;
   elements.advPrompt.textContent = `Hint: today's quest is at ${hotspotById(state.activeQuest.place).label}.`;
-  elements.advFeedback.textContent = "Choose Leave to return to the map.";
+  elements.advFeedback.textContent = "";
   addAdvOption("Leave", closeAdv, { leave: true });
   window.setTimeout(() => setAdvFocus(0), 0);
 }
@@ -1050,7 +1049,7 @@ function answerLesson(button, choice) {
   if (!correct) {
     button.classList.add("wrong");
     setExpressions("thinking", "surprised");
-    elements.advFeedback.textContent = `Try again: ${activeLesson.prompt}`;
+    elements.advFeedback.textContent = "Try again.";
     playTone("wrong");
     speak("Try again.");
     return;

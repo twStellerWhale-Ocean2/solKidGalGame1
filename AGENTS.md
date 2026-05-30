@@ -24,6 +24,6 @@
 ## 專案入口
 
 - 專案路徑：`C:\Users\User\Documents\Github\solKidGalGame`
-- 本地 server：`src/server.mjs`
+- 本地 server：`webroot/server.mjs`
 - 預設 URL：`http://127.0.0.1:4174/`
 - 完整設計與操作說明：`README.md`

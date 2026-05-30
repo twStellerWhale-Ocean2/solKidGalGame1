@@ -6,9 +6,10 @@ A PC-focused static web game for young English learners. The first screen is Pri
 
 - Type: child-friendly, cute Japanese-style MAP ADV English practice static web game.
 - Target deployment: GitHub Pages.
-- Static entry: `src/index.html`.
-- Main source package: `src/index.html`, `src/styles.css`, `src/script.js`, `src/assets/`.
-- Optional local server: `src/server.mjs`, defaulting to `http://127.0.0.1:4174/`.
+- Static web root: `webroot/`.
+- Static entry: `webroot/index.html`.
+- Main website package: `webroot/index.html`, `webroot/styles.css`, `webroot/script.js`, `webroot/assets/`.
+- Optional local server: `webroot/server.mjs`, defaulting to `http://127.0.0.1:4174/`.
 - Documentation layout: root keeps `AGENTS.md` and `README.md`; `doc/` keeps design notes, audit notes, and follow-up issue tracking.
 
 ## Current Play Loop
@@ -92,16 +93,16 @@ The repository is grouped by role:
 
 - Root: `AGENTS.md` and `README.md`
 - `doc/`: design notes, audit notes, and other project documentation
-- `src/`: the complete runnable website package, including source files, the optional local server, and assets
+- `webroot/`: the complete runnable website root, including source files, the optional local server, and assets
 
-For static hosting, serve `src/index.html` as the entry file. The optional `src/server.mjs` is only for local OpenAI help proxy testing.
+For static hosting, serve `webroot/index.html` as the entry file. To publish `webroot/` through GitHub Pages, add a Pages workflow with a token that has workflow permission, or move the website root to one of GitHub Pages' built-in branch sources. The optional `webroot/server.mjs` is only for local OpenAI help proxy testing.
 
 ## Main Files
 
-- `src/index.html`: DOM game shell, Room, Map, Diary, Settings, and ADV modal.
-- `src/styles.css`: main visual styling, map, room, ADV, shops, and paper doll styles.
-- `src/script.js`: game data, state, map coordinates, hotspots, ADV, shops, save/load, and monkey test.
-- `src/server.mjs`: local OpenAI help proxy and static file server.
+- `webroot/index.html`: DOM game shell, Room, Map, Diary, Settings, and ADV modal.
+- `webroot/styles.css`: main visual styling, map, room, ADV, shops, and paper doll styles.
+- `webroot/script.js`: game data, state, map coordinates, hotspots, ADV, shops, save/load, and monkey test.
+- `webroot/server.mjs`: local OpenAI help proxy and static file server.
 - `doc/AUDIT-111.md`: broad audit issue source of truth.
 - `doc/AUDIT-IMAGE-ISSUES.md`: latest per-page image, UI, and monkey audit notes.
 
@@ -109,31 +110,31 @@ For static hosting, serve `src/index.html` as the entry file. The optional `src/
 
 Main backgrounds:
 
-- `src/assets/bedroom.png`
-- `src/assets/kingdom-map.png`
-- `src/assets/scenes/*.png`
+- `webroot/assets/bedroom.png`
+- `webroot/assets/kingdom-map.png`
+- `webroot/assets/scenes/*.png`
 
 Characters:
 
-- `src/assets/characters/npc-*.png`
-- `src/assets/characters/princess-*.png`
-- `src/assets/characters/princess-outfits-sheet.png`
+- `webroot/assets/characters/npc-*.png`
+- `webroot/assets/characters/princess-*.png`
+- `webroot/assets/characters/princess-outfits-sheet.png`
 
 Animated map layer PNGs:
 
-- `src/assets/map-layers/windmill-blades.png`
-- `src/assets/map-layers/castle-flag.png`
-- `src/assets/map-layers/harbor-ship-large.png`
-- `src/assets/map-layers/harbor-ship-small.png`
-- `src/assets/map-layers/lighthouse-boat.png`
-- `src/assets/map-layers/river-flow.png`
-- `src/assets/map-layers/harbor-flow.png`
-- `src/assets/map-layers/ocean-flow.png`
+- `webroot/assets/map-layers/windmill-blades.png`
+- `webroot/assets/map-layers/castle-flag.png`
+- `webroot/assets/map-layers/harbor-ship-large.png`
+- `webroot/assets/map-layers/harbor-ship-small.png`
+- `webroot/assets/map-layers/lighthouse-boat.png`
+- `webroot/assets/map-layers/river-flow.png`
+- `webroot/assets/map-layers/harbor-flow.png`
+- `webroot/assets/map-layers/ocean-flow.png`
 
 Cleaned up:
 
 - Root QA screenshots were removed.
-- Old `src/assets/scenes/*.svg` placeholders were removed.
+- Old `webroot/assets/scenes/*.svg` placeholders were removed.
 - Unused scene thumbnails and `princess-main.png` were removed.
 
 ## Completed Work
@@ -143,21 +144,21 @@ Cleaned up:
 - Corrected the Princess Room and castle gate hotspots near the front gate.
 - Removed white translucent arc/spiral decoration from the main map.
 - Added image layer support to `mapActors`.
-- Replaced windmill, flag, ship, river, harbor, and ocean effects with animated PNG layers under `src/assets/map-layers/`.
+- Replaced windmill, flag, ship, river, harbor, and ocean effects with animated PNG layers under `webroot/assets/map-layers/`.
 - Split shop categories by place:
   - Boutique: dresses
   - Shoe Shop: shoes
   - Accessory Shop: accessories
   - Market: room items
-- `node --check src/script.js` has passed multiple times.
+- `node --check webroot/script.js` has passed multiple times.
 - The 300-step monkey test has passed multiple times.
 
 ## Remaining Issues
 
 1. The kingdom map background is not yet a clean plate:
-   - The original windmill blades, flag, and ships are still baked into `src/assets/kingdom-map.png`.
+   - The original windmill blades, flag, and ships are still baked into `webroot/assets/kingdom-map.png`.
    - The new PNG layers can create slight ghosting.
-   - Next step: create `src/assets/kingdom-map-clean.png` with those baked-in moving objects locally removed.
+   - Next step: create `webroot/assets/kingdom-map-clean.png` with those baked-in moving objects locally removed.
 2. Many ADV backgrounds are still map crops rather than true close-up ADV scene backgrounds.
 3. Room, Wardrobe, Shop, Diary, and Settings still feel too much like a web shell or form UI.
 4. Product images still read as icons and need stronger reward appeal.
@@ -179,7 +180,7 @@ Cleaned up:
 Static-only:
 
 ```powershell
-cd src
+cd webroot
 python -m http.server 4173
 ```
 
@@ -188,7 +189,7 @@ Optional local help proxy:
 ```powershell
 $env:OPENAI_API_KEY="sk-..."
 $env:OPENAI_ORG_ID="org_..."
-node src/server.mjs
+node webroot/server.mjs
 ```
 
 Default local server URL:

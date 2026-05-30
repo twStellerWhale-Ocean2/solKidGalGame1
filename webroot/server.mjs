@@ -1,8 +1,10 @@
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
-import { extname, join, normalize } from "node:path";
+import { dirname, extname, join, normalize, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const root = process.cwd();
+const root = dirname(fileURLToPath(import.meta.url));
+const rootPrefix = root.endsWith(sep) ? root : `${root}${sep}`;
 const port = Number(process.env.PORT || 4174);
 const apiKey = process.env.OPENAI_API_KEY || "";
 const orgId = process.env.OPENAI_ORG_ID || "";
@@ -99,15 +101,10 @@ async function handleHelp(request, response) {
 
 async function serveStatic(request, response) {
   const url = new URL(request.url, `http://${request.headers.host}`);
-  if (url.pathname === "/") {
-    response.writeHead(302, { Location: `/src/${url.search}` });
-    response.end();
-    return;
-  }
-  const pathname = decodeURIComponent(url.pathname === "/src/" ? "/src/index.html" : url.pathname);
-  const normalized = normalize(pathname).replace(/^(\.\.[/\\])+/, "");
+  const pathname = decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname);
+  const normalized = normalize(pathname).replace(/^[/\\]+/, "").replace(/^(\.\.[/\\])+/, "");
   const filePath = join(root, normalized);
-  if (!filePath.startsWith(root)) {
+  if (filePath !== root && !filePath.startsWith(rootPrefix)) {
     response.writeHead(403);
     response.end("Forbidden");
     return;
