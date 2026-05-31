@@ -241,26 +241,17 @@ const elements = {
   areaNav: $("#areaNav"),
   castleStage: $("#castleStage"),
   castleMarkerLayer: $("#castleMarkerLayer"),
-  castleNearbyCard: $("#castleNearbyCard"),
-  castleNearbyName: $("#castleNearbyName"),
-  castleNearbyHint: $("#castleNearbyHint"),
-  castleInteractButton: $("#castleInteractButton"),
   mapStage: $("#mapStage"),
   mapImage: $("#mapImage"),
   playerToken: $("#playerToken"),
   hotspotLayer: $("#hotspotLayer"),
   nodeLayer: $("#nodeLayer"),
   routeLayer: $("#routeLayer"),
-  nearbyCard: $("#nearbyCard"),
   mapLifeLayer: $("#mapLifeLayer"),
-  nearbyName: $("#nearbyName"),
-  nearbyHint: $("#nearbyHint"),
-  interactButton: $("#interactButton"),
   destinationPanel: $("#destinationPanel"),
   destinationHint: $("#destinationHint"),
   destinationList: $("#destinationList"),
   returnHomeButton: $("#returnHomeButton"),
-  mapObjective: $("#mapObjective"),
   advModal: $("#advModal"),
   advScene: $("#advScene"),
   advTitle: $("#advTitle"),
@@ -859,27 +850,24 @@ function renderCastleMap() {
     marker.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
-      focusCastleHotspot(hotspot.id);
+      handleCastleHotspotClick(hotspot.id);
     });
     elements.castleMarkerLayer.appendChild(marker);
   });
-  if (!activeCastleHotspot) focusCastleHotspot("princessRoom", false);
-  else updateCastlePreview(activeCastleHotspot);
 }
 
 function focusCastleHotspot(hotspotId, rerender = true) {
   activeCastleHotspot = castleHotspots.find((hotspot) => hotspot.id === hotspotId) || castleHotspots[0];
   if (rerender) renderCastleMap();
-  updateCastlePreview(activeCastleHotspot);
+  elements.castleStage.focus({ preventScroll: true });
 }
 
-function updateCastlePreview(hotspot) {
-  if (!hotspot || !elements.castleNearbyCard) return;
-  const scene = sceneConfigFor(hotspot);
-  elements.castleNearbyName.textContent = `${hotspot.icon} ${hotspot.label}`;
-  elements.castleNearbyHint.textContent = scene.travelLine || hotspot.hint;
-  elements.castleInteractButton.textContent = travelActionLabel(hotspot);
-  elements.castleNearbyCard.classList.add("show");
+function handleCastleHotspotClick(hotspotId) {
+  if (activeCastleHotspot?.id === hotspotId) {
+    interactCastleHotspot();
+    return;
+  }
+  focusCastleHotspot(hotspotId);
 }
 
 function interactCastleHotspot() {
@@ -902,7 +890,6 @@ function renderMap() {
   if (!elements.mapStage || (elements.mapStage.offsetParent === null && activeViewName() !== "map")) return;
   ensureKingdomPosition();
   const target = hotspotById(state.activeQuest.place);
-  elements.mapObjective.textContent = `Drag the map and tap ${target.icon} ${target.label} for today's talk.`;
   if (elements.destinationHint) elements.destinationHint.textContent = `${target.icon} ${target.label} is waiting.`;
   elements.routeLayer.innerHTML = "";
   elements.nodeLayer.innerHTML = "";
@@ -973,9 +960,16 @@ function focusTravelHotspot(hotspotId) {
   persist();
   renderMap();
   activeHotspot = hotspot;
-  updateTravelPreview(hotspot);
   updateHotspotFocus();
   elements.mapStage.focus({ preventScroll: true });
+}
+
+function handleTravelHotspotClick(hotspotId) {
+  if (activeHotspot?.id === hotspotId) {
+    interactNearby();
+    return;
+  }
+  focusTravelHotspot(hotspotId);
 }
 
 function isMobileTravelMap() {
@@ -1159,7 +1153,7 @@ function renderHotspots(metrics = mapCoverMetrics()) {
     marker.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
-      focusTravelHotspot(hotspot.id);
+      handleTravelHotspotClick(hotspot.id);
     });
     elements.hotspotLayer.appendChild(marker);
   });
@@ -1196,38 +1190,11 @@ function travelActionLabel(hotspot, isTarget = hotspot?.id === state.activeQuest
   return sceneConfigFor(hotspot).travelAction || "Visit";
 }
 
-function updateTravelPreview(hotspot) {
-  if (!hotspot) return;
-  const scene = sceneConfigFor(hotspot);
-  const isTarget = hotspot.id === state.activeQuest.place;
-  elements.nearbyName.textContent = `${hotspot.icon} ${hotspot.label}`;
-  elements.nearbyCard.classList.add("show");
-  elements.interactButton.textContent = travelActionLabel(hotspot, isTarget);
-  if (hotspot.kind === "room") {
-    elements.nearbyHint.textContent = scene.travelLine || "Return to Lumi's room.";
-    elements.mapObjective.textContent = "Tap Room to go back, or drag the map to visit another place.";
-  } else if (isTarget) {
-    elements.nearbyHint.textContent = `${scene.npc} has today's English talk. ${state.activeQuest.title}.`;
-    elements.mapObjective.textContent = `${hotspot.icon} ${hotspot.label}: tap Talk to start.`;
-  } else if (hotspot.kind === "shop") {
-    elements.nearbyHint.textContent = scene.travelLine || hotspot.hint;
-    elements.mapObjective.textContent = `${hotspot.icon} ${hotspot.label}: tap Shop to preview rewards.`;
-  } else {
-    elements.nearbyHint.textContent = `${scene.travelLine || hotspot.hint} Today's talk is at ${hotspotById(state.activeQuest.place).label}.`;
-    elements.mapObjective.textContent = `${hotspot.icon} ${hotspot.label}: tap Visit for a short scene.`;
-  }
-}
-
 function updateNearbyHotspot() {
-  activeHotspot = nearbyHotspot();
-  elements.nearbyCard.classList.remove("show");
-  updateHotspotFocus();
-  if (!activeHotspot) {
-    const target = hotspotById(state.activeQuest.place);
-    elements.mapObjective.textContent = `Drag the map and tap ${target.icon} ${target.label} for today's talk.`;
-    return;
+  if (activeHotspot && !hotspots.some((hotspot) => hotspot.id === activeHotspot.id)) {
+    activeHotspot = null;
   }
-  updateTravelPreview(activeHotspot);
+  updateHotspotFocus();
 }
 
 function updateHotspotFocus() {
@@ -2079,8 +2046,6 @@ function bindEvents() {
   elements.systemMenuTabs.forEach((tab) => tab.addEventListener("click", () => changeSystemPanel(tab.dataset.menuPanel)));
   elements.goMapButton?.addEventListener("click", () => openArea("kingdom"));
   elements.returnHomeButton.addEventListener("click", () => openArea("castle"));
-  elements.interactButton.addEventListener("click", interactNearby);
-  elements.castleInteractButton?.addEventListener("click", interactCastleHotspot);
   elements.helpButton.addEventListener("click", showHelp);
   elements.speakPromptButton.addEventListener("click", () => speak(elements.advLine.textContent));
   elements.saveButton.addEventListener("click", saveMarkdown);

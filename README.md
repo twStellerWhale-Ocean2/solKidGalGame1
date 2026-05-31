@@ -367,6 +367,7 @@ node server.mjs
 - 所有地區與地點使用同一層級：`Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return`。
 - Princess Room 進入後先顯示 `Dresses`、`Accessories`、`Shoes`、`Room Treasures`、`Go Outside` 等 action choices；選擇後才開 Wardrobe / Decoration detail panel。
 - Shop 進入後先顯示 `Shop`、`Talk`、`Leave` 等 action choices；選 `Shop` 後才顯示商品 detail panel。
+- Issue #10 / #11 決議：Castle / Kingdom 地圖不顯示場景提示詞、說明卡或 marker 文字 label；點 marker 第一次只以放大 / 高亮表示已選取，再點同一 marker 才進入場景。
 - Castle 近景圖必須使用與 kingdom map 城堡一致的手繪風格，不接受程式幾何圖或臨時圖冒充正式素材。
 - 美術驗收必須先列操作流程樹與 screenshot manifest；未截圖、未列 manifest 或未檢查的 surface 不得宣稱 Accept。
 - 單次 partial manifest 可以用於小改驗證，但不得宣稱已完成全場景美術掃描；全場景掃描必須覆蓋所有 marker focus、scene entry、detail panel、feedback 與返回路徑。
@@ -395,6 +396,11 @@ node server.mjs
 - Fixed mobile Shop command / item overflow so Buy and Leave remain visible.
 - Wrapped the Help Teacher key fields in a form and prevented submit reloads, clearing Chromium password-field console warning during selftests.
 - Re-ran full visual QA across 64 desktop/mobile surfaces. Final evidence is under `doc/qa-20260531-final-art-map/`.
+- Removed visible map scene hints for Issue #10 and simplified marker entry for Issue #11:
+  - Castle / Kingdom no longer show nearby scene explanation cards.
+  - Map marker focus no longer renders visible text labels.
+  - First tap selects / highlights a marker; second tap enters the selected scene.
+  - Targeted mobile QA evidence is under `.codex/log/20260531-190528-qa/`.
 - `node --check script.js` has passed multiple times.
 - The 300-step monkey test has passed multiple times.
 
@@ -415,3 +421,4 @@ node server.mjs
 - 2026-05-31：依使用者要求重整為 `I. 緣起目的`、`II. 參考準備`、`III. 內容程序`、`IV. 備註紀錄`。
 - 2026-05-31：將本輪新規劃遊戲的 surface inventory 內容吸收為 README 的正式設計基準。
 - 2026-05-31：補入 Castle / Kingdom area registry、`Area Map -> Scene -> Action Choices -> Detail Panel`、HUD 三格、齒輪系統 overlay、Castle 圖一致性與 visual surface sweep 驗收規則。
+- 2026-05-31：補記 Issue #10 / #11 地圖 marker 互動決議與 targeted mobile QA 證據位置。
