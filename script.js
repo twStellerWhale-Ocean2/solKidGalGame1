@@ -45,6 +45,18 @@ const hotspots = [
   { id: "lighthouse", node: "lighthouse", label: "Lighthouse", icon: "⛵", npcClass: "npc-lighthouse", npc: "Captain Sol", scene: "scene-lighthouse", hint: "The lighthouse watches the sea before ships sail." }
 ];
 
+const sceneConfigs = {
+  castleRoom: { scene: "scene-garden", npcClass: "npc-garden", npc: "Lumi", travelAction: "Room", travelLine: "Return to Lumi's room for dress-up time." },
+  garden: { scene: "scene-garden", npcClass: "npc-garden", npc: "Mira", travelAction: "Visit", travelLine: "Mira is watching the roses and a shy garden cat." },
+  market: { scene: "scene-market", npcClass: "npc-market", npc: "Auntie Pom", travelAction: "Shop", travelLine: "Auntie Pom has warm bread and cozy room treasures.", shopGreeting: "Auntie Pom has cozy treasures for Lumi's room." },
+  harbor: { scene: "scene-harbor", npcClass: "npc-harbor", npc: "Nami", travelAction: "Visit", travelLine: "Nami is waiting by the bright harbor boats." },
+  boutique: { scene: "scene-boutique", npcClass: "npc-boutique", npc: "Rena", travelAction: "Shop", travelLine: "Rena has dresses ready for a bright day.", shopGreeting: "Welcome, Princess. Outfits are ready for a bright day." },
+  shoeShop: { scene: "scene-shoes", npcClass: "npc-shoes", npc: "Mina", travelAction: "Shop", travelLine: "Mina has walking shoes for Lumi's next trip.", shopGreeting: "Hello, Princess. Try shoes for the road." },
+  accessoryShop: { scene: "scene-accessory", npcClass: "npc-accessory", npc: "Lili", travelAction: "Shop", travelLine: "Lili has ribbons, crowns, bags, and capes.", shopGreeting: "Good day, Princess. Pick a ribbon, crown, bag, or cape." },
+  farm: { scene: "scene-farm", npcClass: "npc-farm", npc: "Theo", travelAction: "Visit", travelLine: "Theo is caring for the animals at Sunny Farm." },
+  lighthouse: { scene: "scene-lighthouse", npcClass: "npc-lighthouse", npc: "Captain Sol", travelAction: "Visit", travelLine: "Captain Sol checks the sea from the lighthouse." }
+};
+
 const mapNodes = {
   castleRoom: { id: "castleRoom", label: "Princess Room Door", x: 50, y: 29.2, links: ["garden", "market", "farm"] },
   garden: { id: "garden", label: "Castle Garden", x: 43, y: 44, links: ["castleRoom", "market"] },
@@ -138,6 +150,9 @@ let npcExpression = "normal";
 let advFocusIndex = 0;
 let mapLifeFrame = null;
 let shopPreviewItemId = "";
+let mapPan = { x: 0, y: 0 };
+let mapDrag = null;
+let pendingMapPositionFrame = 0;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -171,6 +186,9 @@ const elements = {
   nearbyName: $("#nearbyName"),
   nearbyHint: $("#nearbyHint"),
   interactButton: $("#interactButton"),
+  destinationPanel: $("#destinationPanel"),
+  destinationHint: $("#destinationHint"),
+  destinationList: $("#destinationList"),
   returnHomeButton: $("#returnHomeButton"),
   mapObjective: $("#mapObjective"),
   advModal: $("#advModal"),
@@ -292,6 +310,7 @@ function normalizeQuest(quest) {
   const template = questTemplates.find((item) => item.id === quest.templateId || item.place === place);
   if (!template) return null;
   const hotspot = hotspotById(template.place);
+  const scene = sceneConfigFor(hotspot);
   return {
     id: quest.id || `${Date.now()}-${template.id}`,
     templateId: template.id,
@@ -299,7 +318,7 @@ function normalizeQuest(quest) {
     title: template.title,
     opening: template.opening,
     ending: template.ending,
-    npc: hotspot.npc
+    npc: scene.npc
   };
 }
 
@@ -313,6 +332,11 @@ function clamp(value, min, max) {
 
 function hotspotById(id) {
   return hotspots.find((hotspot) => hotspot.id === id);
+}
+
+function sceneConfigFor(hotspot) {
+  if (!hotspot) return {};
+  return { ...hotspot, ...(sceneConfigs[hotspot.id] || {}) };
 }
 
 function hotspotByNode(nodeId) {
@@ -337,6 +361,7 @@ function createQuestForPlace(place) {
 
 function createQuestFromTemplate(template) {
   const hotspot = hotspotById(template.place);
+  const scene = sceneConfigFor(hotspot);
   return {
     id: `${Date.now()}-${Math.random().toString(16).slice(2)}-${template.id}`,
     templateId: template.id,
@@ -344,7 +369,7 @@ function createQuestFromTemplate(template) {
     title: template.title,
     opening: template.opening,
     ending: template.ending,
-    npc: hotspot.npc
+    npc: scene.npc
   };
 }
 
@@ -594,32 +619,134 @@ function toggleEquip(item) {
 
 function renderMap() {
   const target = hotspotById(state.activeQuest.place);
-  elements.mapObjective.textContent = `Current quest: ${state.activeQuest.title}. Target: ${target.icon} ${target.label}.`;
+  elements.mapObjective.textContent = `Drag the map and tap ${target.icon} ${target.label} for today's talk.`;
+  if (elements.destinationHint) elements.destinationHint.textContent = `${target.icon} ${target.label} is waiting.`;
   elements.routeLayer.innerHTML = "";
   elements.nodeLayer.innerHTML = "";
-  renderMapActors();
-  renderHotspots();
-  updatePlayerPosition();
+  const metrics = mapCoverMetrics();
+  syncMapPanStyles(metrics);
+  renderMapActors(metrics);
+  renderHotspots(metrics);
+  updatePlayerPosition(metrics);
   updateNearbyHotspot();
   startMapLife();
+}
+
+function renderDestinationPicker() {
+  if (!elements.destinationList) return;
+  const targetId = state.activeQuest.place;
+  elements.destinationList.innerHTML = "";
+  hotspots.filter((hotspot) => hotspot.kind !== "room").forEach((hotspot) => {
+    const isTarget = hotspot.id === targetId;
+    const isShop = hotspot.kind === "shop";
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `destination-card${isTarget ? " target" : ""}${isShop ? " shop" : ""}`;
+    button.dataset.destinationId = hotspot.id;
+    button.innerHTML = `
+      <span class="destination-icon" aria-hidden="true">${hotspot.icon}</span>
+      <span class="destination-copy">
+        <strong>${hotspot.label}</strong>
+        <small>${destinationActionText(hotspot, isTarget)}</small>
+      </span>
+      <span class="destination-badge">${isTarget ? "Talk" : isShop ? "Shop" : "Visit"}</span>
+    `;
+    button.addEventListener("click", () => chooseDestination(hotspot.id));
+    elements.destinationList.appendChild(button);
+  });
+}
+
+function destinationActionText(hotspot, isTarget) {
+  if (isTarget) return `${sceneConfigFor(hotspot).npc} has today's English task.`;
+  if (hotspot.kind === "shop") {
+    const categoriesText = allowedShopCategories(hotspot).map(categoryLabel).join(" / ");
+    return `Try ${categoriesText.toLowerCase()} rewards.`;
+  }
+  return hotspot.hint;
+}
+
+function chooseDestination(hotspotId) {
+  const hotspot = hotspotById(hotspotId);
+  if (!hotspot) return;
+  const node = mapNodes[hotspot.node];
+  if (node) {
+    state.playerNode = node.id;
+    state.player = { x: node.x, y: node.y };
+  }
+  persist();
+  renderMap();
+  activeHotspot = hotspot;
+  updateHotspotFocus();
+  if (hotspot.kind === "room") {
+    changeView("home");
+  } else if (hotspot.id === state.activeQuest.place) {
+    openQuestAdv(hotspot);
+  } else if (hotspot.kind === "shop") {
+    openShopAdv(hotspot);
+  } else {
+    openHintAdv(hotspot);
+  }
+}
+
+function focusTravelHotspot(hotspotId) {
+  const hotspot = hotspotById(hotspotId);
+  const node = mapNodes[hotspot?.node];
+  if (!hotspot || !node) return;
+  state.playerNode = node.id;
+  state.player = { x: node.x, y: node.y };
+  activeHotspot = hotspot;
+  persist();
+  renderMap();
+  activeHotspot = hotspot;
+  updateTravelPreview(hotspot);
+  updateHotspotFocus();
+  elements.mapStage.focus({ preventScroll: true });
+}
+
+function isMobileTravelMap() {
+  return window.matchMedia("(max-width: 820px)").matches;
+}
+
+function clampMapPan(pan, metrics) {
+  if (!isMobileTravelMap()) return { x: 0, y: 0 };
+  const maxX = Math.max(0, (metrics.displayWidth - metrics.width) / 2);
+  const maxY = Math.max(0, (metrics.displayHeight - metrics.height) / 2);
+  return {
+    x: clamp(pan.x, -maxX, maxX),
+    y: clamp(pan.y, -maxY, maxY)
+  };
+}
+
+function syncMapPanStyles(metrics = mapCoverMetrics()) {
+  elements.mapStage.style.setProperty("--map-pan-x", `${metrics.panX}px`);
+  elements.mapStage.style.setProperty("--map-pan-y", `${metrics.panY}px`);
 }
 
 function mapCoverMetrics() {
   const rect = elements.mapStage.getBoundingClientRect();
   const imageRatio = mapImageSize.width / mapImageSize.height;
   const stageRatio = rect.width / rect.height;
-  const baseDisplayWidth = stageRatio > imageRatio ? rect.height * imageRatio : rect.width;
-  const baseDisplayHeight = stageRatio > imageRatio ? rect.height : rect.width / imageRatio;
-  const mobileMapScale = rect.width <= 520 ? 1.34 : 1;
+  const useCover = isMobileTravelMap();
+  const baseDisplayWidth = useCover
+    ? stageRatio > imageRatio ? rect.width : rect.height * imageRatio
+    : stageRatio > imageRatio ? rect.height * imageRatio : rect.width;
+  const baseDisplayHeight = useCover
+    ? stageRatio > imageRatio ? rect.width / imageRatio : rect.height
+    : stageRatio > imageRatio ? rect.height : rect.width / imageRatio;
+  const mobileMapScale = useCover ? 1.06 : 1;
   const displayWidth = baseDisplayWidth * mobileMapScale;
   const displayHeight = baseDisplayHeight * mobileMapScale;
+  const constrainedPan = clampMapPan(mapPan, { width: rect.width, height: rect.height, displayWidth, displayHeight });
+  mapPan = constrainedPan;
   return {
     width: rect.width,
     height: rect.height,
     displayWidth,
     displayHeight,
-    offsetX: (rect.width - displayWidth) / 2,
-    offsetY: (rect.height - displayHeight) / 2
+    panX: constrainedPan.x,
+    panY: constrainedPan.y,
+    offsetX: (rect.width - displayWidth) / 2 + constrainedPan.x,
+    offsetY: (rect.height - displayHeight) / 2 + constrainedPan.y
   };
 }
 
@@ -636,9 +763,8 @@ function positionMapElement(element, x, y, metrics = mapCoverMetrics()) {
   element.style.top = `${point.y}px`;
 }
 
-function renderMapActors() {
+function renderMapActors(metrics = mapCoverMetrics()) {
   if (!elements.mapLifeLayer) return;
-  const metrics = mapCoverMetrics();
   if (!metrics.width || !metrics.height) return;
   elements.mapLifeLayer.innerHTML = "";
   mapActors.forEach((actor) => {
@@ -742,24 +868,77 @@ function renderNodes() {
   });
 }
 
-function renderHotspots() {
-  const metrics = mapCoverMetrics();
+function renderHotspots(metrics = mapCoverMetrics()) {
   elements.hotspotLayer.innerHTML = "";
   hotspots.forEach((hotspot) => {
     const node = mapNodes[hotspot.node];
-    const marker = document.createElement("div");
+    const marker = document.createElement("button");
     const isTarget = state.activeQuest.place === hotspot.id;
-    marker.className = `map-marker hotspot ${hotspot.npcClass}${isTarget ? " target" : ""}${hotspot.kind === "shop" ? " shop" : ""}`;
+    marker.type = "button";
+    marker.className = `map-marker hotspot${isTarget ? " target" : ""}${hotspot.kind === "shop" ? " shop" : ""}`;
     marker.dataset.hotspotId = hotspot.id;
     marker.dataset.label = hotspot.label;
+    marker.setAttribute("aria-label", `${hotspot.label}. ${travelActionLabel(hotspot, isTarget)}.`);
     positionMapElement(marker, node.x, node.y, metrics);
     marker.innerHTML = `<span class="hotspot-icon" aria-hidden="true">${hotspot.icon}</span>`;
+    marker.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      focusTravelHotspot(hotspot.id);
+    });
     elements.hotspotLayer.appendChild(marker);
   });
 }
 
-function updatePlayerPosition() {
-  positionMapElement(elements.playerToken, state.player.x, state.player.y);
+function updatePlayerPosition(metrics = mapCoverMetrics()) {
+  positionMapElement(elements.playerToken, state.player.x, state.player.y, metrics);
+}
+
+function refreshMapPositions() {
+  const metrics = mapCoverMetrics();
+  syncMapPanStyles(metrics);
+  renderMapActors(metrics);
+  renderHotspots(metrics);
+  updatePlayerPosition(metrics);
+  updateHotspotFocus();
+}
+
+function scheduleMapPositionRefresh() {
+  if (pendingMapPositionFrame) return;
+  pendingMapPositionFrame = requestAnimationFrame(() => {
+    pendingMapPositionFrame = 0;
+    refreshMapPositions();
+  });
+}
+
+function travelActionLabel(hotspot, isTarget = hotspot?.id === state.activeQuest.place) {
+  if (!hotspot) return "Visit";
+  if (hotspot.kind === "room") return "Room";
+  if (isTarget) return "Talk";
+  if (hotspot.kind === "shop") return "Shop";
+  return sceneConfigFor(hotspot).travelAction || "Visit";
+}
+
+function updateTravelPreview(hotspot) {
+  if (!hotspot) return;
+  const scene = sceneConfigFor(hotspot);
+  const isTarget = hotspot.id === state.activeQuest.place;
+  elements.nearbyName.textContent = `${hotspot.icon} ${hotspot.label}`;
+  elements.nearbyCard.classList.add("show");
+  elements.interactButton.textContent = travelActionLabel(hotspot, isTarget);
+  if (hotspot.kind === "room") {
+    elements.nearbyHint.textContent = scene.travelLine || "Return to Lumi's room.";
+    elements.mapObjective.textContent = "Tap Room to go back, or drag the map to visit another place.";
+  } else if (isTarget) {
+    elements.nearbyHint.textContent = `${scene.npc} has today's English talk. ${state.activeQuest.title}.`;
+    elements.mapObjective.textContent = `${hotspot.icon} ${hotspot.label}: tap Talk to start.`;
+  } else if (hotspot.kind === "shop") {
+    elements.nearbyHint.textContent = scene.travelLine || hotspot.hint;
+    elements.mapObjective.textContent = `${hotspot.icon} ${hotspot.label}: tap Shop to preview rewards.`;
+  } else {
+    elements.nearbyHint.textContent = `${scene.travelLine || hotspot.hint} Today's talk is at ${hotspotById(state.activeQuest.place).label}.`;
+    elements.mapObjective.textContent = `${hotspot.icon} ${hotspot.label}: tap Visit for a short scene.`;
+  }
 }
 
 function updateNearbyHotspot() {
@@ -768,31 +947,10 @@ function updateNearbyHotspot() {
   updateHotspotFocus();
   if (!activeHotspot) {
     const target = hotspotById(state.activeQuest.place);
-    elements.mapObjective.textContent = `Current quest: ${state.activeQuest.title}. Target: ${target.icon} ${target.label}.`;
+    elements.mapObjective.textContent = `Drag the map and tap ${target.icon} ${target.label} for today's talk.`;
     return;
   }
-  const isTarget = activeHotspot.id === state.activeQuest.place;
-  elements.nearbyName.textContent = activeHotspot.label;
-  elements.nearbyCard.classList.add("show");
-  if (activeHotspot.kind === "shop") {
-    elements.nearbyHint.textContent = isTarget ? `${activeHotspot.npc} has today's quest and the shop is open.` : activeHotspot.hint;
-    elements.interactButton.textContent = isTarget ? "Talk" : "Shop";
-  } else if (isTarget) {
-    elements.nearbyHint.textContent = `${activeHotspot.npc} is waiting for Lumi.`;
-    elements.interactButton.textContent = "Talk";
-  } else {
-    elements.nearbyHint.textContent = `${activeHotspot.hint} It seems ${hotspotById(state.activeQuest.place).label} needs Lumi next.`;
-    elements.interactButton.textContent = "Talk";
-  }
-  if (activeHotspot.kind === "room") {
-    elements.mapObjective.textContent = "Princess Room: Press Enter to go inside.";
-  } else if (isTarget) {
-    elements.mapObjective.textContent = `${activeHotspot.icon} ${activeHotspot.label}: Press Enter to start Lumi's task.`;
-  } else if (activeHotspot.kind === "shop") {
-    elements.mapObjective.textContent = `${activeHotspot.icon} ${activeHotspot.label}: Press Enter to shop.`;
-  } else {
-    elements.mapObjective.textContent = `${activeHotspot.icon} ${activeHotspot.label}: ${activeHotspot.hint}`;
-  }
+  updateTravelPreview(activeHotspot);
 }
 
 function updateHotspotFocus() {
@@ -875,6 +1033,8 @@ function interactNearby() {
 
 function openAdvBase(hotspot, mode) {
   changeView("map");
+  clearRewardBursts();
+  const scene = sceneConfigFor(hotspot);
   advMode = mode;
   activeLesson = null;
   activeShopHotspot = null;
@@ -885,11 +1045,11 @@ function openAdvBase(hotspot, mode) {
   elements.choiceList.classList.remove("shop-command-list");
   elements.advModal.classList.add("show");
   elements.advModal.setAttribute("aria-hidden", "false");
-  elements.advScene.className = `adv-scene ${hotspot.scene}`;
+  elements.advScene.className = `adv-scene ${scene.scene}`;
   elements.advTitle.textContent = hotspot.label;
-  elements.advNpcPortrait.className = `portrait-card adv-npc ${hotspot.npcClass}`;
+  elements.advNpcPortrait.className = `portrait-card adv-npc ${scene.npcClass}`;
   elements.advNpcPortrait.dataset.expression = npcExpression;
-  elements.advSpeaker.textContent = hotspot.npc;
+  elements.advSpeaker.textContent = scene.npc;
   elements.choiceList.innerHTML = "";
   elements.advShopGrid.innerHTML = "";
   elements.shopArea.classList.remove("show");
@@ -906,6 +1066,7 @@ function addAdvOption(label, onClick, options = {}) {
   button.className = `choice-button${options.leave ? " leave-choice" : ""}`;
   button.type = "button";
   button.textContent = options.number ? `${options.number}. ${label}` : label;
+  button.setAttribute("aria-label", label);
   if (options.choice) button.dataset.choice = options.choice;
   button.addEventListener("click", onClick);
   elements.choiceList.appendChild(button);
@@ -951,7 +1112,7 @@ function openQuestAdv(hotspot) {
     return;
   }
   openAdvBase(hotspot, "quest");
-  addUnique("metNpcs", [hotspot.npc]);
+  addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
   activeLesson = lesson;
   elements.advLine.textContent = state.activeQuest.opening;
   elements.advPrompt.textContent = `${state.activeQuest.title}: ${lesson.prompt}`;
@@ -977,7 +1138,7 @@ function openHintAdv(hotspot, line = hotspot.hint) {
 function openShopAdv(hotspot) {
   openAdvBase(hotspot, "shop");
   activeShopHotspot = hotspot;
-  addUnique("metNpcs", [hotspot.npc]);
+  addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
   const firstCategory = hotspot.defaultCategory || hotspot.shopCategories?.[0] || "outfit";
   shopCategory = allowedShopCategories(hotspot).includes(shopCategory) ? shopCategory : firstCategory;
   shopPreviewItemId = shopItems.find((item) => item.type === shopCategory && allowedShopCategories(hotspot).includes(item.type))?.id || "";
@@ -994,13 +1155,7 @@ function allowedShopCategories(hotspot = activeShopHotspot) {
 }
 
 function shopGreeting(hotspot) {
-  const greetings = {
-    market: "Auntie Pom has cozy treasures for Lumi's room.",
-    boutique: "Welcome, Princess. Outfits are ready for a bright day.",
-    shoeShop: "Hello, Princess. Try shoes for the road.",
-    accessoryShop: "Good day, Princess. Pick a ribbon, crown, bag, or cape."
-  };
-  return greetings[hotspot.id] || "Welcome, Princess. Pick a lovely item.";
+  return sceneConfigFor(hotspot).shopGreeting || "Welcome, Princess. Pick a lovely item.";
 }
 
 function renderAdvShop(preserveFocus = false) {
@@ -1126,12 +1281,57 @@ function buyItemInAdv(item) {
   awardBadge("First Shopping");
   updateProgressBadges();
   addDiary({ type: "shop", title: activeShopHotspot?.label || "Shop", body: `Bought ${item.name}.`, result: `-${item.cost} coins` });
+  const feedbackText = item.type === "room" ? `${item.name} is in Lumi's room now.` : `${item.name} is on Lumi now.`;
   elements.advLine.textContent = `${item.name} is yours now. It looks wonderful.`;
-  elements.advFeedback.textContent = item.type === "room" ? `${item.name} bought for Lumi's room.` : `${item.name} bought and equipped.`;
-  elements.statusMessage.textContent = `${item.name} bought.`;
+  elements.advFeedback.textContent = feedbackText;
+  elements.statusMessage.textContent = feedbackText;
+  showRewardBurst(`${item.name} ✦`);
   persist();
   render();
   renderAdvShop(true);
+}
+
+function recommendedShopHotspot() {
+  const shopHotspots = hotspots.filter((hotspot) => hotspot.kind === "shop");
+  const affordableShop = shopHotspots.find((hotspot) => {
+    const allowed = allowedShopCategories(hotspot);
+    return shopItems.some((item) => allowed.includes(item.type) && !state.owned.includes(item.id) && state.coins >= item.cost);
+  });
+  return affordableShop || shopHotspots[0] || null;
+}
+
+function openRewardShop() {
+  const hotspot = recommendedShopHotspot();
+  if (!hotspot) {
+    closeAdv();
+    return;
+  }
+  const node = mapNodes[hotspot.node];
+  if (node) {
+    state.playerNode = node.id;
+    state.player = { x: node.x, y: node.y };
+  }
+  persist();
+  renderMap();
+  openShopAdv(hotspot);
+}
+
+function closeAdvThenHome() {
+  closeAdv();
+  changeView("home");
+}
+
+function showRewardBurst(text) {
+  clearRewardBursts();
+  const burst = document.createElement("div");
+  burst.className = "reward-burst";
+  burst.textContent = text;
+  document.body.appendChild(burst);
+  window.setTimeout(() => burst.remove(), 1400);
+}
+
+function clearRewardBursts() {
+  document.querySelectorAll(".reward-burst").forEach((item) => item.remove());
 }
 
 function pickLesson(place) {
@@ -1168,10 +1368,11 @@ function answerLesson(button, choice) {
   playTone("correct");
   addUnique("completedLessons", [activeLesson.id]);
   addUnique("learnedWords", activeLesson.words);
-  addUnique("metNpcs", [hotspotById(state.activeQuest.place).npc]);
+  addUnique("metNpcs", [sceneConfigFor(hotspotById(state.activeQuest.place)).npc]);
   updateProgressBadges();
   setExpressions("happy", "happy");
   button.classList.add("correct");
+  showRewardBurst(`+${reward.coins} coins`);
   elements.choiceList.querySelectorAll("button").forEach((item) => {
     item.disabled = true;
     if (item.dataset.choice === activeLesson.answer) item.classList.add("correct");
@@ -1188,19 +1389,23 @@ function answerLesson(button, choice) {
   const oldPlace = state.activeQuest.place;
   const completedHotspot = hotspotById(oldPlace);
   elements.advLine.textContent = state.activeQuest.ending;
-  elements.advPrompt.textContent = "Quest complete. Lumi earned 100 coins.";
+  elements.advPrompt.textContent = "Talk complete. Try a reward now, or go back to Lumi's room.";
   elements.advFeedback.textContent = `${effectText(reward)}.`;
   state.activeQuest = createRandomQuest(oldPlace);
   activeLesson = null;
   advMode = "complete";
+  elements.advScene.dataset.mode = "complete";
   elements.choiceList.innerHTML = "";
   if (completedHotspot?.kind === "shop") {
     addAdvOption("Shop", () => openShopAdv(completedHotspot));
+    addAdvOption("Back to Room", closeAdvThenHome);
     addAdvOption("Leave", closeAdv, { leave: true });
   } else {
-    addAdvOption("Continue", closeAdv);
+    addAdvOption("Choose Reward", openRewardShop);
+    addAdvOption("Back to Room", closeAdvThenHome);
+    addAdvOption("Leave", closeAdv, { leave: true });
   }
-  elements.statusMessage.textContent = `Quest complete. New target: ${hotspotById(state.activeQuest.place).label}.`;
+  elements.statusMessage.textContent = `Talk complete. Next place: ${hotspotById(state.activeQuest.place).label}.`;
   persist();
   render();
   window.setTimeout(() => setAdvFocus(0), 0);
@@ -1381,7 +1586,7 @@ ${saveMarkerEnd}
 
 async function saveMarkdown() {
   const markdown = buildSaveMarkdown();
-  const filename = "luminara-map-adv-save.md";
+  const filename = "luminara-adv-dressup-save.md";
   if ("showSaveFilePicker" in window) {
     try {
       const handle = await window.showSaveFilePicker({
@@ -1439,8 +1644,40 @@ async function loadMarkdown() {
 function resetProgress() {
   state = freshState();
   persist();
-  elements.statusMessage.textContent = "Progress reset. A new map quest is ready.";
+  elements.statusMessage.textContent = "Progress reset. A new short talk is ready.";
   render();
+}
+
+function beginMapDrag(event) {
+  if (!isMobileTravelMap()) return;
+  if (event.target.closest("button, .nearby-card, .destination-panel")) return;
+  mapDrag = {
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    panX: mapPan.x,
+    panY: mapPan.y,
+    moved: false
+  };
+  elements.mapStage.classList.add("is-dragging");
+  elements.mapStage.setPointerCapture?.(event.pointerId);
+}
+
+function moveMapDrag(event) {
+  if (!mapDrag || mapDrag.pointerId !== event.pointerId) return;
+  const dx = event.clientX - mapDrag.startX;
+  const dy = event.clientY - mapDrag.startY;
+  if (Math.abs(dx) + Math.abs(dy) > 4) mapDrag.moved = true;
+  mapPan = { x: mapDrag.panX + dx, y: mapDrag.panY + dy };
+  event.preventDefault();
+  scheduleMapPositionRefresh();
+}
+
+function finishMapDrag(event) {
+  if (!mapDrag || mapDrag.pointerId !== event.pointerId) return;
+  elements.mapStage.classList.remove("is-dragging");
+  elements.mapStage.releasePointerCapture?.(event.pointerId);
+  mapDrag = null;
 }
 
 function bindEvents() {
@@ -1528,6 +1765,10 @@ function bindEvents() {
       interactNearby();
     }
   });
+  elements.mapStage.addEventListener("pointerdown", beginMapDrag);
+  elements.mapStage.addEventListener("pointermove", moveMapDrag);
+  elements.mapStage.addEventListener("pointerup", finishMapDrag);
+  elements.mapStage.addEventListener("pointercancel", finishMapDrag);
   window.addEventListener("keydown", (event) => {
     if (!elements.advModal.classList.contains("show")) {
       if (

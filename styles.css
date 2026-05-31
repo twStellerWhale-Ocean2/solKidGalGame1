@@ -645,6 +645,8 @@ p {
 
 .map-stage {
   --map-mobile-scale: 1;
+  --map-pan-x: 0px;
+  --map-pan-y: 0px;
   height: calc(100% - 86px);
   position: relative;
   overflow: hidden;
@@ -656,10 +658,21 @@ p {
     linear-gradient(180deg, #c9e8ef 0%, #8ac8dc 100%);
   box-shadow: var(--shadow);
   outline: none;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
 }
 
 .map-stage:focus {
   box-shadow: var(--shadow), 0 0 0 4px rgba(110, 169, 200, 0.28);
+}
+
+.map-stage.is-dragging {
+  cursor: grabbing;
+}
+
+.map-stage.is-dragging .hotspot {
+  pointer-events: none;
 }
 
 .map-stage > img {
@@ -670,7 +683,7 @@ p {
   display: block;
   object-fit: contain;
   object-position: center center;
-  transform: translateZ(0) scale(var(--map-mobile-scale));
+  transform: translate3d(var(--map-pan-x), var(--map-pan-y), 0) scale(var(--map-mobile-scale));
   transform-origin: center center;
 }
 
@@ -716,6 +729,8 @@ p {
 }
 
 .hotspot {
+  padding: 0;
+  pointer-events: auto;
   z-index: 5;
   width: 42px;
   height: 42px;
@@ -795,6 +810,123 @@ p {
 .nearby-card span {
   color: var(--muted);
   font-weight: 800;
+}
+
+.destination-panel {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  bottom: 14px;
+  z-index: 24;
+  width: min(340px, calc(100% - 28px));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px;
+  background: rgba(255, 250, 246, 0.985);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+
+.destination-panel[hidden] {
+  display: none !important;
+}
+
+.destination-heading {
+  display: grid;
+  gap: 3px;
+}
+
+.destination-heading strong {
+  color: var(--rose-dark);
+  font-size: 1rem;
+}
+
+.destination-heading span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.destination-list {
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  overflow-y: auto;
+  padding-right: 3px;
+}
+
+.destination-card {
+  width: 100%;
+  min-height: 70px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 9px;
+  text-align: left;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(216, 103, 140, 0.14);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 16px rgba(80, 56, 70, 0.08);
+}
+
+.destination-card.target {
+  border-color: rgba(216, 103, 140, 0.55);
+  background: linear-gradient(135deg, #fff9dc, #fff1f7);
+}
+
+.destination-card.shop {
+  border-color: rgba(110, 169, 200, 0.36);
+}
+
+.destination-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff4fb;
+  font-size: 1.4rem;
+}
+
+.destination-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.destination-copy strong {
+  overflow: hidden;
+  color: var(--rose-dark);
+  font-size: 0.9rem;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.destination-copy small {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.2;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.destination-badge {
+  padding: 4px 7px;
+  color: #fff;
+  background: var(--rose-dark);
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 900;
 }
 
 .simple-panel {
@@ -1490,13 +1622,13 @@ p {
 }
 
 .npc-shoes {
-  background-image: url("assets/characters/npc-boutique.png");
-  filter: hue-rotate(18deg) saturate(1.08) drop-shadow(0 18px 24px rgba(58, 37, 46, 0.25));
+  background-image: url("assets/characters/npc-farm.png");
+  filter: saturate(0.98) drop-shadow(0 18px 24px rgba(58, 37, 46, 0.25));
 }
 
 .npc-accessory {
-  background-image: url("assets/characters/npc-boutique.png");
-  filter: hue-rotate(-28deg) saturate(1.18) drop-shadow(0 18px 24px rgba(58, 37, 46, 0.25));
+  background-image: url("assets/characters/npc-garden.png");
+  filter: saturate(1.05) drop-shadow(0 18px 24px rgba(58, 37, 46, 0.25));
 }
 
 .npc-farm {
@@ -1737,6 +1869,32 @@ p {
 .item-card.selected {
   border-color: var(--rose);
   box-shadow: 0 0 0 3px rgba(216, 103, 140, 0.18), 0 10px 16px rgba(80, 56, 70, 0.13);
+}
+
+.reward-burst {
+  position: fixed;
+  left: 50%;
+  top: 18%;
+  z-index: 200;
+  min-width: 180px;
+  padding: 12px 18px;
+  transform: translate(-50%, 0);
+  text-align: center;
+  color: #7b3b12;
+  background: linear-gradient(135deg, #fff4a8, #ffd1e1 58%, #dff7ff);
+  border: 3px solid rgba(255, 255, 255, 0.86);
+  border-radius: var(--radius);
+  box-shadow: 0 16px 32px rgba(80, 56, 70, 0.24);
+  font-weight: 900;
+  pointer-events: none;
+  animation: rewardBurst 1.4s ease forwards;
+}
+
+@keyframes rewardBurst {
+  0% { opacity: 0; transform: translate(-50%, 16px) scale(0.88); }
+  18% { opacity: 1; transform: translate(-50%, 0) scale(1.04); }
+  70% { opacity: 1; transform: translate(-50%, -12px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -34px) scale(0.98); }
 }
 
 .lesson-feedback {
@@ -2169,6 +2327,10 @@ body {
 
 .nearby-card {
   display: none !important;
+}
+
+.nearby-card.show {
+  display: grid !important;
 }
 
 .map-doll[data-dress="blueDress"] .avatar-dress,
@@ -2688,7 +2850,7 @@ body {
 }
 
 .map-stage > img {
-  transform: translateZ(0);
+  transform: translate3d(var(--map-pan-x), var(--map-pan-y), 0) scale(var(--map-mobile-scale));
 }
 
 .map-life-layer {
@@ -2781,6 +2943,18 @@ body {
   position: absolute;
   z-index: 1;
   pointer-events: none;
+}
+
+#hotspotLayer {
+  z-index: 12;
+}
+
+.player {
+  z-index: 11;
+}
+
+.nearby-card {
+  z-index: 28;
 }
 
 #hotspotLayer::before {
@@ -3240,7 +3414,7 @@ body {
 
   .room-stage,
   .map-stage {
-    --map-mobile-scale: 1.34;
+    --map-mobile-scale: 1.06;
     width: 100vw;
     height: 100dvh;
     margin: 0;
@@ -3261,7 +3435,47 @@ body {
 
   .map-stage > img {
     z-index: 1;
+    object-fit: cover;
     filter: drop-shadow(0 8px 16px rgba(46, 88, 109, 0.18));
+  }
+
+  .destination-panel {
+    left: 10px;
+    right: 10px;
+    top: 196px;
+    bottom: 150px;
+    width: auto;
+    padding: 10px;
+  }
+
+  .destination-heading {
+    grid-template-columns: 1fr;
+  }
+
+  .destination-list {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .destination-card {
+    min-height: 62px;
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+    padding: 7px 8px;
+  }
+
+  .destination-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 1.2rem;
+  }
+
+  .destination-copy strong {
+    font-size: 0.84rem;
+  }
+
+  .destination-copy small {
+    font-size: 0.66rem;
+    -webkit-line-clamp: 2;
   }
 
   #homeView .room-paper-doll {
