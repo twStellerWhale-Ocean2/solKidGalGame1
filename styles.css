@@ -4285,6 +4285,16 @@ body {
   bottom: 84px;
 }
 
+.nearby-card,
+.nearby-card.show,
+.hotspot::after,
+.hotspot.target::after,
+.hotspot.nearby::after,
+.castle-marker.disabled::after {
+  display: none !important;
+  content: none !important;
+}
+
 .area-nav {
   position: absolute;
   left: 14px;
