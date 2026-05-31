@@ -138,11 +138,17 @@ Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return
 
 - 手機直向主流程使用可拖拉的小地圖，不使用卡片清單作為主要地點選擇 UI。
 - 地圖可比手機 viewport 稍大，玩家可用手指拖拉地圖，看見不同地點。
+- 城堡與王國地圖必須支援單指拖曳與雙指縮放；縮放只作用在地圖、地標、map actors 與小公主圖示，不影響 HUD 與下方地區選單。
+- 手機直向地圖允許超出 viewport；超出部分應透過 pan / zoom 可到達，不可因裁切導致王國地圖或城堡地圖的重要區域無法查看。
+- 地圖縮放範圍預設為 `1.0` 至 `2.2`，pan 必須限制在可視範圍內，避免拖到只剩空白。
 - 每個地點以大尺寸童話地標或標記呈現，點選後顯示遊戲式 preview：NPC 頭像、地點名、今日任務或商店目的、`Visit` / `Shop` / `Talk`。
 - 可保留一個小型羅盤、推薦地點或回到 Lumi 按鈕，避免年幼玩家拖拉迷路。
 - 卡片清單不得作為主畫面；若保留，只能作 accessibility fallback、測試入口或隱藏式輔助。
-- Kingdom 地點包含：Castle Garden、Market Square / Bakery、Harbor Dock、Dress Boutique、Shoe Shop、Accessory Shop、Sunny Farm、Lighthouse。
+- Kingdom 地點包含：Luminara Castle、Castle Garden、Market Square / Bakery、Harbor Port、Fish Shop、Dress Boutique、Shoe Shop、Accessory Shop、Sunny Farm、Lighthouse。
 - Castle、Kingdom、Forest、Ocean 等地區都必須共用同一套 marker focus、scene entry、action choices、detail panel 與 return path。
+- 可見地圖畫面以圖片與地標為主，不顯示 `Luminara Castle`、`Lumi's Travel Map` 這類標題提示詞；必要標題只保留在無障礙語意中。
+- 下方地區按鈕全部維持同一套綠色童話按鈕；目前所在地用公主小頭像標示，不用紅 / 綠色差作為主要識別。
+- Castle 與 Kingdom 都必須顯示可移動的小公主圖示；小公主圖示永遠位於地點 marker 之前景層，不被地點 icon 遮住，也不阻擋 marker 點擊。
 
 ### ADV Conversation
 
@@ -194,8 +200,8 @@ Settings 支援五個等級：
 目前主要素材：
 
 - `assets/bedroom.png`
-- `assets/castle-map.png`
-- `assets/kingdom-map.png`
+- `assets/castle-map2.png`
+- `assets/kingdom-map2.png`
 - `assets/scenes/*.png`
 - `assets/characters/npc-*.png`
 - `assets/characters/princess-*.png`
@@ -253,7 +259,8 @@ Settings 支援五個等級：
 - Save / Load overlay
 - Castle Garden
 - Market Square / Bakery
-- Harbor Dock
+- Harbor Port
+- Fish Shop
 - Dress Boutique
 - Shoe Shop
 - Accessory Shop
@@ -372,6 +379,34 @@ node server.mjs
 - 美術驗收必須先列操作流程樹與 screenshot manifest；未截圖、未列 manifest 或未檢查的 surface 不得宣稱 Accept。
 - 單次 partial manifest 可以用於小改驗證，但不得宣稱已完成全場景美術掃描；全場景掃描必須覆蓋所有 marker focus、scene entry、detail panel、feedback 與返回路徑。
 
+## Mobile Map Interaction v2
+
+本版本為 Issue #13、#14、#15、#16、#17 的地圖操作體驗版，不是完整 README vertical slice 全量重製版。實作順序固定為：
+
+1. 先更新 README，鎖定本版本行為與驗收基準。
+2. 再修改實質遊戲網站，範圍限於 Castle / Kingdom 地圖互動、少文字 UI、地區按鈕、小公主圖示與圖層。
+3. 結束前依 `m-skill-2tech-children-adv-game-dev` 驗測規範建立同一 run timestamp 的 `.codex/log/<yyyyMMdd-hhmmss>-*` 紀錄與手機直向截圖證據。
+
+行為規格：
+
+- #13：Castle 與 Kingdom 地圖都支援手機單指拖曳與雙指縮放；HUD 與下方地區選單固定在外層，不跟著縮放。
+- #14：Kingdom 地圖不以裁切完成為準；圖片可以大於 viewport，但左右與上下可透過拖曳查看，不能出現不可到達的重要區域。
+- #15：地圖畫面移除可見標題提示詞，例如 `Luminara Castle`、`Lumi's Travel Map`；畫面以圖像、地標與玩家圖示為主。
+- #16：底部 Castle / Kingdom 按鈕全部使用綠色系；目前所在地用公主小頭像標示。
+- #17：Castle 地圖新增會移動的小公主圖示；Kingdom 小公主圖示前景層級高於地點 marker。
+
+本版本必測 surface：
+
+- Castle map initial
+- Castle marker focus
+- Castle pinch zoom / drag
+- Kingdom map initial
+- Kingdom marker focus
+- Kingdom pinch zoom / drag
+- Area nav active state
+- Map to scene entry
+- Return path back to map
+
 ## 目前已完成狀況
 
 - Fixed layout overflow and the PC game viewport.
@@ -388,6 +423,20 @@ node server.mjs
 - Added mobile portrait layout so Room and Map keep a full-width game scene instead of being squeezed by the desktop HUD.
 - Reworked shop ADV flow into preview-first reward shopping.
 - Replaced `assets/kingdom-map.png` with a hand-drawn style map plate and kept the existing coordinate system.
+- Switched the Mobile Map Interaction v2 branch to `assets/castle-map2.png` and `assets/kingdom-map2.png`; the Castle Gate / kingdom castle node now aligns with the purple castle stairway.
+- Implemented Mobile Map Interaction v2 for Issue #13-#17:
+  - Castle and Kingdom maps support shared mobile pan / zoom behavior.
+  - Castle and Kingdom both render movable princess map tokens.
+  - Keyboard movement now works on both Castle and Kingdom maps.
+  - Keyboard movement updates nearby marker focus, matching pointer/tap marker behavior.
+  - Bottom area navigation stays outside the zoomed map and marks the current area with a princess avatar.
+  - Targeted QA evidence is under `.codex/log/20260531-200857-*`, `.codex/log/20260531-202502-bugfix-keyboard-map.md`, `.codex/log/20260531-211741-stair-map-revision.md`, `.codex/log/20260531-212337-kingdom-castle-marker.md`, `.codex/log/20260531-212822-unrestricted-map-movement.md`, and `.codex/log/20260531-213816-marker-placement-v9.md`.
+- Corrected new map marker placement and semantics for the latest map art:
+  - Kingdom castle entry marker aligns with the purple castle stairway.
+  - Harbor Port is a separate anchor marker and no longer opens the Fish Shop / Nami content.
+  - Fish Shop remains at the dock store position.
+  - Lighthouse no longer uses a boat / port-looking marker icon.
+  - Targeted QA evidence is under `.codex/log/20260531-215208-port-marker-fix.md`.
 - Removed the earlier blurred mobile map backdrop in favor of a cleaner hand-drawn map presentation.
 - Replaced ADV / Shop scene backgrounds with hand-drawn style PNG scene plates for all eight places.
 - Added hand-drawn style PNG item art for all shop rewards and switched Shop item previews away from CSS color blocks.
@@ -406,15 +455,16 @@ node server.mjs
 
 ## 剩餘問題
 
-1. 需要把本 README 的 area registry 與 scene layering 設計完整落實到程式碼，並避免 Castle / Kingdom 被寫死成不可擴充的特殊分支。
-2. 需要將 Princess Room 與各商店都穩定拆成 scene action choices 與 detail panel，避免再次在 scene entry 直接顯示清單。
-3. 需要建立全場景 visual surface sweep，覆蓋所有 marker focus、scene entry、detail panel、feedback 與返回路徑，不只測少數截圖。
-4. 各店與各地點需要專屬背景、NPC、商品語氣與任務短句，但共用統一手機版型。
-5. 手機主循環需要更強的答對後立即換裝回饋。
-6. Shop reward appeal 需要加強：try-on 變化、購買慶祝、房間 / outfit 可見效果。
-7. Diary / Settings / Save / Load 仍需持續避免變成工具頁或後台表單。
-8. 若要求嚴格 asset provenance，所有 generated PNG assets 應透過 `image_gen` 或經使用者確認的 GPT 圖像生成流程重新產出並替換。
-9. `doc/AUDIT-IMAGE-ISSUES.md` 仍是歷史視覺問題清單，後續修訂需確認是否仍有效。
+1. Shop、Diary、全場景內容擴展仍保留後續版本處理；本分支完成範圍鎖定在 Mobile Map Interaction v2 與地圖 marker 修正。
+2. 需要把本 README 的 area registry 與 scene layering 設計完整落實到程式碼，並避免 Castle / Kingdom 被寫死成不可擴充的特殊分支。
+3. 需要將 Princess Room 與各商店都穩定拆成 scene action choices 與 detail panel，避免再次在 scene entry 直接顯示清單。
+4. 需要建立全場景 visual surface sweep，覆蓋所有 marker focus、scene entry、detail panel、feedback 與返回路徑，不只測少數截圖。
+5. 各店與各地點需要專屬背景、NPC、商品語氣與任務短句，但共用統一手機版型。
+6. 手機主循環需要更強的答對後立即換裝回饋。
+7. Shop reward appeal 需要加強：try-on 變化、購買慶祝、房間 / outfit 可見效果。
+8. Diary / Settings / Save / Load 仍需持續避免變成工具頁或後台表單。
+9. 若要求嚴格 asset provenance，所有 generated PNG assets 應透過 `image_gen` 或經使用者確認的 GPT 圖像生成流程重新產出並替換。
+10. `doc/AUDIT-IMAGE-ISSUES.md` 仍是歷史視覺問題清單，後續修訂需確認是否仍有效。
 
 ## 本 README 變更紀錄
 
@@ -422,3 +472,5 @@ node server.mjs
 - 2026-05-31：將本輪新規劃遊戲的 surface inventory 內容吸收為 README 的正式設計基準。
 - 2026-05-31：補入 Castle / Kingdom area registry、`Area Map -> Scene -> Action Choices -> Detail Panel`、HUD 三格、齒輪系統 overlay、Castle 圖一致性與 visual surface sweep 驗收規則。
 - 2026-05-31：補記 Issue #10 / #11 地圖 marker 互動決議與 targeted mobile QA 證據位置。
+- 2026-05-31：新增 Mobile Map Interaction v2，鎖定 Issue #13-#17 的地圖縮放、拖曳、少文字、地區按鈕與小公主圖示驗收規格。
+- 2026-05-31：更新 Mobile Map Interaction v2 完成狀態，補記新 Castle / Kingdom map art、鍵盤移動、marker focus、港口 / 魚店 / 燈塔 marker 修正與 QA log 位置。
