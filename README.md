@@ -30,7 +30,7 @@
 
 ```text
 Room
-  -> Destination Picker / lightweight Map
+  -> Mobile Travel Map
   -> ADV conversation
   -> correct answer reward: coins + learned word + diary
   -> Shop / Wardrobe reward preview
@@ -38,7 +38,7 @@ Room
   -> repeat
 ```
 
-舊有桌機式自由探索 kingdom map 仍是專案歷史的一部分，但不應主導手機完成標準。手機版應以可愛、快速、低挫折的目的地選擇與短 ADV 對話為核心。
+舊有桌機式自由探索 kingdom map 仍是專案歷史的一部分，但不應主導完成標準。手機版應以可愛、快速、低挫折的拖拉式地圖旅行與短 ADV 對話為核心。
 
 # II. 參考準備
 
@@ -63,7 +63,7 @@ Room
 ## 必須避免的方向
 
 - 不能讓首頁看起來像 landing page。
-- 不能讓地點選擇看起來像網站卡片列表。
+- 不能讓地點選擇看起來像網站卡片列表或 MIS 功能選單。
 - 不能讓 ADV 看起來像表單問答。
 - 不能讓 Shop 看起來像後台商品清單。
 - 不能讓 Dress-up 只是資料狀態；Lumi 身上與房間中必須看得出改變。
@@ -77,7 +77,7 @@ Room
 
 ```text
 Room
-  -> Destination Picker
+  -> Mobile Travel Map
   -> Market Square / Bakery ADV
   -> coins reward
   -> Dress Boutique or Market reward preview
@@ -105,16 +105,18 @@ Room
 - 出門應是場景內行動，不是網站 hero CTA。
 - Wardrobe 應像玩具衣櫃或抽屜，支援點選預覽與裝備狀態。
 
-### Destination Picker / Map
+### Mobile Travel Map
 
-- 手機直向使用目的地選擇作主流程。
-- 每個地點需要可愛圖示、短名稱與清楚任務感。
-- 若保留 Map，應是 lightweight travel screen，不要求孩子在手機上操作寬幅自由探索。
+- 手機直向主流程使用可拖拉的小地圖，不使用卡片清單作為主要地點選擇 UI。
+- 地圖可比手機 viewport 稍大，玩家可用手指拖拉地圖，看見不同地點。
+- 每個地點以大尺寸童話地標或標記呈現，點選後顯示遊戲式 preview：NPC 頭像、地點名、今日任務或商店目的、`Visit` / `Shop` / `Talk`。
+- 可保留一個小型羅盤、推薦地點或回到 Lumi 按鈕，避免年幼玩家拖拉迷路。
+- 卡片清單不得作為主畫面；若保留，只能作 accessibility fallback、測試入口或隱藏式輔助。
 - 地點包含：Castle Garden、Market Square / Bakery、Harbor Dock、Dress Boutique、Shoe Shop、Accessory Shop、Sunny Farm、Lighthouse。
 
 ### ADV Conversation
 
-- 每個地點一個短場景：背景、NPC、Princess Lumi、底部對話框。
+- 每個地點一個短場景：專屬背景、專屬 NPC、Princess Lumi、底部對話框。
 - 每回合只練一個短英文句子。
 - 選項直排、大尺寸、適合觸控。
 - 支援方向鍵 / W/S、數字鍵、Enter / Space。
@@ -123,6 +125,7 @@ Room
 ### Shop
 
 - Shop 是獎勵場景，不是 inventory table。
+- 不同店家必須有不同背景、不同 NPC、不同商品語氣與不同短句，但共用同一套手機直向 scene layout。
 - 商品要有大預覽與立即 try-on。
 - 單分類商店不讓 tab 佔主視覺。
 - 狀態清楚顯示：`Owned`、`Equipped`、price、`Need more coins`、`Buy`、`Leave`。
@@ -168,16 +171,32 @@ Settings 支援五個等級：
 正式完成標準：
 
 - 背景、角色、NPC、商品、UI 裝飾要像同一個兒童日式 ADV 世界。
+- 每個商店與地點要有自己的背景與人物：例如 Bakery / Market、Dress Boutique、Shoe Shop、Accessory Shop、Garden、Harbor、Farm、Lighthouse 不能只換文字。
+- 各地點可共用手機版型，但不得共用同一張泛用背景或同一個 NPC 冒充不同場所。
 - 商品不能只是色塊，必須像孩子會想買的衣服、鞋、飾品或房間物件。
 - 對話框不可壓壞主舞台。
 - 手機直向不可因桌機構圖而裁切、留白過多或文字溢出。
+
+## 圖片生成流程
+
+正式遊戲美術若需要新圖，預設使用 Codex 內建 `image_gen` 產生 bitmap image，不用 CSS、SVG 拼貼、Canvas 或本機程式圖假裝正式素材。
+
+專案綁定圖片的流程：
+
+1. 先寫清楚用途、尺寸、風格、角色 / 場景、避免事項與是否需要透明背景。
+2. 使用 `image_gen` 產生候選圖。
+3. 將選定圖片搬入 `assets/` 下的合理資料夾，例如 `assets/scenes/`、`assets/characters/`、`assets/items/`。
+4. 更新 consuming code 或資料設定。
+5. 在測試 log 或 README 記錄來源為 `image_gen`，不得寫成手工或既有素材。
+
+透明 PNG 預設先用 `image_gen` 生成純色 chroma-key 背景，再用本機去背工具轉 alpha。只有使用者明確要求 CLI / API / native transparency fallback 時，才改走需要 `OPENAI_API_KEY` 的 CLI 路徑。
 
 ## 驗收 Surface 與 Viewport
 
 必要 surface：
 
 - Room
-- Destination Picker / Map
+- Mobile Travel Map
 - Diary
 - Settings
 - Castle Garden
@@ -191,21 +210,21 @@ Settings 支援五個等級：
 
 必要 viewport：
 
-- 手機直向。
-- 桌機 `1024x768`。
-- 寬桌機 `1800x800`。
+- 手機直向是本案主要且必要的截圖與美術驗收 viewport。
+- 桌機與寬桌機只做「不破版」smoke check，不納入美術報告必要截圖，也不得用桌機完成度替代手機完成度。
 
-手機直向是產品完成主標準；桌機與寬桌機用於確認沒有破版、過空、比例失衡或 UI 遮擋。
+手機直向是產品完成主標準。除非使用者另行要求，後續美術測試報告只嵌入手機直向截圖。
 
 ## 實作順序建議
 
-1. 重整手機直向主流程：Room -> Destination Picker -> ADV -> reward -> Wardrobe。
-2. 弱化寬地圖在手機上的主導地位。
-3. 強化答對後的 coins / 商品 / 換裝回饋。
-4. Shop 改成大預覽、try-on、購買慶祝與店員回應。
-5. Diary 改成公主日記與學習足跡。
-6. Settings / Save / Load 收進遊戲 overlay。
-7. 針對 Room、Destination Picker / Map、8 個 ADV 地點、Shop、Wardrobe、Diary、Settings 做完整美術性測試。
+1. 重整手機直向主流程：Room -> Mobile Travel Map -> ADV -> reward -> Wardrobe。
+2. 將目的地選擇改為可拖拉、可點選地標的手機小地圖，移除卡片清單作為主操作。
+3. 建立 `sceneConfig` / `shopConfig`，讓不同地點與店家使用不同背景、NPC、商品與台詞，但共用同一手機版型。
+4. 強化答對後的 coins / 商品 / 換裝回饋。
+5. Shop 改成大預覽、try-on、購買慶祝與店員回應。
+6. Diary 改成公主日記與學習足跡。
+7. Settings / Save / Load 收進遊戲 overlay。
+8. 針對 Room、Mobile Travel Map、8 個 ADV 地點、Shop、Wardrobe、Diary、Settings 做手機直向美術性測試。
 
 # IV. 備註紀錄
 
@@ -261,11 +280,14 @@ node server.mjs
 較大 UI 或 gameplay 變更後：
 
 1. 開啟本機 URL。
-2. 先檢查或截圖手機直向相關頁面與場景。
-3. 檢查桌機 `1024x768` 與寬桌機 `1800x800`。
-4. 執行 monkey test。
-5. 檢查 console errors / warnings。
-6. 回報未解問題。
+2. 先使用 Codex in-app Browser 的 Browser plugin workflow 連到 `iab`。
+3. 若 `agent.browsers.get("iab")` 失敗，先確認 Codex 右側 in-app browser 側邊欄是否已開啟；必要時請使用者打開側邊欄，或依 Codex app 的 Browser 開啟方式重新顯示 in-app browser。
+4. 不先改用外部 Playwright、系統 Chrome、Computer Use 或 npm browser tooling；只有已嘗試 Browser bootstrap 與 `iab` 取得、並記錄失敗原因後，才可依使用者同意使用替代方案。
+5. 檢查或截圖手機直向相關頁面與場景。
+6. 桌機與寬桌機只做不破版 smoke check；除非使用者要求，不放入美術報告。
+7. 執行 monkey test。
+8. 檢查 console errors / warnings。
+9. 回報未解問題。
 
 ## 目前已完成狀況
 
@@ -296,12 +318,13 @@ node server.mjs
 
 ## 剩餘問題
 
-1. 桌機式寬 kingdom map 不適合作為手機直向主體驗，應降級或改為 mobile-first destination picker、conversation route 或 portrait-native travel screen。
-2. 手機主循環需要更強的答對後立即換裝回饋。
-3. Shop reward appeal 需要加強：try-on 變化、購買慶祝、房間 / outfit 可見效果。
-4. Diary / Settings / Save / Load 仍需持續避免變成工具頁或後台表單。
-5. 若要求嚴格 asset provenance，所有 generated PNG assets 應透過 GPT / GPT-5.5 圖像生成流程重新產出並替換。
-6. `doc/AUDIT-IMAGE-ISSUES.md` 仍是歷史視覺問題清單，後續修訂需確認是否仍有效。
+1. 目前手機目的地選擇仍偏向卡片清單 / MIS 選單感，應改為可拖拉、可點選地標的 Mobile Travel Map。
+2. 各店與各地點需要專屬背景、NPC、商品語氣與任務短句，但共用統一手機版型。
+3. 手機主循環需要更強的答對後立即換裝回饋。
+4. Shop reward appeal 需要加強：try-on 變化、購買慶祝、房間 / outfit 可見效果。
+5. Diary / Settings / Save / Load 仍需持續避免變成工具頁或後台表單。
+6. 若要求嚴格 asset provenance，所有 generated PNG assets 應透過 `image_gen` 或經使用者確認的 GPT 圖像生成流程重新產出並替換。
+7. `doc/AUDIT-IMAGE-ISSUES.md` 仍是歷史視覺問題清單，後續修訂需確認是否仍有效。
 
 ## 本 README 變更紀錄
 
