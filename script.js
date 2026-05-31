@@ -34,7 +34,6 @@ const shopItems = [
 ];
 
 const hotspots = [
-  { id: "castleRoom", node: "castleRoom", label: "Princess Room", icon: "🚪", npcClass: "npc-garden", npc: "Lumi", scene: "scene-garden", kind: "room", focusRadius: 5.8, hint: "The castle room door is here. Press Enter to go back and dress Lumi." },
   { id: "garden", node: "garden", label: "Castle Garden", icon: "🌷", npcClass: "npc-garden", npc: "Mira", scene: "scene-garden", hint: "The garden is quiet. A small cat may be hiding near the roses." },
   { id: "market", node: "market", label: "Market Square", icon: "🥖", npcClass: "npc-market", npc: "Auntie Pom", scene: "scene-market", kind: "shop", shopCategories: ["room"], defaultCategory: "room", hint: "The bakery smells sweet. Auntie Pom also has room treasures." },
   { id: "harbor", node: "harbor", label: "Harbor Dock", icon: "🐟", npcClass: "npc-harbor", npc: "Nami", scene: "scene-harbor", hint: "It seems the harbor sells fish. Lumi can buy one for dinner." },
@@ -47,6 +46,10 @@ const hotspots = [
 
 const sceneConfigs = {
   castleRoom: { scene: "scene-garden", npcClass: "npc-garden", npc: "Lumi", travelAction: "Room", travelLine: "Return to Lumi's room for dress-up time." },
+  princessRoom: { scene: "scene-princess-room", npcClass: "npc-none", npc: "Lumi", travelAction: "Enter", travelLine: "Lumi's room is ready for dress-up and room treasures." },
+  kingRoom: { scene: "scene-princess-room", npcClass: "npc-none", npc: "Royal Guard", travelAction: "Preview", travelLine: "The king's room is reserved for a later story." },
+  queenRoom: { scene: "scene-princess-room", npcClass: "npc-none", npc: "Royal Guard", travelAction: "Preview", travelLine: "The queen's room will open in a later chapter." },
+  castleGate: { scene: "scene-garden", npcClass: "npc-garden", npc: "Gate Guard", travelAction: "Travel", travelLine: "The castle gate leads back to the kingdom map." },
   garden: { scene: "scene-garden", npcClass: "npc-garden", npc: "Mira", travelAction: "Visit", travelLine: "Mira is watching the roses and a shy garden cat." },
   market: { scene: "scene-market", npcClass: "npc-market", npc: "Auntie Pom", travelAction: "Shop", travelLine: "Auntie Pom has warm bread and cozy room treasures.", shopGreeting: "Auntie Pom has cozy treasures for Lumi's room." },
   harbor: { scene: "scene-harbor", npcClass: "npc-harbor", npc: "Nami", travelAction: "Visit", travelLine: "Nami is waiting by the bright harbor boats." },
@@ -84,6 +87,59 @@ const mapActors = [
   { id: "sea-bird-a", type: "bird", x: 42.8, y: 84.7, w: 3.7, h: 1.6, z: 5, phase: 0.4 },
   { id: "sea-bird-b", type: "bird", x: 64.5, y: 83.3, w: 3.2, h: 1.4, z: 5, phase: 1.6 }
 ];
+
+const castleMapImageSize = { width: 1391, height: 1131 };
+
+const castleMapNodes = {
+  princessRoom: { id: "princessRoom", label: "Princess Room", x: 51.5, y: 50 },
+  kingRoom: { id: "kingRoom", label: "King Room", x: 54.5, y: 39 },
+  queenRoom: { id: "queenRoom", label: "Queen Room", x: 44, y: 47 },
+  castleGate: { id: "castleGate", label: "Castle Gate", x: 52, y: 66 }
+};
+
+const castleHotspots = [
+  { id: "princessRoom", area: "castle", node: "princessRoom", label: "Princess Room", icon: "🚪", npcClass: "npc-none", npc: "Lumi", scene: "scene-princess-room", kind: "room", hint: "Enter Lumi's room for dress-up, shoes, accessories, and room treasures." },
+  { id: "kingRoom", area: "castle", node: "kingRoom", label: "King Room", icon: "👑", npcClass: "npc-none", npc: "Royal Guard", scene: "scene-princess-room", kind: "future", hint: "The king's room is reserved for a future story." },
+  { id: "queenRoom", area: "castle", node: "queenRoom", label: "Queen Room", icon: "💐", npcClass: "npc-none", npc: "Royal Guard", scene: "scene-princess-room", kind: "future", hint: "The queen's room will open in a future chapter." },
+  { id: "castleGate", area: "castle", node: "castleGate", label: "Castle Gate", icon: "🏰", npcClass: "npc-garden", npc: "Gate Guard", scene: "scene-garden", kind: "gate", targetArea: "kingdom", hint: "Go out to the kingdom travel map." }
+];
+
+const areaRegistry = {
+  castle: {
+    id: "castle",
+    label: "Castle",
+    view: "home",
+    mapImage: "assets/castle-map.png?v=20260531-user-castle",
+    imageSize: castleMapImageSize,
+    locations: castleHotspots,
+    nodes: castleMapNodes,
+    defaultNode: "princessRoom",
+    enabled: true
+  },
+  kingdom: {
+    id: "kingdom",
+    label: "Kingdom",
+    view: "map",
+    mapImage: "assets/kingdom-map.png?v=handdrawn-20260531",
+    imageSize: mapImageSize,
+    locations: hotspots,
+    nodes: mapNodes,
+    defaultNode: "garden",
+    enabled: true
+  },
+  forest: {
+    id: "forest",
+    label: "Forest",
+    enabled: false,
+    defaultNode: ""
+  },
+  ocean: {
+    id: "ocean",
+    label: "Ocean",
+    enabled: false,
+    defaultNode: ""
+  }
+};
 
 const questTemplates = [
   { id: "harborFish", place: "harbor", title: "Buy a fish at the harbor", opening: "Good morning, Princess! We have fresh fish today.", ending: "Thank you, Princess. Dinner will be delicious tonight." },
@@ -133,8 +189,9 @@ const defaultState = {
   learnedWords: [],
   badges: [],
   activeQuest: null,
-  player: { x: 49, y: 28 },
-  playerNode: "castleRoom"
+  area: "castle",
+  player: { x: 51.5, y: 50 },
+  playerNode: "princessRoom"
 };
 
 let state = loadLocalState();
@@ -153,6 +210,8 @@ let shopPreviewItemId = "";
 let mapPan = { x: 0, y: 0 };
 let mapDrag = null;
 let pendingMapPositionFrame = 0;
+let systemMenuPanel = "diary";
+let activeCastleHotspot = null;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -164,19 +223,30 @@ const elements = {
   saveButton: $("#saveButton"),
   loadButton: $("#loadButton"),
   loadFileInput: $("#loadFileInput"),
+  systemMenuButton: $("#systemMenuButton"),
+  systemMenu: $("#systemMenu"),
+  systemMenuBook: $(".system-menu-book"),
+  systemMenuClose: $("#systemMenuClose"),
+  systemMenuTabs: $$(".system-menu-tab"),
+  systemPanels: $$(".system-panel"),
   coinValue: $("#coinValue"),
   energyValue: $("#energyValue"),
-  vocabValue: $("#vocabValue"),
-  expressionValue: $("#expressionValue"),
-  kindnessValue: $("#kindnessValue"),
-  moodValue: $("#moodValue"),
+  levelValue: $("#levelValue"),
   outfitSummary: $("#outfitSummary"),
   statusMessage: $("#statusMessage"),
   goMapButton: $("#goMapButton"),
   wardrobeCount: $("#wardrobeCount"),
   wardrobeTabs: $("#wardrobeTabs"),
   wardrobeGrid: $("#wardrobeGrid"),
+  areaNav: $("#areaNav"),
+  castleStage: $("#castleStage"),
+  castleMarkerLayer: $("#castleMarkerLayer"),
+  castleNearbyCard: $("#castleNearbyCard"),
+  castleNearbyName: $("#castleNearbyName"),
+  castleNearbyHint: $("#castleNearbyHint"),
+  castleInteractButton: $("#castleInteractButton"),
   mapStage: $("#mapStage"),
+  mapImage: $("#mapImage"),
   playerToken: $("#playerToken"),
   hotspotLayer: $("#hotspotLayer"),
   nodeLayer: $("#nodeLayer"),
@@ -271,8 +341,10 @@ function normalizeState(candidate = {}) {
   merged.metNpcs = Array.isArray(candidate.metNpcs) ? [...new Set(candidate.metNpcs)] : [];
   merged.learnedWords = Array.isArray(candidate.learnedWords) ? [...new Set(candidate.learnedWords)] : [];
   merged.badges = Array.isArray(candidate.badges) ? [...new Set(candidate.badges)] : [];
-  merged.player = normalizePlayer(candidate.player, candidate.playerNode);
-  merged.playerNode = mapNodes[candidate.playerNode] ? candidate.playerNode : closestNodeFromLegacy(candidate.player);
+  merged.area = areaRegistry[candidate.area]?.enabled ? candidate.area : base.area;
+  const nodes = nodeMapForArea(merged.area);
+  merged.playerNode = nodes[candidate.playerNode] ? candidate.playerNode : areaRegistry[merged.area].defaultNode;
+  merged.player = normalizePlayer(candidate.player, merged.playerNode, merged.area);
   merged.difficulty = Number(difficultyConfig[candidate.difficulty] ? candidate.difficulty : base.difficulty);
   merged.activeQuest = normalizeQuest(candidate.activeQuest || candidate.currentQuest) || createRandomQuest(null);
   delete merged.schedule;
@@ -282,19 +354,26 @@ function normalizeState(candidate = {}) {
   return merged;
 }
 
-function normalizePlayer(player, nodeId) {
+function nodeMapForArea(areaId) {
+  return areaRegistry[areaId]?.nodes || mapNodes;
+}
+
+function normalizePlayer(player, nodeId, areaId = "kingdom") {
   if (player && typeof player.x === "number" && typeof player.y === "number") {
     return { x: clamp(player.x, 6, 94), y: clamp(player.y, 8, 92) };
   }
-  const node = mapNodes[nodeId] || mapNodes.castleRoom;
+  const nodes = nodeMapForArea(areaId);
+  const node = nodes[nodeId] || nodes[areaRegistry[areaId]?.defaultNode] || mapNodes.garden;
   return { x: node.x, y: node.y };
 }
 
-function closestNodeFromLegacy(player) {
-  if (!player || typeof player.x !== "number") return "castleRoom";
-  let best = "castleRoom";
+function closestNodeFromLegacy(player, areaId = "kingdom") {
+  const nodes = nodeMapForArea(areaId);
+  const defaultNode = areaRegistry[areaId]?.defaultNode || "garden";
+  if (!player || typeof player.x !== "number") return defaultNode;
+  let best = defaultNode;
   let bestDistance = Infinity;
-  Object.values(mapNodes).forEach((node) => {
+  Object.values(nodes).forEach((node) => {
     const distance = Math.hypot(node.x - player.x, node.y - player.y);
     if (distance < bestDistance) {
       best = node.id;
@@ -331,7 +410,7 @@ function clamp(value, min, max) {
 }
 
 function hotspotById(id) {
-  return hotspots.find((hotspot) => hotspot.id === id);
+  return [...castleHotspots, ...hotspots].find((hotspot) => hotspot.id === id);
 }
 
 function sceneConfigFor(hotspot) {
@@ -340,7 +419,7 @@ function sceneConfigFor(hotspot) {
 }
 
 function hotspotByNode(nodeId) {
-  return hotspots.find((hotspot) => hotspot.node === nodeId) || null;
+  return [...castleHotspots, ...hotspots].find((hotspot) => hotspot.node === nodeId) || null;
 }
 
 function itemById(id) {
@@ -373,8 +452,58 @@ function createQuestFromTemplate(template) {
   };
 }
 
+function areaForHotspot(hotspot) {
+  if (!hotspot) return state.area || "kingdom";
+  if (hotspot.area) return hotspot.area;
+  if (castleMapNodes[hotspot.node]) return "castle";
+  return "kingdom";
+}
+
+function ensureKingdomPosition() {
+  if (mapNodes[state.playerNode]) return;
+  const target = hotspotById(state.activeQuest?.place) || hotspotById(areaRegistry.kingdom.defaultNode);
+  const node = mapNodes[target?.node] || mapNodes[areaRegistry.kingdom.defaultNode];
+  state.playerNode = node.id;
+  state.player = { x: node.x, y: node.y };
+}
+
+function ensureCastlePosition() {
+  if (castleMapNodes[state.playerNode]) return;
+  const node = castleMapNodes[areaRegistry.castle.defaultNode];
+  state.playerNode = node.id;
+  state.player = { x: node.x, y: node.y };
+}
+
+function openArea(areaId) {
+  const area = areaRegistry[areaId];
+  if (!area?.enabled) {
+    elements.statusMessage.textContent = `${area?.label || "This area"} is not open yet.`;
+    return;
+  }
+  state.area = areaId;
+  if (areaId === "kingdom") {
+    ensureKingdomPosition();
+  } else if (areaId === "castle") {
+    ensureCastlePosition();
+  }
+  persist();
+  changeView(area.view);
+  renderAreaNav();
+}
+
 function changeView(viewName) {
+  if (["diary", "settings", "save"].includes(viewName)) {
+    openSystemMenu(viewName);
+    return;
+  }
   if (!document.getElementById(`${viewName}View`)) viewName = "home";
+  if (viewName === "home") {
+    state.area = "castle";
+    ensureCastlePosition();
+  } else if (viewName === "map") {
+    state.area = "kingdom";
+    ensureKingdomPosition();
+  }
   elements.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.view === viewName));
   elements.views.forEach((view) => view.classList.toggle("active", view.id === `${viewName}View`));
   if (location.hash.slice(1) !== viewName) {
@@ -385,6 +514,62 @@ function changeView(viewName) {
       renderMap();
       elements.mapStage.focus({ preventScroll: true });
     }, 0);
+  } else if (viewName === "home") {
+    setTimeout(() => {
+      renderCastleMap();
+      elements.castleStage?.focus({ preventScroll: true });
+    }, 0);
+  }
+  renderAreaNav();
+}
+
+function activeViewName() {
+  const active = elements.views.find((view) => view.classList.contains("active"));
+  return active?.id?.replace(/View$/, "") || "home";
+}
+
+function isSystemMenuOpen() {
+  return elements.systemMenu?.classList.contains("show");
+}
+
+function openSystemMenu(panel = "diary") {
+  changeSystemPanel(panel);
+  elements.systemMenu.classList.add("show");
+  elements.systemMenu.setAttribute("aria-hidden", "false");
+  document.body.classList.add("system-menu-open");
+  if (location.hash.slice(1) !== panel) history.replaceState(null, "", `#${panel}`);
+  setTimeout(() => {
+    elements.systemMenuBook?.focus({ preventScroll: true });
+  }, 0);
+}
+
+function closeSystemMenu() {
+  if (!isSystemMenuOpen()) return;
+  elements.systemMenu.classList.remove("show");
+  elements.systemMenu.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("system-menu-open");
+  const viewName = activeViewName();
+  if (["diary", "settings", "save"].includes(location.hash.slice(1))) {
+    history.replaceState(null, "", `#${viewName}`);
+  }
+  elements.systemMenuButton?.focus({ preventScroll: true });
+}
+
+function changeSystemPanel(panel = "diary") {
+  if (!["diary", "settings", "save"].includes(panel)) panel = "diary";
+  systemMenuPanel = panel;
+  elements.systemMenuTabs.forEach((tab) => {
+    const isActive = tab.dataset.menuPanel === panel;
+    tab.classList.toggle("active", isActive);
+    tab.setAttribute("aria-selected", String(isActive));
+  });
+  elements.systemPanels.forEach((item) => {
+    const isActive = item.dataset.menuPanel === panel;
+    item.classList.toggle("active", isActive);
+    item.hidden = !isActive;
+  });
+  if (isSystemMenuOpen() && location.hash.slice(1) !== panel) {
+    history.replaceState(null, "", `#${panel}`);
   }
 }
 
@@ -441,8 +626,10 @@ function setExpressions(princess = "normal", npc = "normal") {
 
 function render() {
   renderStatus();
+  renderAreaNav();
   renderPaperDolls();
   renderHome();
+  renderCastleMap();
   renderMap();
   renderDiary();
   renderSettings();
@@ -451,10 +638,7 @@ function render() {
 function renderStatus() {
   elements.coinValue.textContent = state.coins;
   elements.energyValue.textContent = state.energy;
-  elements.vocabValue.textContent = state.vocab;
-  elements.expressionValue.textContent = state.expression;
-  elements.kindnessValue.textContent = state.kindness;
-  elements.moodValue.textContent = moodLabel(state.mood);
+  elements.levelValue.textContent = `Lv ${state.difficulty}`;
   elements.outfitSummary.textContent = outfitSummary();
 }
 
@@ -504,10 +688,20 @@ function avatarPoseFor(surface) {
 }
 
 function renderHome() {
-  elements.wardrobeCount.textContent = `${state.owned.length} owned`;
-  elements.roomPropDesk.classList.toggle("show", state.owned.includes("studyDesk"));
-  elements.roomPropLamp.classList.toggle("show", state.owned.includes("seaLamp"));
-  renderWardrobe();
+  renderCastleMap();
+}
+
+function renderAreaNav() {
+  if (!elements.areaNav) return;
+  elements.areaNav.innerHTML = "";
+  Object.values(areaRegistry).filter((area) => area.enabled).forEach((area) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `area-button${state.area === area.id ? " active" : ""}`;
+    button.textContent = area.label;
+    button.addEventListener("click", () => openArea(area.id));
+    elements.areaNav.appendChild(button);
+  });
 }
 
 function renderWardrobeTabs() {
@@ -617,7 +811,96 @@ function toggleEquip(item) {
   render();
 }
 
+function castleCoverMetrics() {
+  const rect = elements.castleStage.getBoundingClientRect();
+  const imageRatio = castleMapImageSize.width / castleMapImageSize.height;
+  const stageRatio = rect.width / rect.height;
+  const displayWidth = stageRatio > imageRatio ? rect.width : rect.height * imageRatio;
+  const displayHeight = stageRatio > imageRatio ? rect.width / imageRatio : rect.height;
+  return {
+    width: rect.width,
+    height: rect.height,
+    displayWidth,
+    displayHeight,
+    offsetX: (rect.width - displayWidth) / 2,
+    offsetY: (rect.height - displayHeight) / 2
+  };
+}
+
+function castlePointToStage(x, y, metrics = castleCoverMetrics()) {
+  return {
+    x: metrics.offsetX + (x / 100) * metrics.displayWidth,
+    y: metrics.offsetY + (y / 100) * metrics.displayHeight
+  };
+}
+
+function positionCastleElement(element, x, y, metrics = castleCoverMetrics()) {
+  const point = castlePointToStage(x, y, metrics);
+  element.style.left = `${point.x}px`;
+  element.style.top = `${point.y}px`;
+}
+
+function renderCastleMap() {
+  if (!elements.castleStage || !elements.castleMarkerLayer) return;
+  if (elements.castleStage.offsetParent === null && activeViewName() !== "home") return;
+  const metrics = castleCoverMetrics();
+  elements.castleMarkerLayer.innerHTML = "";
+  castleHotspots.forEach((hotspot) => {
+    const node = castleMapNodes[hotspot.node];
+    if (!node) return;
+    const marker = document.createElement("button");
+    marker.type = "button";
+    marker.className = `map-marker hotspot castle-marker${activeCastleHotspot?.id === hotspot.id ? " nearby" : ""}${hotspot.kind === "future" ? " disabled" : ""}`;
+    marker.dataset.hotspotId = hotspot.id;
+    marker.dataset.label = hotspot.label;
+    marker.setAttribute("aria-label", `${hotspot.label}. ${travelActionLabel(hotspot)}.`);
+    positionCastleElement(marker, node.x, node.y, metrics);
+    marker.innerHTML = `<span class="hotspot-icon" aria-hidden="true">${hotspot.icon}</span>`;
+    marker.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      focusCastleHotspot(hotspot.id);
+    });
+    elements.castleMarkerLayer.appendChild(marker);
+  });
+  if (!activeCastleHotspot) focusCastleHotspot("princessRoom", false);
+  else updateCastlePreview(activeCastleHotspot);
+}
+
+function focusCastleHotspot(hotspotId, rerender = true) {
+  activeCastleHotspot = castleHotspots.find((hotspot) => hotspot.id === hotspotId) || castleHotspots[0];
+  if (rerender) renderCastleMap();
+  updateCastlePreview(activeCastleHotspot);
+}
+
+function updateCastlePreview(hotspot) {
+  if (!hotspot || !elements.castleNearbyCard) return;
+  const scene = sceneConfigFor(hotspot);
+  elements.castleNearbyName.textContent = `${hotspot.icon} ${hotspot.label}`;
+  elements.castleNearbyHint.textContent = scene.travelLine || hotspot.hint;
+  elements.castleInteractButton.textContent = travelActionLabel(hotspot);
+  elements.castleNearbyCard.classList.add("show");
+}
+
+function interactCastleHotspot() {
+  const hotspot = activeCastleHotspot || castleHotspots[0];
+  if (!hotspot) return;
+  if (hotspot.kind === "gate" && hotspot.targetArea) {
+    openArea(hotspot.targetArea);
+    return;
+  }
+  if (hotspot.kind === "future") {
+    elements.statusMessage.textContent = `${hotspot.label} is reserved for a later chapter.`;
+    return;
+  }
+  if (hotspot.kind === "room") {
+    openRoomScene(hotspot);
+  }
+}
+
 function renderMap() {
+  if (!elements.mapStage || (elements.mapStage.offsetParent === null && activeViewName() !== "map")) return;
+  ensureKingdomPosition();
   const target = hotspotById(state.activeQuest.place);
   elements.mapObjective.textContent = `Drag the map and tap ${target.icon} ${target.label} for today's talk.`;
   if (elements.destinationHint) elements.destinationHint.textContent = `${target.icon} ${target.label} is waiting.`;
@@ -666,7 +949,7 @@ function destinationActionText(hotspot, isTarget) {
 }
 
 function chooseDestination(hotspotId) {
-  const hotspot = hotspotById(hotspotId);
+  const hotspot = hotspots.find((item) => item.id === hotspotId);
   if (!hotspot) return;
   const node = mapNodes[hotspot.node];
   if (node) {
@@ -677,19 +960,11 @@ function chooseDestination(hotspotId) {
   renderMap();
   activeHotspot = hotspot;
   updateHotspotFocus();
-  if (hotspot.kind === "room") {
-    changeView("home");
-  } else if (hotspot.id === state.activeQuest.place) {
-    openQuestAdv(hotspot);
-  } else if (hotspot.kind === "shop") {
-    openShopAdv(hotspot);
-  } else {
-    openHintAdv(hotspot);
-  }
+  openSceneAdv(hotspot);
 }
 
 function focusTravelHotspot(hotspotId) {
-  const hotspot = hotspotById(hotspotId);
+  const hotspot = hotspots.find((item) => item.id === hotspotId);
   const node = mapNodes[hotspot?.node];
   if (!hotspot || !node) return;
   state.playerNode = node.id;
@@ -913,7 +1188,9 @@ function scheduleMapPositionRefresh() {
 
 function travelActionLabel(hotspot, isTarget = hotspot?.id === state.activeQuest.place) {
   if (!hotspot) return "Visit";
-  if (hotspot.kind === "room") return "Room";
+  if (hotspot.kind === "room") return "Enter";
+  if (hotspot.kind === "gate") return "Kingdom";
+  if (hotspot.kind === "future") return "Soon";
   if (isTarget) return "Talk";
   if (hotspot.kind === "shop") return "Shop";
   return sceneConfigFor(hotspot).travelAction || "Visit";
@@ -1016,23 +1293,13 @@ function isWalkable(x, y) {
 
 function interactNearby() {
   if (!activeHotspot) return;
-  if (activeHotspot.kind === "room") {
-    changeView("home");
-    return;
-  }
-  if (activeHotspot.kind === "shop" && activeHotspot.id !== state.activeQuest.place) {
-    openShopAdv(activeHotspot);
-    return;
-  }
-  if (activeHotspot.id === state.activeQuest.place) {
-    openQuestAdv(activeHotspot);
-    return;
-  }
-  openHintAdv(activeHotspot);
+  openSceneAdv(activeHotspot);
 }
 
 function openAdvBase(hotspot, mode) {
-  changeView("map");
+  const areaId = areaForHotspot(hotspot);
+  state.area = areaId;
+  changeView(areaRegistry[areaId]?.view || "map");
   clearRewardBursts();
   const scene = sceneConfigFor(hotspot);
   advMode = mode;
@@ -1052,13 +1319,52 @@ function openAdvBase(hotspot, mode) {
   elements.advSpeaker.textContent = scene.npc;
   elements.choiceList.innerHTML = "";
   elements.advShopGrid.innerHTML = "";
-  elements.shopArea.classList.remove("show");
+  elements.shopArea.classList.remove("show", "wardrobe-detail");
   elements.advFeedback.textContent = "";
   renderPaperDolls();
   requestAnimationFrame(() => {
     elements.advModal.classList.toggle("show", advMode !== "closed");
     elements.advModal.setAttribute("aria-hidden", advMode === "closed" ? "true" : "false");
   });
+}
+
+function openSceneAdv(hotspot) {
+  if (!hotspot) return;
+  if (hotspot.kind === "room") {
+    openRoomScene(hotspot);
+    return;
+  }
+  openAdvBase(hotspot, "scene");
+  addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
+  const scene = sceneConfigFor(hotspot);
+  const isTarget = hotspot.id === state.activeQuest.place;
+  elements.advLine.textContent = scene.travelLine || hotspot.hint;
+  elements.advPrompt.textContent = "Choose what to do here.";
+  if (hotspot.kind === "shop") addAdvOption("Shop", () => openShopDetail(hotspot));
+  if (isTarget) {
+    addAdvOption("Talk", () => openQuestAdv(hotspot));
+  } else {
+    addAdvOption(hotspot.kind === "shop" ? "Chat" : "Talk", () => openHintAdv(hotspot));
+  }
+  addAdvOption("Leave", closeAdv, { leave: true });
+  window.setTimeout(() => setAdvFocus(0), 0);
+  speak(elements.advLine.textContent);
+}
+
+function openRoomScene(hotspot = hotspotById("princessRoom")) {
+  openAdvBase(hotspot, "scene");
+  addUnique("metNpcs", ["Lumi"]);
+  elements.advLine.textContent = "Lumi is in her room. What should we change today?";
+  elements.advPrompt.textContent = "Choose a room action.";
+  addAdvOption("Dresses", () => openWardrobeDetail("outfit"));
+  addAdvOption("Accessories", () => openWardrobeDetail("accessory"));
+  addAdvOption("Shoes", () => openWardrobeDetail("shoes"));
+  addAdvOption("Room Treasures", () => openWardrobeDetail("room"));
+  addAdvOption("Go Outside", () => {
+    closeAdv();
+    openArea("castle");
+  }, { leave: true });
+  window.setTimeout(() => setAdvFocus(0), 0);
 }
 
 function addAdvOption(label, onClick, options = {}) {
@@ -1075,7 +1381,7 @@ function addAdvOption(label, onClick, options = {}) {
 
 function advFocusableButtons() {
   if (!elements.advModal.classList.contains("show")) return [];
-  const selectors = advMode === "shop"
+  const selectors = advMode === "shop" || advMode === "wardrobe"
     ? ["#advShopGrid .item-card:not(:disabled)", "#choiceList .choice-button:not(:disabled)"]
     : ["#choiceList .choice-button:not(:disabled)", "#advShopGrid .item-card:not(:disabled)"];
   return selectors.flatMap((selector) => [...document.querySelectorAll(selector)]).filter((button) => button.offsetParent !== null);
@@ -1136,6 +1442,10 @@ function openHintAdv(hotspot, line = hotspot.hint) {
 }
 
 function openShopAdv(hotspot) {
+  openSceneAdv(hotspot);
+}
+
+function openShopDetail(hotspot) {
   openAdvBase(hotspot, "shop");
   activeShopHotspot = hotspot;
   addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
@@ -1144,10 +1454,86 @@ function openShopAdv(hotspot) {
   shopPreviewItemId = shopItems.find((item) => item.type === shopCategory && allowedShopCategories(hotspot).includes(item.type))?.id || "";
   elements.advLine.textContent = shopGreeting(hotspot);
   elements.advPrompt.textContent = "Choose a treasure to preview. Press B or Buy when Lumi wants it.";
+  elements.shopArea.classList.remove("wardrobe-detail");
   elements.shopArea.classList.add("show");
   renderAdvShop();
   window.setTimeout(() => setAdvFocus(0), 0);
   speak(elements.advLine.textContent);
+}
+
+function openWardrobeDetail(category = "outfit") {
+  const hotspot = hotspotById("princessRoom");
+  activeShopHotspot = hotspot;
+  advMode = "wardrobe";
+  shopCategory = category;
+  elements.advScene.dataset.mode = "wardrobe";
+  elements.advLine.textContent = `Choose ${categoryLabel(category).toLowerCase()} for Lumi.`;
+  elements.advPrompt.textContent = "Pick a treasure to preview, then equip it.";
+  elements.shopArea.classList.add("show", "wardrobe-detail");
+  renderWardrobeDetail();
+}
+
+function renderWardrobeDetail(preserveFocus = false) {
+  const ownedCategories = categories
+    .filter((category) => shopItems.some((item) => item.type === category.id && state.owned.includes(item.id)))
+    .map((category) => category.id);
+  const allowed = ownedCategories.length ? ownedCategories : categories.map((category) => category.id);
+  if (!allowed.includes(shopCategory)) shopCategory = allowed[0] || "outfit";
+  const categoryItems = shopItems.filter((item) => item.type === shopCategory && state.owned.includes(item.id));
+  if (!categoryItems.some((item) => item.id === shopPreviewItemId)) shopPreviewItemId = categoryItems[0]?.id || "";
+  const previewItem = itemById(shopPreviewItemId) || categoryItems[0];
+  renderCategoryTabs(elements.advShopTabs, shopCategory, (nextCategory) => {
+    shopCategory = nextCategory;
+    shopPreviewItemId = "";
+    renderWardrobeDetail();
+  }, true);
+  renderShopPreview(previewItem);
+  elements.advShopGrid.innerHTML = "";
+  if (!categoryItems.length) {
+    elements.advShopGrid.innerHTML = `<div class="wardrobe-empty">Buy treasures in the kingdom first.</div>`;
+  } else {
+    categoryItems.forEach((item) => {
+      elements.advShopGrid.appendChild(createItemCard(item, {
+        mode: "wardrobe",
+        selected: item.id === shopPreviewItemId,
+        onPreview: previewWardrobeItem,
+        action: () => previewWardrobeItem(item)
+      }));
+    });
+  }
+  elements.choiceList.innerHTML = "";
+  addAdvOption(wardrobeActionLabel(previewItem), () => equipWardrobePreview(previewItem), { leave: false });
+  addAdvOption("Back", () => openRoomScene(hotspotById("princessRoom")));
+  addAdvOption("Leave", closeAdv, { leave: true });
+  elements.choiceList.classList.add("shop-command-list");
+  elements.shopArea.appendChild(elements.choiceList);
+  const focusIndex = preserveFocus ? Math.max(0, categoryItems.findIndex((item) => item.id === shopPreviewItemId)) : 0;
+  window.setTimeout(() => setAdvFocus(focusIndex), 0);
+}
+
+function previewWardrobeItem(item) {
+  if (!item || shopPreviewItemId === item.id) return;
+  shopPreviewItemId = item.id;
+  renderWardrobeDetail(true);
+}
+
+function wardrobeActionLabel(item) {
+  if (!item) return "No item";
+  if (item.type === "room") return "Place";
+  return state.outfit[item.type] === item.id ? "Equipped" : "Equip";
+}
+
+function equipWardrobePreview(item) {
+  if (!item) return;
+  if (item.type === "room") {
+    elements.advFeedback.textContent = `${item.name} is placed in Lumi's room.`;
+  } else {
+    state.outfit[item.type] = item.id;
+    elements.advFeedback.textContent = `${item.name} equipped.`;
+  }
+  persist();
+  render();
+  renderWardrobeDetail(true);
 }
 
 function allowedShopCategories(hotspot = activeShopHotspot) {
@@ -1313,7 +1699,7 @@ function openRewardShop() {
   }
   persist();
   renderMap();
-  openShopAdv(hotspot);
+  openShopDetail(hotspot);
 }
 
 function closeAdvThenHome() {
@@ -1397,7 +1783,7 @@ function answerLesson(button, choice) {
   elements.advScene.dataset.mode = "complete";
   elements.choiceList.innerHTML = "";
   if (completedHotspot?.kind === "shop") {
-    addAdvOption("Shop", () => openShopAdv(completedHotspot));
+    addAdvOption("Shop", () => openShopDetail(completedHotspot));
     addAdvOption("Back to Room", closeAdvThenHome);
     addAdvOption("Leave", closeAdv, { leave: true });
   } else {
@@ -1416,10 +1802,12 @@ function closeAdv() {
   elements.advModal.classList.remove("show");
   elements.advModal.setAttribute("aria-hidden", "true");
   advMode = "closed";
+  elements.advScene.dataset.mode = "closed";
   activeLesson = null;
   activeShopHotspot = null;
   setExpressions("normal", "normal");
-  elements.mapStage.focus({ preventScroll: true });
+  const focusTarget = activeViewName() === "home" ? elements.castleStage : elements.mapStage;
+  focusTarget?.focus({ preventScroll: true });
 }
 
 async function showHelp() {
@@ -1683,9 +2071,16 @@ function finishMapDrag(event) {
 function bindEvents() {
   elements.tabs.forEach((tab) => tab.addEventListener("click", () => changeView(tab.dataset.view)));
   window.addEventListener("hashchange", () => changeView(location.hash ? location.hash.slice(1) : "home"));
-  elements.goMapButton.addEventListener("click", () => changeView("map"));
-  elements.returnHomeButton.addEventListener("click", () => changeView("home"));
+  elements.systemMenuButton.addEventListener("click", () => openSystemMenu(systemMenuPanel || "diary"));
+  elements.systemMenuClose.addEventListener("click", closeSystemMenu);
+  elements.systemMenu.addEventListener("click", (event) => {
+    if (event.target.matches("[data-system-close]")) closeSystemMenu();
+  });
+  elements.systemMenuTabs.forEach((tab) => tab.addEventListener("click", () => changeSystemPanel(tab.dataset.menuPanel)));
+  elements.goMapButton?.addEventListener("click", () => openArea("kingdom"));
+  elements.returnHomeButton.addEventListener("click", () => openArea("castle"));
   elements.interactButton.addEventListener("click", interactNearby);
+  elements.castleInteractButton?.addEventListener("click", interactCastleHotspot);
   elements.helpButton.addEventListener("click", showHelp);
   elements.speakPromptButton.addEventListener("click", () => speak(elements.advLine.textContent));
   elements.saveButton.addEventListener("click", saveMarkdown);
@@ -1740,6 +2135,13 @@ function bindEvents() {
   });
   window.addEventListener("resize", () => {
     if (elements.mapStage?.offsetParent !== null) renderMap();
+    if (elements.castleStage?.offsetParent !== null) renderCastleMap();
+  });
+  elements.castleStage?.addEventListener("keydown", (event) => {
+    if ((event.key === "Enter" || event.key === " ") && activeCastleHotspot) {
+      event.preventDefault();
+      interactCastleHotspot();
+    }
   });
   elements.mapStage.addEventListener("keydown", (event) => {
     const key = event.key.toLowerCase();
@@ -1770,6 +2172,13 @@ function bindEvents() {
   elements.mapStage.addEventListener("pointerup", finishMapDrag);
   elements.mapStage.addEventListener("pointercancel", finishMapDrag);
   window.addEventListener("keydown", (event) => {
+    if (isSystemMenuOpen()) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeSystemMenu();
+      }
+      return;
+    }
     if (!elements.advModal.classList.contains("show")) {
       if (
         (event.key === "Enter" || event.key === " ") &&
@@ -1782,7 +2191,7 @@ function bindEvents() {
       }
       if ((event.key === "g" || event.key === "G") && elements.homeView?.classList.contains("active")) {
         event.preventDefault();
-        changeView("map");
+        openArea("kingdom");
       }
       return;
     }
@@ -1877,12 +2286,26 @@ window.LuminaraTest = {
     render();
   },
   moveToNode: (nodeId) => {
+    if (castleMapNodes[nodeId]) {
+      state.area = "castle";
+      state.playerNode = nodeId;
+      state.player = { x: castleMapNodes[nodeId].x, y: castleMapNodes[nodeId].y };
+      persist();
+      changeView("home");
+      return;
+    }
     if (!mapNodes[nodeId]) throw new Error("Unknown node");
+    state.area = "kingdom";
     state.playerNode = nodeId;
     state.player = { x: mapNodes[nodeId].x, y: mapNodes[nodeId].y };
     persist();
     renderMap();
   },
+  openArea,
+  openRoomScene: () => openRoomScene(hotspotById("princessRoom")),
+  openShopScene: (place = "boutique") => openSceneAdv(hotspotById(place)),
+  openShopDetail: (place = "boutique") => openShopDetail(hotspotById(place)),
+  openWardrobeDetail,
   interact: interactNearby,
   answerCurrent: (choice) => {
     const button = [...elements.choiceList.querySelectorAll("button")].find((item) => item.dataset.choice === choice);
@@ -1939,6 +2362,31 @@ function runVisualQaIfRequested() {
   const coins = Number(params.get("coins"));
   if (Number.isFinite(coins)) state.coins = Math.max(0, coins);
 
+  if (surface === "castle-map") {
+    render();
+    openArea("castle");
+    return;
+  }
+
+  if (surface === "princess-room-scene") {
+    render();
+    openRoomScene(hotspotById("princessRoom"));
+    return;
+  }
+
+  if (surface === "wardrobe-detail") {
+    render();
+    openRoomScene(hotspotById("princessRoom"));
+    openWardrobeDetail(params.get("category") || "outfit");
+    return;
+  }
+
+  if (surface === "kingdom-map") {
+    render();
+    openArea("kingdom");
+    return;
+  }
+
   if (surface === "map-near") {
     state.activeQuest = createQuestForPlace(hotspot.id);
     state.playerNode = hotspot.node;
@@ -1955,9 +2403,15 @@ function runVisualQaIfRequested() {
     return;
   }
 
-  if (surface === "shop") {
+  if (surface === "shop-scene") {
     render();
-    openShopAdv(hotspot);
+    openSceneAdv(hotspot);
+    return;
+  }
+
+  if (surface === "shop" || surface === "shop-detail") {
+    render();
+    openShopDetail(hotspot);
     const item = itemById(params.get("item"));
     if (item && allowedShopCategories(hotspot).includes(item.type)) {
       shopPreviewItemId = item.id;
@@ -1973,6 +2427,25 @@ function runVisualQaIfRequested() {
     return;
   }
 
+  if (surface === "shop-feedback") {
+    render();
+    openShopDetail(hotspot);
+    const item = itemById(params.get("item")) || shopItems.find((candidate) => allowedShopCategories(hotspot).includes(candidate.type) && !state.owned.includes(candidate.id));
+    if (item) {
+      state.coins = Math.max(state.coins, item.cost);
+      shopPreviewItemId = item.id;
+      renderAdvShop(true);
+      buyItemInAdv(item);
+    }
+    return;
+  }
+
+  if (["diary", "settings", "save"].includes(surface)) {
+    render();
+    openSystemMenu(surface);
+    return;
+  }
+
   render();
 }
 
@@ -1983,7 +2456,9 @@ function runMonkeyTestIfRequested() {
   if (params.get("selftest") !== "monkey") return;
   const errors = [];
   const actions = [
-    () => changeView(["home", "map", "diary", "settings"][Math.floor(Math.random() * 4)]),
+    () => changeView(["home", "map"][Math.floor(Math.random() * 2)]),
+    () => openSystemMenu(["diary", "settings", "save"][Math.floor(Math.random() * 3)]),
+    () => closeSystemMenu(),
     () => moveOnMap(1, 0),
     () => moveOnMap(-1, 0),
     () => moveOnMap(0, 1),

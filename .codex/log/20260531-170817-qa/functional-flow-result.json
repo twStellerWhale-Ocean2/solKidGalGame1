@@ -1,0 +1,350 @@
+[
+  {
+    "step": "open castle map",
+    "state": {
+      "activeView": "homeView",
+      "advMode": "",
+      "advOpen": false,
+      "areaButtons": [
+        {
+          "active": true,
+          "text": "Castle"
+        },
+        {
+          "active": false,
+          "text": "Kingdom"
+        }
+      ],
+      "choiceButtons": [],
+      "feedback": "",
+      "hud": [
+        "Coins0",
+        "Energy84",
+        "LevelLv 100"
+      ],
+      "line": "Hello, Princess.",
+      "shopCards": [],
+      "shopVisible": false,
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=castle-map&fresh=1&_qa=1780221445770#home"
+    }
+  },
+  {
+    "step": "enter princess room scene",
+    "state": {
+      "activeView": "homeView",
+      "advMode": "scene",
+      "advOpen": true,
+      "areaButtons": [
+        {
+          "active": true,
+          "text": "Castle"
+        },
+        {
+          "active": false,
+          "text": "Kingdom"
+        }
+      ],
+      "choiceButtons": [
+        "Dresses",
+        "Accessories",
+        "Shoes",
+        "Room Treasures",
+        "Go Outside"
+      ],
+      "feedback": "",
+      "hud": [
+        "Coins0",
+        "Energy84",
+        "LevelLv 100"
+      ],
+      "line": "Lumi is in her room. What should we change today?",
+      "shopCards": [],
+      "shopVisible": false,
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=castle-map&fresh=1&_qa=1780221445770#home"
+    }
+  },
+  {
+    "step": "open wardrobe detail",
+    "state": {
+      "activeView": "homeView",
+      "advMode": "wardrobe",
+      "advOpen": true,
+      "areaButtons": [
+        {
+          "active": true,
+          "text": "Castle"
+        },
+        {
+          "active": false,
+          "text": "Kingdom"
+        }
+      ],
+      "choiceButtons": [
+        "Equipped",
+        "Back",
+        "Leave"
+      ],
+      "feedback": "",
+      "hud": [
+        "Coins0",
+        "Energy84",
+        "LevelLv 100"
+      ],
+      "line": "Choose dresses for Lumi.",
+      "shopCards": [
+        "👗 Pink academy dress Equipped Dresses"
+      ],
+      "shopVisible": true,
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=castle-map&fresh=1&_qa=1780221445770#home"
+    }
+  },
+  {
+    "step": "back to room action choices",
+    "state": {
+      "activeView": "homeView",
+      "advMode": "scene",
+      "advOpen": true,
+      "areaButtons": [
+        {
+          "active": true,
+          "text": "Castle"
+        },
+        {
+          "active": false,
+          "text": "Kingdom"
+        }
+      ],
+      "choiceButtons": [
+        "Dresses",
+        "Accessories",
+        "Shoes",
+        "Room Treasures",
+        "Go Outside"
+      ],
+      "feedback": "",
+      "hud": [
+        "Coins0",
+        "Energy84",
+        "LevelLv 100"
+      ],
+      "line": "Lumi is in her room. What should we change today?",
+      "shopCards": [],
+      "shopVisible": false,
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=castle-map&fresh=1&_qa=1780221445770#home"
+    }
+  },
+  {
+    "step": "return to castle map",
+    "state": {
+      "activeView": "homeView",
+      "advMode": "closed",
+      "advOpen": false,
+      "areaButtons": [
+        {
+          "active": true,
+          "text": "Castle"
+        },
+        {
+          "active": false,
+          "text": "Kingdom"
+        }
+      ],
+      "choiceButtons": [
+        "Dresses",
+        "Accessories",
+        "Shoes",
+        "Room Treasures",
+        "Go Outside"
+      ],
+      "feedback": "",
+      "hud": [
+        "Coins0",
+        "Energy84",
+        "LevelLv 100"
+      ],
+      "line": "Lumi is in her room. What should we change today?",
+      "shopCards": [],
+      "shopVisible": false,
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=castle-map&fresh=1&_qa=1780221445770#home"
+    }
+  },
+  {
+    "step": "switch to kingdom map",
+    "state": {
+      "activeView": "mapView",
+      "advMode": "closed",
+      "advOpen": false,
+      "areaButtons": [
+        {
+          "active": false,
+          "text": "Castle"
+        },
+        {
+          "active": true,
+          "text": "Kingdom"
+        }
+      ],
+      "choiceButtons": [
+        "Dresses",
+        "Accessories",
+        "Shoes",
+        "Room Treasures",
+        "Go Outside"
+      ],
+      "feedback": "",
+      "hud": [
+        "Coins0",
+        "Energy84",
+        "LevelLv 100"
+      ],
+      "line": "Lumi is in her room. What should we change today?",
+      "shopCards": [],
+      "shopVisible": false,
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=castle-map&fresh=1&_qa=1780221445770#map"
+    }
+  },
+  {
+    "step": "open boutique scene entry",
+    "state": {
+      "activeView": "mapView",
+      "advMode": "scene",
+      "advOpen": true,
+      "areaButtons": [
+        {
+          "active": false,
+          "text": "Castle"
+        },
+        {
+          "active": true,
+          "text": "Kingdom"
+        }
+      ],
+      "choiceButtons": [
+        "Shop",
+        "Chat",
+        "Leave"
+      ],
+      "feedback": "",
+      "hud": [
+        "Coins300",
+        "Energy84",
+        "LevelLv 100"
+      ],
+      "line": "Rena has dresses ready for a bright day.",
+      "shopCards": [],
+      "shopVisible": false,
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop-scene&fresh=1&_qa=1780221452117&place=boutique&coins=300#map"
+    }
+  },
+  {
+    "step": "open shop detail from scene",
+    "state": {
+      "activeView": "mapView",
+      "advMode": "shop",
+      "advOpen": true,
+      "areaButtons": [
+        {
+          "active": false,
+          "text": "Castle"
+        },
+        {
+          "active": true,
+          "text": "Kingdom"
+        }
+      ],
+      "choiceButtons": [
+        "Equipped",
+        "Leave"
+      ],
+      "feedback": "",
+      "hud": [
+        "Coins300",
+        "Energy84",
+        "LevelLv 100"
+      ],
+      "line": "Welcome, Princess. Outfits are ready for a bright day.",
+      "shopCards": [
+        "👗 Pink academy dress Equipped Dresses",
+        "👗 Blue harbor dress 100 coins Dresses",
+        "👗 Rose festival dress 200 coins Dresses",
+        "👗 Snowflake gown 260 coins Dresses"
+      ],
+      "shopVisible": true,
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop-scene&fresh=1&_qa=1780221452117&place=boutique&coins=300#map"
+    }
+  },
+  {
+    "step": "preview blue dress",
+    "state": {
+      "activeView": "mapView",
+      "advMode": "shop",
+      "advOpen": true,
+      "areaButtons": [
+        {
+          "active": false,
+          "text": "Castle"
+        },
+        {
+          "active": true,
+          "text": "Kingdom"
+        }
+      ],
+      "choiceButtons": [
+        "Buy 100 coins",
+        "Leave"
+      ],
+      "feedback": "",
+      "hud": [
+        "Coins300",
+        "Energy84",
+        "LevelLv 100"
+      ],
+      "line": "Welcome, Princess. Outfits are ready for a bright day.",
+      "shopCards": [
+        "👗 Pink academy dress Equipped Dresses",
+        "👗 Blue harbor dress 100 coins Dresses",
+        "👗 Rose festival dress 200 coins Dresses",
+        "👗 Snowflake gown 260 coins Dresses"
+      ],
+      "shopVisible": true,
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop-scene&fresh=1&_qa=1780221452117&place=boutique&coins=300#map"
+    }
+  },
+  {
+    "step": "buy blue dress feedback",
+    "state": {
+      "activeView": "mapView",
+      "advMode": "shop",
+      "advOpen": true,
+      "areaButtons": [
+        {
+          "active": false,
+          "text": "Castle"
+        },
+        {
+          "active": true,
+          "text": "Kingdom"
+        }
+      ],
+      "choiceButtons": [
+        "Equipped",
+        "Leave"
+      ],
+      "feedback": "Blue harbor dress is on Lumi now.",
+      "hud": [
+        "Coins200",
+        "Energy84",
+        "LevelLv 100"
+      ],
+      "line": "Blue harbor dress is yours now. It looks wonderful.",
+      "shopCards": [
+        "👗 Pink academy dress Owned Dresses",
+        "👗 Blue harbor dress Equipped Dresses",
+        "👗 Rose festival dress 200 coins Dresses",
+        "👗 Snowflake gown 260 coins Dresses"
+      ],
+      "shopVisible": true,
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop-scene&fresh=1&_qa=1780221452117&place=boutique&coins=300#map"
+    }
+  }
+]
