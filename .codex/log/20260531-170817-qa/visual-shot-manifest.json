@@ -1,0 +1,904 @@
+[
+  {
+    "surface": "castle-map",
+    "fileName": "mobile-castle-map.png",
+    "path": "C:/Users/User/Documents/Github/solKidGalGame/.codex/log/20260531-170817-qa/mobile-castle-map.png",
+    "qa": {
+      "activeView": "homeView",
+      "advMode": "",
+      "advOpen": false,
+      "areaButtons": [
+        "Castle",
+        "Kingdom"
+      ],
+      "boxOverflow": [],
+      "boxes": [
+        {
+          "bottom": 116,
+          "height": 108,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".side-panel",
+          "top": 8,
+          "width": 371
+        },
+        {
+          "bottom": 835,
+          "height": 54,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".area-nav",
+          "top": 781,
+          "width": 371
+        },
+        {
+          "bottom": 769,
+          "height": 140,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".castle-nearby-card.show",
+          "top": 628,
+          "width": 371
+        },
+        {
+          "bottom": 769,
+          "height": 140,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".nearby-card.show",
+          "top": 628,
+          "width": 371
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".map-toolbar",
+          "top": 0,
+          "width": 0
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".adv-scene",
+          "top": 0,
+          "width": 0
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".adv-box",
+          "top": 0,
+          "width": 0
+        }
+      ],
+      "cssHref": [
+        "http://127.0.0.1:4177/styles.css?v=20260531-area-scene-layering-5"
+      ],
+      "hasHorizontalOverflow": false,
+      "shopVisible": false,
+      "statLabels": [
+        "Coins",
+        "Energy",
+        "Level"
+      ],
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=castle-map&fresh=1&_qa=1780221336407.8472#home",
+      "viewport": {
+        "height": 845,
+        "scrollHeight": 845,
+        "scrollWidth": 391,
+        "width": 391
+      }
+    }
+  },
+  {
+    "surface": "princess-room-scene",
+    "fileName": "mobile-princess-room-scene.png",
+    "path": "C:/Users/User/Documents/Github/solKidGalGame/.codex/log/20260531-170817-qa/mobile-princess-room-scene.png",
+    "qa": {
+      "activeView": "homeView",
+      "advMode": "scene",
+      "advOpen": true,
+      "areaButtons": [
+        "Castle",
+        "Kingdom"
+      ],
+      "boxOverflow": [],
+      "boxes": [
+        {
+          "bottom": 116,
+          "height": 108,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".side-panel",
+          "top": 8,
+          "width": 371
+        },
+        {
+          "bottom": 835,
+          "height": 54,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".area-nav",
+          "top": 781,
+          "width": 371
+        },
+        {
+          "bottom": 769,
+          "height": 140,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".castle-nearby-card.show",
+          "top": 628,
+          "width": 371
+        },
+        {
+          "bottom": 769,
+          "height": 140,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".nearby-card.show",
+          "top": 628,
+          "width": 371
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".map-toolbar",
+          "top": 0,
+          "width": 0
+        },
+        {
+          "bottom": 829,
+          "height": 813,
+          "left": 16,
+          "out": false,
+          "right": 375,
+          "selector": ".adv-scene",
+          "top": 16,
+          "width": 359
+        },
+        {
+          "bottom": 816,
+          "height": 331,
+          "left": 27,
+          "out": false,
+          "right": 364,
+          "selector": ".adv-box",
+          "top": 485,
+          "width": 337
+        }
+      ],
+      "cssHref": [
+        "http://127.0.0.1:4177/styles.css?v=20260531-area-scene-layering-5"
+      ],
+      "hasHorizontalOverflow": false,
+      "shopVisible": false,
+      "statLabels": [
+        "Coins",
+        "Energy",
+        "Level"
+      ],
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=princess-room-scene&fresh=1&_qa=1780221337264.151#home",
+      "viewport": {
+        "height": 845,
+        "scrollHeight": 845,
+        "scrollWidth": 391,
+        "width": 391
+      }
+    }
+  },
+  {
+    "surface": "wardrobe-detail",
+    "fileName": "mobile-wardrobe-detail.png",
+    "path": "C:/Users/User/Documents/Github/solKidGalGame/.codex/log/20260531-170817-qa/mobile-wardrobe-detail.png",
+    "qa": {
+      "activeView": "homeView",
+      "advMode": "wardrobe",
+      "advOpen": true,
+      "areaButtons": [
+        "Castle",
+        "Kingdom"
+      ],
+      "boxOverflow": [],
+      "boxes": [
+        {
+          "bottom": 116,
+          "height": 108,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".side-panel",
+          "top": 8,
+          "width": 371
+        },
+        {
+          "bottom": 835,
+          "height": 54,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".area-nav",
+          "top": 781,
+          "width": 371
+        },
+        {
+          "bottom": 769,
+          "height": 140,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".castle-nearby-card.show",
+          "top": 628,
+          "width": 371
+        },
+        {
+          "bottom": 769,
+          "height": 140,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".nearby-card.show",
+          "top": 628,
+          "width": 371
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".map-toolbar",
+          "top": 0,
+          "width": 0
+        },
+        {
+          "bottom": 829,
+          "height": 813,
+          "left": 16,
+          "out": false,
+          "right": 375,
+          "selector": ".adv-scene",
+          "top": 16,
+          "width": 359
+        },
+        {
+          "bottom": 816,
+          "height": 335,
+          "left": 27,
+          "out": false,
+          "right": 364,
+          "selector": ".adv-box",
+          "top": 481,
+          "width": 337
+        },
+        {
+          "bottom": 775,
+          "height": 217,
+          "left": 38,
+          "out": false,
+          "right": 353,
+          "selector": ".shop-area.show",
+          "top": 558,
+          "width": 315
+        }
+      ],
+      "cssHref": [
+        "http://127.0.0.1:4177/styles.css?v=20260531-area-scene-layering-5"
+      ],
+      "hasHorizontalOverflow": false,
+      "shopVisible": true,
+      "statLabels": [
+        "Coins",
+        "Energy",
+        "Level"
+      ],
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=wardrobe-detail&fresh=1&_qa=1780221338107.6848&category=outfit#home",
+      "viewport": {
+        "height": 845,
+        "scrollHeight": 845,
+        "scrollWidth": 391,
+        "width": 391
+      }
+    }
+  },
+  {
+    "surface": "kingdom-map",
+    "fileName": "mobile-kingdom-map.png",
+    "path": "C:/Users/User/Documents/Github/solKidGalGame/.codex/log/20260531-170817-qa/mobile-kingdom-map.png",
+    "qa": {
+      "activeView": "mapView",
+      "advMode": "",
+      "advOpen": false,
+      "areaButtons": [
+        "Castle",
+        "Kingdom"
+      ],
+      "boxOverflow": [],
+      "boxes": [
+        {
+          "bottom": 116,
+          "height": 108,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".side-panel",
+          "top": 8,
+          "width": 371
+        },
+        {
+          "bottom": 835,
+          "height": 54,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".area-nav",
+          "top": 781,
+          "width": 371
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".castle-nearby-card.show",
+          "top": 0,
+          "width": 0
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".nearby-card.show",
+          "top": 0,
+          "width": 0
+        },
+        {
+          "bottom": 769,
+          "height": 140,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".nearby-card.show",
+          "top": 628,
+          "width": 371
+        },
+        {
+          "bottom": 184,
+          "height": 56,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".map-toolbar",
+          "top": 128,
+          "width": 371
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".adv-scene",
+          "top": 0,
+          "width": 0
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".adv-box",
+          "top": 0,
+          "width": 0
+        }
+      ],
+      "cssHref": [
+        "http://127.0.0.1:4177/styles.css?v=20260531-area-scene-layering-5"
+      ],
+      "hasHorizontalOverflow": false,
+      "shopVisible": false,
+      "statLabels": [
+        "Coins",
+        "Energy",
+        "Level"
+      ],
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=kingdom-map&fresh=1&_qa=1780221338971.5254#map",
+      "viewport": {
+        "height": 845,
+        "scrollHeight": 845,
+        "scrollWidth": 391,
+        "width": 391
+      }
+    }
+  },
+  {
+    "surface": "shop-scene",
+    "fileName": "mobile-shop-scene.png",
+    "path": "C:/Users/User/Documents/Github/solKidGalGame/.codex/log/20260531-170817-qa/mobile-shop-scene.png",
+    "qa": {
+      "activeView": "mapView",
+      "advMode": "scene",
+      "advOpen": true,
+      "areaButtons": [
+        "Castle",
+        "Kingdom"
+      ],
+      "boxOverflow": [],
+      "boxes": [
+        {
+          "bottom": 116,
+          "height": 108,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".side-panel",
+          "top": 8,
+          "width": 371
+        },
+        {
+          "bottom": 835,
+          "height": 54,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".area-nav",
+          "top": 781,
+          "width": 371
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".castle-nearby-card.show",
+          "top": 0,
+          "width": 0
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".nearby-card.show",
+          "top": 0,
+          "width": 0
+        },
+        {
+          "bottom": 769,
+          "height": 140,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".nearby-card.show",
+          "top": 628,
+          "width": 371
+        },
+        {
+          "bottom": 184,
+          "height": 56,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".map-toolbar",
+          "top": 128,
+          "width": 371
+        },
+        {
+          "bottom": 829,
+          "height": 813,
+          "left": 16,
+          "out": false,
+          "right": 375,
+          "selector": ".adv-scene",
+          "top": 16,
+          "width": 359
+        },
+        {
+          "bottom": 816,
+          "height": 232,
+          "left": 27,
+          "out": false,
+          "right": 364,
+          "selector": ".adv-box",
+          "top": 584,
+          "width": 337
+        }
+      ],
+      "cssHref": [
+        "http://127.0.0.1:4177/styles.css?v=20260531-area-scene-layering-5"
+      ],
+      "hasHorizontalOverflow": false,
+      "shopVisible": false,
+      "statLabels": [
+        "Coins",
+        "Energy",
+        "Level"
+      ],
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop-scene&fresh=1&_qa=1780221339860.5935&place=boutique#map",
+      "viewport": {
+        "height": 845,
+        "scrollHeight": 845,
+        "scrollWidth": 391,
+        "width": 391
+      }
+    }
+  },
+  {
+    "surface": "shop-detail",
+    "fileName": "mobile-shop-detail.png",
+    "path": "C:/Users/User/Documents/Github/solKidGalGame/.codex/log/20260531-170817-qa/mobile-shop-detail.png",
+    "qa": {
+      "activeView": "mapView",
+      "advMode": "shop",
+      "advOpen": true,
+      "areaButtons": [
+        "Castle",
+        "Kingdom"
+      ],
+      "boxOverflow": [],
+      "boxes": [
+        {
+          "bottom": 116,
+          "height": 108,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".side-panel",
+          "top": 8,
+          "width": 371
+        },
+        {
+          "bottom": 835,
+          "height": 54,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".area-nav",
+          "top": 781,
+          "width": 371
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".castle-nearby-card.show",
+          "top": 0,
+          "width": 0
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".nearby-card.show",
+          "top": 0,
+          "width": 0
+        },
+        {
+          "bottom": 769,
+          "height": 140,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".nearby-card.show",
+          "top": 628,
+          "width": 371
+        },
+        {
+          "bottom": 184,
+          "height": 56,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".map-toolbar",
+          "top": 128,
+          "width": 371
+        },
+        {
+          "bottom": 782,
+          "height": 720,
+          "left": 16,
+          "out": false,
+          "right": 375,
+          "selector": ".adv-scene",
+          "top": 62,
+          "width": 359
+        },
+        {
+          "bottom": 770,
+          "height": 312,
+          "left": 27,
+          "out": false,
+          "right": 364,
+          "selector": ".adv-box",
+          "top": 457,
+          "width": 337
+        },
+        {
+          "bottom": 708,
+          "height": 154,
+          "left": 38,
+          "out": false,
+          "right": 353,
+          "selector": ".shop-area.show",
+          "top": 554,
+          "width": 315
+        }
+      ],
+      "cssHref": [
+        "http://127.0.0.1:4177/styles.css?v=20260531-area-scene-layering-5"
+      ],
+      "hasHorizontalOverflow": false,
+      "shopVisible": true,
+      "statLabels": [
+        "Coins",
+        "Energy",
+        "Level"
+      ],
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop-detail&fresh=1&_qa=1780221340725.4043&place=boutique&item=blueDress&coins=300#map",
+      "viewport": {
+        "height": 845,
+        "scrollHeight": 845,
+        "scrollWidth": 391,
+        "width": 391
+      }
+    }
+  },
+  {
+    "surface": "shop-feedback",
+    "fileName": "mobile-shop-feedback.png",
+    "path": "C:/Users/User/Documents/Github/solKidGalGame/.codex/log/20260531-170817-qa/mobile-shop-feedback.png",
+    "qa": {
+      "activeView": "mapView",
+      "advMode": "shop",
+      "advOpen": true,
+      "areaButtons": [
+        "Castle",
+        "Kingdom"
+      ],
+      "boxOverflow": [],
+      "boxes": [
+        {
+          "bottom": 116,
+          "height": 108,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".side-panel",
+          "top": 8,
+          "width": 371
+        },
+        {
+          "bottom": 835,
+          "height": 54,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".area-nav",
+          "top": 781,
+          "width": 371
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".castle-nearby-card.show",
+          "top": 0,
+          "width": 0
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".nearby-card.show",
+          "top": 0,
+          "width": 0
+        },
+        {
+          "bottom": 769,
+          "height": 140,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".nearby-card.show",
+          "top": 628,
+          "width": 371
+        },
+        {
+          "bottom": 184,
+          "height": 56,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".map-toolbar",
+          "top": 128,
+          "width": 371
+        },
+        {
+          "bottom": 782,
+          "height": 720,
+          "left": 16,
+          "out": false,
+          "right": 375,
+          "selector": ".adv-scene",
+          "top": 62,
+          "width": 359
+        },
+        {
+          "bottom": 770,
+          "height": 312,
+          "left": 27,
+          "out": false,
+          "right": 364,
+          "selector": ".adv-box",
+          "top": 457,
+          "width": 337
+        },
+        {
+          "bottom": 708,
+          "height": 154,
+          "left": 38,
+          "out": false,
+          "right": 353,
+          "selector": ".shop-area.show",
+          "top": 554,
+          "width": 315
+        }
+      ],
+      "cssHref": [
+        "http://127.0.0.1:4177/styles.css?v=20260531-area-scene-layering-5"
+      ],
+      "hasHorizontalOverflow": false,
+      "shopVisible": true,
+      "statLabels": [
+        "Coins",
+        "Energy",
+        "Level"
+      ],
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop-feedback&fresh=1&_qa=1780221341626.687&place=boutique&item=blueDress&coins=300#map",
+      "viewport": {
+        "height": 845,
+        "scrollHeight": 845,
+        "scrollWidth": 391,
+        "width": 391
+      }
+    }
+  },
+  {
+    "surface": "save",
+    "fileName": "mobile-system-save.png",
+    "path": "C:/Users/User/Documents/Github/solKidGalGame/.codex/log/20260531-170817-qa/mobile-system-save.png",
+    "qa": {
+      "activeView": "homeView",
+      "advMode": "",
+      "advOpen": false,
+      "areaButtons": [
+        "Castle",
+        "Kingdom"
+      ],
+      "boxOverflow": [],
+      "boxes": [
+        {
+          "bottom": 116,
+          "height": 108,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".side-panel",
+          "top": 8,
+          "width": 371
+        },
+        {
+          "bottom": 835,
+          "height": 54,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".area-nav",
+          "top": 781,
+          "width": 371
+        },
+        {
+          "bottom": 769,
+          "height": 140,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".castle-nearby-card.show",
+          "top": 628,
+          "width": 371
+        },
+        {
+          "bottom": 769,
+          "height": 140,
+          "left": 10,
+          "out": false,
+          "right": 381,
+          "selector": ".nearby-card.show",
+          "top": 628,
+          "width": 371
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".map-toolbar",
+          "top": 0,
+          "width": 0
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".adv-scene",
+          "top": 0,
+          "width": 0
+        },
+        {
+          "bottom": 0,
+          "height": 0,
+          "left": 0,
+          "out": false,
+          "right": 0,
+          "selector": ".adv-box",
+          "top": 0,
+          "width": 0
+        }
+      ],
+      "cssHref": [
+        "http://127.0.0.1:4177/styles.css?v=20260531-area-scene-layering-5"
+      ],
+      "hasHorizontalOverflow": false,
+      "shopVisible": false,
+      "statLabels": [
+        "Coins",
+        "Energy",
+        "Level"
+      ],
+      "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=save&fresh=1&_qa=1780221342527.604#save",
+      "viewport": {
+        "height": 845,
+        "scrollHeight": 845,
+        "scrollWidth": 391,
+        "width": 391
+      }
+    }
+  }
+]

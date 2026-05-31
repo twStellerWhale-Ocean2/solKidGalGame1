@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>solKidGalGame</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23d8678c'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-size='38' font-family='Arial' fill='white'%3EL%3C/text%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="styles.css?v=20260531-mobile-travel-map" />
+    <link rel="stylesheet" href="styles.css?v=20260531-area-scene-layering-5" />
   </head>
   <body>
     <div class="app-shell">
@@ -20,10 +20,7 @@
           <div class="status-grid">
             <div class="stat"><span>Coins</span><strong id="coinValue">0</strong></div>
             <div class="stat"><span>Energy</span><strong id="energyValue">0</strong></div>
-            <div class="stat"><span>Words</span><strong id="vocabValue">0</strong></div>
-            <div class="stat"><span>Talk</span><strong id="expressionValue">0</strong></div>
-            <div class="stat"><span>Kind</span><strong id="kindnessValue">0</strong></div>
-            <div class="stat"><span>Mood</span><strong id="moodValue">OK</strong></div>
+            <div class="stat"><span>Level</span><strong id="levelValue">Lv 100</strong></div>
           </div>
           <div class="equipped-box">
             <h2>Equipped</h2>
@@ -36,26 +33,17 @@
 
         <section class="view-stack">
           <section class="view active" id="homeView" aria-labelledby="homeTitle">
-            <div class="room-stage">
-              <img src="assets/bedroom.png" alt="Princess bedroom" />
-              <div class="room-shade"></div>
-              <div class="room-title-panel">
-                <h2 id="homeTitle">Princess Room</h2>
-                <p>Dress Lumi like a doll, then choose a place for a short talk.</p>
+            <div class="castle-stage" id="castleStage" tabindex="0" aria-label="Castle area map. Tap a room marker, or use the area buttons.">
+              <img src="assets/castle-map.png?v=20260531-user-castle" alt="Luminara castle grounds map" />
+              <div class="castle-title-panel">
+                <h2 id="homeTitle">Luminara Castle</h2>
+                <p>Tap a room marker, then choose what Lumi does inside.</p>
               </div>
-              <div class="room-paper-doll">
-                <div class="paper-doll big-doll" data-doll="room"></div>
-              </div>
-              <div class="room-prop room-prop-desk" id="roomPropDesk" aria-hidden="true"></div>
-              <div class="room-prop room-prop-lamp" id="roomPropLamp" aria-hidden="true"></div>
-              <div class="wardrobe-drawer">
-                <div class="drawer-heading">
-                  <strong>Wardrobe</strong>
-                  <span id="wardrobeCount">0 items</span>
-                </div>
-                <div class="category-tabs" id="wardrobeTabs"></div>
-                <div class="wardrobe-grid" id="wardrobeGrid"></div>
-                <button class="primary-button wardrobe-exit-button" id="goMapButton" type="button" aria-label="Travel Map" aria-keyshortcuts="G">Travel Map</button>
+              <div id="castleMarkerLayer"></div>
+              <div class="nearby-card castle-nearby-card" id="castleNearbyCard">
+                <strong id="castleNearbyName">Princess Room</strong>
+                <span id="castleNearbyHint">Choose a castle room.</span>
+                <button class="primary-button" id="castleInteractButton" type="button">Enter</button>
               </div>
             </div>
           </section>
@@ -66,10 +54,10 @@
                 <h2 id="mapTitle">Lumi's Travel Map</h2>
                 <p id="mapObjective">Drag the map and tap a place marker.</p>
               </div>
-              <button class="soft-button" id="returnHomeButton" type="button">Back to Room</button>
+              <button class="soft-button" id="returnHomeButton" type="button">Castle</button>
             </div>
             <div class="map-stage" id="mapStage" tabindex="0" aria-label="Kingdom travel map. Drag to look around, tap a place, or use keyboard arrows.">
-              <img src="assets/kingdom-map.png?v=handdrawn-20260531" alt="Luminara place map" />
+              <img id="mapImage" src="assets/kingdom-map.png?v=handdrawn-20260531" alt="Luminara kingdom map" />
               <div class="map-life-layer" id="mapLifeLayer" aria-hidden="true"></div>
               <svg class="route-layer" id="routeLayer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
               <div id="nodeLayer"></div>
@@ -92,6 +80,7 @@
             </div>
           </section>
 
+          <nav class="area-nav" id="areaNav" aria-label="Luminara areas"></nav>
         </section>
       </main>
     </div>
@@ -209,6 +198,6 @@
       </div>
     </section>
 
-    <script src="script.js?v=20260531-mobile-travel-map"></script>
+    <script src="script.js?v=20260531-area-scene-layering-5"></script>
   </body>
 </html>
