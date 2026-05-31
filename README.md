@@ -150,20 +150,25 @@ Cleaned up:
   - Shoe Shop: shoes
   - Accessory Shop: accessories
   - Market: room items
+- Added mobile portrait layout so Room and Map keep a full-width game scene instead of being squeezed by the desktop HUD.
+- Reworked shop ADV flow into preview-first reward shopping: item focus previews / tries on the treasure, `B` or `Buy` confirms purchase, and the bought item remains focused with equipped feedback.
+- Replaced `assets/kingdom-map.png` with a hand-drawn style map plate and kept the existing coordinate system.
+- Removed the earlier blurred mobile map backdrop in favor of a cleaner hand-drawn map presentation.
+- Replaced ADV / Shop scene backgrounds with hand-drawn style PNG scene plates for all eight places.
+- Added hand-drawn style PNG item art for all shop rewards and switched Shop item previews away from CSS color blocks.
+- Added Diary and Settings book-style PNG backgrounds.
+- Fixed Quest ADV choice overflow on desktop and mobile.
+- Fixed mobile Shop command / item overflow so Buy and Leave remain visible.
+- Wrapped the Help Teacher key fields in a form and prevented submit reloads, clearing Chromium's password-field console warning during selftests.
+- Re-ran full visual QA across 64 desktop/mobile surfaces. Final evidence is under `doc/qa-20260531-final-art-map/`.
 - `node --check script.js` has passed multiple times.
 - The 300-step monkey test has passed multiple times.
 
 ## Remaining Issues
 
-1. The kingdom map background is not yet a clean plate:
-   - The original windmill blades, flag, and ships are still baked into `assets/kingdom-map.png`.
-   - The new PNG layers can create slight ghosting.
-   - Next step: create `assets/kingdom-map-clean.png` with those baked-in moving objects locally removed.
-2. Many ADV backgrounds are still map crops rather than true close-up ADV scene backgrounds.
-3. Room, Wardrobe, Shop, Diary, and Settings still feel too much like a web shell or form UI.
-4. Product images still read as icons and need stronger reward appeal.
-5. NPC cutouts still have dirty edges.
-6. `doc/AUDIT-IMAGE-ISSUES.md` remains the detailed page-by-page visual issue list.
+1. Mobile portrait Map is playable with the same coordinate system, but a fully portrait-native exploration map would require new coordinates and a portrait-first map plate.
+2. If strict asset provenance is required, all generated PNG assets should be regenerated through a file-writing GPT-5.5 image pipeline and replaced using the same asset list.
+3. `doc/AUDIT-IMAGE-ISSUES.md` remains the historical page-by-page visual issue list.
 
 ## Design Direction
 

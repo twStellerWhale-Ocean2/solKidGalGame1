@@ -1,0 +1,1160 @@
+[
+  {
+    "vp": "mobile",
+    "surface": "room-final",
+    "file": "mobile-room-final.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&fresh=1#home",
+    "advTitle": "Castle Garden",
+    "choices": [],
+    "hash": "#home",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal",
+    "modalHidden": "true",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "homeView"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "surface": "map-final",
+    "file": "mobile-map-final.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&fresh=1#map",
+    "advTitle": "Castle Garden",
+    "choices": [],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal",
+    "modalHidden": "true",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "surface": "diary-final",
+    "file": "mobile-diary-final.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&fresh=1#diary",
+    "advTitle": "Castle Garden",
+    "choices": [],
+    "hash": "#diary",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal",
+    "modalHidden": "true",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "diaryView"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "surface": "settings-final",
+    "file": "mobile-settings-final.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&fresh=1#settings",
+    "advTitle": "Castle Garden",
+    "choices": [],
+    "hash": "#settings",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal",
+    "modalHidden": "true",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "settingsView"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "surface": "map-near-farm",
+    "file": "mobile-map-near-farm.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=map-near&place=farm&fresh=1#map",
+    "advTitle": "Castle Garden",
+    "choices": [],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal",
+    "modalHidden": "true",
+    "objective": "🐄 Sunny Farm: Press Enter to start Lumi's task.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "surface": "quest-garden",
+    "file": "mobile-quest-garden.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=garden&fresh=1#map",
+    "advTitle": "Castle Garden",
+    "choices": [
+      "1. I see a cat.",
+      "2. I eat bread.",
+      "3. I ride a boat.",
+      "4. I need shoes.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "surface": "quest-market",
+    "file": "mobile-quest-market.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=market&fresh=1#map",
+    "advTitle": "Market Square",
+    "choices": [
+      "1. It is sunny.",
+      "2. I want an apple.",
+      "3. I want a fish.",
+      "4. I see a cat.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "surface": "quest-harbor",
+    "file": "mobile-quest-harbor.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=harbor&fresh=1#map",
+    "advTitle": "Harbor Dock",
+    "choices": [
+      "1. I want a fish.",
+      "2. I want a book.",
+      "3. I want a dress.",
+      "4. I want a flower.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "surface": "quest-boutique",
+    "file": "mobile-quest-boutique.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=boutique&fresh=1#map",
+    "advTitle": "Dress Boutique",
+    "choices": [
+      "1. I want an apple.",
+      "2. The cat is hungry.",
+      "3. The dress is blue.",
+      "4. The fish is blue.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "surface": "quest-shoeShop",
+    "file": "mobile-quest-shoeShop.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=shoeShop&fresh=1#map",
+    "advTitle": "Shoe Shop",
+    "choices": [
+      "1. I want bread.",
+      "2. The shoes are soft.",
+      "3. The fish is soft.",
+      "4. The cat is blue.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "surface": "quest-accessoryShop",
+    "file": "mobile-quest-accessoryShop.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=accessoryShop&fresh=1#map",
+    "advTitle": "Accessory Shop",
+    "choices": [
+      "1. I eat shoes.",
+      "2. The sea is bread.",
+      "3. The ribbon is pink.",
+      "4. The cow is pink.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "surface": "quest-farm",
+    "file": "mobile-quest-farm.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=farm&fresh=1#map",
+    "advTitle": "Sunny Farm",
+    "choices": [
+      "1. It is sunny.",
+      "2. The fish is small.",
+      "3. The cow is big.",
+      "4. I want a dress.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "surface": "quest-lighthouse",
+    "file": "mobile-quest-lighthouse.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=lighthouse&fresh=1#map",
+    "advTitle": "Lighthouse",
+    "choices": [
+      "1. It is sunny.",
+      "2. The dress is blue.",
+      "3. The cow is big.",
+      "4. I want a fish.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "surface": "shop-market",
+    "file": "mobile-shop-market.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop&place=market&item=studyDesk&coins=300&fresh=1#map",
+    "advTitle": "Market Square",
+    "choices": [
+      "Buy 180 coins",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "surface": "shop-boutique",
+    "file": "mobile-shop-boutique.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop&place=boutique&item=blueDress&coins=300&fresh=1#map",
+    "advTitle": "Dress Boutique",
+    "choices": [
+      "Buy 100 coins",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "surface": "shop-shoeShop",
+    "file": "mobile-shop-shoeShop.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop&place=shoeShop&item=pinkSlippers&coins=300&fresh=1#map",
+    "advTitle": "Shoe Shop",
+    "choices": [
+      "Buy 90 coins",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "surface": "shop-accessoryShop",
+    "file": "mobile-shop-accessoryShop.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop&place=accessoryShop&item=goldCrown&coins=300&fresh=1#map",
+    "advTitle": "Accessory Shop",
+    "choices": [
+      "Buy 140 coins",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "surface": "hint-lighthouse",
+    "file": "mobile-hint-lighthouse.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=hint&place=lighthouse&fresh=1#map",
+    "advTitle": "Lighthouse",
+    "choices": [
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "room-final",
+    "file": "desktop-room-final.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&fresh=1#home",
+    "advTitle": "Castle Garden",
+    "choices": [],
+    "hash": "#home",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal",
+    "modalHidden": "true",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "homeView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "map-final",
+    "file": "desktop-map-final.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&fresh=1#map",
+    "advTitle": "Castle Garden",
+    "choices": [],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal",
+    "modalHidden": "true",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "diary-final",
+    "file": "desktop-diary-final.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&fresh=1#diary",
+    "advTitle": "Castle Garden",
+    "choices": [],
+    "hash": "#diary",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal",
+    "modalHidden": "true",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "diaryView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "settings-final",
+    "file": "desktop-settings-final.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&fresh=1#settings",
+    "advTitle": "Castle Garden",
+    "choices": [],
+    "hash": "#settings",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal",
+    "modalHidden": "true",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "settingsView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "map-near-farm",
+    "file": "desktop-map-near-farm.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=map-near&place=farm&fresh=1#map",
+    "advTitle": "Castle Garden",
+    "choices": [],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal",
+    "modalHidden": "true",
+    "objective": "🐄 Sunny Farm: Press Enter to start Lumi's task.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "quest-garden",
+    "file": "desktop-quest-garden.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=garden&fresh=1#map",
+    "advTitle": "Castle Garden",
+    "choices": [
+      "1. I ride a boat.",
+      "2. I see a cat.",
+      "3. I need shoes.",
+      "4. I eat bread.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "quest-market",
+    "file": "desktop-quest-market.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=market&fresh=1#map",
+    "advTitle": "Market Square",
+    "choices": [
+      "1. I see a cat.",
+      "2. It is sunny.",
+      "3. I want a fish.",
+      "4. I want an apple.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "quest-harbor",
+    "file": "desktop-quest-harbor.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=harbor&fresh=1#map",
+    "advTitle": "Harbor Dock",
+    "choices": [
+      "1. I want a flower.",
+      "2. I want a fish.",
+      "3. I want a book.",
+      "4. I want a dress.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "quest-boutique",
+    "file": "desktop-quest-boutique.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=boutique&fresh=1#map",
+    "advTitle": "Dress Boutique",
+    "choices": [
+      "1. The dress is blue.",
+      "2. The fish is blue.",
+      "3. The cat is hungry.",
+      "4. I want an apple.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "quest-shoeShop",
+    "file": "desktop-quest-shoeShop.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=shoeShop&fresh=1#map",
+    "advTitle": "Shoe Shop",
+    "choices": [
+      "1. The fish is soft.",
+      "2. The shoes are soft.",
+      "3. I want bread.",
+      "4. The cat is blue.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "quest-accessoryShop",
+    "file": "desktop-quest-accessoryShop.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=accessoryShop&fresh=1#map",
+    "advTitle": "Accessory Shop",
+    "choices": [
+      "1. The sea is bread.",
+      "2. I eat shoes.",
+      "3. The ribbon is pink.",
+      "4. The cow is pink.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "quest-farm",
+    "file": "desktop-quest-farm.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=farm&fresh=1#map",
+    "advTitle": "Sunny Farm",
+    "choices": [
+      "1. The cow is big.",
+      "2. The fish is small.",
+      "3. It is sunny.",
+      "4. I want a dress.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "quest-lighthouse",
+    "file": "desktop-quest-lighthouse.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=lighthouse&fresh=1#map",
+    "advTitle": "Lighthouse",
+    "choices": [
+      "1. The dress is blue.",
+      "2. It is sunny.",
+      "3. I want a fish.",
+      "4. The cow is big.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "shop-market",
+    "file": "desktop-shop-market.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop&place=market&item=studyDesk&coins=300&fresh=1#map",
+    "advTitle": "Market Square",
+    "choices": [
+      "Buy 180 coins",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "shop-boutique",
+    "file": "desktop-shop-boutique.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop&place=boutique&item=blueDress&coins=300&fresh=1#map",
+    "advTitle": "Dress Boutique",
+    "choices": [
+      "Buy 100 coins",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "shop-shoeShop",
+    "file": "desktop-shop-shoeShop.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop&place=shoeShop&item=pinkSlippers&coins=300&fresh=1#map",
+    "advTitle": "Shoe Shop",
+    "choices": [
+      "Buy 90 coins",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "shop-accessoryShop",
+    "file": "desktop-shop-accessoryShop.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop&place=accessoryShop&item=goldCrown&coins=300&fresh=1#map",
+    "advTitle": "Accessory Shop",
+    "choices": [
+      "Buy 140 coins",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "surface": "hint-lighthouse",
+    "file": "desktop-hint-lighthouse.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=hint&place=lighthouse&fresh=1#map",
+    "advTitle": "Lighthouse",
+    "choices": [
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "room-final",
+    "file": "wide-room-final.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&fresh=1#home",
+    "advTitle": "Castle Garden",
+    "choices": [],
+    "hash": "#home",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal",
+    "modalHidden": "true",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "homeView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "map-final",
+    "file": "wide-map-final.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&fresh=1#map",
+    "advTitle": "Castle Garden",
+    "choices": [],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal",
+    "modalHidden": "true",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "diary-final",
+    "file": "wide-diary-final.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&fresh=1#diary",
+    "advTitle": "Castle Garden",
+    "choices": [],
+    "hash": "#diary",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal",
+    "modalHidden": "true",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "diaryView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "settings-final",
+    "file": "wide-settings-final.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&fresh=1#settings",
+    "advTitle": "Castle Garden",
+    "choices": [],
+    "hash": "#settings",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal",
+    "modalHidden": "true",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "settingsView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "map-near-farm",
+    "file": "wide-map-near-farm.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=map-near&place=farm&fresh=1#map",
+    "advTitle": "Castle Garden",
+    "choices": [],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal",
+    "modalHidden": "true",
+    "objective": "🐄 Sunny Farm: Press Enter to start Lumi's task.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "quest-garden",
+    "file": "wide-quest-garden.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=garden&fresh=1#map",
+    "advTitle": "Castle Garden",
+    "choices": [
+      "1. I see a cat.",
+      "2. I eat bread.",
+      "3. I need shoes.",
+      "4. I ride a boat.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "quest-market",
+    "file": "wide-quest-market.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=market&fresh=1#map",
+    "advTitle": "Market Square",
+    "choices": [
+      "1. I want an apple.",
+      "2. I want a fish.",
+      "3. I see a cat.",
+      "4. It is sunny.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "quest-harbor",
+    "file": "wide-quest-harbor.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=harbor&fresh=1#map",
+    "advTitle": "Harbor Dock",
+    "choices": [
+      "1. I want a fish.",
+      "2. I want a flower.",
+      "3. I want a book.",
+      "4. I want a dress.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "quest-boutique",
+    "file": "wide-quest-boutique.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=boutique&fresh=1#map",
+    "advTitle": "Dress Boutique",
+    "choices": [
+      "1. The fish is blue.",
+      "2. I want an apple.",
+      "3. The dress is blue.",
+      "4. The cat is hungry.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "quest-shoeShop",
+    "file": "wide-quest-shoeShop.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=shoeShop&fresh=1#map",
+    "advTitle": "Shoe Shop",
+    "choices": [
+      "1. The fish is soft.",
+      "2. I want bread.",
+      "3. The cat is blue.",
+      "4. The shoes are soft.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "quest-accessoryShop",
+    "file": "wide-quest-accessoryShop.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=accessoryShop&fresh=1#map",
+    "advTitle": "Accessory Shop",
+    "choices": [
+      "1. I eat shoes.",
+      "2. The cow is pink.",
+      "3. The sea is bread.",
+      "4. The ribbon is pink.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "quest-farm",
+    "file": "wide-quest-farm.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=farm&fresh=1#map",
+    "advTitle": "Sunny Farm",
+    "choices": [
+      "1. I want a dress.",
+      "2. The fish is small.",
+      "3. The cow is big.",
+      "4. It is sunny.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "quest-lighthouse",
+    "file": "wide-quest-lighthouse.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=quest&place=lighthouse&fresh=1#map",
+    "advTitle": "Lighthouse",
+    "choices": [
+      "1. It is sunny.",
+      "2. The dress is blue.",
+      "3. The cow is big.",
+      "4. I want a fish.",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "shop-market",
+    "file": "wide-shop-market.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop&place=market&item=studyDesk&coins=300&fresh=1#map",
+    "advTitle": "Market Square",
+    "choices": [
+      "Buy 180 coins",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "shop-boutique",
+    "file": "wide-shop-boutique.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop&place=boutique&item=blueDress&coins=300&fresh=1#map",
+    "advTitle": "Dress Boutique",
+    "choices": [
+      "Buy 100 coins",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "shop-shoeShop",
+    "file": "wide-shop-shoeShop.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop&place=shoeShop&item=pinkSlippers&coins=300&fresh=1#map",
+    "advTitle": "Shoe Shop",
+    "choices": [
+      "Buy 90 coins",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "shop-accessoryShop",
+    "file": "wide-shop-accessoryShop.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=shop&place=accessoryShop&item=goldCrown&coins=300&fresh=1#map",
+    "advTitle": "Accessory Shop",
+    "choices": [
+      "Buy 140 coins",
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  },
+  {
+    "vp": "wide",
+    "surface": "hint-lighthouse",
+    "file": "wide-hint-lighthouse.png",
+    "url": "http://127.0.0.1:4177/?selftest=visual-qa&surface=hint&place=lighthouse&fresh=1#map",
+    "advTitle": "Lighthouse",
+    "choices": [
+      "Leave"
+    ],
+    "hash": "#map",
+    "mapSrc": "assets/kingdom-map.png?v=handdrawn-20260531",
+    "modal": "adv-modal show",
+    "modalHidden": "false",
+    "objective": "Princess Room: Press Enter to go inside.",
+    "overflowX": false,
+    "overflowY": false,
+    "visible": [
+      "mapView"
+    ]
+  }
+]

@@ -19,18 +19,18 @@ const categories = [
 ];
 
 const shopItems = [
-  { id: "pinkDress", type: "outfit", name: "Pink academy dress", cost: 0, icon: "👗", colors: ["#f6a1bf", "#ffd8e8"], shape: "dress-ball", sprite: "0%" },
-  { id: "blueDress", type: "outfit", name: "Blue harbor dress", cost: 100, icon: "👗", colors: ["#82b9dc", "#d8f0ff"], shape: "dress-sailor", sprite: "33.333%" },
-  { id: "roseDress", type: "outfit", name: "Rose festival dress", cost: 200, icon: "👗", colors: ["#cf5d89", "#ffc1d7"], shape: "dress-rose", sprite: "66.666%" },
-  { id: "snowDress", type: "outfit", name: "Snowflake gown", cost: 260, icon: "👗", colors: ["#bde9ff", "#ffffff"], shape: "dress-snow", sprite: "100%" },
-  { id: "pinkSlippers", type: "shoes", name: "Ribbon walking shoes", cost: 90, icon: "👞", colors: ["#f19ab7", "#ffe1ec"], shape: "shoes-round" },
-  { id: "blueBoots", type: "shoes", name: "Blue seaside boots", cost: 150, icon: "🥾", colors: ["#4b668c", "#b7d8f2"], shape: "shoes-boots" },
-  { id: "goldCrown", type: "accessory", name: "Tiny gold crown", cost: 140, icon: "👑", colors: ["#d7a64b", "#fff2a6"], shape: "crown" },
-  { id: "silkRibbon", type: "accessory", name: "Silk party ribbon", cost: 120, icon: "🎀", colors: ["#c98dd6", "#ffe4fb"], shape: "ribbon" },
-  { id: "pearlBag", type: "accessory", name: "Pearl shell bag", cost: 170, icon: "👜", colors: ["#fff0f5", "#d7a64b"], shape: "bag" },
-  { id: "starCape", type: "accessory", name: "Starry helper cape", cost: 240, icon: "✨", colors: ["#5b6fa6", "#d9e4ff"], shape: "cape" },
-  { id: "studyDesk", type: "room", name: "New study desk", cost: 180, icon: "🪑", colors: ["#b98963", "#f2c083"], shape: "desk" },
-  { id: "seaLamp", type: "room", name: "Sea glass lamp", cost: 220, icon: "💡", colors: ["#70bfc9", "#e0fbff"], shape: "lamp" }
+  { id: "pinkDress", type: "outfit", name: "Pink academy dress", cost: 0, icon: "👗", colors: ["#f6a1bf", "#ffd8e8"], shape: "dress-ball", sprite: "0%", image: "assets/items/pinkDress.png" },
+  { id: "blueDress", type: "outfit", name: "Blue harbor dress", cost: 100, icon: "👗", colors: ["#82b9dc", "#d8f0ff"], shape: "dress-sailor", sprite: "33.333%", image: "assets/items/blueDress.png" },
+  { id: "roseDress", type: "outfit", name: "Rose festival dress", cost: 200, icon: "👗", colors: ["#cf5d89", "#ffc1d7"], shape: "dress-rose", sprite: "66.666%", image: "assets/items/roseDress.png" },
+  { id: "snowDress", type: "outfit", name: "Snowflake gown", cost: 260, icon: "👗", colors: ["#bde9ff", "#ffffff"], shape: "dress-snow", sprite: "100%", image: "assets/items/snowDress.png" },
+  { id: "pinkSlippers", type: "shoes", name: "Ribbon walking shoes", cost: 90, icon: "👞", colors: ["#f19ab7", "#ffe1ec"], shape: "shoes-round", image: "assets/items/pinkSlippers.png" },
+  { id: "blueBoots", type: "shoes", name: "Blue seaside boots", cost: 150, icon: "🥾", colors: ["#4b668c", "#b7d8f2"], shape: "shoes-boots", image: "assets/items/blueBoots.png" },
+  { id: "goldCrown", type: "accessory", name: "Tiny gold crown", cost: 140, icon: "👑", colors: ["#d7a64b", "#fff2a6"], shape: "crown", image: "assets/items/goldCrown.png" },
+  { id: "silkRibbon", type: "accessory", name: "Silk party ribbon", cost: 120, icon: "🎀", colors: ["#c98dd6", "#ffe4fb"], shape: "ribbon", image: "assets/items/silkRibbon.png" },
+  { id: "pearlBag", type: "accessory", name: "Pearl shell bag", cost: 170, icon: "👜", colors: ["#fff0f5", "#d7a64b"], shape: "bag", image: "assets/items/pearlBag.png" },
+  { id: "starCape", type: "accessory", name: "Starry helper cape", cost: 240, icon: "✨", colors: ["#5b6fa6", "#d9e4ff"], shape: "cape", image: "assets/items/starCape.png" },
+  { id: "studyDesk", type: "room", name: "New study desk", cost: 180, icon: "🪑", colors: ["#b98963", "#f2c083"], shape: "desk", image: "assets/items/studyDesk.png" },
+  { id: "seaLamp", type: "room", name: "Sea glass lamp", cost: 220, icon: "💡", colors: ["#70bfc9", "#e0fbff"], shape: "lamp", image: "assets/items/seaLamp.png" }
 ];
 
 const hotspots = [
@@ -137,6 +137,7 @@ let princessExpression = "normal";
 let npcExpression = "normal";
 let advFocusIndex = 0;
 let mapLifeFrame = null;
+let shopPreviewItemId = "";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -192,6 +193,7 @@ const elements = {
   difficultySelect: $("#difficultySelect"),
   speakToggleButton: $("#speakToggleButton"),
   resetButton: $("#resetButton"),
+  openaiSettingsForm: $("#openaiSettingsForm"),
   openaiOrgInput: $("#openaiOrgInput"),
   openaiKeyInput: $("#openaiKeyInput"),
   saveOpenAIButton: $("#saveOpenAIButton"),
@@ -325,6 +327,15 @@ function createRandomQuest(previousPlace) {
   const available = questTemplates.filter((quest) => quest.place !== previousPlace);
   const pool = available.length ? available : questTemplates;
   const template = pool[Math.floor(Math.random() * pool.length)];
+  return createQuestFromTemplate(template);
+}
+
+function createQuestForPlace(place) {
+  const template = questTemplates.find((quest) => quest.place === place) || questTemplates[0];
+  return createQuestFromTemplate(template);
+}
+
+function createQuestFromTemplate(template) {
   const hotspot = hotspotById(template.place);
   return {
     id: `${Date.now()}-${Math.random().toString(16).slice(2)}-${template.id}`,
@@ -449,8 +460,8 @@ function renderPaperDolls() {
   });
 }
 
-function avatarMarkup(surface) {
-  const outfit = itemById(state.outfit.outfit) || itemById("pinkDress");
+function avatarMarkup(surface, outfitState = state.outfit) {
+  const outfit = itemById(outfitState.outfit) || itemById("pinkDress");
   const spritePosition = outfit?.sprite || "0%";
   return `
     <div class="avatar-shadow"></div>
@@ -545,12 +556,11 @@ function createItemCard(item, options = {}) {
   const affordable = state.coins >= item.cost;
   const button = document.createElement("button");
   button.type = "button";
-  button.className = `item-card ${item.type}${owned ? " owned" : ""}${equipped ? " equipped" : ""}${!owned && !affordable ? " locked" : ""}`;
-  const previewStyle = item.type === "outfit"
-    ? `--sprite-x:${item.sprite || "0%"};--c1:${item.colors[0]};--c2:${item.colors[1]}`
-    : `--c1:${item.colors[0]};--c2:${item.colors[1]}`;
+  button.className = `item-card ${item.type}${owned ? " owned" : ""}${equipped ? " equipped" : ""}${!owned && !affordable ? " locked" : ""}${options.selected ? " selected" : ""}`;
+  button.dataset.itemId = item.id;
+  const previewStyle = `--sprite-x:${item.sprite || "0%"};--c1:${item.colors[0]};--c2:${item.colors[1]};--item-img:url(${item.image})`;
   button.innerHTML = `
-    <span class="item-preview item-art ${item.type === "outfit" ? "outfit-preview" : ""} ${item.shape}" style="${previewStyle}">
+    <span class="item-preview item-art item-image ${item.shape}" style="${previewStyle}">
       <span aria-hidden="true">${item.icon || "✦"}</span>
     </span>
     <strong>${item.name}</strong>
@@ -558,6 +568,10 @@ function createItemCard(item, options = {}) {
     <small>${categoryLabel(item.type)}</small>
   `;
   button.addEventListener("click", options.action || (() => {}));
+  if (options.onPreview) {
+    button.addEventListener("focus", () => options.onPreview(item));
+    button.addEventListener("mouseenter", () => options.onPreview(item));
+  }
   return button;
 }
 
@@ -594,8 +608,11 @@ function mapCoverMetrics() {
   const rect = elements.mapStage.getBoundingClientRect();
   const imageRatio = mapImageSize.width / mapImageSize.height;
   const stageRatio = rect.width / rect.height;
-  const displayWidth = stageRatio > imageRatio ? rect.height * imageRatio : rect.width;
-  const displayHeight = stageRatio > imageRatio ? rect.height : rect.width / imageRatio;
+  const baseDisplayWidth = stageRatio > imageRatio ? rect.height * imageRatio : rect.width;
+  const baseDisplayHeight = stageRatio > imageRatio ? rect.height : rect.width / imageRatio;
+  const mobileMapScale = rect.width <= 520 ? 1.34 : 1;
+  const displayWidth = baseDisplayWidth * mobileMapScale;
+  const displayHeight = baseDisplayHeight * mobileMapScale;
   return {
     width: rect.width,
     height: rect.height,
@@ -756,6 +773,7 @@ function updateNearbyHotspot() {
   }
   const isTarget = activeHotspot.id === state.activeQuest.place;
   elements.nearbyName.textContent = activeHotspot.label;
+  elements.nearbyCard.classList.add("show");
   if (activeHotspot.kind === "shop") {
     elements.nearbyHint.textContent = isTarget ? `${activeHotspot.npc} has today's quest and the shop is open.` : activeHotspot.hint;
     elements.interactButton.textContent = isTarget ? "Talk" : "Shop";
@@ -862,6 +880,9 @@ function openAdvBase(hotspot, mode) {
   activeShopHotspot = null;
   advFocusIndex = 0;
   setExpressions("normal", "normal");
+  elements.advScene.dataset.mode = mode;
+  elements.shopArea.before(elements.choiceList);
+  elements.choiceList.classList.remove("shop-command-list");
   elements.advModal.classList.add("show");
   elements.advModal.setAttribute("aria-hidden", "false");
   elements.advScene.className = `adv-scene ${hotspot.scene}`;
@@ -893,10 +914,9 @@ function addAdvOption(label, onClick, options = {}) {
 
 function advFocusableButtons() {
   if (!elements.advModal.classList.contains("show")) return [];
-  const selectors = [
-    "#choiceList .choice-button:not(:disabled)",
-    "#advShopGrid .item-card:not(:disabled)"
-  ];
+  const selectors = advMode === "shop"
+    ? ["#advShopGrid .item-card:not(:disabled)", "#choiceList .choice-button:not(:disabled)"]
+    : ["#choiceList .choice-button:not(:disabled)", "#advShopGrid .item-card:not(:disabled)"];
   return selectors.flatMap((selector) => [...document.querySelectorAll(selector)]).filter((button) => button.offsetParent !== null);
 }
 
@@ -960,8 +980,9 @@ function openShopAdv(hotspot) {
   addUnique("metNpcs", [hotspot.npc]);
   const firstCategory = hotspot.defaultCategory || hotspot.shopCategories?.[0] || "outfit";
   shopCategory = allowedShopCategories(hotspot).includes(shopCategory) ? shopCategory : firstCategory;
+  shopPreviewItemId = shopItems.find((item) => item.type === shopCategory && allowedShopCategories(hotspot).includes(item.type))?.id || "";
   elements.advLine.textContent = shopGreeting(hotspot);
-  elements.advPrompt.textContent = "Choose a treasure, try it on, then buy it for Lumi.";
+  elements.advPrompt.textContent = "Choose a treasure to preview. Press B or Buy when Lumi wants it.";
   elements.shopArea.classList.add("show");
   renderAdvShop();
   window.setTimeout(() => setAdvFocus(0), 0);
@@ -982,23 +1003,102 @@ function shopGreeting(hotspot) {
   return greetings[hotspot.id] || "Welcome, Princess. Pick a lovely item.";
 }
 
-function renderAdvShop() {
+function renderAdvShop(preserveFocus = false) {
   const allowed = allowedShopCategories();
   if (!allowed.includes(shopCategory)) shopCategory = allowed[0] || "outfit";
+  const categoryItems = shopItems.filter((item) => item.type === shopCategory && allowed.includes(item.type));
+  if (!categoryItems.some((item) => item.id === shopPreviewItemId)) shopPreviewItemId = categoryItems[0]?.id || "";
+  const previewItem = itemById(shopPreviewItemId) || categoryItems[0];
   renderCategoryTabs(elements.advShopTabs, shopCategory, (category) => {
     shopCategory = category;
+    shopPreviewItemId = "";
     renderAdvShop();
   }, false, allowed);
+  renderShopPreview(previewItem);
   elements.advShopGrid.innerHTML = "";
-  shopItems.filter((item) => item.type === shopCategory && allowed.includes(item.type)).forEach((item) => {
+  categoryItems.forEach((item) => {
     elements.advShopGrid.appendChild(createItemCard(item, {
       mode: "shop",
-      action: () => buyItemInAdv(item)
+      selected: item.id === shopPreviewItemId,
+      onPreview: previewShopItem,
+      action: () => previewShopItem(item)
     }));
   });
   elements.choiceList.innerHTML = "";
+  addAdvOption(shopActionLabel(previewItem), () => buyItemInAdv(previewItem), { leave: false });
   addAdvOption("Leave", closeAdv, { leave: true });
-  window.setTimeout(() => setAdvFocus(0), 0);
+  elements.choiceList.classList.add("shop-command-list");
+  elements.shopArea.appendChild(elements.choiceList);
+  const focusIndex = preserveFocus ? Math.max(0, categoryItems.findIndex((item) => item.id === shopPreviewItemId)) : 0;
+  window.setTimeout(() => setAdvFocus(focusIndex), 0);
+}
+
+function previewShopItem(item) {
+  if (!item || shopPreviewItemId === item.id) return;
+  shopPreviewItemId = item.id;
+  renderAdvShop(true);
+}
+
+function shopActionLabel(item) {
+  if (!item) return "Buy";
+  if (state.owned.includes(item.id)) {
+    if (item.type === "room") return "Placed";
+    return state.outfit[item.type] === item.id ? "Equipped" : "Equip";
+  }
+  if (state.coins < item.cost) return `Need ${item.cost - state.coins} more coins`;
+  return `Buy ${item.cost} coins`;
+}
+
+function renderShopPreview(item) {
+  let feature = elements.shopArea.querySelector(".shop-feature");
+  if (!feature) {
+    feature = document.createElement("div");
+    feature.className = "shop-feature";
+    elements.shopArea.prepend(feature);
+  }
+  if (!item) {
+    feature.innerHTML = "";
+    return;
+  }
+  const owned = state.owned.includes(item.id);
+  const equipped = state.outfit[item.type] === item.id;
+  const affordable = state.coins >= item.cost;
+  const previewOutfit = { ...state.outfit };
+  if (item.type !== "room") previewOutfit[item.type] = item.id;
+  const status = owned ? equipped ? "Equipped now" : "Owned treasure" : affordable ? "Ready to buy" : `Need ${item.cost - state.coins} more coins`;
+  feature.innerHTML = `
+    <div class="shop-feature-stage">
+      <div class="paper-doll shop-preview-doll" data-outfit="${previewOutfit.outfit || "none"}" data-shoes="${previewOutfit.shoes || "none"}" data-accessory="${previewOutfit.accessory || "none"}" data-expression="happy">
+        ${avatarMarkup("shop", previewOutfit)}
+      </div>
+      <div class="shop-feature-item item-preview item-art item-image ${item.shape}" style="--c1:${item.colors[0]};--c2:${item.colors[1]};--sprite-x:${item.sprite || "0%"};--item-img:url('${item.image}')">
+        <span aria-hidden="true">${item.icon || "✦"}</span>
+      </div>
+    </div>
+    <div class="shop-feature-copy">
+      <strong>${item.name}</strong>
+      <span>${status}</span>
+      <p>${itemWishText(item)}</p>
+    </div>
+  `;
+}
+
+function itemWishText(item) {
+  const lines = {
+    pinkDress: "Lumi's first dress for gentle castle mornings.",
+    blueDress: "A seaside dress for walking near bright waves.",
+    roseDress: "A festival dress that makes every thank-you sparkle.",
+    snowDress: "A soft gown for winter stories and moonlit dances.",
+    pinkSlippers: "Ribbon shoes for tiny steps across the kingdom.",
+    blueBoots: "Sturdy boots for brave harbor walks.",
+    goldCrown: "A tiny crown for a very kind princess helper.",
+    silkRibbon: "A party ribbon that bounces when Lumi smiles.",
+    pearlBag: "A shell bag for keeping little treasure notes.",
+    starCape: "A helper cape for night quests and lighthouse wishes.",
+    studyDesk: "A cozy desk where new English words can rest.",
+    seaLamp: "A sea-glass lamp that makes bedtime stories glow."
+  };
+  return lines[item.id] || "A lovely treasure for Lumi's next adventure.";
 }
 
 function buyItemInAdv(item) {
@@ -1031,7 +1131,7 @@ function buyItemInAdv(item) {
   elements.statusMessage.textContent = `${item.name} bought.`;
   persist();
   render();
-  renderAdvShop();
+  renderAdvShop(true);
 }
 
 function pickLesson(place) {
@@ -1225,6 +1325,7 @@ function speak(text) {
 
 function playTone(kind) {
   try {
+    if (new URLSearchParams(location.search).has("selftest")) return;
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return;
     const context = new AudioContextClass();
@@ -1383,6 +1484,9 @@ function bindEvents() {
     if (!window.confirm("Reset Lumi's coins, clothes, quests, and diary?")) return;
     resetProgress();
   });
+  elements.openaiSettingsForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+  });
   elements.saveOpenAIButton.addEventListener("click", () => {
     const typedKey = elements.openaiKeyInput.value.trim();
     openAISettings = {
@@ -1426,6 +1530,15 @@ function bindEvents() {
   });
   window.addEventListener("keydown", (event) => {
     if (!elements.advModal.classList.contains("show")) {
+      if (
+        (event.key === "Enter" || event.key === " ") &&
+        elements.mapStage?.offsetParent !== null &&
+        activeHotspot
+      ) {
+        event.preventDefault();
+        interactNearby();
+        return;
+      }
       if ((event.key === "g" || event.key === "G") && elements.homeView?.classList.contains("active")) {
         event.preventDefault();
         changeView("map");
@@ -1450,6 +1563,11 @@ function bindEvents() {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       if (!confirmAdvFocus() && advMode === "complete") closeAdv();
+      return;
+    }
+    if ((event.key === "b" || event.key === "B") && advMode === "shop") {
+      event.preventDefault();
+      buyItemInAdv(itemById(shopPreviewItemId));
       return;
     }
     if (/^[1-9]$/.test(event.key) && advMode === "quest") {
@@ -1569,6 +1687,56 @@ function runSelfTestIfRequested() {
 
 runSelfTestIfRequested();
 
+function runVisualQaIfRequested() {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "visual-qa") return;
+  const surface = params.get("surface") || "map";
+  const place = params.get("place") || state.activeQuest?.place || "garden";
+  if (params.get("fresh") === "1") state = freshState();
+  const hotspot = hotspotById(place) || hotspotById("garden");
+  const node = mapNodes[hotspot.node];
+  const coins = Number(params.get("coins"));
+  if (Number.isFinite(coins)) state.coins = Math.max(0, coins);
+
+  if (surface === "map-near") {
+    state.activeQuest = createQuestForPlace(hotspot.id);
+    state.playerNode = hotspot.node;
+    state.player = { x: node.x, y: node.y };
+    render();
+    changeView("map");
+    return;
+  }
+
+  if (surface === "quest") {
+    state.activeQuest = createQuestForPlace(hotspot.id);
+    render();
+    openQuestAdv(hotspot);
+    return;
+  }
+
+  if (surface === "shop") {
+    render();
+    openShopAdv(hotspot);
+    const item = itemById(params.get("item"));
+    if (item && allowedShopCategories(hotspot).includes(item.type)) {
+      shopPreviewItemId = item.id;
+      renderAdvShop(true);
+    }
+    return;
+  }
+
+  if (surface === "hint") {
+    state.activeQuest = createRandomQuest(hotspot.id);
+    render();
+    openHintAdv(hotspot);
+    return;
+  }
+
+  render();
+}
+
+runVisualQaIfRequested();
+
 function runMonkeyTestIfRequested() {
   const params = new URLSearchParams(location.search);
   if (params.get("selftest") !== "monkey") return;
@@ -1598,7 +1766,8 @@ function runMonkeyTestIfRequested() {
       const visibleButtons = [...document.querySelectorAll("button")].filter((button) => {
         const rect = button.getBoundingClientRect();
         const style = getComputedStyle(button);
-        return !button.disabled && rect.width > 0 && rect.height > 0 && style.visibility !== "hidden" && style.display !== "none";
+        const nativeDialogButtons = new Set(["saveButton", "loadButton", "clearDiaryButton", "resetButton"]);
+        return !nativeDialogButtons.has(button.id) && !button.disabled && rect.width > 0 && rect.height > 0 && style.visibility !== "hidden" && style.display !== "none";
       });
       if (visibleButtons.length) visibleButtons[Math.floor(Math.random() * visibleButtons.length)].click();
     },
