@@ -153,6 +153,7 @@ let shopPreviewItemId = "";
 let mapPan = { x: 0, y: 0 };
 let mapDrag = null;
 let pendingMapPositionFrame = 0;
+let systemMenuPanel = "diary";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -164,6 +165,12 @@ const elements = {
   saveButton: $("#saveButton"),
   loadButton: $("#loadButton"),
   loadFileInput: $("#loadFileInput"),
+  systemMenuButton: $("#systemMenuButton"),
+  systemMenu: $("#systemMenu"),
+  systemMenuBook: $(".system-menu-book"),
+  systemMenuClose: $("#systemMenuClose"),
+  systemMenuTabs: $$(".system-menu-tab"),
+  systemPanels: $$(".system-panel"),
   coinValue: $("#coinValue"),
   energyValue: $("#energyValue"),
   vocabValue: $("#vocabValue"),
@@ -374,6 +381,10 @@ function createQuestFromTemplate(template) {
 }
 
 function changeView(viewName) {
+  if (["diary", "settings", "save"].includes(viewName)) {
+    openSystemMenu(viewName);
+    return;
+  }
   if (!document.getElementById(`${viewName}View`)) viewName = "home";
   elements.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.view === viewName));
   elements.views.forEach((view) => view.classList.toggle("active", view.id === `${viewName}View`));
@@ -385,6 +396,56 @@ function changeView(viewName) {
       renderMap();
       elements.mapStage.focus({ preventScroll: true });
     }, 0);
+  }
+}
+
+function activeViewName() {
+  const active = elements.views.find((view) => view.classList.contains("active"));
+  return active?.id?.replace(/View$/, "") || "home";
+}
+
+function isSystemMenuOpen() {
+  return elements.systemMenu?.classList.contains("show");
+}
+
+function openSystemMenu(panel = "diary") {
+  changeSystemPanel(panel);
+  elements.systemMenu.classList.add("show");
+  elements.systemMenu.setAttribute("aria-hidden", "false");
+  document.body.classList.add("system-menu-open");
+  if (location.hash.slice(1) !== panel) history.replaceState(null, "", `#${panel}`);
+  setTimeout(() => {
+    elements.systemMenuBook?.focus({ preventScroll: true });
+  }, 0);
+}
+
+function closeSystemMenu() {
+  if (!isSystemMenuOpen()) return;
+  elements.systemMenu.classList.remove("show");
+  elements.systemMenu.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("system-menu-open");
+  const viewName = activeViewName();
+  if (["diary", "settings", "save"].includes(location.hash.slice(1))) {
+    history.replaceState(null, "", `#${viewName}`);
+  }
+  elements.systemMenuButton?.focus({ preventScroll: true });
+}
+
+function changeSystemPanel(panel = "diary") {
+  if (!["diary", "settings", "save"].includes(panel)) panel = "diary";
+  systemMenuPanel = panel;
+  elements.systemMenuTabs.forEach((tab) => {
+    const isActive = tab.dataset.menuPanel === panel;
+    tab.classList.toggle("active", isActive);
+    tab.setAttribute("aria-selected", String(isActive));
+  });
+  elements.systemPanels.forEach((item) => {
+    const isActive = item.dataset.menuPanel === panel;
+    item.classList.toggle("active", isActive);
+    item.hidden = !isActive;
+  });
+  if (isSystemMenuOpen() && location.hash.slice(1) !== panel) {
+    history.replaceState(null, "", `#${panel}`);
   }
 }
 
@@ -1683,6 +1744,12 @@ function finishMapDrag(event) {
 function bindEvents() {
   elements.tabs.forEach((tab) => tab.addEventListener("click", () => changeView(tab.dataset.view)));
   window.addEventListener("hashchange", () => changeView(location.hash ? location.hash.slice(1) : "home"));
+  elements.systemMenuButton.addEventListener("click", () => openSystemMenu(systemMenuPanel || "diary"));
+  elements.systemMenuClose.addEventListener("click", closeSystemMenu);
+  elements.systemMenu.addEventListener("click", (event) => {
+    if (event.target.matches("[data-system-close]")) closeSystemMenu();
+  });
+  elements.systemMenuTabs.forEach((tab) => tab.addEventListener("click", () => changeSystemPanel(tab.dataset.menuPanel)));
   elements.goMapButton.addEventListener("click", () => changeView("map"));
   elements.returnHomeButton.addEventListener("click", () => changeView("home"));
   elements.interactButton.addEventListener("click", interactNearby);
@@ -1770,6 +1837,13 @@ function bindEvents() {
   elements.mapStage.addEventListener("pointerup", finishMapDrag);
   elements.mapStage.addEventListener("pointercancel", finishMapDrag);
   window.addEventListener("keydown", (event) => {
+    if (isSystemMenuOpen()) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeSystemMenu();
+      }
+      return;
+    }
     if (!elements.advModal.classList.contains("show")) {
       if (
         (event.key === "Enter" || event.key === " ") &&
@@ -1973,6 +2047,12 @@ function runVisualQaIfRequested() {
     return;
   }
 
+  if (["diary", "settings", "save"].includes(surface)) {
+    render();
+    openSystemMenu(surface);
+    return;
+  }
+
   render();
 }
 
@@ -1983,7 +2063,9 @@ function runMonkeyTestIfRequested() {
   if (params.get("selftest") !== "monkey") return;
   const errors = [];
   const actions = [
-    () => changeView(["home", "map", "diary", "settings"][Math.floor(Math.random() * 4)]),
+    () => changeView(["home", "map"][Math.floor(Math.random() * 2)]),
+    () => openSystemMenu(["diary", "settings", "save"][Math.floor(Math.random() * 3)]),
+    () => closeSystemMenu(),
     () => moveOnMap(1, 0),
     () => moveOnMap(-1, 0),
     () => moveOnMap(0, 1),

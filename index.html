@@ -9,29 +9,9 @@
   </head>
   <body>
     <div class="app-shell">
-      <header class="topbar">
-        <div class="brand">
-          <span class="brand-mark" aria-hidden="true">L</span>
-          <div>
-            <strong>solKidGalGame</strong>
-            <small>Short talks, coins, and dress-up rewards</small>
-          </div>
-        </div>
-        <nav class="nav-tabs" aria-label="Main menu">
-          <button class="tab-button active" data-view="home" type="button">Room</button>
-          <button class="tab-button" data-view="map" type="button">Map</button>
-          <button class="tab-button" data-view="diary" type="button">Diary</button>
-          <button class="tab-button" data-view="settings" type="button">Settings</button>
-        </nav>
-        <div class="save-actions">
-          <button class="soft-button" id="saveButton" type="button">Save MD</button>
-          <button class="soft-button" id="loadButton" type="button">Load MD</button>
-          <input id="loadFileInput" type="file" accept=".md,text/markdown,text/plain" hidden />
-        </div>
-      </header>
-
       <main class="game-layout">
         <aside class="side-panel" aria-label="Princess status">
+          <button class="system-menu-button" id="systemMenuButton" type="button" aria-label="Open Lumi Diary and Settings" aria-controls="systemMenu" aria-haspopup="dialog">⚙</button>
           <div class="mini-doll-frame">
             <div class="paper-doll side-doll" data-doll="side"></div>
           </div>
@@ -112,7 +92,27 @@
             </div>
           </section>
 
-          <section class="view" id="diaryView" aria-labelledby="diaryTitle">
+        </section>
+      </main>
+    </div>
+
+    <section class="system-menu-overlay" id="systemMenu" aria-hidden="true" aria-labelledby="systemMenuTitle">
+      <div class="system-menu-backdrop" data-system-close></div>
+      <div class="system-menu-book" role="dialog" aria-modal="true" tabindex="-1">
+        <div class="system-menu-header">
+          <div>
+            <h2 id="systemMenuTitle">Lumi Diary</h2>
+            <p>Diary, settings, and save pages.</p>
+          </div>
+          <button class="soft-button system-menu-close" id="systemMenuClose" type="button" aria-label="Close Lumi Diary">Back</button>
+        </div>
+        <div class="system-menu-tabs" role="tablist" aria-label="Lumi Diary pages">
+          <button class="system-menu-tab active" data-menu-panel="diary" type="button" role="tab" aria-selected="true" aria-controls="diaryView">Diary</button>
+          <button class="system-menu-tab" data-menu-panel="settings" type="button" role="tab" aria-selected="false" aria-controls="settingsView">Settings</button>
+          <button class="system-menu-tab" data-menu-panel="save" type="button" role="tab" aria-selected="false" aria-controls="saveView">Save / Load</button>
+        </div>
+        <div class="system-menu-body">
+          <section class="system-panel active" id="diaryView" data-menu-panel="diary" role="tabpanel" aria-labelledby="diaryTitle">
             <div class="simple-panel">
               <div class="section-heading">
                 <div>
@@ -126,7 +126,7 @@
             </div>
           </section>
 
-          <section class="view" id="settingsView" aria-labelledby="settingsTitle">
+          <section class="system-panel" id="settingsView" data-menu-panel="settings" role="tabpanel" aria-labelledby="settingsTitle" hidden>
             <div class="simple-panel settings-card">
               <h2 id="settingsTitle">Settings</h2>
               <label for="difficultySelect">Word Level</label>
@@ -157,9 +157,29 @@
               </form>
             </div>
           </section>
-        </section>
-      </main>
-    </div>
+
+          <section class="system-panel" id="saveView" data-menu-panel="save" role="tabpanel" aria-labelledby="saveTitle" hidden>
+            <div class="simple-panel save-book-panel">
+              <div class="section-heading">
+                <div>
+                  <h2 id="saveTitle">Save / Load MD</h2>
+                  <p>Keep Lumi's diary and progress in a Markdown save file.</p>
+                </div>
+              </div>
+              <div class="save-book-actions">
+                <button class="primary-button" id="saveButton" type="button">Save MD</button>
+                <button class="soft-button" id="loadButton" type="button">Load MD</button>
+                <input id="loadFileInput" type="file" accept=".md,text/markdown,text/plain" hidden />
+              </div>
+              <div class="save-book-note">
+                <strong>Family save page</strong>
+                <span>Save MD exports readable diary pages and game progress. Help Teacher keys stay only in this browser.</span>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
 
     <section class="adv-modal" id="advModal" aria-hidden="true" aria-labelledby="advTitle">
       <div class="adv-backdrop"></div>
