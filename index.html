@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>solKidGalGame</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23d8678c'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-size='38' font-family='Arial' fill='white'%3EL%3C/text%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="styles.css?v=20260530-folder-layout1" />
+    <link rel="stylesheet" href="styles.css?v=20260531-destination-picker" />
   </head>
   <body>
     <div class="app-shell">
@@ -14,12 +14,12 @@
           <span class="brand-mark" aria-hidden="true">L</span>
           <div>
             <strong>solKidGalGame</strong>
-            <small>Map quests, dress-up, and simple English</small>
+            <small>Short talks, coins, and dress-up rewards</small>
           </div>
         </div>
         <nav class="nav-tabs" aria-label="Main menu">
           <button class="tab-button active" data-view="home" type="button">Room</button>
-          <button class="tab-button" data-view="map" type="button">Map</button>
+          <button class="tab-button" data-view="map" type="button">Places</button>
           <button class="tab-button" data-view="diary" type="button">Diary</button>
           <button class="tab-button" data-view="settings" type="button">Settings</button>
         </nav>
@@ -36,7 +36,7 @@
             <div class="paper-doll side-doll" data-doll="side"></div>
           </div>
           <h1>Princess Lumi</h1>
-          <p class="subtitle">A little princess who helps people around the kingdom.</p>
+            <p class="subtitle">A little princess who learns English, earns coins, and dresses up.</p>
           <div class="status-grid">
             <div class="stat"><span>Coins</span><strong id="coinValue">0</strong></div>
             <div class="stat"><span>Energy</span><strong id="energyValue">0</strong></div>
@@ -50,7 +50,7 @@
             <p id="outfitSummary">Pink academy dress</p>
           </div>
           <div class="notice-box" id="statusMessage" aria-live="polite">
-            Go to the map and help someone in the kingdom.
+                Choose a place, help someone, then dress Lumi with the reward.
           </div>
         </aside>
 
@@ -61,7 +61,7 @@
               <div class="room-shade"></div>
               <div class="room-title-panel">
                 <h2 id="homeTitle">Princess Room</h2>
-                <p>Dress Lumi like a doll, then go out for map quests.</p>
+                <p>Dress Lumi like a doll, then choose a place for a short talk.</p>
               </div>
               <div class="room-paper-doll">
                 <div class="paper-doll big-doll" data-doll="room"></div>
@@ -75,7 +75,7 @@
                 </div>
                 <div class="category-tabs" id="wardrobeTabs"></div>
                 <div class="wardrobe-grid" id="wardrobeGrid"></div>
-                <button class="primary-button wardrobe-exit-button" id="goMapButton" type="button">Go to Map</button>
+                <button class="primary-button wardrobe-exit-button" id="goMapButton" type="button" aria-label="Choose Place" aria-keyshortcuts="G">Choose Place</button>
               </div>
             </div>
           </section>
@@ -83,13 +83,13 @@
           <section class="view" id="mapView" aria-labelledby="mapTitle">
             <div class="map-toolbar">
               <div>
-                <h2 id="mapTitle">Luminara Kingdom Map</h2>
-                <p id="mapObjective">Explore the kingdom map. Press Enter or Space near a place.</p>
+                <h2 id="mapTitle">Choose Lumi's Next Place</h2>
+                <p id="mapObjective">Pick a cute place for one short English talk.</p>
               </div>
               <button class="soft-button" id="returnHomeButton" type="button">Back to Room</button>
             </div>
             <div class="map-stage" id="mapStage" tabindex="0" aria-label="Kingdom map. Use keyboard to explore and interact near places.">
-              <img src="assets/kingdom-map.png?v=handdrawn-20260531" alt="Original Luminara kingdom map" />
+              <img src="assets/kingdom-map.png?v=handdrawn-20260531" alt="Luminara place map" />
               <div class="map-life-layer" id="mapLifeLayer" aria-hidden="true"></div>
               <svg class="route-layer" id="routeLayer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
               <div id="nodeLayer"></div>
@@ -101,6 +101,13 @@
                 <strong id="nearbyName">Castle Gate</strong>
                 <span id="nearbyHint">Move to a place node.</span>
                 <button class="primary-button" id="interactButton" type="button">Talk</button>
+              </div>
+              <div class="destination-panel" id="destinationPanel" aria-label="Choose a destination">
+                <div class="destination-heading">
+                  <strong>Today in Luminara</strong>
+                  <span id="destinationHint">One talk, one reward.</span>
+                </div>
+                <div class="destination-list" id="destinationList"></div>
               </div>
             </div>
           </section>
@@ -182,6 +189,6 @@
       </div>
     </section>
 
-    <script src="script.js?v=20260531-qa10"></script>
+    <script src="script.js?v=20260531-destination-picker"></script>
   </body>
 </html>

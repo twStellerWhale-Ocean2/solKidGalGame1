@@ -1,69 +1,143 @@
 # solKidGalGame
 
-A PC-focused static web game for young English learners. The first screen is Princess Lumi's bedroom, where the player dresses her like a paper doll. The main play loop happens on the kingdom map: freely explore safe walk areas, visit quest places or shops, and answer short English ADV scenes.
+# I. 緣起目的
 
-## Project Scope
+## 使用者描述要求
 
-- Type: child-friendly, cute Japanese-style MAP ADV English practice static web game.
-- Target deployment: GitHub Pages.
-- Static web root: repository root.
-- Static entry: `index.html`.
-- Main website package: `index.html`, `styles.css`, `script.js`, `assets/`.
-- Optional local server: `server.mjs`, defaulting to `http://127.0.0.1:4174/`.
-- Documentation layout: root keeps `AGENTS.md` and `README.md`; `doc/` keeps design notes, audit notes, and follow-up issue tracking.
+本專案是一個給年幼英文學習者玩的靜態網頁遊戲。主要體驗不是一般網站、題庫或後台，而是手機直向優先的兒童向日式 ADV：孩子陪 Princess Lumi 去不同地點和角色對話，練習一個短英文句子，答對後拿 coins，再把 coins 立刻轉成可見的換裝、鞋子、配件或房間裝飾獎勵。
 
-## Current Play Loop
+使用者要求 `README.md` 改為本案長期 source of truth，採下列固定架構：
 
-1. Open the room and check Lumi's outfit.
-2. Go to the map.
-3. Move freely with `WASD` or arrow keys inside safe walk areas.
-4. Press `Enter`, `Space`, or the `Talk` / `Shop` button at a place.
-5. In quest scenes, read the NPC line and choose one English sentence.
-6. Wrong answers show a hint and allow another try.
-7. Correct answers give `100 coins`, stats, learned words, diary records, and a closing line.
-8. The game stays on the map and creates the next random quest.
+1. `I. 緣起目的`：包含使用者描述要求。
+2. `II. 參考準備`：研究綜整業界類似遊戲的作法，並比較作為本案參考。
+3. `III. 內容程序`：放置建議規劃內容。
+4. `IV. 備註紀錄`：說明部署作法、執行狀況及剩餘問題等。
 
-## Core Loop Design
+## 專案定位
 
-1. Room shows Princess Lumi as a full-body paper doll with dress-up support.
-2. The player leaves for the kingdom map.
-3. The map supports free movement to location hotspots.
-4. Near a valid place, `Enter` or `Space` opens an ADV scene.
-5. ADV scenes use a place background, character portraits, a bottom dialogue box, vertical choices, and keyboard control.
-6. Completed English tasks reward coins, stats, learned words, and diary records.
-7. Coins can buy dresses, shoes, accessories, and room items from the matching shops.
-8. The player returns to the room to dress up, decorate, and continue exploring.
+- 類型：兒童向、可愛、日式 ADV 感的手機直向英文練習與換裝獎勵靜態網頁遊戲。
+- 核心玩家：年幼英文學習者。
+- 主要裝置：手機瀏覽器直向。
+- 次要裝置：桌機瀏覽器可保留可用性，但桌機寬地圖不再是產品完成目標。
+- 發布目標：GitHub Pages，repository root 即靜態網站根目錄。
+- 技術邊界：維持 `index.html`、`styles.css`、`script.js`、`assets/` 為主，不引入需要後端才能遊玩的核心流程。
 
-## Places
+## 產品主旨
 
-- Castle Garden
-- Market Square
-- Harbor Dock
-- Dress Boutique
-- Shoe Shop
-- Accessory Shop
-- Sunny Farm
-- Lighthouse
+孩子每次遊玩只需要理解一件事：選地方、聽一句、選一句英文、拿獎勵、幫 Lumi 變得更可愛。
 
-## Dress-Up
+完整主循環：
 
-Owned items appear in the room wardrobe. Equipment changes are reflected in:
+```text
+Room
+  -> Destination Picker / lightweight Map
+  -> ADV conversation
+  -> correct answer reward: coins + learned word + diary
+  -> Shop / Wardrobe reward preview
+  -> Dress-up feedback in Room
+  -> repeat
+```
 
-- the room paper doll
-- the side status portrait
-- the map princess marker
-- the ADV princess portrait
+舊有桌機式自由探索 kingdom map 仍是專案歷史的一部分，但不應主導手機完成標準。手機版應以可愛、快速、低挫折的目的地選擇與短 ADV 對話為核心。
 
-Shop categories are location-specific:
+# II. 參考準備
 
-- Dress Boutique: dresses
-- Shoe Shop: shoes
-- Accessory Shop: hats and accessories
-- Market: room items
+## 業界類似作法綜整
+
+| 參考案例 | 可觀察作法 | 本案可借用 | 本案不照搬 |
+|---|---|---|---|
+| [Khan Academy Kids](https://en.khanacademy.org/kids) | 以角色、書本、影片與活動形成兒童學習路徑，目標年齡偏低，強調 playful learning。 | 用角色陪伴與短任務降低學習壓力；讓 diary / learned words 像學習足跡。 | 不做大型課程平台，不做大量學科內容。 |
+| [Duolingo ABC](https://abc.duolingo.com/) / App Store listing | 以 mini games、獎勵與漸進式閱讀練習建立孩子信心。 | 每回合只練一個短英文目標；答錯提示、答對獎勵，避免挫折。 | 不做密集 phonics / spelling 課程序列。 |
+| [Lingokids](https://help.lingokids.com/hc/en-us/articles/23532720590610-Playlearning-Sections) | 以 Playlearning、兒童可自行操作的區塊導覽、遊戲 / 影片 / 歌曲提高參與度。 | 手機導覽要讓孩子一眼知道可以去哪裡；操作要大、直覺、低文字負擔。 | 不做多媒體內容平台或訂閱內容庫。 |
+| [Toca Boca World](https://www.tocaboca.com/app/world/) | 強調安全、開放式創造、自我表達、佈置與角色扮演。 | Dress-up、房間裝飾與角色自我表達要成為獎勵主軸。 | 不做大型開放世界、不做社交或複雜創作工具。 |
+
+## 本案設計參考結論
+
+- 兒童學習遊戲應採短回合、低挫折、立即回饋。
+- 主角與 NPC 要有陪伴感，不能只有題目與按鈕。
+- 手機直向流程要以大目標、大按鈕、明確下一步為準。
+- 獎勵必須可見；coins 只有在能買到、試穿到、裝飾到東西時才成立。
+- Diary / Save / Settings 是遊戲內道具或書本，不是管理頁面。
+- 本案不是純英文 app，也不是純換裝 app；它的差異點是「短英文 ADV 對話 -> coins -> 立即換裝 / 佈置」的閉環。
+
+## 必須避免的方向
+
+- 不能讓首頁看起來像 landing page。
+- 不能讓地點選擇看起來像網站卡片列表。
+- 不能讓 ADV 看起來像表單問答。
+- 不能讓 Shop 看起來像後台商品清單。
+- 不能讓 Dress-up 只是資料狀態；Lumi 身上與房間中必須看得出改變。
+- 不能用桌機寬地圖的完成度替代手機直向完成度。
+
+# III. 內容程序
+
+## MVP Vertical Slice
+
+第一條可驗收切片：
+
+```text
+Room
+  -> Destination Picker
+  -> Market Square / Bakery ADV
+  -> coins reward
+  -> Dress Boutique or Market reward preview
+  -> Wardrobe / Room visible change
+  -> Diary record
+  -> Save MD
+```
+
+切片完成條件：
+
+- 手機直向可從 Room 玩到獎勵並回 Room。
+- ADV 場景有背景、NPC、Princess Lumi、底部 dialogue box 與大尺寸直排選項。
+- 答錯時顯示溫和提示並可再試。
+- 答對時立即給 coins、learned words、diary record 與正向回應。
+- 商品可以 preview / try on，購買後 `Owned`、`Equipped`、coins 變化清楚。
+- Lumi 或房間可見獎勵變化。
+- Save / Load 不匯出 OpenAI API key。
+
+## 核心場景規格
+
+### Room
+
+- Princess Lumi 以全身紙娃娃呈現。
+- 穿搭、鞋子、帽飾、配件、房間物件必須有可見差異。
+- 出門應是場景內行動，不是網站 hero CTA。
+- Wardrobe 應像玩具衣櫃或抽屜，支援點選預覽與裝備狀態。
+
+### Destination Picker / Map
+
+- 手機直向使用目的地選擇作主流程。
+- 每個地點需要可愛圖示、短名稱與清楚任務感。
+- 若保留 Map，應是 lightweight travel screen，不要求孩子在手機上操作寬幅自由探索。
+- 地點包含：Castle Garden、Market Square / Bakery、Harbor Dock、Dress Boutique、Shoe Shop、Accessory Shop、Sunny Farm、Lighthouse。
+
+### ADV Conversation
+
+- 每個地點一個短場景：背景、NPC、Princess Lumi、底部對話框。
+- 每回合只練一個短英文句子。
+- 選項直排、大尺寸、適合觸控。
+- 支援方向鍵 / W/S、數字鍵、Enter / Space。
+- Help Teacher `?` 提供短提示；沒有 API key 時使用內建提示。
+
+### Shop
+
+- Shop 是獎勵場景，不是 inventory table。
+- 商品要有大預覽與立即 try-on。
+- 單分類商店不讓 tab 佔主視覺。
+- 狀態清楚顯示：`Owned`、`Equipped`、price、`Need more coins`、`Buy`、`Leave`。
+- 購買後應有輕量慶祝、店員回應與 diary 記錄。
+
+### Diary / Settings / Save Load
+
+- Diary 是公主日記本，顯示幫了誰、學到什麼、買了什麼、拿到什麼 badge / sticker。
+- Settings 收 word level、voice、Help Teacher，不破壞遊戲沉浸感。
+- Save MD 匯出可讀 diary 與 `LUMINARA_SAVE_JSON` data block。
+- Load MD 還原 coins、energy、stats、difficulty、outfit、owned items、current quest、diary、completed lessons、learned words、met NPCs、badges。
 
 ## Word Levels
 
-The Settings page supports five levels:
+Settings 支援五個等級：
 
 - Common English 100 words
 - Common English 250 words
@@ -71,73 +145,129 @@ The Settings page supports five levels:
 - Common English 750 words
 - Common English 1000 words
 
-The level affects the available sentence pool and reward multiplier.
+等級影響可用句庫與 reward multiplier，但不應讓低年齡玩家感到挫折。
 
-## Help Teacher
+## 素材與畫風規格
 
-The `?` button gives a short hint during ADV scenes.
-
-- Without an API key, the game uses a local built-in hint.
-- With the optional local Node server, `/api/help` can use `OPENAI_API_KEY` and `OPENAI_ORG_ID`.
-- Browser-stored help keys are not exported in Markdown saves.
-
-## Save / Load
-
-`Save MD` exports a Markdown save with a readable diary plus a `LUMINARA_SAVE_JSON` data block. `Load MD` restores that file.
-
-Saved data includes coins, energy, stats, difficulty, outfit, owned items, current quest, diary, completed lessons, learned words, met NPCs, and badges.
-
-## Static Deployment
-
-The repository is grouped by role:
-
-- Root: `AGENTS.md` and `README.md`
-- `doc/`: design notes, audit notes, and other project documentation
-- Repository root: the complete runnable website root, including source files, the optional local server, and assets
-
-For static hosting, serve `index.html` as the entry file. For GitHub Pages, use `Deploy from a branch` and select the repository root. The optional `server.mjs` is only for local OpenAI help proxy testing.
-
-## Main Files
-
-- `index.html`: DOM game shell, Room, Map, Diary, Settings, and ADV modal.
-- `styles.css`: main visual styling, map, room, ADV, shops, and paper doll styles.
-- `script.js`: game data, state, map coordinates, hotspots, ADV, shops, save/load, and monkey test.
-- `server.mjs`: local OpenAI help proxy and static file server.
-- `doc/AUDIT-111.md`: broad audit issue source of truth.
-- `doc/AUDIT-IMAGE-ISSUES.md`: latest per-page image, UI, and monkey audit notes.
-
-## Asset Status
-
-Main backgrounds:
+目前主要素材：
 
 - `assets/bedroom.png`
 - `assets/kingdom-map.png`
 - `assets/scenes/*.png`
-
-Characters:
-
 - `assets/characters/npc-*.png`
 - `assets/characters/princess-*.png`
 - `assets/characters/princess-outfits-sheet.png`
+- `assets/map-layers/*.png`
 
-Animated map layer PNGs:
+素材來源分類：
 
-- `assets/map-layers/windmill-blades.png`
-- `assets/map-layers/castle-flag.png`
-- `assets/map-layers/harbor-ship-large.png`
-- `assets/map-layers/harbor-ship-small.png`
-- `assets/map-layers/lighthouse-boat.png`
-- `assets/map-layers/river-flow.png`
-- `assets/map-layers/harbor-flow.png`
-- `assets/map-layers/ocean-flow.png`
+- 既有正式素材：目前 repo 內 hand-drawn style PNG。
+- 臨時素材：CSS 色塊、程式幾何圖、SVG 拼貼、模糊裁切、placeholder。
+- GPT / GPT-5.5 生圖：若使用者要求嚴格 asset provenance，正式美術必須重新用 GPT 圖像生成流程產出並寫回 repo。
 
-Cleaned up:
+正式完成標準：
 
-- Root QA screenshots were removed.
-- Old `assets/scenes/*.svg` placeholders were removed.
-- Unused scene thumbnails and `princess-main.png` were removed.
+- 背景、角色、NPC、商品、UI 裝飾要像同一個兒童日式 ADV 世界。
+- 商品不能只是色塊，必須像孩子會想買的衣服、鞋、飾品或房間物件。
+- 對話框不可壓壞主舞台。
+- 手機直向不可因桌機構圖而裁切、留白過多或文字溢出。
 
-## Completed Work
+## 驗收 Surface 與 Viewport
+
+必要 surface：
+
+- Room
+- Destination Picker / Map
+- Diary
+- Settings
+- Castle Garden
+- Market Square / Bakery
+- Harbor Dock
+- Dress Boutique
+- Shoe Shop
+- Accessory Shop
+- Sunny Farm
+- Lighthouse
+
+必要 viewport：
+
+- 手機直向。
+- 桌機 `1024x768`。
+- 寬桌機 `1800x800`。
+
+手機直向是產品完成主標準；桌機與寬桌機用於確認沒有破版、過空、比例失衡或 UI 遮擋。
+
+## 實作順序建議
+
+1. 重整手機直向主流程：Room -> Destination Picker -> ADV -> reward -> Wardrobe。
+2. 弱化寬地圖在手機上的主導地位。
+3. 強化答對後的 coins / 商品 / 換裝回饋。
+4. Shop 改成大預覽、try-on、購買慶祝與店員回應。
+5. Diary 改成公主日記與學習足跡。
+6. Settings / Save / Load 收進遊戲 overlay。
+7. 針對 Room、Destination Picker / Map、8 個 ADV 地點、Shop、Wardrobe、Diary、Settings 做完整美術性測試。
+
+# IV. 備註紀錄
+
+## 專案檔案
+
+- `index.html`：DOM game shell、Room、Map、Diary、Settings、ADV modal。
+- `styles.css`：主要視覺樣式、map、room、ADV、shops、paper doll。
+- `script.js`：game data、state、map coordinates、hotspots、ADV、shops、save/load、monkey test。
+- `server.mjs`：local OpenAI help proxy 與 static file server。
+- `assets/`：背景、角色、商品、map layer 與 UI 圖像。
+- `doc/AUDIT-111.md`： broad audit issue source of truth。
+- `doc/AUDIT-IMAGE-ISSUES.md`：歷史 page-by-page visual issue list。
+
+## 部署作法
+
+GitHub Pages：
+
+- 使用 `Deploy from a branch`。
+- 靜態網站 root 選 repository root。
+- `index.html` 為入口。
+- `server.mjs` 只用於本機 OpenAI Help proxy 測試，不是 GitHub Pages 必需項。
+
+本機 static-only：
+
+```powershell
+python -m http.server 4173
+```
+
+本機 optional help proxy：
+
+```powershell
+$env:OPENAI_API_KEY="sk-..."
+$env:OPENAI_ORG_ID="org_..."
+node server.mjs
+```
+
+預設本機 server URL：
+
+- `http://127.0.0.1:4174/`
+
+## QA Entrypoints
+
+- Save/load selftest：`?selftest=save-load`
+- Monkey selftest：`?selftest=monkey`
+
+常用 QA URLs：
+
+- `http://127.0.0.1:4174/#home`
+- `http://127.0.0.1:4174/#map`
+- `http://127.0.0.1:4174/?selftest=monkey#home`
+- `http://127.0.0.1:4174/?selftest=save-load#home`
+
+較大 UI 或 gameplay 變更後：
+
+1. 開啟本機 URL。
+2. 先檢查或截圖手機直向相關頁面與場景。
+3. 檢查桌機 `1024x768` 與寬桌機 `1800x800`。
+4. 執行 monkey test。
+5. 檢查 console errors / warnings。
+6. 回報未解問題。
+
+## 目前已完成狀況
 
 - Fixed layout overflow and the PC game viewport.
 - Fixed map coordinates so map, player, hotspots, and map actors use the same transform.
@@ -151,7 +281,7 @@ Cleaned up:
   - Accessory Shop: accessories
   - Market: room items
 - Added mobile portrait layout so Room and Map keep a full-width game scene instead of being squeezed by the desktop HUD.
-- Reworked shop ADV flow into preview-first reward shopping: item focus previews / tries on the treasure, `B` or `Buy` confirms purchase, and the bought item remains focused with equipped feedback.
+- Reworked shop ADV flow into preview-first reward shopping.
 - Replaced `assets/kingdom-map.png` with a hand-drawn style map plate and kept the existing coordinate system.
 - Removed the earlier blurred mobile map backdrop in favor of a cleaner hand-drawn map presentation.
 - Replaced ADV / Shop scene backgrounds with hand-drawn style PNG scene plates for all eight places.
@@ -159,78 +289,21 @@ Cleaned up:
 - Added Diary and Settings book-style PNG backgrounds.
 - Fixed Quest ADV choice overflow on desktop and mobile.
 - Fixed mobile Shop command / item overflow so Buy and Leave remain visible.
-- Wrapped the Help Teacher key fields in a form and prevented submit reloads, clearing Chromium's password-field console warning during selftests.
+- Wrapped the Help Teacher key fields in a form and prevented submit reloads, clearing Chromium password-field console warning during selftests.
 - Re-ran full visual QA across 64 desktop/mobile surfaces. Final evidence is under `doc/qa-20260531-final-art-map/`.
 - `node --check script.js` has passed multiple times.
 - The 300-step monkey test has passed multiple times.
 
-## Remaining Issues
+## 剩餘問題
 
-1. Mobile portrait Map is playable with the same coordinate system, but a fully portrait-native exploration map would require new coordinates and a portrait-first map plate.
-2. If strict asset provenance is required, all generated PNG assets should be regenerated through a file-writing GPT-5.5 image pipeline and replaced using the same asset list.
-3. `doc/AUDIT-IMAGE-ISSUES.md` remains the historical page-by-page visual issue list.
+1. 桌機式寬 kingdom map 不適合作為手機直向主體驗，應降級或改為 mobile-first destination picker、conversation route 或 portrait-native travel screen。
+2. 手機主循環需要更強的答對後立即換裝回饋。
+3. Shop reward appeal 需要加強：try-on 變化、購買慶祝、房間 / outfit 可見效果。
+4. Diary / Settings / Save / Load 仍需持續避免變成工具頁或後台表單。
+5. 若要求嚴格 asset provenance，所有 generated PNG assets 應透過 GPT / GPT-5.5 圖像生成流程重新產出並替換。
+6. `doc/AUDIT-IMAGE-ISSUES.md` 仍是歷史視覺問題清單，後續修訂需確認是否仍有效。
 
-## Design Direction
+## 本 README 變更紀錄
 
-- This is a game first, not a general website.
-- Room should feel like Princess Lumi's living base, not a landing page.
-- Map should feel like a free-exploration MAP ADV, not a web marker page.
-- ADV scenes should use close-up backgrounds, transparent PNG character art, a bottom dialogue box, and vertical choices.
-- Shops should create reward motivation through large product previews, try-on behavior, owned/equipped/buy states, and purchase feedback.
-- Diary, Settings, Save, and Load should feel like game overlays, not admin forms.
-- Dynamic map elements should use a clean background plate plus independent PNG sprite layers, not CSS geometry overlays.
-
-## Local Run
-
-Static-only:
-
-```powershell
-python -m http.server 4173
-```
-
-Optional local help proxy:
-
-```powershell
-$env:OPENAI_API_KEY="sk-..."
-$env:OPENAI_ORG_ID="org_..."
-node server.mjs
-```
-
-Default local server URL:
-
-- `http://127.0.0.1:4174/`
-
-## QA Entrypoints
-
-- Save/load selftest: `?selftest=save-load`
-- Monkey selftest: `?selftest=monkey`
-
-Common QA URLs:
-
-- `http://127.0.0.1:4174/#home`
-- `http://127.0.0.1:4174/#map`
-- `http://127.0.0.1:4174/?selftest=monkey#home`
-- `http://127.0.0.1:4174/?selftest=save-load#home`
-
-Validation surfaces:
-
-- Room
-- Map
-- Diary
-- Settings
-- Castle Garden
-- Market Square
-- Harbor Dock
-- Dress Boutique
-- Shoe Shop
-- Accessory Shop
-- Sunny Farm
-- Lighthouse
-
-After larger UI or gameplay changes:
-
-1. Open the local URL in a real browser.
-2. Check or screenshot each relevant page and scene.
-3. Run the monkey test.
-4. Check console errors and warnings.
-5. Report remaining unresolved issues.
+- 2026-05-31：依使用者要求重整為 `I. 緣起目的`、`II. 參考準備`、`III. 內容程序`、`IV. 備註紀錄`。
+- 2026-05-31：將本輪新規劃遊戲的 surface inventory 內容吸收為 README 的正式設計基準。

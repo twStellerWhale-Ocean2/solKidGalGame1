@@ -171,6 +171,9 @@ const elements = {
   nearbyName: $("#nearbyName"),
   nearbyHint: $("#nearbyHint"),
   interactButton: $("#interactButton"),
+  destinationPanel: $("#destinationPanel"),
+  destinationHint: $("#destinationHint"),
+  destinationList: $("#destinationList"),
   returnHomeButton: $("#returnHomeButton"),
   mapObjective: $("#mapObjective"),
   advModal: $("#advModal"),
@@ -594,14 +597,72 @@ function toggleEquip(item) {
 
 function renderMap() {
   const target = hotspotById(state.activeQuest.place);
-  elements.mapObjective.textContent = `Current quest: ${state.activeQuest.title}. Target: ${target.icon} ${target.label}.`;
+  elements.mapObjective.textContent = `Today's talk: ${target.icon} ${target.label}. ${state.activeQuest.title}.`;
+  elements.destinationHint.textContent = `${target.icon} ${target.label} is waiting.`;
   elements.routeLayer.innerHTML = "";
   elements.nodeLayer.innerHTML = "";
+  renderDestinationPicker();
   renderMapActors();
   renderHotspots();
   updatePlayerPosition();
   updateNearbyHotspot();
   startMapLife();
+}
+
+function renderDestinationPicker() {
+  if (!elements.destinationList) return;
+  const targetId = state.activeQuest.place;
+  elements.destinationList.innerHTML = "";
+  hotspots.filter((hotspot) => hotspot.kind !== "room").forEach((hotspot) => {
+    const isTarget = hotspot.id === targetId;
+    const isShop = hotspot.kind === "shop";
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `destination-card${isTarget ? " target" : ""}${isShop ? " shop" : ""}`;
+    button.dataset.destinationId = hotspot.id;
+    button.innerHTML = `
+      <span class="destination-icon" aria-hidden="true">${hotspot.icon}</span>
+      <span class="destination-copy">
+        <strong>${hotspot.label}</strong>
+        <small>${destinationActionText(hotspot, isTarget)}</small>
+      </span>
+      <span class="destination-badge">${isTarget ? "Talk" : isShop ? "Shop" : "Visit"}</span>
+    `;
+    button.addEventListener("click", () => chooseDestination(hotspot.id));
+    elements.destinationList.appendChild(button);
+  });
+}
+
+function destinationActionText(hotspot, isTarget) {
+  if (isTarget) return `${hotspot.npc} has today's English task.`;
+  if (hotspot.kind === "shop") {
+    const categoriesText = allowedShopCategories(hotspot).map(categoryLabel).join(" / ");
+    return `Try ${categoriesText.toLowerCase()} rewards.`;
+  }
+  return hotspot.hint;
+}
+
+function chooseDestination(hotspotId) {
+  const hotspot = hotspotById(hotspotId);
+  if (!hotspot) return;
+  const node = mapNodes[hotspot.node];
+  if (node) {
+    state.playerNode = node.id;
+    state.player = { x: node.x, y: node.y };
+  }
+  persist();
+  renderMap();
+  activeHotspot = hotspot;
+  updateHotspotFocus();
+  if (hotspot.kind === "room") {
+    changeView("home");
+  } else if (hotspot.id === state.activeQuest.place) {
+    openQuestAdv(hotspot);
+  } else if (hotspot.kind === "shop") {
+    openShopAdv(hotspot);
+  } else {
+    openHintAdv(hotspot);
+  }
 }
 
 function mapCoverMetrics() {
@@ -768,7 +829,7 @@ function updateNearbyHotspot() {
   updateHotspotFocus();
   if (!activeHotspot) {
     const target = hotspotById(state.activeQuest.place);
-    elements.mapObjective.textContent = `Current quest: ${state.activeQuest.title}. Target: ${target.icon} ${target.label}.`;
+    elements.mapObjective.textContent = `Pick a place below, or walk to ${target.icon} ${target.label}.`;
     return;
   }
   const isTarget = activeHotspot.id === state.activeQuest.place;
@@ -785,7 +846,7 @@ function updateNearbyHotspot() {
     elements.interactButton.textContent = "Talk";
   }
   if (activeHotspot.kind === "room") {
-    elements.mapObjective.textContent = "Princess Room: Press Enter to go inside.";
+    elements.mapObjective.textContent = "Pick a place below, or press Enter to return to Room.";
   } else if (isTarget) {
     elements.mapObjective.textContent = `${activeHotspot.icon} ${activeHotspot.label}: Press Enter to start Lumi's task.`;
   } else if (activeHotspot.kind === "shop") {
@@ -875,6 +936,7 @@ function interactNearby() {
 
 function openAdvBase(hotspot, mode) {
   changeView("map");
+  clearRewardBursts();
   advMode = mode;
   activeLesson = null;
   activeShopHotspot = null;
@@ -906,6 +968,7 @@ function addAdvOption(label, onClick, options = {}) {
   button.className = `choice-button${options.leave ? " leave-choice" : ""}`;
   button.type = "button";
   button.textContent = options.number ? `${options.number}. ${label}` : label;
+  button.setAttribute("aria-label", label);
   if (options.choice) button.dataset.choice = options.choice;
   button.addEventListener("click", onClick);
   elements.choiceList.appendChild(button);
@@ -1126,12 +1189,57 @@ function buyItemInAdv(item) {
   awardBadge("First Shopping");
   updateProgressBadges();
   addDiary({ type: "shop", title: activeShopHotspot?.label || "Shop", body: `Bought ${item.name}.`, result: `-${item.cost} coins` });
+  const feedbackText = item.type === "room" ? `${item.name} is in Lumi's room now.` : `${item.name} is on Lumi now.`;
   elements.advLine.textContent = `${item.name} is yours now. It looks wonderful.`;
-  elements.advFeedback.textContent = item.type === "room" ? `${item.name} bought for Lumi's room.` : `${item.name} bought and equipped.`;
-  elements.statusMessage.textContent = `${item.name} bought.`;
+  elements.advFeedback.textContent = feedbackText;
+  elements.statusMessage.textContent = feedbackText;
+  showRewardBurst(`${item.name} ✦`);
   persist();
   render();
   renderAdvShop(true);
+}
+
+function recommendedShopHotspot() {
+  const shopHotspots = hotspots.filter((hotspot) => hotspot.kind === "shop");
+  const affordableShop = shopHotspots.find((hotspot) => {
+    const allowed = allowedShopCategories(hotspot);
+    return shopItems.some((item) => allowed.includes(item.type) && !state.owned.includes(item.id) && state.coins >= item.cost);
+  });
+  return affordableShop || shopHotspots[0] || null;
+}
+
+function openRewardShop() {
+  const hotspot = recommendedShopHotspot();
+  if (!hotspot) {
+    closeAdv();
+    return;
+  }
+  const node = mapNodes[hotspot.node];
+  if (node) {
+    state.playerNode = node.id;
+    state.player = { x: node.x, y: node.y };
+  }
+  persist();
+  renderMap();
+  openShopAdv(hotspot);
+}
+
+function closeAdvThenHome() {
+  closeAdv();
+  changeView("home");
+}
+
+function showRewardBurst(text) {
+  clearRewardBursts();
+  const burst = document.createElement("div");
+  burst.className = "reward-burst";
+  burst.textContent = text;
+  document.body.appendChild(burst);
+  window.setTimeout(() => burst.remove(), 1400);
+}
+
+function clearRewardBursts() {
+  document.querySelectorAll(".reward-burst").forEach((item) => item.remove());
 }
 
 function pickLesson(place) {
@@ -1172,6 +1280,7 @@ function answerLesson(button, choice) {
   updateProgressBadges();
   setExpressions("happy", "happy");
   button.classList.add("correct");
+  showRewardBurst(`+${reward.coins} coins`);
   elements.choiceList.querySelectorAll("button").forEach((item) => {
     item.disabled = true;
     if (item.dataset.choice === activeLesson.answer) item.classList.add("correct");
@@ -1188,19 +1297,23 @@ function answerLesson(button, choice) {
   const oldPlace = state.activeQuest.place;
   const completedHotspot = hotspotById(oldPlace);
   elements.advLine.textContent = state.activeQuest.ending;
-  elements.advPrompt.textContent = "Quest complete. Lumi earned 100 coins.";
+  elements.advPrompt.textContent = "Talk complete. Try a reward now, or go back to Lumi's room.";
   elements.advFeedback.textContent = `${effectText(reward)}.`;
   state.activeQuest = createRandomQuest(oldPlace);
   activeLesson = null;
   advMode = "complete";
+  elements.advScene.dataset.mode = "complete";
   elements.choiceList.innerHTML = "";
   if (completedHotspot?.kind === "shop") {
     addAdvOption("Shop", () => openShopAdv(completedHotspot));
+    addAdvOption("Back to Room", closeAdvThenHome);
     addAdvOption("Leave", closeAdv, { leave: true });
   } else {
-    addAdvOption("Continue", closeAdv);
+    addAdvOption("Choose Reward", openRewardShop);
+    addAdvOption("Back to Room", closeAdvThenHome);
+    addAdvOption("Leave", closeAdv, { leave: true });
   }
-  elements.statusMessage.textContent = `Quest complete. New target: ${hotspotById(state.activeQuest.place).label}.`;
+  elements.statusMessage.textContent = `Talk complete. Next place: ${hotspotById(state.activeQuest.place).label}.`;
   persist();
   render();
   window.setTimeout(() => setAdvFocus(0), 0);
@@ -1381,7 +1494,7 @@ ${saveMarkerEnd}
 
 async function saveMarkdown() {
   const markdown = buildSaveMarkdown();
-  const filename = "luminara-map-adv-save.md";
+  const filename = "luminara-adv-dressup-save.md";
   if ("showSaveFilePicker" in window) {
     try {
       const handle = await window.showSaveFilePicker({
@@ -1439,7 +1552,7 @@ async function loadMarkdown() {
 function resetProgress() {
   state = freshState();
   persist();
-  elements.statusMessage.textContent = "Progress reset. A new map quest is ready.";
+  elements.statusMessage.textContent = "Progress reset. A new short talk is ready.";
   render();
 }
 
