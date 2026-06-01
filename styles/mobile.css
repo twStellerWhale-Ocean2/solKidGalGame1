@@ -2820,3 +2820,150 @@ body {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Issue #35: shared Shop / Wardrobe / Refund item detail panel. */
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) {
+  --item-panel-row-height: 76px;
+  --item-panel-gap: 8px;
+  --item-panel-list-height: calc((var(--item-panel-row-height) * 3) + (var(--item-panel-gap) * 2));
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) #advShopTabs {
+  display: none;
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .shop-area.show {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: var(--item-panel-list-height) auto;
+  gap: 10px;
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-list {
+  grid-column: 1;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: var(--item-panel-row-height);
+  gap: var(--item-panel-gap);
+  min-height: var(--item-panel-list-height);
+  max-height: var(--item-panel-list-height);
+  overflow-y: auto;
+  align-content: start;
+  padding: 0 4px 0 0;
+}
+
+.item-panel-empty {
+  min-height: var(--item-panel-list-height);
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  text-align: center;
+  color: var(--muted);
+  background: rgba(255, 250, 246, 0.78);
+  border: 2px dashed rgba(216, 103, 140, 0.25);
+  border-radius: 10px;
+  font-weight: 900;
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(78px, 0.28fr);
+  gap: 8px;
+  min-height: var(--item-panel-row-height);
+  height: var(--item-panel-row-height);
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card {
+  min-height: 0;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 2px 8px;
+  align-items: center;
+  padding: 7px;
+  text-align: left;
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card .item-preview {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  width: 54px;
+  height: 54px;
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card strong,
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card .item-state {
+  grid-column: 2;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card strong {
+  align-self: end;
+  font-size: 0.84rem;
+  line-height: 1.05;
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card .item-state {
+  align-self: start;
+  color: var(--rose-dark);
+  font-size: 0.74rem;
+  font-weight: 1000;
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card .item-category {
+  display: none;
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-action {
+  min-height: 0;
+  height: 100%;
+  padding: 6px;
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .shop-command-list {
+  grid-column: 1;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  align-self: end;
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-back {
+  min-height: 42px;
+}
+
+@media (max-width: 480px) {
+  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) {
+    --item-panel-row-height: 68px;
+    --item-panel-gap: 7px;
+  }
+
+  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-row {
+    grid-template-columns: minmax(0, 1fr) 74px;
+    gap: 6px;
+  }
+
+  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card {
+    grid-template-columns: 46px minmax(0, 1fr);
+    padding: 6px;
+  }
+
+  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card .item-preview {
+    width: 46px;
+    height: 46px;
+  }
+
+  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card strong {
+    font-size: 0.78rem;
+  }
+
+  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card .item-state,
+  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-action {
+    font-size: 0.7rem;
+  }
+}

@@ -176,6 +176,8 @@ Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return
 - 出門應是房間 scene 的 action choice 或門口 hotspot，不是網站 hero CTA。
 - Wardrobe 應像玩具衣櫃或抽屜，支援點選預覽與裝備狀態，但不得在預設畫面直接展開佔據主視覺。
 - Wardrobe 的衣物、鞋子與配件試穿必須直接套在上方既有 Princess Lumi 主舞台，不另開獨立小紙娃娃或小試穿畫面；點選商品才進入暫時試穿，按 `Equip` 後才寫入正式 outfit state。
+- Wardrobe / Decoration detail panel 與各商店共用同一套 item detail panel：固定顯示 3 列高度、單列商品、列表內捲動、底部 `Back` 固定在列表外。
+- Room / Wardrobe 不顯示 refund；退款只能回到原購買店家，在店內 `Refund` action 中處理，避免兒童在換裝時誤按。
 
 ### Mobile Travel Map
 
@@ -206,18 +208,22 @@ Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return
 
 - Shop 是獎勵場景，不是 inventory table。
 - 不同店家必須有不同背景、不同 NPC、不同商品語氣與不同短句，但共用同一套手機直向 scene layout。
-- 地點 / 店內 scene entry 只顯示 `Shop`、`Talk`、`Leave` 等 action choices；玩家選 `Shop` 後才開啟商品 detail panel。
+- 地點 / 店內 scene entry 顯示 `Chat`、`Shop`、`Refund`、`Leave` 等 action choices；玩家選 `Shop` 或 `Refund` 後才開啟對應 detail panel。
 - 玩家選 `Shop` 後仍維持 ADV 場景感，不跳成後台商品清單頁；上方主舞台保留店員、Princess Lumi 與目前試穿結果，下方選項區才切換成採購選項。
 - Shop 採購清單只顯示尚未擁有的商品；已購買商品從 Shop 清單消失，後續只能在 Wardrobe / Room Treasures 管理與更換。
 - 商品要有大預覽與立即 try-on。點商品名稱只做 preview / try-on，不扣 coins、不寫入 outfit state。
 - Shop / Wardrobe 的 try-on 不得使用獨立小畫面、小紙娃娃或另外的試穿框；可穿戴商品必須直接暫時套用在上方既有 Princess Lumi 主舞台，房間物件只顯示選取 / 放置狀態。
 - 進入 Shop / Wardrobe detail panel 時不自動試穿第一件商品；必須等玩家點選商品後，才讓上方 Princess Lumi 進入暫時試穿狀態。
-- 每個可買商品必須顯示 price 與 `BUY`；點 `BUY` 才扣 coins、加入 owned、立即 equip wearable item，並顯示店員回饋。
+- Shop、Wardrobe、Refund 共用同一個 item detail panel 模組；不同模式只替換資料來源與列內 action，不複製互動流程。
+- Item detail panel 的商品區固定保留 3 列高度；每列高度固定、單列顯示 item preview / name / status / inline action。超過 3 件時只讓商品列表捲動，少於 3 件時保留空白高度，底部 `Back` 位置不跳動。
+- 每個可買商品必須顯示 price 與列內 `BUY` / `Need N`；點 `BUY` 才扣 coins、加入 owned、立即 equip wearable item，並顯示店員回饋。
 - 若 coins 不足，保留試穿 preview 並顯示 `Need more coins` 類回饋，不得扣款或加入 owned。
-- 離開 Shop 時，未購買的 preview 必須消失；只有已購買並 equip 的商品可保留在 Lumi 身上。
-- 商店全買完時顯示兒童友善 empty state，例如 `You found all boutique treasures!`，並保留清楚 `Leave` 返回路徑。
+- Detail panel 底部使用 `Back`，返回目前店家或 Princess Room 的 action choices；scene-level `Leave` / `Go Outside` 才代表離開地點回到地圖或城堡。
+- 離開 Shop detail 或返回店家 scene 時，未購買的 preview 必須消失；只有已購買並 equip 的商品可保留在 Lumi 身上。
+- 商店全買完時顯示兒童友善 empty state，例如 `You found all boutique treasures!`，並保留同位置 `Back` 返回路徑。
+- `Refund` action 在所有店家 scene 固定顯示；Refund detail panel 只列出從該店購買、已擁有、cost 大於 0 的商品。每列使用 inline `Refund N`，退款金額為 `Math.floor(cost / 2)`，退款後移除 owned、必要時清除已裝備狀態，商品回到原店 Shop 清單。
 - 單分類商店不讓 tab 佔主視覺。
-- 狀態清楚顯示：price、`BUY`、`Need more coins`、sold-out empty state、`Leave`；`Owned`、`Equipped` 類管理狀態只出現在 Wardrobe / Room Treasures。
+- 狀態清楚顯示：price、`BUY`、`Need more coins`、refund amount、sold-out / empty refund state、`Back`；`Owned`、`Equipped` 類管理狀態只出現在 Wardrobe / Room Treasures。
 - 購買後應有輕量慶祝、店員回應與 diary 記錄。
 
 ### Diary / Settings / Save Load
@@ -471,7 +477,8 @@ node server.mjs
 - Castle / Kingdom 視為兩個 area；未來 Forest / Ocean 等地區應透過 area registry 擴充。
 - 所有地區與地點使用同一層級：`Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return`。
 - Princess Room 進入後先顯示 `Dresses`、`Accessories`、`Shoes`、`Room Treasures`、`Go Outside` 等 action choices；選擇後才開 Wardrobe / Decoration detail panel。
-- Shop 進入後先顯示 `Shop`、`Talk`、`Leave` 等 action choices；選 `Shop` 後才顯示商品 detail panel。
+- Shop 進入後先顯示 `Chat`、`Shop`、`Refund`、`Leave` 等 action choices；選 `Shop` 或 `Refund` 後才顯示對應 detail panel。
+- Issue #35 決議：Shop / Wardrobe / Refund 使用同一套固定 3 列高度 item detail panel；底部 `Back` 固定在列表外，Room 不顯示 refund，退款只能在原店家進行。
 - Issue #10 / #11 決議：Castle / Kingdom 地圖不顯示場景提示詞、說明卡或 marker 文字 label；點 marker 第一次只以放大 / 高亮表示已選取，再點同一 marker 才進入場景。
 - Castle 近景圖必須使用與 kingdom map 城堡一致的手繪風格，不接受程式幾何圖或臨時圖冒充正式素材。
 - 美術驗收必須先列操作流程樹與 screenshot manifest；未截圖、未列 manifest 或未檢查的 surface 不得宣稱 Accept。
