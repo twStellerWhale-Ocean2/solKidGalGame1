@@ -175,6 +175,7 @@ Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return
 - Wardrobe / Decoration detail panel 只能在玩家選擇對應功能後出現。
 - 出門應是房間 scene 的 action choice 或門口 hotspot，不是網站 hero CTA。
 - Wardrobe 應像玩具衣櫃或抽屜，支援點選預覽與裝備狀態，但不得在預設畫面直接展開佔據主視覺。
+- Wardrobe 的衣物、鞋子與配件試穿必須直接套在上方既有 Princess Lumi 主舞台，不另開獨立小紙娃娃或小試穿畫面；點選商品才進入暫時試穿，按 `Equip` 後才寫入正式 outfit state。
 
 ### Mobile Travel Map
 
@@ -209,6 +210,8 @@ Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return
 - 玩家選 `Shop` 後仍維持 ADV 場景感，不跳成後台商品清單頁；上方主舞台保留店員、Princess Lumi 與目前試穿結果，下方選項區才切換成採購選項。
 - Shop 採購清單只顯示尚未擁有的商品；已購買商品從 Shop 清單消失，後續只能在 Wardrobe / Room Treasures 管理與更換。
 - 商品要有大預覽與立即 try-on。點商品名稱只做 preview / try-on，不扣 coins、不寫入 outfit state。
+- Shop / Wardrobe 的 try-on 不得使用獨立小畫面、小紙娃娃或另外的試穿框；可穿戴商品必須直接暫時套用在上方既有 Princess Lumi 主舞台，房間物件只顯示選取 / 放置狀態。
+- 進入 Shop / Wardrobe detail panel 時不自動試穿第一件商品；必須等玩家點選商品後，才讓上方 Princess Lumi 進入暫時試穿狀態。
 - 每個可買商品必須顯示 price 與 `BUY`；點 `BUY` 才扣 coins、加入 owned、立即 equip wearable item，並顯示店員回饋。
 - 若 coins 不足，保留試穿 preview 並顯示 `Need more coins` 類回饋，不得扣款或加入 owned。
 - 離開 Shop 時，未購買的 preview 必須消失；只有已購買並 equip 的商品可保留在 Lumi 身上。
@@ -816,6 +819,7 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
 
 ## 本 README 變更紀錄
 
+- 2026-06-01：同步 Shop / Wardrobe try-on 規格，要求衣物、鞋子與配件直接套在上方既有 Princess Lumi 主舞台，不再使用獨立小試穿畫面，且點選商品後才進入暫時試穿。
 - 2026-06-01：將「模組化主軸」提升到 README 最前段，記錄目前 ES Modules 結構、下一階段拆分方向，並要求後續功能開發不得背離模組化原則。
 - 2026-06-01：新增 Mobile Map Viewport Architecture v3，鎖定 `display/offset` 為 Castle / Kingdom / future areas 的唯一地圖 viewport contract，並逐字納入本輪 SKILL 測試要求。
 - 2026-05-31：依使用者要求重整為 `I. 緣起目的`、`II. 參考準備`、`III. 內容程序`、`IV. 備註紀錄`。

@@ -5,6 +5,7 @@ export function createAdvControls({ elements, getFocusIndex, getMode, setFocusIn
     button.type = "button";
     button.textContent = options.number ? `${options.number}. ${label}` : label;
     button.setAttribute("aria-label", label);
+    if (options.disabled) button.disabled = true;
     if (options.choice) button.dataset.choice = options.choice;
     button.addEventListener("click", onClick);
     elements.choiceList.appendChild(button);

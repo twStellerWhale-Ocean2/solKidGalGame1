@@ -1814,7 +1814,7 @@ body {
 }
 
 .adv-scene[data-mode="shop"] .shop-area.show {
-  grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.1fr);
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr) auto;
 }
 
