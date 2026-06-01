@@ -381,7 +381,7 @@ function createItemCard(item, options = {}) {
   button.type = "button";
   button.className = `item-card ${item.type}${owned ? " owned" : ""}${equipped ? " equipped" : ""}${!owned && !affordable ? " locked" : ""}${options.selected ? " selected" : ""}`;
   button.dataset.itemId = item.id;
-  const previewStyle = `--sprite-x:${item.sprite || "0%"};--c1:${item.colors[0]};--c2:${item.colors[1]};--item-img:url(${cssAssetUrl(item.image)})`;
+  const previewStyle = `--sprite-x:${item.sprite || "0%"};--c1:${item.colors[0]};--c2:${item.colors[1]};--item-img:url('${cssAssetUrl(item.image)}')`;
   button.innerHTML = `
     <span class="item-preview item-art item-image ${item.shape}" style="${previewStyle}">
       <span aria-hidden="true">${item.icon || "✦"}</span>
@@ -399,7 +399,8 @@ function createItemCard(item, options = {}) {
 }
 
 function cssAssetUrl(src) {
-  return src?.startsWith("assets/") ? `../${src}` : src;
+  const path = src?.startsWith("assets/") ? `../${src}` : src;
+  return path?.replaceAll("'", "%27");
 }
 
 function toggleEquip(item) {
@@ -1101,13 +1102,13 @@ function openSceneAdv(hotspot) {
   const isTarget = hotspot.id === state.activeQuest.place;
   elements.advLine.textContent = scene.travelLine || hotspot.hint;
   elements.advPrompt.textContent = "Choose what to do here.";
-  if (hotspot.kind === "shop") addAdvOption("Shop", () => openShopDetail(hotspot));
-  if (isTarget) {
-    addAdvOption("Talk", () => openQuestAdv(hotspot));
+  if (hotspot.kind === "shop") {
+    addAdvOption("💬 Chat", () => isTarget ? openQuestAdv(hotspot) : openHintAdv(hotspot));
+    addAdvOption("🎁 Shop", () => openShopDetail(hotspot));
   } else {
-    addAdvOption(hotspot.kind === "shop" ? "Chat" : "Talk", () => openHintAdv(hotspot));
+    addAdvOption("💬 Talk", () => isTarget ? openQuestAdv(hotspot) : openHintAdv(hotspot));
   }
-  addAdvOption("Leave", closeAdv, { leave: true });
+  addAdvOption("↩ Leave", closeAdv, { leave: true });
   scheduleAdvFocus(0);
   speak(elements.advLine.textContent);
 }
@@ -1117,11 +1118,11 @@ function openRoomScene(hotspot = hotspotById("princessRoom")) {
   addUnique("metNpcs", ["Lumi"]);
   elements.advLine.textContent = "Lumi is in her room. What should we change today?";
   elements.advPrompt.textContent = "Choose a room action.";
-  addAdvOption("Dresses", () => openWardrobeDetail("outfit"));
-  addAdvOption("Accessories", () => openWardrobeDetail("accessory"));
-  addAdvOption("Shoes", () => openWardrobeDetail("shoes"));
-  addAdvOption("Room Treasures", () => openWardrobeDetail("room"));
-  addAdvOption("Go Outside", () => {
+  addAdvOption("👗 Dresses", () => openWardrobeDetail("outfit"));
+  addAdvOption("🎀 Accessories", () => openWardrobeDetail("accessory"));
+  addAdvOption("👞 Shoes", () => openWardrobeDetail("shoes"));
+  addAdvOption("🧸 Room Treasures", () => openWardrobeDetail("room"));
+  addAdvOption("↩ Go Outside", () => {
     closeAdv();
     openArea("castle");
   }, { leave: true });
@@ -1171,7 +1172,7 @@ function openQuestAdv(hotspot) {
     let button;
     button = addAdvOption(choice, () => answerLesson(button, choice), { number: index + 1, choice });
   });
-  addAdvOption("Leave", closeAdv, { leave: true });
+  addAdvOption("↩ Leave", closeAdv, { leave: true });
   scheduleAdvFocus(0);
   speak(state.activeQuest.opening);
 }
@@ -1182,7 +1183,7 @@ function openHintAdv(hotspot, line = hotspot.hint) {
   elements.advLine.textContent = line;
   elements.advPrompt.textContent = `Hint: today's quest is at ${hotspotById(state.activeQuest.place).label}.`;
   elements.advFeedback.textContent = "";
-  addAdvOption("Leave", closeAdv, { leave: true });
+  addAdvOption("↩ Leave", closeAdv, { leave: true });
   scheduleAdvFocus(0);
 }
 
@@ -1248,8 +1249,8 @@ function renderWardrobeDetail(preserveFocus = false) {
   }
   elements.choiceList.innerHTML = "";
   addAdvOption(wardrobeActionLabel(previewItem), () => equipWardrobePreview(previewItem), { leave: false });
-  addAdvOption("Back", () => openRoomScene(hotspotById("princessRoom")));
-  addAdvOption("Leave", closeAdv, { leave: true });
+  addAdvOption("↩ Back", () => openRoomScene(hotspotById("princessRoom")));
+  addAdvOption("↩ Leave", closeAdv, { leave: true });
   elements.choiceList.classList.add("shop-command-list");
   elements.shopArea.appendChild(elements.choiceList);
   const focusIndex = preserveFocus ? Math.max(0, categoryItems.findIndex((item) => item.id === shopPreviewItemId)) : 0;
@@ -1312,7 +1313,7 @@ function renderAdvShop(preserveFocus = false) {
   });
   elements.choiceList.innerHTML = "";
   addAdvOption(shopActionLabel(previewItem), () => buyItemInAdv(previewItem), { leave: false });
-  addAdvOption("Leave", closeAdv, { leave: true });
+  addAdvOption("↩ Leave", closeAdv, { leave: true });
   elements.choiceList.classList.add("shop-command-list");
   elements.shopArea.appendChild(elements.choiceList);
   const focusIndex = preserveFocus ? Math.max(0, categoryItems.findIndex((item) => item.id === shopPreviewItemId)) : 0;
@@ -1531,13 +1532,13 @@ function answerLesson(button, choice) {
   elements.advScene.dataset.mode = "complete";
   elements.choiceList.innerHTML = "";
   if (completedHotspot?.kind === "shop") {
-    addAdvOption("Shop", () => openShopDetail(completedHotspot));
-    addAdvOption("Back to Room", closeAdvThenHome);
-    addAdvOption("Leave", closeAdv, { leave: true });
+    addAdvOption("🎁 Shop", () => openShopDetail(completedHotspot));
+    addAdvOption("🏰 Back to Room", closeAdvThenHome);
+    addAdvOption("↩ Leave", closeAdv, { leave: true });
   } else {
-    addAdvOption("Choose Reward", openRewardShop);
-    addAdvOption("Back to Room", closeAdvThenHome);
-    addAdvOption("Leave", closeAdv, { leave: true });
+    addAdvOption("🎁 Choose Reward", openRewardShop);
+    addAdvOption("🏰 Back to Room", closeAdvThenHome);
+    addAdvOption("↩ Leave", closeAdv, { leave: true });
   }
   elements.statusMessage.textContent = `Talk complete. Next place: ${hotspotById(state.activeQuest.place).label}.`;
   persist();
