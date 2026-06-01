@@ -114,6 +114,36 @@
   overflow: auto;
 }
 
+.shop-buy-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(74px, 0.36fr);
+  gap: 7px;
+  min-width: 0;
+}
+
+.shop-buy-row .item-card {
+  min-width: 0;
+}
+
+.shop-buy-button {
+  min-width: 0;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  background: linear-gradient(180deg, #e46696, #aa3f6b);
+  box-shadow: 0 8px 14px rgba(117, 46, 83, 0.18);
+  font-weight: 1000;
+  font-size: 0.78rem;
+  line-height: 1.05;
+  cursor: pointer;
+}
+
+.shop-buy-button:focus-visible,
+.shop-buy-button.adv-focus {
+  outline: 3px solid rgba(255, 214, 80, 0.95);
+  outline-offset: 2px;
+}
+
 #advShopTabs {
   grid-column: 2;
 }

@@ -1196,10 +1196,11 @@ function openShopDetail(hotspot) {
   activeShopHotspot = hotspot;
   addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
   const firstCategory = hotspot.defaultCategory || hotspot.shopCategories?.[0] || "outfit";
-  shopCategory = allowedShopCategories(hotspot).includes(shopCategory) ? shopCategory : firstCategory;
-  shopPreviewItemId = shopItems.find((item) => item.type === shopCategory && allowedShopCategories(hotspot).includes(item.type))?.id || "";
+  const stockedCategories = availableShopCategories(hotspot);
+  shopCategory = stockedCategories.includes(shopCategory) ? shopCategory : stockedCategories[0] || firstCategory;
+  shopPreviewItemId = unownedShopItemsFor(hotspot, shopCategory)[0]?.id || firstUnownedShopItem(hotspot)?.id || "";
   elements.advLine.textContent = shopGreeting(hotspot);
-  elements.advPrompt.textContent = "Choose a treasure to preview. Press B or Buy when Lumi wants it.";
+  elements.advPrompt.textContent = "Choose a treasure to preview. Press B or BUY when Lumi wants it.";
   elements.shopArea.classList.remove("wardrobe-detail");
   elements.shopArea.classList.add("show");
   renderAdvShop();
@@ -1286,30 +1287,52 @@ function allowedShopCategories(hotspot = activeShopHotspot) {
   return allowedShopCategoriesFor(hotspot);
 }
 
+function unownedShopItemsFor(hotspot = activeShopHotspot, category = shopCategory) {
+  const allowed = allowedShopCategories(hotspot);
+  return shopItems.filter((item) => item.type === category && allowed.includes(item.type) && !state.owned.includes(item.id));
+}
+
+function availableShopCategories(hotspot = activeShopHotspot) {
+  return allowedShopCategories(hotspot).filter((category) => unownedShopItemsFor(hotspot, category).length);
+}
+
+function firstUnownedShopItem(hotspot = activeShopHotspot) {
+  const category = availableShopCategories(hotspot)[0];
+  return category ? unownedShopItemsFor(hotspot, category)[0] : null;
+}
+
 function shopGreeting(hotspot) {
   return sceneConfigFor(hotspot).shopGreeting || "Welcome, Princess. Pick a lovely item.";
 }
 
 function renderAdvShop(preserveFocus = false) {
   const allowed = allowedShopCategories();
-  if (!allowed.includes(shopCategory)) shopCategory = allowed[0] || "outfit";
-  const categoryItems = shopItems.filter((item) => item.type === shopCategory && allowed.includes(item.type));
+  const stockedCategories = availableShopCategories();
+  if (!stockedCategories.includes(shopCategory)) shopCategory = stockedCategories[0] || allowed[0] || "outfit";
+  const categoryItems = unownedShopItemsFor(activeShopHotspot, shopCategory);
+  if (!stockedCategories.length) {
+    shopPreviewItemId = "";
+    renderCategoryTabs(elements.advShopTabs, shopCategory, () => {}, false, []);
+    renderShopSoldOut();
+    elements.advShopGrid.innerHTML = `<div class="wardrobe-empty">You found all ${activeShopHotspot?.label || "shop"} treasures!</div>`;
+    elements.choiceList.innerHTML = "";
+    addAdvOption("↩ Leave", closeAdv, { leave: true });
+    elements.choiceList.classList.add("shop-command-list");
+    elements.shopArea.appendChild(elements.choiceList);
+    scheduleAdvFocus(0);
+    return;
+  }
   if (!categoryItems.some((item) => item.id === shopPreviewItemId)) shopPreviewItemId = categoryItems[0]?.id || "";
   const previewItem = itemById(shopPreviewItemId) || categoryItems[0];
   renderCategoryTabs(elements.advShopTabs, shopCategory, (category) => {
     shopCategory = category;
     shopPreviewItemId = "";
     renderAdvShop();
-  }, false, allowed);
+  }, false, stockedCategories);
   renderShopPreview(previewItem);
   elements.advShopGrid.innerHTML = "";
   categoryItems.forEach((item) => {
-    elements.advShopGrid.appendChild(createItemCard(item, {
-      mode: "shop",
-      selected: item.id === shopPreviewItemId,
-      onPreview: previewShopItem,
-      action: () => previewShopItem(item)
-    }));
+    elements.advShopGrid.appendChild(createShopPurchaseRow(item));
   });
   elements.choiceList.innerHTML = "";
   addAdvOption(shopActionLabel(previewItem), () => buyItemInAdv(previewItem), { leave: false });
@@ -1320,6 +1343,30 @@ function renderAdvShop(preserveFocus = false) {
   scheduleAdvFocus(focusIndex);
 }
 
+function createShopPurchaseRow(item) {
+  const row = document.createElement("div");
+  row.className = "shop-buy-row";
+  const preview = createItemCard(item, {
+    mode: "shop",
+    selected: item.id === shopPreviewItemId,
+    onPreview: previewShopItem,
+    action: () => previewShopItem(item)
+  });
+  const buy = document.createElement("button");
+  buy.type = "button";
+  buy.className = "shop-buy-button";
+  buy.textContent = state.coins >= item.cost ? `BUY ${item.cost}` : `Need ${item.cost - state.coins}`;
+  buy.setAttribute("aria-label", state.coins >= item.cost ? `BUY ${item.name} for ${item.cost} coins` : `Need ${item.cost - state.coins} more coins for ${item.name}`);
+  buy.addEventListener("focus", () => previewShopItem(item));
+  buy.addEventListener("mouseenter", () => previewShopItem(item));
+  buy.addEventListener("click", () => {
+    previewShopItem(item);
+    buyItemInAdv(item);
+  });
+  row.append(preview, buy);
+  return row;
+}
+
 function previewShopItem(item) {
   if (!item || shopPreviewItemId === item.id) return;
   shopPreviewItemId = item.id;
@@ -1327,13 +1374,12 @@ function previewShopItem(item) {
 }
 
 function shopActionLabel(item) {
-  if (!item) return "Buy";
+  if (!item) return "All treasures found";
   if (state.owned.includes(item.id)) {
-    if (item.type === "room") return "Placed";
-    return state.outfit[item.type] === item.id ? "Equipped" : "Equip";
+    return item.type === "room" ? "Already in Lumi's room" : "Already in wardrobe";
   }
   if (state.coins < item.cost) return `Need ${item.cost - state.coins} more coins`;
-  return `Buy ${item.cost} coins`;
+  return `BUY ${item.cost} coins`;
 }
 
 function renderShopPreview(item) {
@@ -1370,6 +1416,29 @@ function renderShopPreview(item) {
   `;
 }
 
+function renderShopSoldOut() {
+  let feature = elements.shopArea.querySelector(".shop-feature");
+  if (!feature) {
+    feature = document.createElement("div");
+    feature.className = "shop-feature";
+    elements.shopArea.prepend(feature);
+  }
+  feature.innerHTML = `
+    <div class="shop-feature-stage">
+      <div class="paper-doll shop-preview-doll" data-outfit="${state.outfit.outfit || "none"}" data-shoes="${state.outfit.shoes || "none"}" data-accessory="${state.outfit.accessory || "none"}" data-expression="happy">
+        ${avatarMarkup("shop", state.outfit)}
+      </div>
+    </div>
+    <div class="shop-feature-copy">
+      <strong>All treasures found</strong>
+      <span>Sold out</span>
+      <p>${sceneConfigFor(activeShopHotspot).npc} smiles. Lumi can wear owned treasures from the wardrobe.</p>
+    </div>
+  `;
+  elements.advLine.textContent = "You found every treasure in this shop.";
+  elements.advPrompt.textContent = "Visit the wardrobe to wear owned treasures.";
+}
+
 function itemWishText(item) {
   const lines = {
     pinkDress: "Lumi's first dress for gentle castle mornings.",
@@ -1391,13 +1460,11 @@ function itemWishText(item) {
 function buyItemInAdv(item) {
   if (!item) return;
   if (state.owned.includes(item.id)) {
-    if (item.type !== "room") {
-      toggleEquip(item);
-    } else {
-      elements.advFeedback.textContent = `${item.name} is already in Lumi's room.`;
-    }
-    shopPreviewItemId = item.id;
-    renderAdvShop();
+    elements.advFeedback.textContent = item.type === "room"
+      ? `${item.name} is already in Lumi's room.`
+      : `${item.name} is already in the wardrobe.`;
+    shopPreviewItemId = "";
+    renderAdvShop(true);
     scheduleAdvFocus(advFocusIndex);
     return;
   }
@@ -1411,7 +1478,6 @@ function buyItemInAdv(item) {
   playTone("buy");
   state.owned.push(item.id);
   if (item.type !== "room") state.outfit[item.type] = item.id;
-  shopPreviewItemId = item.id;
   awardBadge("First Shopping");
   updateProgressBadges();
   addDiary({ type: "shop", title: activeShopHotspot?.label || "Shop", body: `Bought ${item.name}.`, result: `-${item.cost} coins` });
@@ -1422,7 +1488,7 @@ function buyItemInAdv(item) {
   showRewardBurst(`${item.name} ✦`);
   persist();
   render();
-  shopPreviewItemId = item.id;
+  shopPreviewItemId = "";
   renderAdvShop(true);
 }
 

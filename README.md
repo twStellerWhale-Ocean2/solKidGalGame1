@@ -206,9 +206,15 @@ Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return
 - Shop 是獎勵場景，不是 inventory table。
 - 不同店家必須有不同背景、不同 NPC、不同商品語氣與不同短句，但共用同一套手機直向 scene layout。
 - 地點 / 店內 scene entry 只顯示 `Shop`、`Talk`、`Leave` 等 action choices；玩家選 `Shop` 後才開啟商品 detail panel。
-- 商品要有大預覽與立即 try-on。
+- 玩家選 `Shop` 後仍維持 ADV 場景感，不跳成後台商品清單頁；上方主舞台保留店員、Princess Lumi 與目前試穿結果，下方選項區才切換成採購選項。
+- Shop 採購清單只顯示尚未擁有的商品；已購買商品從 Shop 清單消失，後續只能在 Wardrobe / Room Treasures 管理與更換。
+- 商品要有大預覽與立即 try-on。點商品名稱只做 preview / try-on，不扣 coins、不寫入 outfit state。
+- 每個可買商品必須顯示 price 與 `BUY`；點 `BUY` 才扣 coins、加入 owned、立即 equip wearable item，並顯示店員回饋。
+- 若 coins 不足，保留試穿 preview 並顯示 `Need more coins` 類回饋，不得扣款或加入 owned。
+- 離開 Shop 時，未購買的 preview 必須消失；只有已購買並 equip 的商品可保留在 Lumi 身上。
+- 商店全買完時顯示兒童友善 empty state，例如 `You found all boutique treasures!`，並保留清楚 `Leave` 返回路徑。
 - 單分類商店不讓 tab 佔主視覺。
-- 狀態清楚顯示：`Owned`、`Equipped`、price、`Need more coins`、`Buy`、`Leave`。
+- 狀態清楚顯示：price、`BUY`、`Need more coins`、sold-out empty state、`Leave`；`Owned`、`Equipped` 類管理狀態只出現在 Wardrobe / Room Treasures。
 - 購買後應有輕量慶祝、店員回應與 diary 記錄。
 
 ### Diary / Settings / Save Load
@@ -442,6 +448,9 @@ node server.mjs
 - `http://127.0.0.1:4174/#home`
 - `http://127.0.0.1:4174/#map`
 - `http://127.0.0.1:4174/?selftest=visual-qa&surface=shop-scene&place=boutique#map`
+- `http://127.0.0.1:4174/?selftest=visual-qa&surface=shop-detail&place=boutique&item=blueDress#map`
+- `http://127.0.0.1:4174/?selftest=visual-qa&surface=shop-not-enough&place=boutique&item=blueDress#map`
+- `http://127.0.0.1:4174/?selftest=visual-qa&surface=shop-sold-out&place=boutique#map`
 - `http://127.0.0.1:4174/?selftest=monkey#home`
 - `http://127.0.0.1:4174/?selftest=save-load#home`
 

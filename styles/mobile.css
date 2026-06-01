@@ -1979,6 +1979,17 @@ body {
     height: 56px;
   }
 
+  .adv-scene[data-mode="shop"] .shop-buy-row {
+    grid-template-columns: minmax(0, 1fr) 70px;
+    gap: 6px;
+  }
+
+  .adv-scene[data-mode="shop"] .shop-buy-button {
+    min-height: 72px;
+    padding: 4px;
+    font-size: 0.68rem;
+  }
+
   .adv-scene[data-mode="shop"] .shop-command-list {
     grid-template-columns: minmax(0, 1fr) minmax(90px, 0.45fr);
   }
