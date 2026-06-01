@@ -1,0 +1,85 @@
+{
+  "passed": true,
+  "steps": [
+    {
+      "label": "home view is active",
+      "passed": true
+    },
+    {
+      "label": "princess room marker exists",
+      "passed": true
+    },
+    {
+      "label": "room ADV opens by tapping marker",
+      "passed": true,
+      "title": "Princess Room"
+    },
+    {
+      "label": "room choices include Dresses",
+      "passed": true,
+      "roomChoices": [
+        "Dresses",
+        "Accessories",
+        "Shoes",
+        "Room Treasures",
+        "Go Outside"
+      ]
+    },
+    {
+      "label": "wardrobe detail opens from Dresses",
+      "passed": true,
+      "shopShown": true,
+      "mode": "wardrobe",
+      "feature": "Pink academy dress",
+      "choices": [
+        "Equipped",
+        "Back",
+        "Leave"
+      ]
+    },
+    {
+      "label": "Escape closes ADV modal",
+      "passed": true
+    },
+    {
+      "label": "system Save / Load panel opens by UI buttons",
+      "passed": true
+    },
+    {
+      "label": "system menu closes",
+      "passed": true
+    },
+    {
+      "label": "kingdom view opens",
+      "passed": true
+    },
+    {
+      "label": "boutique scene opens and includes Shop",
+      "passed": true,
+      "sceneChoices": [
+        "Shop",
+        "Chat",
+        "Leave"
+      ]
+    },
+    {
+      "label": "shop detail opens from scene without viewport overflow",
+      "passed": true,
+      "shopShown": true,
+      "mode": "shop",
+      "feature": "Pink academy dress",
+      "choices": [
+        "Equipped",
+        "Leave"
+      ],
+      "activeViews": 1,
+      "horizontalOverflow": false
+    },
+    {
+      "label": "keyboard navigation and Escape leave modal stable",
+      "passed": true
+    }
+  ],
+  "consoleProblems": [],
+  "badResponses": []
+}

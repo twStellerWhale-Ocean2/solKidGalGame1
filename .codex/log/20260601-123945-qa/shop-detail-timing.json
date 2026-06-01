@@ -1,0 +1,412 @@
+{
+  "url": "http://127.0.0.1:4174/?selftest=visual-qa&surface=shop-detail&fresh=1&cachebust=timing-1780290437820&place=boutique&item=blueDress&coins=100#map",
+  "samples": [
+    {
+      "label": "domcontentloaded",
+      "ready": "complete",
+      "search": "?selftest=visual-qa&surface=shop-detail&fresh=1&cachebust=timing-1780290437820&place=boutique&item=blueDress&coins=100",
+      "hash": "#map",
+      "hasTest": true,
+      "state": {
+        "coins": 100,
+        "energy": 84,
+        "vocab": 0,
+        "expression": 0,
+        "kindness": 0,
+        "mood": 72,
+        "difficulty": 100,
+        "speechEnabled": true,
+        "owned": [
+          "pinkDress"
+        ],
+        "outfit": {
+          "outfit": "pinkDress",
+          "shoes": "none",
+          "accessory": "none",
+          "room": "none"
+        },
+        "diary": [],
+        "completedLessons": [],
+        "metNpcs": [
+          "Rena"
+        ],
+        "learnedWords": [],
+        "badges": [],
+        "activeQuest": {
+          "id": "1780290438049-726776c99ea1d8-boutiqueDress",
+          "templateId": "boutiqueDress",
+          "place": "boutique",
+          "title": "Choose a blue dress",
+          "opening": "Welcome, Princess! This dress is blue.",
+          "ending": "This dress looks lovely on you, Princess.",
+          "npc": "Rena"
+        },
+        "area": "kingdom",
+        "player": {
+          "x": 64,
+          "y": 59
+        },
+        "playerNode": "boutique"
+      },
+      "feature": "Blue harbor dress",
+      "choices": [
+        "Buy 100 coins",
+        "Leave"
+      ],
+      "selected": [],
+      "advMode": "shop",
+      "activeViews": [
+        "mapView"
+      ]
+    },
+    {
+      "label": "0ms",
+      "ready": "complete",
+      "search": "?selftest=visual-qa&surface=shop-detail&fresh=1&cachebust=timing-1780290437820&place=boutique&item=blueDress&coins=100",
+      "hash": "#map",
+      "hasTest": true,
+      "state": {
+        "coins": 100,
+        "energy": 84,
+        "vocab": 0,
+        "expression": 0,
+        "kindness": 0,
+        "mood": 72,
+        "difficulty": 100,
+        "speechEnabled": true,
+        "owned": [
+          "pinkDress"
+        ],
+        "outfit": {
+          "outfit": "pinkDress",
+          "shoes": "none",
+          "accessory": "none",
+          "room": "none"
+        },
+        "diary": [],
+        "completedLessons": [],
+        "metNpcs": [
+          "Rena"
+        ],
+        "learnedWords": [],
+        "badges": [],
+        "activeQuest": {
+          "id": "1780290438049-726776c99ea1d8-boutiqueDress",
+          "templateId": "boutiqueDress",
+          "place": "boutique",
+          "title": "Choose a blue dress",
+          "opening": "Welcome, Princess! This dress is blue.",
+          "ending": "This dress looks lovely on you, Princess.",
+          "npc": "Rena"
+        },
+        "area": "kingdom",
+        "player": {
+          "x": 64,
+          "y": 59
+        },
+        "playerNode": "boutique"
+      },
+      "feature": "Blue harbor dress",
+      "choices": [
+        "Buy 100 coins",
+        "Leave"
+      ],
+      "selected": [],
+      "advMode": "shop",
+      "activeViews": [
+        "mapView"
+      ]
+    },
+    {
+      "label": "50ms",
+      "ready": "complete",
+      "search": "?selftest=visual-qa&surface=shop-detail&fresh=1&cachebust=timing-1780290437820&place=boutique&item=blueDress&coins=100",
+      "hash": "#map",
+      "hasTest": true,
+      "state": {
+        "coins": 100,
+        "energy": 84,
+        "vocab": 0,
+        "expression": 0,
+        "kindness": 0,
+        "mood": 72,
+        "difficulty": 100,
+        "speechEnabled": true,
+        "owned": [
+          "pinkDress"
+        ],
+        "outfit": {
+          "outfit": "pinkDress",
+          "shoes": "none",
+          "accessory": "none",
+          "room": "none"
+        },
+        "diary": [],
+        "completedLessons": [],
+        "metNpcs": [
+          "Rena"
+        ],
+        "learnedWords": [],
+        "badges": [],
+        "activeQuest": {
+          "id": "1780290438049-726776c99ea1d8-boutiqueDress",
+          "templateId": "boutiqueDress",
+          "place": "boutique",
+          "title": "Choose a blue dress",
+          "opening": "Welcome, Princess! This dress is blue.",
+          "ending": "This dress looks lovely on you, Princess.",
+          "npc": "Rena"
+        },
+        "area": "kingdom",
+        "player": {
+          "x": 64,
+          "y": 59
+        },
+        "playerNode": "boutique"
+      },
+      "feature": "Pink academy dress",
+      "choices": [
+        "Equipped",
+        "Leave"
+      ],
+      "selected": [],
+      "advMode": "shop",
+      "activeViews": [
+        "mapView"
+      ]
+    },
+    {
+      "label": "150ms",
+      "ready": "complete",
+      "search": "?selftest=visual-qa&surface=shop-detail&fresh=1&cachebust=timing-1780290437820&place=boutique&item=blueDress&coins=100",
+      "hash": "#map",
+      "hasTest": true,
+      "state": {
+        "coins": 100,
+        "energy": 84,
+        "vocab": 0,
+        "expression": 0,
+        "kindness": 0,
+        "mood": 72,
+        "difficulty": 100,
+        "speechEnabled": true,
+        "owned": [
+          "pinkDress"
+        ],
+        "outfit": {
+          "outfit": "pinkDress",
+          "shoes": "none",
+          "accessory": "none",
+          "room": "none"
+        },
+        "diary": [],
+        "completedLessons": [],
+        "metNpcs": [
+          "Rena"
+        ],
+        "learnedWords": [],
+        "badges": [],
+        "activeQuest": {
+          "id": "1780290438049-726776c99ea1d8-boutiqueDress",
+          "templateId": "boutiqueDress",
+          "place": "boutique",
+          "title": "Choose a blue dress",
+          "opening": "Welcome, Princess! This dress is blue.",
+          "ending": "This dress looks lovely on you, Princess.",
+          "npc": "Rena"
+        },
+        "area": "kingdom",
+        "player": {
+          "x": 64,
+          "y": 59
+        },
+        "playerNode": "boutique"
+      },
+      "feature": "Blue harbor dress",
+      "choices": [
+        "Buy 100 coins",
+        "Leave"
+      ],
+      "selected": [],
+      "advMode": "shop",
+      "activeViews": [
+        "mapView"
+      ]
+    },
+    {
+      "label": "500ms",
+      "ready": "complete",
+      "search": "?selftest=visual-qa&surface=shop-detail&fresh=1&cachebust=timing-1780290437820&place=boutique&item=blueDress&coins=100",
+      "hash": "#map",
+      "hasTest": true,
+      "state": {
+        "coins": 100,
+        "energy": 84,
+        "vocab": 0,
+        "expression": 0,
+        "kindness": 0,
+        "mood": 72,
+        "difficulty": 100,
+        "speechEnabled": true,
+        "owned": [
+          "pinkDress"
+        ],
+        "outfit": {
+          "outfit": "pinkDress",
+          "shoes": "none",
+          "accessory": "none",
+          "room": "none"
+        },
+        "diary": [],
+        "completedLessons": [],
+        "metNpcs": [
+          "Rena"
+        ],
+        "learnedWords": [],
+        "badges": [],
+        "activeQuest": {
+          "id": "1780290438049-726776c99ea1d8-boutiqueDress",
+          "templateId": "boutiqueDress",
+          "place": "boutique",
+          "title": "Choose a blue dress",
+          "opening": "Welcome, Princess! This dress is blue.",
+          "ending": "This dress looks lovely on you, Princess.",
+          "npc": "Rena"
+        },
+        "area": "kingdom",
+        "player": {
+          "x": 64,
+          "y": 59
+        },
+        "playerNode": "boutique"
+      },
+      "feature": "Pink academy dress",
+      "choices": [
+        "Equipped",
+        "Leave"
+      ],
+      "selected": [],
+      "advMode": "shop",
+      "activeViews": [
+        "mapView"
+      ]
+    },
+    {
+      "label": "1000ms",
+      "ready": "complete",
+      "search": "?selftest=visual-qa&surface=shop-detail&fresh=1&cachebust=timing-1780290437820&place=boutique&item=blueDress&coins=100",
+      "hash": "#map",
+      "hasTest": true,
+      "state": {
+        "coins": 100,
+        "energy": 84,
+        "vocab": 0,
+        "expression": 0,
+        "kindness": 0,
+        "mood": 72,
+        "difficulty": 100,
+        "speechEnabled": true,
+        "owned": [
+          "pinkDress"
+        ],
+        "outfit": {
+          "outfit": "pinkDress",
+          "shoes": "none",
+          "accessory": "none",
+          "room": "none"
+        },
+        "diary": [],
+        "completedLessons": [],
+        "metNpcs": [
+          "Rena"
+        ],
+        "learnedWords": [],
+        "badges": [],
+        "activeQuest": {
+          "id": "1780290438049-726776c99ea1d8-boutiqueDress",
+          "templateId": "boutiqueDress",
+          "place": "boutique",
+          "title": "Choose a blue dress",
+          "opening": "Welcome, Princess! This dress is blue.",
+          "ending": "This dress looks lovely on you, Princess.",
+          "npc": "Rena"
+        },
+        "area": "kingdom",
+        "player": {
+          "x": 64,
+          "y": 59
+        },
+        "playerNode": "boutique"
+      },
+      "feature": "Pink academy dress",
+      "choices": [
+        "Equipped",
+        "Leave"
+      ],
+      "selected": [],
+      "advMode": "shop",
+      "activeViews": [
+        "mapView"
+      ]
+    },
+    {
+      "label": "1500ms",
+      "ready": "complete",
+      "search": "?selftest=visual-qa&surface=shop-detail&fresh=1&cachebust=timing-1780290437820&place=boutique&item=blueDress&coins=100",
+      "hash": "#map",
+      "hasTest": true,
+      "state": {
+        "coins": 100,
+        "energy": 84,
+        "vocab": 0,
+        "expression": 0,
+        "kindness": 0,
+        "mood": 72,
+        "difficulty": 100,
+        "speechEnabled": true,
+        "owned": [
+          "pinkDress"
+        ],
+        "outfit": {
+          "outfit": "pinkDress",
+          "shoes": "none",
+          "accessory": "none",
+          "room": "none"
+        },
+        "diary": [],
+        "completedLessons": [],
+        "metNpcs": [
+          "Rena"
+        ],
+        "learnedWords": [],
+        "badges": [],
+        "activeQuest": {
+          "id": "1780290438049-726776c99ea1d8-boutiqueDress",
+          "templateId": "boutiqueDress",
+          "place": "boutique",
+          "title": "Choose a blue dress",
+          "opening": "Welcome, Princess! This dress is blue.",
+          "ending": "This dress looks lovely on you, Princess.",
+          "npc": "Rena"
+        },
+        "area": "kingdom",
+        "player": {
+          "x": 64,
+          "y": 59
+        },
+        "playerNode": "boutique"
+      },
+      "feature": "Blue harbor dress",
+      "choices": [
+        "Buy 100 coins",
+        "Leave"
+      ],
+      "selected": [],
+      "advMode": "shop",
+      "activeViews": [
+        "mapView"
+      ]
+    }
+  ],
+  "consoleLogs": []
+}

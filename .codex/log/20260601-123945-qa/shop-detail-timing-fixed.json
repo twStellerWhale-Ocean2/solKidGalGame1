@@ -1,0 +1,376 @@
+{
+  "url": "http://127.0.0.1:4174/?selftest=visual-qa&surface=shop-detail&fresh=1&cachebust=timing-fix-1780290524027&place=boutique&item=blueDress&coins=100#map",
+  "samples": [
+    {
+      "label": "domcontentloaded",
+      "feature": "Blue harbor dress",
+      "choices": [
+        "Buy 100 coins",
+        "Leave"
+      ],
+      "selected": [],
+      "activeViews": [
+        "mapView"
+      ],
+      "state": {
+        "coins": 100,
+        "energy": 84,
+        "vocab": 0,
+        "expression": 0,
+        "kindness": 0,
+        "mood": 72,
+        "difficulty": 100,
+        "speechEnabled": true,
+        "owned": [
+          "pinkDress"
+        ],
+        "outfit": {
+          "outfit": "pinkDress",
+          "shoes": "none",
+          "accessory": "none",
+          "room": "none"
+        },
+        "diary": [],
+        "completedLessons": [],
+        "metNpcs": [
+          "Rena"
+        ],
+        "learnedWords": [],
+        "badges": [],
+        "activeQuest": {
+          "id": "1780290524261-abd6e4054c2a28-shoeFitting",
+          "templateId": "shoeFitting",
+          "place": "shoeShop",
+          "title": "Find shoes for a long walk",
+          "opening": "Hello, Princess! These shoes are soft.",
+          "ending": "Now your feet are ready for the long road.",
+          "npc": "Mina"
+        },
+        "area": "kingdom",
+        "player": {
+          "x": 67.5,
+          "y": 65
+        },
+        "playerNode": "shoeShop"
+      }
+    },
+    {
+      "label": "0ms",
+      "feature": "Blue harbor dress",
+      "choices": [
+        "Buy 100 coins",
+        "Leave"
+      ],
+      "selected": [],
+      "activeViews": [
+        "mapView"
+      ],
+      "state": {
+        "coins": 100,
+        "energy": 84,
+        "vocab": 0,
+        "expression": 0,
+        "kindness": 0,
+        "mood": 72,
+        "difficulty": 100,
+        "speechEnabled": true,
+        "owned": [
+          "pinkDress"
+        ],
+        "outfit": {
+          "outfit": "pinkDress",
+          "shoes": "none",
+          "accessory": "none",
+          "room": "none"
+        },
+        "diary": [],
+        "completedLessons": [],
+        "metNpcs": [
+          "Rena"
+        ],
+        "learnedWords": [],
+        "badges": [],
+        "activeQuest": {
+          "id": "1780290524261-abd6e4054c2a28-shoeFitting",
+          "templateId": "shoeFitting",
+          "place": "shoeShop",
+          "title": "Find shoes for a long walk",
+          "opening": "Hello, Princess! These shoes are soft.",
+          "ending": "Now your feet are ready for the long road.",
+          "npc": "Mina"
+        },
+        "area": "kingdom",
+        "player": {
+          "x": 67.5,
+          "y": 65
+        },
+        "playerNode": "shoeShop"
+      }
+    },
+    {
+      "label": "50ms",
+      "feature": "Blue harbor dress",
+      "choices": [
+        "Buy 100 coins",
+        "Leave"
+      ],
+      "selected": [],
+      "activeViews": [
+        "mapView"
+      ],
+      "state": {
+        "coins": 100,
+        "energy": 84,
+        "vocab": 0,
+        "expression": 0,
+        "kindness": 0,
+        "mood": 72,
+        "difficulty": 100,
+        "speechEnabled": true,
+        "owned": [
+          "pinkDress"
+        ],
+        "outfit": {
+          "outfit": "pinkDress",
+          "shoes": "none",
+          "accessory": "none",
+          "room": "none"
+        },
+        "diary": [],
+        "completedLessons": [],
+        "metNpcs": [
+          "Rena"
+        ],
+        "learnedWords": [],
+        "badges": [],
+        "activeQuest": {
+          "id": "1780290524261-abd6e4054c2a28-shoeFitting",
+          "templateId": "shoeFitting",
+          "place": "shoeShop",
+          "title": "Find shoes for a long walk",
+          "opening": "Hello, Princess! These shoes are soft.",
+          "ending": "Now your feet are ready for the long road.",
+          "npc": "Mina"
+        },
+        "area": "kingdom",
+        "player": {
+          "x": 67.5,
+          "y": 65
+        },
+        "playerNode": "shoeShop"
+      }
+    },
+    {
+      "label": "150ms",
+      "feature": "Blue harbor dress",
+      "choices": [
+        "Buy 100 coins",
+        "Leave"
+      ],
+      "selected": [],
+      "activeViews": [
+        "mapView"
+      ],
+      "state": {
+        "coins": 100,
+        "energy": 84,
+        "vocab": 0,
+        "expression": 0,
+        "kindness": 0,
+        "mood": 72,
+        "difficulty": 100,
+        "speechEnabled": true,
+        "owned": [
+          "pinkDress"
+        ],
+        "outfit": {
+          "outfit": "pinkDress",
+          "shoes": "none",
+          "accessory": "none",
+          "room": "none"
+        },
+        "diary": [],
+        "completedLessons": [],
+        "metNpcs": [
+          "Rena"
+        ],
+        "learnedWords": [],
+        "badges": [],
+        "activeQuest": {
+          "id": "1780290524261-abd6e4054c2a28-shoeFitting",
+          "templateId": "shoeFitting",
+          "place": "shoeShop",
+          "title": "Find shoes for a long walk",
+          "opening": "Hello, Princess! These shoes are soft.",
+          "ending": "Now your feet are ready for the long road.",
+          "npc": "Mina"
+        },
+        "area": "kingdom",
+        "player": {
+          "x": 67.5,
+          "y": 65
+        },
+        "playerNode": "shoeShop"
+      }
+    },
+    {
+      "label": "500ms",
+      "feature": "Blue harbor dress",
+      "choices": [
+        "Buy 100 coins",
+        "Leave"
+      ],
+      "selected": [],
+      "activeViews": [
+        "mapView"
+      ],
+      "state": {
+        "coins": 100,
+        "energy": 84,
+        "vocab": 0,
+        "expression": 0,
+        "kindness": 0,
+        "mood": 72,
+        "difficulty": 100,
+        "speechEnabled": true,
+        "owned": [
+          "pinkDress"
+        ],
+        "outfit": {
+          "outfit": "pinkDress",
+          "shoes": "none",
+          "accessory": "none",
+          "room": "none"
+        },
+        "diary": [],
+        "completedLessons": [],
+        "metNpcs": [
+          "Rena"
+        ],
+        "learnedWords": [],
+        "badges": [],
+        "activeQuest": {
+          "id": "1780290524261-abd6e4054c2a28-shoeFitting",
+          "templateId": "shoeFitting",
+          "place": "shoeShop",
+          "title": "Find shoes for a long walk",
+          "opening": "Hello, Princess! These shoes are soft.",
+          "ending": "Now your feet are ready for the long road.",
+          "npc": "Mina"
+        },
+        "area": "kingdom",
+        "player": {
+          "x": 67.5,
+          "y": 65
+        },
+        "playerNode": "shoeShop"
+      }
+    },
+    {
+      "label": "1000ms",
+      "feature": "Blue harbor dress",
+      "choices": [
+        "Buy 100 coins",
+        "Leave"
+      ],
+      "selected": [],
+      "activeViews": [
+        "mapView"
+      ],
+      "state": {
+        "coins": 100,
+        "energy": 84,
+        "vocab": 0,
+        "expression": 0,
+        "kindness": 0,
+        "mood": 72,
+        "difficulty": 100,
+        "speechEnabled": true,
+        "owned": [
+          "pinkDress"
+        ],
+        "outfit": {
+          "outfit": "pinkDress",
+          "shoes": "none",
+          "accessory": "none",
+          "room": "none"
+        },
+        "diary": [],
+        "completedLessons": [],
+        "metNpcs": [
+          "Rena"
+        ],
+        "learnedWords": [],
+        "badges": [],
+        "activeQuest": {
+          "id": "1780290524261-abd6e4054c2a28-shoeFitting",
+          "templateId": "shoeFitting",
+          "place": "shoeShop",
+          "title": "Find shoes for a long walk",
+          "opening": "Hello, Princess! These shoes are soft.",
+          "ending": "Now your feet are ready for the long road.",
+          "npc": "Mina"
+        },
+        "area": "kingdom",
+        "player": {
+          "x": 67.5,
+          "y": 65
+        },
+        "playerNode": "shoeShop"
+      }
+    },
+    {
+      "label": "1500ms",
+      "feature": "Blue harbor dress",
+      "choices": [
+        "Buy 100 coins",
+        "Leave"
+      ],
+      "selected": [],
+      "activeViews": [
+        "mapView"
+      ],
+      "state": {
+        "coins": 100,
+        "energy": 84,
+        "vocab": 0,
+        "expression": 0,
+        "kindness": 0,
+        "mood": 72,
+        "difficulty": 100,
+        "speechEnabled": true,
+        "owned": [
+          "pinkDress"
+        ],
+        "outfit": {
+          "outfit": "pinkDress",
+          "shoes": "none",
+          "accessory": "none",
+          "room": "none"
+        },
+        "diary": [],
+        "completedLessons": [],
+        "metNpcs": [
+          "Rena"
+        ],
+        "learnedWords": [],
+        "badges": [],
+        "activeQuest": {
+          "id": "1780290524261-abd6e4054c2a28-shoeFitting",
+          "templateId": "shoeFitting",
+          "place": "shoeShop",
+          "title": "Find shoes for a long walk",
+          "opening": "Hello, Princess! These shoes are soft.",
+          "ending": "Now your feet are ready for the long road.",
+          "npc": "Mina"
+        },
+        "area": "kingdom",
+        "player": {
+          "x": 67.5,
+          "y": 65
+        },
+        "playerNode": "shoeShop"
+      }
+    }
+  ]
+}

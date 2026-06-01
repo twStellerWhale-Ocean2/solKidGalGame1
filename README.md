@@ -300,6 +300,45 @@ Visual surface sweep 應覆蓋所有會改變版面的狀態，不只截最終 p
 10. Settings / Save / Load 收進遊戲 overlay。
 11. 針對 Castle Map、Princess Room scene、Wardrobe detail、Kingdom Map、各店 scene、Shop detail、feedback、Diary、Settings、Save / Load 做手機直向美術性測試。
 
+## 原生 ES Modules 深化模組化
+
+本輪架構方向為原生 ES Modules 深化模組化，不導入 React、npm、Vite 或其他 build step。GitHub Pages 仍以 repository root 的 `index.html`、`src/`、`styles/`、`assets/` 直接部署；核心遊戲流程不得依賴本機 server、bundler 或後端才能遊玩。
+
+本輪實作順序固定：
+
+1. 先更新本 README，鎖定架構邊界、驗收 surface 與完整測試規則。
+2. 再修改 `src/` 與必要的 `index.html` / `styles/`。
+3. 測試發現本輪重構造成的問題時，必須直接修復並重跑相關測試，不只記錄問題。
+
+模組邊界：
+
+- `src/main.js` 應退回 app bootstrap、DOM element registry、module composition 與 testing hook installation，不再長期承載所有遊戲規則與 UI 細節。
+- `src/data/` 保留 area、scene、shop item、lesson、quest template 等資料 registry。
+- `src/state/` 負責 state normalize、localStorage persist、quest creation、diary、badge、reward mutation、save data shape。
+- `src/core/` 或等效 helper module 負責跨模組查找與純函式，例如 hotspot、scene config、item、area、category、node lookup。
+- `src/map/` 負責 Castle / Kingdom 共用地圖幾何、pan / zoom viewport、marker focus、player movement 與 map actor 定位。
+- `src/flow/` 負責 ADV scene、action choices、quest、hint、feedback / return 的狀態流程。
+- `src/render/` 負責可重用渲染 helper，例如 paper doll、system settings 或 shared DOM renderer。
+- `src/system/` 負責 Diary、Settings、Save / Load overlay 與 Markdown save/load。
+- `src/testing/` 的 selftest hook 必須維持可用；重構後不能讓 `?selftest=save-load`、`?selftest=monkey`、`?selftest=visual-qa` 失效。
+
+本輪完整驗測要求：
+
+- 開始測試前必須建立 `.codex/log/<yyyyMMdd-hhmmss>-surface-inventory.md`，使用繁體中文記錄主循環、操作流程樹、screenshot manifest、受影響 surface 與未觸及 surface。
+- 功能性測試必須覆蓋 Castle Map、Kingdom Map、Princess Room scene、Wardrobe detail、Shop scene、Shop detail、Diary、Settings、Save / Load。
+- 系統性測試必須覆蓋 Save / Load roundtrip、Settings 生效、console error / warning、coins 不為負、裝備不指向未擁有物、active view 唯一、modal 可離開。
+- 介面性測試必須覆蓋手機觸控、方向鍵、W/S、Enter、Space、數字鍵、Back / Leave / system overlay 返回路徑。
+- 猴子性測試必須執行 `?selftest=monkey`；若 fail，修復後重跑到 pass，或明確列出第三輪後仍無法解的阻塞原因。
+- 美術性測試以手機直向為主要必要 viewport，至少截圖並檢查 Castle Map、Castle marker focus、Princess Room scene、Wardrobe detail、Kingdom Map、Kingdom marker focus、Kingdom scene action choices、Shop scene、Shop detail、Shop feedback、Diary、Settings、Save / Load。
+- 美術性測試需依 Must Fix / Should Fix / Accept 分組；本輪重構造成的 Must Fix 必須修復、重截同一 manifest row 並複審。
+- 好玩性測試必須從兒童玩家角度走一輪「選地點 -> 短英文 -> coins -> Shop / Wardrobe -> Diary」，確認主循環沒有因模組化拆分而變得不清楚或卡住。
+
+完成宣告限制：
+
+- 不得用 `node --check`、console clean 或 monkey pass 取代美術性測試。
+- 不得用單張 final panel 截圖取代 Scene entry、Action Choices、Detail Panel、Feedback / Return 的分層驗收。
+- 若發現既有、非本輪重構造成的大型美術資產問題，記錄為後續工程項；不得把本輪架構重整宣稱為全遊戲美術重製完成。
+
 # IV. 備註紀錄
 
 ## 專案檔案

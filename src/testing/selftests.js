@@ -86,8 +86,11 @@ function runVisualQa(api) {
   if (params.get("fresh") === "1") api.state = api.freshState();
   const hotspot = api.hotspotById(place) || api.hotspotById("garden");
   const node = api.mapNodes[hotspot.node];
-  const coins = Number(params.get("coins"));
-  if (Number.isFinite(coins)) api.state.coins = Math.max(0, coins);
+  const coinsParam = params.get("coins");
+  if (coinsParam !== null) {
+    const coins = Number(coinsParam);
+    if (Number.isFinite(coins)) api.state.coins = Math.max(0, coins);
+  }
 
   if (surface === "castle-map") {
     api.render();

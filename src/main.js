@@ -1,4 +1,17 @@
 import { buildInfo } from "./build/version.js";
+import { $, $$, createElements } from "./app/elements.js";
+import {
+  areaForHotspot,
+  allowedShopCategoriesFor,
+  categoryLabel,
+  clamp,
+  closestNodeFromLegacy,
+  hotspotById,
+  hotspotByNode,
+  itemById,
+  nodeMapForArea,
+  sceneConfigFor
+} from "./core/lookups.js";
 import {
   areaRegistry,
   castleHotspots,
@@ -15,11 +28,32 @@ import {
   sceneConfigs,
   shopItems
 } from "./data/game-data.js";
-import { defaultState } from "./state/default-state.js";
-import { openAISettingsKey, saveMarkerEnd, saveMarkerStart, storageKey } from "./state/storage.js";
+import { createAdvControls } from "./flow/adv-controls.js";
 import { FLOW_STAGE_LABELS } from "./flow/stages.js";
+import { createPaperDollRenderer } from "./render/paper-doll.js";
 import { renderBuildInfo } from "./render/settings.js";
+import { saveMarkerEnd, saveMarkerStart } from "./state/storage.js";
+import {
+  addDiary as addStateDiary,
+  addUnique as addStateUnique,
+  applyEffects as applyStateEffects,
+  awardBadge as awardStateBadge,
+  buildSaveMarkdown as buildStateSaveMarkdown,
+  createQuestForPlace,
+  createRandomQuest,
+  effectText,
+  freshState,
+  loadLocalState,
+  loadOpenAISettings,
+  moodLabel as stateMoodLabel,
+  normalizeState,
+  outfitSummary as stateOutfitSummary,
+  persistOpenAISettings as saveOpenAISettings,
+  persistState,
+  updateProgressBadges as updateStateProgressBadges
+} from "./state/game-state.js";
 import { installTestingHooks } from "./testing/selftests.js";
+import { createSaveLoadController } from "./system/save-load.js";
 
 let state = loadLocalState();
 let openAISettings = loadOpenAISettings();
@@ -32,6 +66,7 @@ let wardrobeCategory = "outfit";
 let princessExpression = "normal";
 let npcExpression = "normal";
 let advFocusIndex = 0;
+let advFocusTimer = 0;
 let mapLifeFrame = null;
 let shopPreviewItemId = "";
 const mapZoomLimits = { min: 1, max: 2.2, mobileBaseScale: 1.06 };
@@ -46,244 +81,29 @@ let pendingMapRefreshArea = "";
 let systemMenuPanel = "diary";
 let activeCastleHotspot = null;
 
-const $ = (selector) => document.querySelector(selector);
-const $$ = (selector) => [...document.querySelectorAll(selector)];
-
-const elements = {
-  tabs: $$(".tab-button"),
-  views: $$(".view"),
-  homeView: $("#homeView"),
-  saveButton: $("#saveButton"),
-  loadButton: $("#loadButton"),
-  loadFileInput: $("#loadFileInput"),
-  systemMenuButton: $("#systemMenuButton"),
-  systemMenu: $("#systemMenu"),
-  systemMenuBook: $(".system-menu-book"),
-  systemMenuClose: $("#systemMenuClose"),
-  systemMenuTabs: $$(".system-menu-tab"),
-  systemPanels: $$(".system-panel"),
-  coinValue: $("#coinValue"),
-  energyValue: $("#energyValue"),
-  levelValue: $("#levelValue"),
-  outfitSummary: $("#outfitSummary"),
-  statusMessage: $("#statusMessage"),
-  goMapButton: $("#goMapButton"),
-  wardrobeCount: $("#wardrobeCount"),
-  wardrobeTabs: $("#wardrobeTabs"),
-  wardrobeGrid: $("#wardrobeGrid"),
-  areaNav: $("#areaNav"),
-  castleStage: $("#castleStage"),
-  castlePlayerToken: $("#castlePlayerToken"),
-  castleMarkerLayer: $("#castleMarkerLayer"),
-  mapStage: $("#mapStage"),
-  mapImage: $("#mapImage"),
-  playerToken: $("#playerToken"),
-  hotspotLayer: $("#hotspotLayer"),
-  nodeLayer: $("#nodeLayer"),
-  routeLayer: $("#routeLayer"),
-  mapLifeLayer: $("#mapLifeLayer"),
-  destinationPanel: $("#destinationPanel"),
-  destinationHint: $("#destinationHint"),
-  destinationList: $("#destinationList"),
-  returnHomeButton: $("#returnHomeButton"),
-  advModal: $("#advModal"),
-  advScene: $("#advScene"),
-  advTitle: $("#advTitle"),
-  advNpcPortrait: $("#advNpcPortrait"),
-  advSpeaker: $("#advSpeaker"),
-  advLine: $("#advLine"),
-  advPrompt: $("#advPrompt"),
-  choiceList: $("#choiceList"),
-  shopArea: $("#shopArea"),
-  advShopTabs: $("#advShopTabs"),
-  advShopGrid: $("#advShopGrid"),
-  advFeedback: $("#advFeedback"),
-  speakPromptButton: $("#speakPromptButton"),
-  helpButton: $("#helpButton"),
-  collectionSummary: $("#collectionSummary"),
-  diaryList: $("#diaryList"),
-  clearDiaryButton: $("#clearDiaryButton"),
-  difficultySelect: $("#difficultySelect"),
-  speakToggleButton: $("#speakToggleButton"),
-  resetButton: $("#resetButton"),
-  openaiSettingsForm: $("#openaiSettingsForm"),
-  openaiOrgInput: $("#openaiOrgInput"),
-  openaiKeyInput: $("#openaiKeyInput"),
-  saveOpenAIButton: $("#saveOpenAIButton"),
-  clearOpenAIButton: $("#clearOpenAIButton"),
-  aiStatus: $("#aiStatus"),
-  versionValue: $("#versionValue"),
-  buildDateValue: $("#buildDateValue"),
-  roomPropDesk: $("#roomPropDesk"),
-  roomPropLamp: $("#roomPropLamp")
-};
-
-function loadLocalState() {
-  try {
-    const saved = localStorage.getItem(storageKey);
-    if (!saved) return freshState();
-    return normalizeState(JSON.parse(saved));
-  } catch {
-    return freshState();
-  }
-}
-
-function loadOpenAISettings() {
-  try {
-    const saved = localStorage.getItem(openAISettingsKey);
-    if (!saved) return { orgId: "", apiKey: "" };
-    const parsed = JSON.parse(saved);
-    return {
-      orgId: typeof parsed.orgId === "string" ? parsed.orgId : "",
-      apiKey: typeof parsed.apiKey === "string" ? parsed.apiKey : ""
-    };
-  } catch {
-    return { orgId: "", apiKey: "" };
-  }
-}
+const elements = createElements();
+const paperDollRenderer = createPaperDollRenderer({ itemById });
+const advControls = createAdvControls({
+  elements,
+  getFocusIndex: () => advFocusIndex,
+  getMode: () => advMode,
+  setFocusIndex: (nextIndex) => { advFocusIndex = nextIndex; }
+});
+const saveLoadController = createSaveLoadController({
+  buildSaveMarkdown,
+  elements,
+  normalizeState,
+  onStateLoaded(nextState) { state = nextState; },
+  persist,
+  render
+});
 
 function persistOpenAISettings() {
-  localStorage.setItem(openAISettingsKey, JSON.stringify(openAISettings));
-}
-
-function freshState() {
-  const stateCopy = JSON.parse(JSON.stringify(defaultState));
-  stateCopy.activeQuest = createRandomQuest(null);
-  return stateCopy;
-}
-
-function normalizeState(candidate = {}) {
-  const base = freshState();
-  const merged = { ...base, ...candidate };
-  merged.owned = Array.isArray(candidate.owned) ? [...new Set(["pinkDress", ...candidate.owned])] : base.owned;
-  const candidateOutfit = candidate.outfit || {};
-  merged.outfit = { ...base.outfit, ...candidateOutfit };
-  if (candidateOutfit.dress && !candidateOutfit.outfit) merged.outfit.outfit = candidateOutfit.dress;
-  delete merged.outfit.dress;
-  delete merged.outfit.hat;
-  delete merged.outfit.pants;
-  delete merged.outfit.head;
-  merged.diary = Array.isArray(candidate.diary) ? candidate.diary : [];
-  merged.completedLessons = Array.isArray(candidate.completedLessons) ? candidate.completedLessons : [];
-  merged.metNpcs = Array.isArray(candidate.metNpcs) ? [...new Set(candidate.metNpcs)] : [];
-  merged.learnedWords = Array.isArray(candidate.learnedWords) ? [...new Set(candidate.learnedWords)] : [];
-  merged.badges = Array.isArray(candidate.badges) ? [...new Set(candidate.badges)] : [];
-  merged.area = areaRegistry[candidate.area]?.enabled ? candidate.area : base.area;
-  const nodes = nodeMapForArea(merged.area);
-  merged.playerNode = nodes[candidate.playerNode] ? candidate.playerNode : areaRegistry[merged.area].defaultNode;
-  merged.player = normalizePlayer(candidate.player, merged.playerNode, merged.area);
-  merged.difficulty = Number(difficultyConfig[candidate.difficulty] ? candidate.difficulty : base.difficulty);
-  merged.activeQuest = normalizeQuest(candidate.activeQuest || candidate.currentQuest) || createRandomQuest(null);
-  delete merged.schedule;
-  delete merged.currentQuest;
-  delete merged.week;
-  delete merged.dayIndex;
-  return merged;
-}
-
-function nodeMapForArea(areaId) {
-  return areaRegistry[areaId]?.nodes || mapNodes;
-}
-
-function normalizePlayer(player, nodeId, areaId = "kingdom") {
-  if (player && typeof player.x === "number" && typeof player.y === "number") {
-    return { x: clamp(player.x, 6, 94), y: clamp(player.y, 8, 92) };
-  }
-  const nodes = nodeMapForArea(areaId);
-  const node = nodes[nodeId] || nodes[areaRegistry[areaId]?.defaultNode] || mapNodes.garden;
-  return { x: node.x, y: node.y };
-}
-
-function closestNodeFromLegacy(player, areaId = "kingdom") {
-  const nodes = nodeMapForArea(areaId);
-  const defaultNode = areaRegistry[areaId]?.defaultNode || "garden";
-  if (!player || typeof player.x !== "number") return defaultNode;
-  let best = defaultNode;
-  let bestDistance = Infinity;
-  Object.values(nodes).forEach((node) => {
-    const distance = Math.hypot(node.x - player.x, node.y - player.y);
-    if (distance < bestDistance) {
-      best = node.id;
-      bestDistance = distance;
-    }
-  });
-  return best;
-}
-
-function normalizeQuest(quest) {
-  if (!quest || typeof quest !== "object") return null;
-  const place = quest.place || quest.targetPlace;
-  const template = questTemplates.find((item) => item.id === quest.templateId || item.place === place);
-  if (!template) return null;
-  const hotspot = hotspotById(template.place);
-  const scene = sceneConfigFor(hotspot);
-  return {
-    id: quest.id || `${Date.now()}-${template.id}`,
-    templateId: template.id,
-    place: template.place,
-    title: template.title,
-    opening: template.opening,
-    ending: template.ending,
-    npc: scene.npc
-  };
+  saveOpenAISettings(openAISettings);
 }
 
 function persist() {
-  localStorage.setItem(storageKey, JSON.stringify(state));
-}
-
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
-function hotspotById(id) {
-  return [...castleHotspots, ...hotspots].find((hotspot) => hotspot.id === id);
-}
-
-function sceneConfigFor(hotspot) {
-  if (!hotspot) return {};
-  return { ...hotspot, ...(sceneConfigs[hotspot.id] || {}) };
-}
-
-function hotspotByNode(nodeId) {
-  return [...castleHotspots, ...hotspots].find((hotspot) => hotspot.node === nodeId) || null;
-}
-
-function itemById(id) {
-  return shopItems.find((item) => item.id === id) || null;
-}
-
-function createRandomQuest(previousPlace) {
-  const available = questTemplates.filter((quest) => quest.place !== previousPlace);
-  const pool = available.length ? available : questTemplates;
-  const template = pool[Math.floor(Math.random() * pool.length)];
-  return createQuestFromTemplate(template);
-}
-
-function createQuestForPlace(place) {
-  const template = questTemplates.find((quest) => quest.place === place) || questTemplates[0];
-  return createQuestFromTemplate(template);
-}
-
-function createQuestFromTemplate(template) {
-  const hotspot = hotspotById(template.place);
-  const scene = sceneConfigFor(hotspot);
-  return {
-    id: `${Date.now()}-${Math.random().toString(16).slice(2)}-${template.id}`,
-    templateId: template.id,
-    place: template.place,
-    title: template.title,
-    opening: template.opening,
-    ending: template.ending,
-    npc: scene.npc
-  };
-}
-
-function areaForHotspot(hotspot) {
-  if (!hotspot) return state.area || "kingdom";
-  if (hotspot.area) return hotspot.area;
-  if (castleMapNodes[hotspot.node]) return "castle";
-  return "kingdom";
+  persistState(state);
 }
 
 function ensureKingdomPosition() {
@@ -402,45 +222,23 @@ function changeSystemPanel(panel = "diary") {
 }
 
 function applyEffects(effects = {}) {
-  state.coins = Math.max(0, state.coins + (effects.coins || 0));
-  state.energy = clamp(state.energy + (effects.energy || 0), 0, 100);
-  state.vocab += effects.vocab || 0;
-  state.expression += effects.expression || 0;
-  state.kindness += effects.kindness || 0;
-  state.mood = clamp(state.mood + (effects.mood || 0), 0, 100);
-}
-
-function effectText(effects = {}) {
-  const parts = [];
-  if (effects.coins) parts.push(`${effects.coins > 0 ? "+" : ""}${effects.coins} coins`);
-  if (effects.energy) parts.push(`${effects.energy > 0 ? "+" : ""}${effects.energy} energy`);
-  if (effects.vocab) parts.push(`+${effects.vocab} words`);
-  if (effects.expression) parts.push(`+${effects.expression} talk`);
-  if (effects.kindness) parts.push(`+${effects.kindness} kind`);
-  if (effects.mood) parts.push(`${effects.mood > 0 ? "+" : ""}${effects.mood} mood`);
-  return parts.join(", ") || "No change";
+  applyStateEffects(state, effects);
 }
 
 function addDiary(entry) {
-  state.diary.unshift({ at: new Date().toLocaleString("en-US"), ...entry });
-  state.diary = state.diary.slice(0, 80);
+  addStateDiary(state, entry);
 }
 
 function addUnique(listName, values) {
-  values.forEach((value) => {
-    if (value && !state[listName].includes(value)) state[listName].push(value);
-  });
+  addStateUnique(state, listName, values);
 }
 
 function awardBadge(id) {
-  if (!state.badges.includes(id)) state.badges.push(id);
+  awardStateBadge(state, id);
 }
 
 function updateProgressBadges() {
-  if (state.completedLessons.length >= 1) awardBadge("First Quest");
-  if (state.completedLessons.length >= 5) awardBadge("Kind Helper");
-  if (state.learnedWords.length >= 5) awardBadge("Word Finder");
-  if (state.owned.length >= 4) awardBadge("Doll Stylist");
+  updateStateProgressBadges(state);
 }
 
 function setExpressions(princess = "normal", npc = "normal") {
@@ -471,48 +269,19 @@ function renderStatus() {
 }
 
 function moodLabel(mood) {
-  if (mood >= 82) return "Happy";
-  if (mood >= 56) return "OK";
-  if (mood >= 30) return "Tired";
-  return "Sad";
+  return stateMoodLabel(mood);
 }
 
 function outfitSummary() {
-  const labels = [];
-  categories.map((category) => category.id).forEach((type) => {
-    if (type === "room") return;
-    const item = itemById(state.outfit[type]);
-    if (item) labels.push(item.name);
-  });
-  return labels.join(" / ") || "No outfit";
+  return stateOutfitSummary(state);
 }
 
 function renderPaperDolls() {
-  document.querySelectorAll("[data-doll]").forEach((doll) => {
-    doll.innerHTML = avatarMarkup(doll.dataset.doll || "side");
-    doll.dataset.outfit = state.outfit.outfit || "none";
-    doll.dataset.shoes = state.outfit.shoes || "none";
-    doll.dataset.accessory = state.outfit.accessory || "none";
-    doll.dataset.expression = princessExpression;
-  });
+  paperDollRenderer.renderPaperDolls(state.outfit, princessExpression);
 }
 
 function avatarMarkup(surface, outfitState = state.outfit) {
-  const outfit = itemById(outfitState.outfit) || itemById("pinkDress");
-  const spritePosition = outfit?.sprite || "0%";
-  return `
-    <div class="avatar-shadow"></div>
-    <span class="avatar-base avatar-sprite" style="--sprite-x:${spritePosition}" aria-hidden="true"></span>
-    <span class="avatar-layer avatar-shoes" aria-hidden="true"></span>
-    <span class="avatar-layer avatar-accessory" aria-hidden="true"></span>
-  `;
-}
-
-function avatarPoseFor(surface) {
-  if (surface === "map") return "happy";
-  if (princessExpression === "happy") return "cheer";
-  if (princessExpression === "thinking") return "thinking";
-  return "happy";
+  return paperDollRenderer.avatarMarkup(surface, outfitState);
 }
 
 function renderHome() {
@@ -612,7 +381,7 @@ function createItemCard(item, options = {}) {
   button.type = "button";
   button.className = `item-card ${item.type}${owned ? " owned" : ""}${equipped ? " equipped" : ""}${!owned && !affordable ? " locked" : ""}${options.selected ? " selected" : ""}`;
   button.dataset.itemId = item.id;
-  const previewStyle = `--sprite-x:${item.sprite || "0%"};--c1:${item.colors[0]};--c2:${item.colors[1]};--item-img:url(${item.image})`;
+  const previewStyle = `--sprite-x:${item.sprite || "0%"};--c1:${item.colors[0]};--c2:${item.colors[1]};--item-img:url(${cssAssetUrl(item.image)})`;
   button.innerHTML = `
     <span class="item-preview item-art item-image ${item.shape}" style="${previewStyle}">
       <span aria-hidden="true">${item.icon || "✦"}</span>
@@ -629,8 +398,8 @@ function createItemCard(item, options = {}) {
   return button;
 }
 
-function categoryLabel(type) {
-  return categories.find((category) => category.id === type)?.label || type;
+function cssAssetUrl(src) {
+  return src?.startsWith("assets/") ? `../${src}` : src;
 }
 
 function toggleEquip(item) {
@@ -1339,7 +1108,7 @@ function openSceneAdv(hotspot) {
     addAdvOption(hotspot.kind === "shop" ? "Chat" : "Talk", () => openHintAdv(hotspot));
   }
   addAdvOption("Leave", closeAdv, { leave: true });
-  window.setTimeout(() => setAdvFocus(0), 0);
+  scheduleAdvFocus(0);
   speak(elements.advLine.textContent);
 }
 
@@ -1356,51 +1125,35 @@ function openRoomScene(hotspot = hotspotById("princessRoom")) {
     closeAdv();
     openArea("castle");
   }, { leave: true });
-  window.setTimeout(() => setAdvFocus(0), 0);
+  scheduleAdvFocus(0);
 }
 
 function addAdvOption(label, onClick, options = {}) {
-  const button = document.createElement("button");
-  button.className = `choice-button${options.leave ? " leave-choice" : ""}`;
-  button.type = "button";
-  button.textContent = options.number ? `${options.number}. ${label}` : label;
-  button.setAttribute("aria-label", label);
-  if (options.choice) button.dataset.choice = options.choice;
-  button.addEventListener("click", onClick);
-  elements.choiceList.appendChild(button);
-  return button;
+  return advControls.addOption(label, onClick, options);
 }
 
 function advFocusableButtons() {
-  if (!elements.advModal.classList.contains("show")) return [];
-  const selectors = advMode === "shop" || advMode === "wardrobe"
-    ? ["#advShopGrid .item-card:not(:disabled)", "#choiceList .choice-button:not(:disabled)"]
-    : ["#choiceList .choice-button:not(:disabled)", "#advShopGrid .item-card:not(:disabled)"];
-  return selectors.flatMap((selector) => [...document.querySelectorAll(selector)]).filter((button) => button.offsetParent !== null);
+  return advControls.focusableButtons();
 }
 
 function setAdvFocus(index = 0) {
-  const buttons = advFocusableButtons();
-  document.querySelectorAll(".adv-focus").forEach((button) => button.classList.remove("adv-focus"));
-  if (!buttons.length) return;
-  advFocusIndex = (index + buttons.length) % buttons.length;
-  const button = buttons[advFocusIndex];
-  button.classList.add("adv-focus");
-  button.focus({ preventScroll: true });
-  button.scrollIntoView({ block: "nearest" });
+  advControls.setFocus(index);
+}
+
+function scheduleAdvFocus(index = 0) {
+  if (advFocusTimer) window.clearTimeout(advFocusTimer);
+  advFocusTimer = window.setTimeout(() => {
+    advFocusTimer = 0;
+    setAdvFocus(index);
+  }, 0);
 }
 
 function moveAdvFocus(delta) {
-  const buttons = advFocusableButtons();
-  if (!buttons.length) return;
-  setAdvFocus(advFocusIndex + delta);
+  advControls.moveFocus(delta);
 }
 
 function confirmAdvFocus() {
-  const buttons = advFocusableButtons();
-  if (!buttons.length) return false;
-  buttons[advFocusIndex]?.click();
-  return true;
+  return advControls.confirmFocus();
 }
 
 function openQuestAdv(hotspot) {
@@ -1419,7 +1172,7 @@ function openQuestAdv(hotspot) {
     button = addAdvOption(choice, () => answerLesson(button, choice), { number: index + 1, choice });
   });
   addAdvOption("Leave", closeAdv, { leave: true });
-  window.setTimeout(() => setAdvFocus(0), 0);
+  scheduleAdvFocus(0);
   speak(state.activeQuest.opening);
 }
 
@@ -1430,7 +1183,7 @@ function openHintAdv(hotspot, line = hotspot.hint) {
   elements.advPrompt.textContent = `Hint: today's quest is at ${hotspotById(state.activeQuest.place).label}.`;
   elements.advFeedback.textContent = "";
   addAdvOption("Leave", closeAdv, { leave: true });
-  window.setTimeout(() => setAdvFocus(0), 0);
+  scheduleAdvFocus(0);
 }
 
 function openShopAdv(hotspot) {
@@ -1449,7 +1202,7 @@ function openShopDetail(hotspot) {
   elements.shopArea.classList.remove("wardrobe-detail");
   elements.shopArea.classList.add("show");
   renderAdvShop();
-  window.setTimeout(() => setAdvFocus(0), 0);
+  scheduleAdvFocus(0);
   speak(elements.advLine.textContent);
 }
 
@@ -1500,7 +1253,7 @@ function renderWardrobeDetail(preserveFocus = false) {
   elements.choiceList.classList.add("shop-command-list");
   elements.shopArea.appendChild(elements.choiceList);
   const focusIndex = preserveFocus ? Math.max(0, categoryItems.findIndex((item) => item.id === shopPreviewItemId)) : 0;
-  window.setTimeout(() => setAdvFocus(focusIndex), 0);
+  scheduleAdvFocus(focusIndex);
 }
 
 function previewWardrobeItem(item) {
@@ -1529,7 +1282,7 @@ function equipWardrobePreview(item) {
 }
 
 function allowedShopCategories(hotspot = activeShopHotspot) {
-  return hotspot?.shopCategories?.length ? hotspot.shopCategories : categories.map((category) => category.id);
+  return allowedShopCategoriesFor(hotspot);
 }
 
 function shopGreeting(hotspot) {
@@ -1563,7 +1316,7 @@ function renderAdvShop(preserveFocus = false) {
   elements.choiceList.classList.add("shop-command-list");
   elements.shopArea.appendChild(elements.choiceList);
   const focusIndex = preserveFocus ? Math.max(0, categoryItems.findIndex((item) => item.id === shopPreviewItemId)) : 0;
-  window.setTimeout(() => setAdvFocus(focusIndex), 0);
+  scheduleAdvFocus(focusIndex);
 }
 
 function previewShopItem(item) {
@@ -1604,7 +1357,7 @@ function renderShopPreview(item) {
       <div class="paper-doll shop-preview-doll" data-outfit="${previewOutfit.outfit || "none"}" data-shoes="${previewOutfit.shoes || "none"}" data-accessory="${previewOutfit.accessory || "none"}" data-expression="happy">
         ${avatarMarkup("shop", previewOutfit)}
       </div>
-      <div class="shop-feature-item item-preview item-art item-image ${item.shape}" style="--c1:${item.colors[0]};--c2:${item.colors[1]};--sprite-x:${item.sprite || "0%"};--item-img:url('${item.image}')">
+      <div class="shop-feature-item item-preview item-art item-image ${item.shape}" style="--c1:${item.colors[0]};--c2:${item.colors[1]};--sprite-x:${item.sprite || "0%"};--item-img:url('${cssAssetUrl(item.image)}')">
         <span aria-hidden="true">${item.icon || "✦"}</span>
       </div>
     </div>
@@ -1642,8 +1395,9 @@ function buyItemInAdv(item) {
     } else {
       elements.advFeedback.textContent = `${item.name} is already in Lumi's room.`;
     }
+    shopPreviewItemId = item.id;
     renderAdvShop();
-    window.setTimeout(() => setAdvFocus(advFocusIndex), 0);
+    scheduleAdvFocus(advFocusIndex);
     return;
   }
   if (state.coins < item.cost) {
@@ -1656,6 +1410,7 @@ function buyItemInAdv(item) {
   playTone("buy");
   state.owned.push(item.id);
   if (item.type !== "room") state.outfit[item.type] = item.id;
+  shopPreviewItemId = item.id;
   awardBadge("First Shopping");
   updateProgressBadges();
   addDiary({ type: "shop", title: activeShopHotspot?.label || "Shop", body: `Bought ${item.name}.`, result: `-${item.cost} coins` });
@@ -1666,6 +1421,7 @@ function buyItemInAdv(item) {
   showRewardBurst(`${item.name} ✦`);
   persist();
   render();
+  shopPreviewItemId = item.id;
   renderAdvShop(true);
 }
 
@@ -1786,7 +1542,7 @@ function answerLesson(button, choice) {
   elements.statusMessage.textContent = `Talk complete. Next place: ${hotspotById(state.activeQuest.place).label}.`;
   persist();
   render();
-  window.setTimeout(() => setAdvFocus(0), 0);
+  scheduleAdvFocus(0);
   speak(elements.advLine.textContent);
 }
 
@@ -1929,97 +1685,19 @@ function playTone(kind) {
 }
 
 function buildSaveMarkdown() {
-  const questRows = state.diary.filter((entry) => entry.type === "quest");
-  const exportState = JSON.parse(JSON.stringify(state));
-  delete exportState.openaiApiKey;
-  const rows = state.diary.length
-    ? state.diary.map((entry) => `| ${entry.title} | ${entry.body.replaceAll("|", "/")} | ${entry.result || ""} |`).join("\n")
-    : "| - | - | - |";
-  const payload = JSON.stringify(exportState, null, 2);
-  return `# solKidGalGame Save
-
-- Saved at: ${new Date().toLocaleString("en-US")}
-- Difficulty: ${difficultyConfig[state.difficulty].label}
-- Coins: ${state.coins}
-- Energy: ${state.energy}
-- Vocabulary: ${state.vocab}
-- Expression: ${state.expression}
-- Kindness: ${state.kindness}
-- Mood: ${moodLabel(state.mood)}
-- Quests completed: ${questRows.length}
-- Outfit: ${outfitSummary()}
-- Current quest: ${state.activeQuest.title}
-- Learned words: ${state.learnedWords.join(", ") || "-"}
-- Friends met: ${state.metNpcs.join(", ") || "-"}
-- Badges: ${state.badges.join(", ") || "-"}
-
-## Diary
-
-| Title | Detail | Result |
-| --- | --- | --- |
-${rows}
-
-${saveMarkerStart}
-${payload}
-${saveMarkerEnd}
-`;
+  return buildStateSaveMarkdown(state);
 }
 
 async function saveMarkdown() {
-  const markdown = buildSaveMarkdown();
-  const filename = "luminara-adv-dressup-save.md";
-  if ("showSaveFilePicker" in window) {
-    try {
-      const handle = await window.showSaveFilePicker({
-        suggestedName: filename,
-        types: [{ description: "Markdown Save", accept: { "text/markdown": [".md"] } }]
-      });
-      const writable = await handle.createWritable();
-      await writable.write(markdown);
-      await writable.close();
-      elements.statusMessage.textContent = "Save complete.";
-      return;
-    } catch (error) {
-      if (error.name === "AbortError") return;
-    }
-  }
-  const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-  elements.statusMessage.textContent = "Markdown save downloaded.";
+  return saveLoadController.saveMarkdown();
 }
 
 function loadMarkdownText(text) {
-  const start = text.indexOf(saveMarkerStart);
-  const end = text.indexOf(saveMarkerEnd);
-  if (start === -1 || end === -1 || end <= start) throw new Error("Luminara save data block was not found.");
-  const json = text.slice(start + saveMarkerStart.length, end).trim();
-  state = normalizeState(JSON.parse(json));
-  persist();
-  elements.statusMessage.textContent = "Load complete. Progress restored.";
-  render();
+  return saveLoadController.loadMarkdownText(text);
 }
 
 async function loadMarkdown() {
-  if ("showOpenFilePicker" in window) {
-    try {
-      const [handle] = await window.showOpenFilePicker({
-        types: [{ description: "Markdown Save", accept: { "text/markdown": [".md"], "text/plain": [".md", ".txt"] } }]
-      });
-      const file = await handle.getFile();
-      loadMarkdownText(await file.text());
-      return;
-    } catch (error) {
-      if (error.name === "AbortError") return;
-    }
-  }
-  elements.loadFileInput.click();
+  return saveLoadController.loadMarkdown();
 }
 
 function resetProgress() {

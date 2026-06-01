@@ -323,7 +323,7 @@
 
 .avatar-sprite {
   width: 100%;
-  background-image: url("assets/characters/princess-outfits-sheet.png");
+  background-image: url("../assets/characters/princess-outfits-sheet.png");
   background-repeat: no-repeat;
   background-size: 400% 100%;
   background-position: var(--sprite-x, 0%) 50%;
