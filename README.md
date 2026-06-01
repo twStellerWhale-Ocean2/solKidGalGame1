@@ -499,6 +499,253 @@ node server.mjs
 - Map to scene entry
 - Return path back to map
 
+## Mobile Map Viewport Architecture v3
+
+本版本處理手機地圖圖層座標錯位問題：拖曳或縮放時，底圖、地點 icon、小公主 token 與 map actors 必須共用同一套 viewport metrics，不得再出現「上層圖示移動，但地圖底圖不動」的分層漂移。
+
+本輪實作順序固定：
+
+1. 先更新本 README，鎖定 `display/offset` viewport contract 與完整測試要求。
+2. 再修改實質遊戲網站，範圍限於 Castle / Kingdom 地圖底圖與 viewport metrics 的圖層對齊。
+3. 結束前依本節逐字納入的 `m-skill-2tech-children-adv-game-dev` 測試要求建立同一 run timestamp 的 `.codex/log/<yyyyMMdd-hhmmss>-*` 紀錄與手機直向證據。
+
+架構決議：
+
+- `areaMapMetrics()` / `syncAreaMapStyles()` 是 Castle / Kingdom / future areas 的唯一 viewport source of truth。
+- CSS 變數正式使用 `--map-display-width`、`--map-display-height`、`--map-offset-x`、`--map-offset-y` 來描述底圖在 stage 中的實際顯示大小與位置。
+- `--map-pan-x`、`--map-pan-y` 不再作為地圖底圖 `<img>` 的 pan / zoom contract；不得讓底圖、marker、player token、map actors 分別走兩套座標系。
+- 地圖資料座標維持百分比座標：`0-100% map data coordinates -> areaMapMetrics -> stage pixels`。
+- 新增 Forest / Ocean 或其他 future areas 時，必須沿用同一個 area map viewport contract，不得新增特殊 transform 或只服務單一地區的圖層修正。
+
+本版本必測 surface：
+
+- Castle map initial
+- Castle drag after viewport change
+- Castle pinch zoom after viewport change
+- Castle marker focus after viewport change
+- Kingdom map initial
+- Kingdom drag after viewport change
+- Kingdom pinch zoom after viewport change
+- Kingdom marker focus after viewport change
+- Area nav fixed outside zoomed map
+- Map to scene entry and return path
+
+本版本完成條件：
+
+- Castle / Kingdom 在手機直向單指拖曳時，底圖、地點 icon、小公主 token、map actors 一起位移。
+- Castle / Kingdom 在手機直向雙指縮放時，底圖、地點 icon、小公主 token、map actors 一起縮放與重新定位。
+- HUD 與底部 area navigation 不跟著地圖縮放。
+- 沒有水平捲動、重要地圖區域不可到達、或 icon 與底圖位置錯位。
+- 不得用 `node --check`、console clean 或 monkey pass 取代手機直向美術性測試。
+
+本輪逐字納入的 SKILL 測試要求如下；執行時不得刪減、改寫或以摘要取代。
+
+```md
+## 執行＜測試與調修＞
+
+所有測試 stage 共用前述 `建立 log 檔案契約` 的 run timestamp 與 `.codex/log` 證據位置。測試規則集中在本章，不回寫到前置契約 stage。
+
+測試紀錄使用 `.codex/log/<yyyyMMdd-hhmmss-OO性測試.md>`；不得使用 `<yyyyMMdd-hhmmss-OO性測試todo.md>` 作為正式報告。截圖、潔圖、contact sheet、前後比較用原始截圖與判定表放在 `.codex/log/<yyyyMMdd-hhmmss>-qa/` 或同一 run timestamp 的對應資料夾；不得同步或替代到 `doc/`。
+
+測試開始前必須確認 surface inventory 已定義 screenshot manifest；screenshot manifest 是所有測試報告的索引來源，測試報告引用的每張圖都必須能回到 manifest row。manifest row 缺截圖、缺 viewport、缺檢查結論或截圖檔無法開啟時，該 row 只能標 `未完成` 或具體阻塞原因，不得寫 `Accept`、`通過` 或 `已驗證`。
+
+進入各 stage 前先讀同 stage log；已記錄問題不得挑簡單項處理，每條都要補上 `已修並複測`、`本輪無法修並說明具體原因`、或 `拆成明確後續工程項且本輪不得宣稱完成`。
+
+凡測試或修訂項目需要圖片證據，報告必須直接嵌入關鍵截圖或明確列出無法取得圖片的原因；只有文字、路徑或縮圖索引不足以支撐完成宣告。contact sheet 只能作索引，不能替代全尺寸截圖審查。
+
+final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；所有完成宣告都能追溯到 manifest row、測試 log 或截圖證據。
+
+工程測試不能替代美術測試。`node --check`、console clean、無 overflow、selftest / monkey passed 只證明功能或版面未壞；涉及美術、構圖、畫風、貼圖、使用者截圖時，必須進入美術性測試循環。
+
+實際渲染工具選擇遵循全域工具規範；本 SKILL 只要求遊玩驗證、截圖與 log 證據，不規定或替代底層工具流程。
+
+若使用者只是在討論美術、版面、構圖、視覺焦點，且未說「請修改 / 請執行」，不得直接改檔；先列具體問題、影響與建議，等確認後再修。
+
+### stage: 功能性測試
+
+* **主旨目的**：驗證 Room、Map、ADV、Shop、Wardrobe、Diary 的核心流程可玩。
+
+* **參考準備**
+  * [ ] 啟動本機服務或 GitHub Pages 預覽。
+  * [ ] 列出 surface：Room、Map、Diary、Settings、hotspots、ADV、Shop。
+  * [ ] 全量操作後，將功能問題、重現步驟、證據寫入 `.codex/log/<yyyyMMdd-hhmmss-功能性測試.md>`。
+
+* **作業步驟**
+  * [ ] Room 出門到 Map。
+  * [ ] Map 移動到任務地點並觸發 hotspot focus。
+  * [ ] ADV 測試答錯、答對、上下鍵、數字鍵。
+  * [ ] Shop 測試進入、試穿、購買、離開。
+  * [ ] 回 Room 測試 wardrobe 與房間變化。
+  * [ ] Diary 檢查任務、購買、學習事件是否記錄。
+
+* **完成條件**
+  * [ ] 主循環完整可用。
+  * [ ] 各 surface 核心功能皆已實際操作。
+  * [ ] 未用語法檢查取代遊玩驗證。
+
+### stage: 系統性測試
+
+* **主旨目的**：驗證 Save、Load、Settings、資料保存、狀態不變量與 console health。
+
+* **參考準備**
+  * [ ] 準備不同 coins、裝備、任務、位置、menu 狀態。
+  * [ ] 全量檢查後，將系統問題、觸發條件、證據寫入 `.codex/log/<yyyyMMdd-hhmmss-系統性測試.md>`。
+
+* **作業步驟**
+  * [ ] 測試 Save / Load 可還原 Room、Map、ADV、Shop、Wardrobe 狀態。
+  * [ ] 測試 Settings 修改後生效且不破壞流程。
+  * [ ] 測試重新整理後能恢復或乾淨重開。
+  * [ ] 檢查 coins 不為負、裝備不指向未擁有物、active scene 唯一、modal 可離開。
+  * [ ] 檢查 console error / warn；大型原始輸出存檔或摘要，不塞滿對話。
+
+* **完成條件**
+  * [ ] Save / Load / Settings / Diary 可用且不破壞沉浸感。
+  * [ ] 狀態不變量成立。
+  * [ ] 無相關 console error / warn。
+
+### stage: 介面性測試
+
+* **主旨目的**：驗證操作一致、可理解，且符合日式 MAP ADV 操作感。
+
+* **參考準備**
+  * [ ] 檢查是否仍有表單、普通 button、網頁 Close、dashboard card。
+  * [ ] 全量檢查後，將介面一致性、可讀性、焦點、返回流程問題寫入 `.codex/log/<yyyyMMdd-hhmmss-介面性測試.md>`。
+
+* **作業步驟**
+  * [ ] 測試滑鼠、方向鍵、W/S、Enter、Space、數字鍵。
+  * [ ] 測試任務、地點、商店選單操作一致。
+  * [ ] 測試焦點高亮或 `▶`。
+  * [ ] 測試 `Leave`、`Back to Map`、game menu overlay 返回。
+  * [ ] 確認文字大小、行高、按鈕區域適合兒童。
+  * [ ] 確認 Help / speaker / menu button 不突兀。
+
+* **完成條件**
+  * [ ] 主要操作可用且一致。
+  * [ ] 玩家不需理解網站操作即可完成流程。
+  * [ ] 不再有明顯表單或後台感。
+
+### stage: 猴子性測試 / 回歸測試
+
+* **主旨目的**：驗證隨機與極端操作不會破壞狀態或卡死。
+
+* **參考準備**
+  * [ ] 優先使用既有 `?selftest=monkey` 或專案既有自動化回歸測試入口。
+  * [ ] 沒有自動測試時，用人工隨機操作。
+  * [ ] 對每個 surface 記錄卡死、狀態破壞、焦點異常、無法返回問題到 `.codex/log/<yyyyMMdd-hhmmss-猴子性測試.md>`。
+
+* **作業步驟**
+  * [ ] 隨機移動、進出地點、答題、商店、換裝、Save / Load、menu。
+  * [ ] 快速切換 Room、Map、ADV、Shop、Wardrobe。
+  * [ ] 快速連按 Enter、Space、方向鍵、數字鍵、Back / Leave。
+  * [ ] 在讀檔、開選單、換裝、購買、答題時切換場景。
+  * [ ] 檢查 focus 不卡死，Leave 可回 Map。
+  * [ ] 若目標是盤點，必須分 surface 記錄，不只回報全域 pass/fail。
+
+* **完成條件**
+  * [ ] monkey test 通過。
+  * [ ] 隨機操作不造成崩潰、卡死或無法離開狀態。
+
+### stage: 美術性測試
+
+* **主旨目的**：用玩家視角檢查畫面是否真像兒童日式 MAP ADV，而不是網站或半成品。
+
+* **參考準備**
+  * [ ] 先讀 README 的 viewport 規格；若 README 指定 mobile-only，美術截圖與報告只要求手機直向。桌機 `1024x768` 與寬桌機 `1800x800` 只在 README 未改寫或使用者要求時作為必要美術 viewport。
+  * [ ] 讀取本 SKILL 目錄的 `美術性測試範例.md`；報告可依專案調整內容，但應保留範例示範的嵌圖、Must / Should / Accept 分組、問題編號、修訂分析、畫面小結與總結統計。
+  * [ ] 讀取 screenshot manifest，確認 Room、Map、各地點、任務 ADV、Shop、非任務互動、Diary、Settings 與使用者點名畫面是否都已列入。
+  * [ ] 全尺寸打開 manifest 指定截圖；contact sheet 只作索引，不是審查替代品。
+  * [ ] 先審查正式美術來源。程式幾何圖、CSS 色塊、SVG 拼貼、模糊截圖、placeholder 必列 `Must Fix`；若使用者要求 `image_gen` / GPT 生圖，必須列出非生圖資產並替換或標為未完成。
+  * [ ] 將逐 surface 美術問題與證據寫入 `.codex/log/<yyyyMMdd-hhmmss-美術性測試.md>`。
+
+* **作業步驟**
+  * [ ] 建立美術檢查批次：以「遊戲畫面」為單位彙整 manifest row，列出 `畫面名稱`、`flow_node_id`、`viewport`、`截圖檔案`、`檢查狀態`、`Must Fix / Should Fix / Accept 數量`、`結案狀態`。
+  * [ ] 先保存修改前基準圖；後續每輪修正都保存同一 flow node / viewport 的修改後圖。
+  * [ ] 以 `美術性測試範例.md` 的章節形狀撰寫報告：每個遊戲畫面先嵌入本輪檢查截圖，再列 Must / Should / Accept 批評，接著列非 Accept 問題的修訂分析，最後寫畫面小結；不得只在文末集中列圖片或只提供檔案路徑。
+  * [ ] 對每個遊戲畫面執行固定檢查清單；缺截圖、截圖無法開啟或不在 manifest 內時，該 row 依「測試與調修共用規則」標 `未完成`，不得進入 `Accept`：
+    * [ ] HUD / stat / header 是否完全在 viewport 內，沒有超出邊界、被安全區切掉或造成水平捲動。
+    * [ ] 文字是否裁切、擠壓、溢出容器、蓋住其他文字，按鈕與可點擊目標是否被遮擋或太貼邊。
+    * [ ] 背景、角色、NPC、道具與 UI 是否像同一個空間與同一套視覺語言，不像截圖、表單或網頁元件拼貼。
+    * [ ] 角色比例、站位、裁切、腳底接地、陰影 / 底座與背景透視是否自然；不得有漂浮、截腳、頭身比例突變或髒邊。
+    * [ ] 對話框、Shop / Wardrobe panel、設定 panel 是否壓壞舞台構圖；主要角色與背景關鍵物件仍應可辨識。
+    * [ ] 進場 Scene 是否只顯示場景、NPC / 角色與 action choices；不得在尚未選擇 `購物`、`換衣服` 等動作前直接塞商品列表、換裝列表或系統設定表單。
+    * [ ] `Area Map -> Scene -> Action Choices -> Detail Panel` 層級是否能從截圖辨識；Scene entry 截圖與 detail panel 截圖不得互相代替。
+    * [ ] 使用者曾指出或提供截圖的具體畫面，是否在 manifest 與 log 中有同名 row、同名問題、實際截圖證據與結論。
+  * [ ] 依檢查清單產生至少 10 個具體批評點；批評點以遊戲畫面為單位，依 `Must Fix`、`Should Fix`、`Accept` 分組。少於 10 點、未分組或無法回到截圖證據時，本畫面未完成。
+  * [ ] 只有 `Must Fix` 與 `Should Fix` 建立 `問題#N` 進入修訂循環；`Accept` 只保留在檢討批評中，不膨脹成待處理問題。
+  * [ ] 對每個非 Accept 問題執行循環：`解決規劃 -> 最小可驗證改動 -> 重截同一 flow node / viewport -> 重跑固定檢查清單與 10 點批評 -> 誠實結案`。
+  * [ ] `解決規劃` 必須說明預計改善、可能變糟處、受影響 flow node / viewport、可接受條件；找不到更好方案時記錄 `找不到更好方案`，不得硬改。
+  * [ ] `前後比較` 優先直接嵌入修改前圖與修改後圖；若修改前圖無法補拍，必須像範例一樣明確寫出缺圖原因與替代證據，例如使用者回報、git diff 或舊版 DOM / CSS 結構，且該問題不得被描述為完整圖片前後比較。
+  * [ ] 全域 CSS、座標、圖片比例、核心場景層級、角色比例、共用元件等高 blast-radius 改動，必須先列受影響 manifest row 並安排對應截圖。
+  * [ ] 修訂後若新增任一 `Must Fix`、整體構圖變差、畫風一致性變差、焦點更亂或玩家第一眼更不清楚，結論必須記為 `修訂失敗`；不得寫成 resolved。
+  * [ ] `Must Fix` 修正循環最多 3 輪；第 3 輪仍有 `Must Fix` 時，不得宣稱美術性測試完成，必須列為阻塞或殘留重大問題。
+  * [ ] 報告每個非 Accept 問題使用固定欄位：`分類`、`影響尺寸`、`解決規劃`、`前後比較`、`修訂結論`；修訂結論只能是 `修訂完成`、`找不到更好方案`、`修訂失敗`、`未修訂`、`拆成後續工程項`。
+  * [ ] 報告最後用互斥分類統計：`建議接受問題`、`完成改善問題`、`尚待處理問題`；三類合計必須等於全部問題數，且每個 `問題#N` 只能歸入一類。
+
+* **完成條件**
+  * [ ] 所有必測 manifest row 都已完成截圖、可開啟、已套用固定檢查清單並完成 10 點分組批評。
+  * [ ] 任一必測 row 為 `未完成`、缺檔、未檢查或仍有 `Must Fix` 時，本 stage 未完成。
+  * [ ] Scene entry、action choices、Shopping / Wardrobe detail panel、購買 / 換裝後 feedback、返回路徑各自有截圖與結論；只截最終 panel 不得宣稱整條 ADV / Shop / Wardrobe 流程已驗證。
+  * [ ] 每個修訂項目報告都直接嵌入修改前圖、修改後圖與差異說明，不只有文字、路徑或 contact sheet。
+  * [ ] 報告已參考 `美術性測試範例.md` 的基本結構；若缺少修改前圖、部分截圖排除或只驗收單一 viewport，已在報告開頭或對應問題中明確說明限制。
+  * [ ] 每個問題都有誠實結論；`找不到更好方案`、`修訂失敗`、`未修訂`、`拆成後續工程項` 不得被 final 改寫成已完成改善。
+  * [ ] 不得以 contact sheet、工程測試通過、「比上一版好」或非生圖素材誤報取代美術通過。
+
+### stage: 好玩性測試
+
+* **主旨目的**：確認遊戲具備兒童願意繼續玩的目標、節奏、回饋與獎勵。
+
+* **參考準備**
+  * [ ] 從兒童玩家視角準備一輪完整遊玩。
+  * [ ] 檢查任務、獎勵、商店、換裝、Diary 是否形成正循環。
+  * [ ] 將目標不清、回饋不足、節奏過慢、誘因不足、難度不適寫入 `.codex/log/<yyyyMMdd-hhmmss-好玩性測試.md>`。
+
+* **作業步驟**
+  * [ ] 檢查主循環是否清楚：Room -> Map -> ADV -> coins -> Shop -> Room。
+  * [ ] 檢查兒童是否知道下一步要做什麼。
+  * [ ] 檢查答對、購買、換裝、徽章、存檔是否有明確回饋。
+  * [ ] 檢查商店商品是否想買。
+  * [ ] 檢查英文選項短、清楚、低挫折。
+  * [ ] 檢查節奏是否拖、對話是否長、地圖是否迷路。
+  * [ ] 若使用者要求逐頁 / 逐場地列問題，必須逐 surface 輸出，不用總結省略。
+
+* **完成條件**
+  * [ ] 遊戲有清楚目標、正向回饋與持續誘因。
+  * [ ] 小朋友能理解、願意探索，不覺得只是問答網站或管理介面。
+  * [ ] final 說明已驗證流程、仍有風險與截圖證據。
+
+## 整體檢討
+
+### stage: 完成聲明前檢討
+
+* **主旨目的**：防止局部改善後過早宣稱完成。
+
+* **參考準備**
+  * [ ] 檢查本次所有明確要求、討論形成的待辦、surface inventory、screenshot manifest 與各測試 log。
+
+* **作業步驟**
+  * [ ] 逐項對照需求，不只列已完成項。
+  * [ ] 若缺陷清單過大，先建立 / 更新 Markdown source of truth。
+  * [ ] 對照 screenshot manifest；任何必測 row 仍是 `未完成`、缺截圖檔、缺 viewport、缺檢查結論或未納入 log 時，final 必須說明未完成，不得宣稱全量完成。
+  * [ ] 對照使用者點名畫面；每個具體截圖、surface 或流程都必須能回到 manifest row、同名或可追蹤問題、截圖證據與處理結論。
+  * [ ] 逐一檢查 `.codex/log/<yyyyMMdd-hhmmss-OO性測試.md>`；存在未處理項時，不得說測試要求已完成。
+  * [ ] 確認實際渲染遊玩、功能測試、系統測試、介面測試、monkey test 與 console health 都有證據。
+  * [ ] 確認 smoke test、monkey test、console clean、路由可開啟或沒有 runtime error 沒有被寫成美術性測試、截圖 manifest 或 Scene / Detail Panel 分層驗收的替代證據。
+  * [ ] 涉及美術時，確認美術性測試循環已完成：固定檢查清單、10 點分組批評、非 Accept 問題修訂循環、重截複審與誠實結論都存在。
+  * [ ] 若仍有背景不成立、網站感、表單感、角色崩壞、UI 切割、焦點混亂、Shop 無誘因，不得宣稱完成。
+  * [ ] 若使用者要求 `image_gen` / GPT 生圖，確認 final 與報告沒有把非生圖圖像寫成生圖圖像。
+  * [ ] final 提到的重大問題必須已寫入 log / 報告，不得口頭承認但報告漏寫。
+
+* **完成條件**
+  * [ ] 所有完成聲明都能追溯到 manifest row、測試 log 或截圖證據。
+  * [ ] screenshot manifest 沒有必測 row 殘留 `未完成`、缺截圖、缺 viewport 或缺結論；若有殘留，final 明確說未完成。
+  * [ ] 使用者點名畫面都能回到 log 中同名或可追蹤問題與實際截圖證據。
+  * [ ] 工程健康證據沒有被寫成美術完成或 ADV / Shop / Wardrobe 流程完成的替代證據。
+  * [ ] 完成聲明經得起 Room / Map / ADV / Shop / Wardrobe 逐畫面檢查。
+  * [ ] 美術完成聲明經得起美術性測試循環檢查；不能只經得起工程驗收或縮圖瀏覽。
+  * [ ] 使用者不需要再指出基本日式 ADV、兒童體驗或美術來源問題。
+  * [ ] 測試報告、修訂優先順序與 final response 對重大缺陷描述一致。
+```
+
 ## 目前已完成狀況
 
 - Fixed layout overflow and the PC game viewport.
@@ -561,6 +808,7 @@ node server.mjs
 ## 本 README 變更紀錄
 
 - 2026-06-01：將「模組化主軸」提升到 README 最前段，記錄目前 ES Modules 結構、下一階段拆分方向，並要求後續功能開發不得背離模組化原則。
+- 2026-06-01：新增 Mobile Map Viewport Architecture v3，鎖定 `display/offset` 為 Castle / Kingdom / future areas 的唯一地圖 viewport contract，並逐字納入本輪 SKILL 測試要求。
 - 2026-05-31：依使用者要求重整為 `I. 緣起目的`、`II. 參考準備`、`III. 內容程序`、`IV. 備註紀錄`。
 - 2026-05-31：將本輪新規劃遊戲的 surface inventory 內容吸收為 README 的正式設計基準。
 - 2026-05-31：補入 Castle / Kingdom area registry、`Area Map -> Scene -> Action Choices -> Detail Panel`、HUD 三格、齒輪系統 overlay、Castle 圖一致性與 visual surface sweep 驗收規則。

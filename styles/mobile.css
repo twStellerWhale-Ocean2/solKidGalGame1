@@ -951,7 +951,7 @@ body {
 }
 
 .map-stage > img {
-  transform: translate3d(var(--map-pan-x), var(--map-pan-y), 0) scale(var(--map-mobile-scale));
+  transform: none;
 }
 
 .map-life-layer {
@@ -1515,7 +1515,6 @@ body {
 
   .room-stage,
   .map-stage {
-    --map-mobile-scale: 1.06;
     width: 100vw;
     height: 100dvh;
     margin: 0;
@@ -1536,7 +1535,7 @@ body {
 
   .map-stage > img {
     z-index: 1;
-    object-fit: cover;
+    object-fit: fill;
     filter: drop-shadow(0 8px 16px rgba(46, 88, 109, 0.18));
   }
 
@@ -2308,6 +2307,10 @@ body {
 }
 
 .castle-stage {
+  --map-display-width: 100%;
+  --map-display-height: 100%;
+  --map-offset-x: 0px;
+  --map-offset-y: 0px;
   width: 100%;
   height: 100%;
   position: relative;
@@ -2317,6 +2320,8 @@ body {
   background: #bfe8f4;
   box-shadow: var(--shadow);
   outline: none;
+  touch-action: none;
+  user-select: none;
 }
 
 .castle-stage:focus {
@@ -2325,13 +2330,15 @@ body {
 
 .castle-stage > img {
   position: absolute;
-  inset: 0;
+  left: var(--map-offset-x);
+  top: var(--map-offset-y);
   z-index: 1;
-  width: 100%;
-  height: 100%;
+  width: var(--map-display-width);
+  height: var(--map-display-height);
   display: block;
-  object-fit: cover;
+  object-fit: fill;
   object-position: center center;
+  transform: none;
 }
 
 .castle-title-panel {
