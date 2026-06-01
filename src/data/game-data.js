@@ -29,14 +29,16 @@ export const shopItems = [
 ];
 
 export const hotspots = [
+  { id: "luminaraCastle", node: "castleRoom", label: "Luminara Castle", icon: "🏰", npcClass: "npc-none", npc: "Gate Guard", kind: "gate", targetArea: "castle", hint: "Climb the purple castle stairway back inside." },
+  { id: "port", node: "port", label: "Harbor Port", icon: "⚓", npcClass: "npc-none", npc: "Dock Guide", scene: "scene-harbor", hint: "The docks are ready for boats and sea trips." },
   { id: "garden", node: "garden", label: "Castle Garden", icon: "🌷", npcClass: "npc-garden", npc: "Mira", scene: "scene-garden", hint: "The garden is quiet. A small cat may be hiding near the roses." },
   { id: "market", node: "market", label: "Market Square", icon: "🥖", npcClass: "npc-market", npc: "Auntie Pom", scene: "scene-market", kind: "shop", shopCategories: ["room"], defaultCategory: "room", hint: "The bakery smells sweet. Auntie Pom also has room treasures." },
-  { id: "harbor", node: "harbor", label: "Harbor Dock", icon: "🐟", npcClass: "npc-harbor", npc: "Nami", scene: "scene-harbor", hint: "It seems the harbor sells fish. Lumi can buy one for dinner." },
+  { id: "harbor", node: "harbor", label: "Fish Shop", icon: "🐟", npcClass: "npc-harbor", npc: "Nami", scene: "scene-harbor", hint: "The fish shop has fresh fish for dinner." },
   { id: "boutique", node: "boutique", label: "Dress Boutique", icon: "👗", npcClass: "npc-boutique", npc: "Rena", scene: "scene-boutique", kind: "shop", shopCategories: ["outfit"], defaultCategory: "outfit", hint: "Rena's boutique has dresses for doll play." },
   { id: "shoeShop", node: "shoeShop", label: "Shoe Shop", icon: "👞", npcClass: "npc-shoes", npc: "Mina", scene: "scene-shoes", kind: "shop", shopCategories: ["shoes"], defaultCategory: "shoes", hint: "Mina shows shoes for long walks." },
   { id: "accessoryShop", node: "accessoryShop", label: "Accessory Shop", icon: "🎀", npcClass: "npc-accessory", npc: "Lili", scene: "scene-accessory", kind: "shop", shopCategories: ["accessory"], defaultCategory: "accessory", hint: "Lili sells crowns, ribbons, bags, and capes." },
   { id: "farm", node: "farm", label: "Sunny Farm", icon: "🐄", npcClass: "npc-farm", npc: "Theo", scene: "scene-farm", hint: "The farm is busy. Theo is brushing the big cow." },
-  { id: "lighthouse", node: "lighthouse", label: "Lighthouse", icon: "⛵", npcClass: "npc-lighthouse", npc: "Captain Sol", scene: "scene-lighthouse", hint: "The lighthouse watches the sea before ships sail." }
+  { id: "lighthouse", node: "lighthouse", label: "Lighthouse", icon: "🗼", npcClass: "npc-lighthouse", npc: "Captain Sol", scene: "scene-lighthouse", hint: "The lighthouse watches the sea before ships sail." }
 ];
 
 export const sceneConfigs = {
@@ -48,6 +50,7 @@ export const sceneConfigs = {
   garden: { scene: "scene-garden", npcClass: "npc-garden", npc: "Mira", travelAction: "Visit", travelLine: "Mira is watching the roses and a shy garden cat." },
   market: { scene: "scene-market", npcClass: "npc-market", npc: "Auntie Pom", travelAction: "Shop", travelLine: "Auntie Pom has warm bread and cozy room treasures.", shopGreeting: "Auntie Pom has cozy treasures for Lumi's room." },
   harbor: { scene: "scene-harbor", npcClass: "npc-harbor", npc: "Nami", travelAction: "Visit", travelLine: "Nami is waiting by the bright harbor boats." },
+  port: { scene: "scene-harbor", npcClass: "npc-none", npc: "Dock Guide", travelAction: "Visit", travelLine: "Boats arrive at the harbor port for sea trips and dock visits." },
   boutique: { scene: "scene-boutique", npcClass: "npc-boutique", npc: "Rena", travelAction: "Shop", travelLine: "Rena has dresses ready for a bright day.", shopGreeting: "Welcome, Princess. Outfits are ready for a bright day." },
   shoeShop: { scene: "scene-shoes", npcClass: "npc-shoes", npc: "Mina", travelAction: "Shop", travelLine: "Mina has walking shoes for Lumi's next trip.", shopGreeting: "Hello, Princess. Try shoes for the road." },
   accessoryShop: { scene: "scene-accessory", npcClass: "npc-accessory", npc: "Lili", travelAction: "Shop", travelLine: "Lili has ribbons, crowns, bags, and capes.", shopGreeting: "Good day, Princess. Pick a ribbon, crown, bag, or cape." },
@@ -56,40 +59,41 @@ export const sceneConfigs = {
 };
 
 export const mapNodes = {
-  castleRoom: { id: "castleRoom", label: "Princess Room Door", x: 50, y: 29.2, links: ["garden", "market", "farm"] },
-  garden: { id: "garden", label: "Castle Garden", x: 43, y: 44, links: ["castleRoom", "market"] },
-  market: { id: "market", label: "Market Square", x: 51, y: 60, links: ["garden", "boutique", "shoeShop", "harbor"] },
-  boutique: { id: "boutique", label: "Dress Boutique", x: 65, y: 55, links: ["market", "shoeShop", "accessoryShop", "farm"] },
-  shoeShop: { id: "shoeShop", label: "Shoe Shop", x: 58, y: 69, links: ["market", "harbor", "boutique"] },
-  accessoryShop: { id: "accessoryShop", label: "Accessory Shop", x: 72, y: 47, links: ["boutique", "farm"] },
-  farm: { id: "farm", label: "Sunny Farm", x: 77, y: 24, links: ["castleRoom", "accessoryShop", "boutique"] },
-  harbor: { id: "harbor", label: "Harbor Dock", x: 38, y: 75, links: ["market", "shoeShop", "lighthouse"] },
-  lighthouse: { id: "lighthouse", label: "Lighthouse", x: 73, y: 78, links: ["harbor"] }
+  castleRoom: { id: "castleRoom", label: "Castle Stairway", x: 49.4, y: 37.4, links: ["garden", "market", "farm"] },
+  garden: { id: "garden", label: "Castle Garden", x: 49.7, y: 52.8, links: ["castleRoom", "market"] },
+  market: { id: "market", label: "Market Square", x: 28.0, y: 61.6, links: ["garden", "boutique", "shoeShop", "harbor", "port"] },
+  boutique: { id: "boutique", label: "Dress Boutique", x: 64.0, y: 59.0, links: ["market", "shoeShop", "accessoryShop", "farm"] },
+  shoeShop: { id: "shoeShop", label: "Shoe Shop", x: 67.5, y: 65.0, links: ["market", "harbor", "boutique"] },
+  accessoryShop: { id: "accessoryShop", label: "Accessory Shop", x: 74.2, y: 61.1, links: ["boutique", "farm"] },
+  farm: { id: "farm", label: "Sunny Farm", x: 87.0, y: 19.8, links: ["castleRoom", "accessoryShop", "boutique"] },
+  harbor: { id: "harbor", label: "Fish Shop", x: 35.6, y: 63.0, links: ["market", "shoeShop", "port"] },
+  port: { id: "port", label: "Harbor Port", x: 40.8, y: 87.6, links: ["market", "harbor", "lighthouse"] },
+  lighthouse: { id: "lighthouse", label: "Lighthouse", x: 77.3, y: 78.2, links: ["port"] }
 };
 
 export const mapImageSize = { width: 1672, height: 941 };
 
 export const mapActors = [
-  { id: "river-flow", type: "water", src: "assets/map-layers/river-flow.png", x: 21.1, y: 31.9, w: 10.2, h: 45.7, z: 2, phase: 0.3 },
-  { id: "harbor-flow", type: "water", src: "assets/map-layers/harbor-flow.png", x: 38.9, y: 84.6, w: 33.5, h: 26.6, z: 2, phase: 1.1 },
-  { id: "ocean-flow", type: "water", src: "assets/map-layers/ocean-flow.png", x: 85.8, y: 54.2, w: 25.7, h: 55.3, z: 2, phase: 1.8 },
-  { id: "harbor-ship-large", type: "ship", src: "assets/map-layers/harbor-ship-large.png", x: 40.9, y: 87.1, w: 16.8, h: 15.9, z: 3, phase: 0.2 },
-  { id: "harbor-ship-small", type: "ship", src: "assets/map-layers/harbor-ship-small.png", x: 28.6, y: 88.5, w: 5.0, h: 7.9, z: 3, phase: 1.4 },
-  { id: "lighthouse-boat", type: "ship", src: "assets/map-layers/lighthouse-boat.png", x: 54.7, y: 92.5, w: 5.1, h: 7.7, z: 3, phase: 2.0 },
-  { id: "castle-flag", type: "flag", src: "assets/map-layers/castle-flag.png", x: 50.1, y: 3.0, w: 3.8, h: 5.7, anchorX: 0.5, anchorY: 0.95, z: 6 },
-  { id: "farm-windmill", type: "windmill", src: "assets/map-layers/windmill-blades.png", x: 84.8, y: 16.8, w: 5.7, h: 10.2, z: 4 },
-  { id: "lighthouse-glow", type: "glow", x: 82.0, y: 71.5, w: 13, h: 13, z: 1 },
-  { id: "sea-bird-a", type: "bird", x: 42.8, y: 84.7, w: 3.7, h: 1.6, z: 5, phase: 0.4 },
-  { id: "sea-bird-b", type: "bird", x: 64.5, y: 83.3, w: 3.2, h: 1.4, z: 5, phase: 1.6 }
+  { id: "river-flow", type: "water", src: "assets/map-layers/river-flow.png", x: 14.6, y: 29.5, w: 11.5, h: 39.0, z: 2, phase: 0.3 },
+  { id: "harbor-flow", type: "water", src: "assets/map-layers/harbor-flow.png", x: 41.5, y: 86.8, w: 33.5, h: 23.6, z: 2, phase: 1.1 },
+  { id: "ocean-flow", type: "water", src: "assets/map-layers/ocean-flow.png", x: 91.2, y: 56.5, w: 19.0, h: 48.0, z: 2, phase: 1.8 },
+  { id: "harbor-ship-large", type: "ship", src: "assets/map-layers/harbor-ship-large.png", x: 42.7, y: 89.0, w: 14.8, h: 14.0, z: 3, phase: 0.2 },
+  { id: "harbor-ship-small", type: "ship", src: "assets/map-layers/harbor-ship-small.png", x: 31.2, y: 91.2, w: 4.6, h: 7.1, z: 3, phase: 1.4 },
+  { id: "lighthouse-boat", type: "ship", src: "assets/map-layers/lighthouse-boat.png", x: 55.6, y: 92.7, w: 4.8, h: 7.1, z: 3, phase: 2.0 },
+  { id: "castle-flag", type: "flag", src: "assets/map-layers/castle-flag.png", x: 49.7, y: 3.4, w: 3.4, h: 5.1, anchorX: 0.5, anchorY: 0.95, z: 6 },
+  { id: "farm-windmill", type: "windmill", src: "assets/map-layers/windmill-blades.png", x: 89.5, y: 20.4, w: 4.8, h: 8.6, z: 4 },
+  { id: "lighthouse-glow", type: "glow", x: 78.7, y: 75.4, w: 12, h: 12, z: 1 },
+  { id: "sea-bird-a", type: "bird", x: 42.8, y: 86.5, w: 3.4, h: 1.5, z: 5, phase: 0.4 },
+  { id: "sea-bird-b", type: "bird", x: 65.0, y: 84.6, w: 3.0, h: 1.3, z: 5, phase: 1.6 }
 ];
 
-export const castleMapImageSize = { width: 1391, height: 1131 };
+export const castleMapImageSize = { width: 1312, height: 1199 };
 
 export const castleMapNodes = {
-  princessRoom: { id: "princessRoom", label: "Princess Room", x: 51.5, y: 50 },
-  kingRoom: { id: "kingRoom", label: "King Room", x: 54.5, y: 39 },
-  queenRoom: { id: "queenRoom", label: "Queen Room", x: 44, y: 47 },
-  castleGate: { id: "castleGate", label: "Castle Gate", x: 52, y: 66 }
+  princessRoom: { id: "princessRoom", label: "Princess Room", x: 40.7, y: 56.5 },
+  kingRoom: { id: "kingRoom", label: "King Room", x: 50.2, y: 31.5 },
+  queenRoom: { id: "queenRoom", label: "Queen Room", x: 30.2, y: 52.8 },
+  castleGate: { id: "castleGate", label: "Castle Gate", x: 40.7, y: 79.8 }
 };
 
 export const castleHotspots = [
@@ -104,7 +108,7 @@ export const areaRegistry = {
     id: "castle",
     label: "Castle",
     view: "home",
-    mapImage: "assets/castle-map.png?v=20260531-user-castle",
+    mapImage: "assets/castle-map2.png?v=20260531-stair-map",
     imageSize: castleMapImageSize,
     locations: castleHotspots,
     nodes: castleMapNodes,
@@ -115,7 +119,7 @@ export const areaRegistry = {
     id: "kingdom",
     label: "Kingdom",
     view: "map",
-    mapImage: "assets/kingdom-map.png?v=handdrawn-20260531",
+    mapImage: "assets/kingdom-map2.png?v=20260531-stair-map",
     imageSize: mapImageSize,
     locations: hotspots,
     nodes: mapNodes,

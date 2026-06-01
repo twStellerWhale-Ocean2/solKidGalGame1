@@ -34,9 +34,15 @@ let npcExpression = "normal";
 let advFocusIndex = 0;
 let mapLifeFrame = null;
 let shopPreviewItemId = "";
-let mapPan = { x: 0, y: 0 };
-let mapDrag = null;
+const mapZoomLimits = { min: 1, max: 2.2, mobileBaseScale: 1.06 };
+const areaMapViewports = {
+  castle: { pan: { x: 0, y: 0 }, zoom: 1 },
+  kingdom: { pan: { x: 0, y: 0 }, zoom: 1 }
+};
+const centerMapOnNextRender = { castle: true, kingdom: true };
+let mapGesture = null;
 let pendingMapPositionFrame = 0;
+let pendingMapRefreshArea = "";
 let systemMenuPanel = "diary";
 let activeCastleHotspot = null;
 
@@ -67,6 +73,7 @@ const elements = {
   wardrobeGrid: $("#wardrobeGrid"),
   areaNav: $("#areaNav"),
   castleStage: $("#castleStage"),
+  castlePlayerToken: $("#castlePlayerToken"),
   castleMarkerLayer: $("#castleMarkerLayer"),
   mapStage: $("#mapStage"),
   mapImage: $("#mapImage"),
@@ -306,6 +313,7 @@ function openArea(areaId) {
   } else if (areaId === "castle") {
     ensureCastlePosition();
   }
+  centerMapOnNextRender[areaId] = true;
   persist();
   changeView(area.view);
   renderAreaNav();
@@ -518,10 +526,17 @@ function renderAreaNav() {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `area-button${state.area === area.id ? " active" : ""}`;
-    button.textContent = area.label;
+    button.setAttribute("aria-current", state.area === area.id ? "page" : "false");
+    button.innerHTML = `
+      <span class="area-avatar" aria-hidden="true">
+        <span class="paper-doll area-doll" data-doll="area-${area.id}"></span>
+      </span>
+      <span class="area-label">${area.label}</span>
+    `;
     button.addEventListener("click", () => openArea(area.id));
     elements.areaNav.appendChild(button);
   });
+  renderPaperDolls();
 }
 
 function renderWardrobeTabs() {
@@ -631,20 +646,151 @@ function toggleEquip(item) {
   render();
 }
 
-function castleCoverMetrics() {
-  const rect = elements.castleStage.getBoundingClientRect();
-  const imageRatio = castleMapImageSize.width / castleMapImageSize.height;
+function areaMapStage(areaId) {
+  return areaId === "castle" ? elements.castleStage : elements.mapStage;
+}
+
+function areaMapImageSize(areaId) {
+  return areaId === "castle" ? castleMapImageSize : mapImageSize;
+}
+
+function areaMapViewport(areaId) {
+  if (!areaMapViewports[areaId]) {
+    areaMapViewports[areaId] = { pan: { x: 0, y: 0 }, zoom: 1 };
+  }
+  return areaMapViewports[areaId];
+}
+
+function baseAreaMapDisplay(areaId, rect) {
+  const imageSize = areaMapImageSize(areaId);
+  const imageRatio = imageSize.width / imageSize.height;
   const stageRatio = rect.width / rect.height;
-  const displayWidth = stageRatio > imageRatio ? rect.width : rect.height * imageRatio;
-  const displayHeight = stageRatio > imageRatio ? rect.width / imageRatio : rect.height;
+  const useCover = isMobileTravelMap();
+  const width = useCover
+    ? stageRatio > imageRatio ? rect.width : rect.height * imageRatio
+    : stageRatio > imageRatio ? rect.height * imageRatio : rect.width;
+  const height = useCover
+    ? stageRatio > imageRatio ? rect.width / imageRatio : rect.height
+    : stageRatio > imageRatio ? rect.height : rect.width / imageRatio;
+  const scale = useCover ? mapZoomLimits.mobileBaseScale : 1;
+  return { width: width * scale, height: height * scale };
+}
+
+function clampAreaMapViewport(areaId, viewport, rect = null) {
+  const stage = areaMapStage(areaId);
+  const stageRect = rect || stage.getBoundingClientRect();
+  if (!isMobileTravelMap()) return { pan: { x: 0, y: 0 }, zoom: 1 };
+  const zoom = clamp(viewport.zoom || 1, mapZoomLimits.min, mapZoomLimits.max);
+  const baseDisplay = baseAreaMapDisplay(areaId, stageRect);
+  const displayWidth = baseDisplay.width * zoom;
+  const displayHeight = baseDisplay.height * zoom;
+  const maxX = Math.max(0, (displayWidth - stageRect.width) / 2);
+  const maxY = Math.max(0, (displayHeight - stageRect.height) / 2);
+  return {
+    pan: {
+      x: clamp(viewport.pan?.x || 0, -maxX, maxX),
+      y: clamp(viewport.pan?.y || 0, -maxY, maxY)
+    },
+    zoom
+  };
+}
+
+function areaMapMetrics(areaId, viewportOverride = null) {
+  const stage = areaMapStage(areaId);
+  const rect = stage.getBoundingClientRect();
+  const viewport = viewportOverride || areaMapViewport(areaId);
+  const constrained = clampAreaMapViewport(areaId, viewport, rect);
+  if (!viewportOverride) {
+    areaMapViewports[areaId] = constrained;
+  }
+  const baseDisplay = baseAreaMapDisplay(areaId, rect);
+  const displayWidth = baseDisplay.width * constrained.zoom;
+  const displayHeight = baseDisplay.height * constrained.zoom;
   return {
     width: rect.width,
     height: rect.height,
     displayWidth,
     displayHeight,
-    offsetX: (rect.width - displayWidth) / 2,
-    offsetY: (rect.height - displayHeight) / 2
+    panX: constrained.pan.x,
+    panY: constrained.pan.y,
+    zoom: constrained.zoom,
+    offsetX: (rect.width - displayWidth) / 2 + constrained.pan.x,
+    offsetY: (rect.height - displayHeight) / 2 + constrained.pan.y
   };
+}
+
+function syncAreaMapStyles(areaId, metrics = areaMapMetrics(areaId)) {
+  const stage = areaMapStage(areaId);
+  if (!stage) return;
+  stage.style.setProperty("--map-display-width", `${metrics.displayWidth}px`);
+  stage.style.setProperty("--map-display-height", `${metrics.displayHeight}px`);
+  stage.style.setProperty("--map-offset-x", `${metrics.offsetX}px`);
+  stage.style.setProperty("--map-offset-y", `${metrics.offsetY}px`);
+}
+
+function centerAreaMapOnPoint(areaId, x, y) {
+  const stage = areaMapStage(areaId);
+  if (!stage) return;
+  const rect = stage.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const viewport = areaMapViewport(areaId);
+  const baseDisplay = baseAreaMapDisplay(areaId, rect);
+  const zoom = clamp(viewport.zoom || 1, mapZoomLimits.min, mapZoomLimits.max);
+  const displayWidth = baseDisplay.width * zoom;
+  const displayHeight = baseDisplay.height * zoom;
+  applyAreaMapViewport(areaId, {
+    zoom,
+    pan: {
+      x: rect.width / 2 - (x / 100) * displayWidth - (rect.width - displayWidth) / 2,
+      y: rect.height / 2 - (y / 100) * displayHeight - (rect.height - displayHeight) / 2
+    }
+  });
+}
+
+function zoomAreaMapAtStagePoint(areaId, stageX, stageY, zoomFactor) {
+  const stage = areaMapStage(areaId);
+  if (!stage) return;
+  const metrics = areaMapMetrics(areaId);
+  const zoom = clamp(metrics.zoom * zoomFactor, mapZoomLimits.min, mapZoomLimits.max);
+  const focus = {
+    x: clamp((stageX - metrics.offsetX) / metrics.displayWidth, 0, 1),
+    y: clamp((stageY - metrics.offsetY) / metrics.displayHeight, 0, 1)
+  };
+  const rect = stage.getBoundingClientRect();
+  const baseDisplay = baseAreaMapDisplay(areaId, rect);
+  const displayWidth = baseDisplay.width * zoom;
+  const displayHeight = baseDisplay.height * zoom;
+  applyAreaMapViewport(areaId, {
+    zoom,
+    pan: {
+      x: stageX - focus.x * displayWidth - (rect.width - displayWidth) / 2,
+      y: stageY - focus.y * displayHeight - (rect.height - displayHeight) / 2
+    }
+  });
+  refreshAreaMapPositions(areaId);
+}
+
+function zoomAreaMapFromKeyboard(areaId, direction) {
+  const stage = areaMapStage(areaId);
+  if (!stage) return;
+  const rect = stage.getBoundingClientRect();
+  zoomAreaMapAtStagePoint(areaId, rect.width / 2, rect.height / 2, direction > 0 ? 1.18 : 1 / 1.18);
+}
+
+function centerAreaMapOnCurrentPlayer(areaId) {
+  const point = currentPlayerPoint(areaId);
+  if (!point) return;
+  centerAreaMapOnPoint(areaId, point.x, point.y);
+}
+
+function centerAreaMapIfRequested(areaId) {
+  if (!centerMapOnNextRender[areaId]) return;
+  centerMapOnNextRender[areaId] = false;
+  centerAreaMapOnCurrentPlayer(areaId);
+}
+
+function castleCoverMetrics() {
+  return areaMapMetrics("castle");
 }
 
 function castlePointToStage(x, y, metrics = castleCoverMetrics()) {
@@ -660,10 +806,42 @@ function positionCastleElement(element, x, y, metrics = castleCoverMetrics()) {
   element.style.top = `${point.y}px`;
 }
 
+function currentPlayerPoint(areaId) {
+  const nodes = nodeMapForArea(areaId);
+  const fallback = nodes[state.playerNode] || nodes[areaRegistry[areaId]?.defaultNode];
+  if (
+    state.area === areaId &&
+    typeof state.player?.x === "number" &&
+    typeof state.player?.y === "number"
+  ) {
+    return state.player;
+  }
+  return fallback || null;
+}
+
+function nearbyAreaHotspot(areaId, defaultRadius = 6.8) {
+  const nodes = nodeMapForArea(areaId);
+  const player = currentPlayerPoint(areaId);
+  if (!player) return null;
+  const candidates = (areaRegistry[areaId]?.locations || []).map((hotspot) => {
+    const node = nodes[hotspot.node];
+    if (!node) return null;
+    const radius = hotspot.focusRadius || defaultRadius;
+    const distance = Math.hypot(node.x - player.x, (node.y - player.y) * 1.18);
+    const score = distance / radius;
+    return { hotspot, distance, score, radius };
+  }).filter((candidate) => candidate && candidate.distance <= candidate.radius);
+  if (!candidates.length) return null;
+  candidates.sort((a, b) => a.score - b.score || a.distance - b.distance);
+  return candidates[0].hotspot;
+}
+
 function renderCastleMap() {
   if (!elements.castleStage || !elements.castleMarkerLayer) return;
   if (elements.castleStage.offsetParent === null && activeViewName() !== "home") return;
+  centerAreaMapIfRequested("castle");
   const metrics = castleCoverMetrics();
+  syncAreaMapStyles("castle", metrics);
   elements.castleMarkerLayer.innerHTML = "";
   castleHotspots.forEach((hotspot) => {
     const node = castleMapNodes[hotspot.node];
@@ -683,10 +861,19 @@ function renderCastleMap() {
     });
     elements.castleMarkerLayer.appendChild(marker);
   });
+  updateCastlePlayerPosition(metrics);
+  updateNearbyCastleHotspot();
 }
 
 function focusCastleHotspot(hotspotId, rerender = true) {
   activeCastleHotspot = castleHotspots.find((hotspot) => hotspot.id === hotspotId) || castleHotspots[0];
+  const node = castleMapNodes[activeCastleHotspot?.node];
+  if (node) {
+    state.playerNode = node.id;
+    state.player = { x: node.x, y: node.y };
+    centerAreaMapOnPoint("castle", node.x, node.y);
+    persist();
+  }
   if (rerender) renderCastleMap();
   elements.castleStage.focus({ preventScroll: true });
 }
@@ -699,10 +886,35 @@ function handleCastleHotspotClick(hotspotId) {
   focusCastleHotspot(hotspotId);
 }
 
+function updateCastlePlayerPosition(metrics = castleCoverMetrics()) {
+  if (!elements.castlePlayerToken) return;
+  const point = currentPlayerPoint("castle");
+  if (!point) return;
+  positionCastleElement(elements.castlePlayerToken, point.x, point.y, metrics);
+}
+
+function refreshCastleMapPositions() {
+  const metrics = castleCoverMetrics();
+  syncAreaMapStyles("castle", metrics);
+  castleHotspots.forEach((hotspot) => {
+    const marker = elements.castleMarkerLayer?.querySelector(`[data-hotspot-id="${hotspot.id}"]`);
+    const node = castleMapNodes[hotspot.node];
+    if (marker && node) positionCastleElement(marker, node.x, node.y, metrics);
+  });
+  updateCastlePlayerPosition(metrics);
+  updateCastleHotspotFocus();
+}
+
 function interactCastleHotspot() {
-  const hotspot = activeCastleHotspot || castleHotspots[0];
+  const hotspot = activeCastleHotspot || nearbyCastleHotspot();
   if (!hotspot) return;
+  activeCastleHotspot = hotspot;
   if (hotspot.kind === "gate" && hotspot.targetArea) {
+    if (hotspot.targetArea === "kingdom" && mapNodes.castleRoom) {
+      state.playerNode = "castleRoom";
+      state.player = { x: mapNodes.castleRoom.x, y: mapNodes.castleRoom.y };
+      activeHotspot = null;
+    }
     openArea(hotspot.targetArea);
     return;
   }
@@ -715,9 +927,45 @@ function interactCastleHotspot() {
   }
 }
 
+function updateNearbyCastleHotspot() {
+  activeCastleHotspot = nearbyCastleHotspot();
+  updateCastleHotspotFocus();
+}
+
+function updateCastleHotspotFocus() {
+  elements.castleMarkerLayer?.querySelectorAll(".hotspot").forEach((marker) => {
+    marker.classList.toggle("nearby", activeCastleHotspot?.id === marker.dataset.hotspotId);
+  });
+}
+
+function nearbyCastleHotspot() {
+  return nearbyAreaHotspot("castle", 5.8);
+}
+
+function moveOnCastleMap(dx, dy) {
+  const speed = 1.35;
+  const current = currentPlayerPoint("castle") || castleMapNodes[areaRegistry.castle.defaultNode];
+  const next = {
+    x: clamp(current.x + dx * speed, 0, 100),
+    y: clamp(current.y + dy * speed, 0, 100)
+  };
+  state.area = "castle";
+  state.player = next;
+  state.playerNode = closestNodeFromLegacy(state.player, "castle");
+  activeCastleHotspot = nearbyCastleHotspot();
+  if (activeCastleHotspot) {
+    elements.statusMessage.textContent = `${activeCastleHotspot.label}: ${travelActionLabel(activeCastleHotspot)}.`;
+  }
+  elements.castlePlayerToken?.classList.add("walking");
+  window.setTimeout(() => elements.castlePlayerToken?.classList.remove("walking"), 180);
+  persist();
+  renderCastleMap();
+}
+
 function renderMap() {
   if (!elements.mapStage || (elements.mapStage.offsetParent === null && activeViewName() !== "map")) return;
   ensureKingdomPosition();
+  centerAreaMapIfRequested("kingdom");
   const target = hotspotById(state.activeQuest.place);
   if (elements.destinationHint) elements.destinationHint.textContent = `${target.icon} ${target.label} is waiting.`;
   elements.routeLayer.innerHTML = "";
@@ -776,6 +1024,10 @@ function chooseDestination(hotspotId) {
   renderMap();
   activeHotspot = hotspot;
   updateHotspotFocus();
+  if (hotspot.kind === "gate" && hotspot.targetArea) {
+    enterTravelGate(hotspot);
+    return;
+  }
   openSceneAdv(hotspot);
 }
 
@@ -786,6 +1038,7 @@ function focusTravelHotspot(hotspotId) {
   state.playerNode = node.id;
   state.player = { x: node.x, y: node.y };
   activeHotspot = hotspot;
+  centerAreaMapOnPoint("kingdom", node.x, node.y);
   persist();
   renderMap();
   activeHotspot = hotspot;
@@ -805,47 +1058,12 @@ function isMobileTravelMap() {
   return window.matchMedia("(max-width: 820px)").matches;
 }
 
-function clampMapPan(pan, metrics) {
-  if (!isMobileTravelMap()) return { x: 0, y: 0 };
-  const maxX = Math.max(0, (metrics.displayWidth - metrics.width) / 2);
-  const maxY = Math.max(0, (metrics.displayHeight - metrics.height) / 2);
-  return {
-    x: clamp(pan.x, -maxX, maxX),
-    y: clamp(pan.y, -maxY, maxY)
-  };
-}
-
 function syncMapPanStyles(metrics = mapCoverMetrics()) {
-  elements.mapStage.style.setProperty("--map-pan-x", `${metrics.panX}px`);
-  elements.mapStage.style.setProperty("--map-pan-y", `${metrics.panY}px`);
+  syncAreaMapStyles("kingdom", metrics);
 }
 
 function mapCoverMetrics() {
-  const rect = elements.mapStage.getBoundingClientRect();
-  const imageRatio = mapImageSize.width / mapImageSize.height;
-  const stageRatio = rect.width / rect.height;
-  const useCover = isMobileTravelMap();
-  const baseDisplayWidth = useCover
-    ? stageRatio > imageRatio ? rect.width : rect.height * imageRatio
-    : stageRatio > imageRatio ? rect.height * imageRatio : rect.width;
-  const baseDisplayHeight = useCover
-    ? stageRatio > imageRatio ? rect.width / imageRatio : rect.height
-    : stageRatio > imageRatio ? rect.height : rect.width / imageRatio;
-  const mobileMapScale = useCover ? 1.06 : 1;
-  const displayWidth = baseDisplayWidth * mobileMapScale;
-  const displayHeight = baseDisplayHeight * mobileMapScale;
-  const constrainedPan = clampMapPan(mapPan, { width: rect.width, height: rect.height, displayWidth, displayHeight });
-  mapPan = constrainedPan;
-  return {
-    width: rect.width,
-    height: rect.height,
-    displayWidth,
-    displayHeight,
-    panX: constrainedPan.x,
-    panY: constrainedPan.y,
-    offsetX: (rect.width - displayWidth) / 2 + constrainedPan.x,
-    offsetY: (rect.height - displayHeight) / 2 + constrainedPan.y
-  };
+  return areaMapMetrics("kingdom");
 }
 
 function mapPointToStage(x, y, metrics = mapCoverMetrics()) {
@@ -1001,18 +1219,10 @@ function refreshMapPositions() {
   updateHotspotFocus();
 }
 
-function scheduleMapPositionRefresh() {
-  if (pendingMapPositionFrame) return;
-  pendingMapPositionFrame = requestAnimationFrame(() => {
-    pendingMapPositionFrame = 0;
-    refreshMapPositions();
-  });
-}
-
 function travelActionLabel(hotspot, isTarget = hotspot?.id === state.activeQuest.place) {
   if (!hotspot) return "Visit";
   if (hotspot.kind === "room") return "Enter";
-  if (hotspot.kind === "gate") return "Kingdom";
+  if (hotspot.kind === "gate") return hotspot.targetArea === "castle" ? "Castle" : "Kingdom";
   if (hotspot.kind === "future") return "Soon";
   if (isTarget) return "Talk";
   if (hotspot.kind === "shop") return "Shop";
@@ -1020,43 +1230,32 @@ function travelActionLabel(hotspot, isTarget = hotspot?.id === state.activeQuest
 }
 
 function updateNearbyHotspot() {
-  if (activeHotspot && !hotspots.some((hotspot) => hotspot.id === activeHotspot.id)) {
-    activeHotspot = null;
-  }
+  activeHotspot = nearbyHotspot();
   updateHotspotFocus();
 }
 
 function updateHotspotFocus() {
-  document.querySelectorAll(".hotspot").forEach((marker) => {
+  elements.hotspotLayer?.querySelectorAll(".hotspot").forEach((marker) => {
     marker.classList.toggle("nearby", activeHotspot?.id === marker.dataset.hotspotId);
   });
 }
 
 function nearbyHotspot() {
-  const candidates = hotspots.map((hotspot) => {
-    const node = mapNodes[hotspot.node];
-    const radius = hotspot.focusRadius || 6.8;
-    const distance = Math.hypot(node.x - state.player.x, (node.y - state.player.y) * 1.18);
-    const score = distance / radius;
-    return { hotspot, distance, score, radius };
-  }).filter((candidate) => candidate.distance <= candidate.radius);
-  if (!candidates.length) return null;
-  candidates.sort((a, b) => a.score - b.score || a.distance - b.distance);
-  return candidates[0].hotspot;
+  return nearbyAreaHotspot("kingdom", 6.8);
 }
 
 function moveOnMap(dx, dy) {
   const speed = 1.45;
   const next = {
-    x: clamp(state.player.x + dx * speed, 6, 94),
-    y: clamp(state.player.y + dy * speed, 8, 92)
+    x: clamp(state.player.x + dx * speed, 0, 100),
+    y: clamp(state.player.y + dy * speed, 0, 100)
   };
-  if (!isWalkable(next.x, next.y)) {
-    elements.statusMessage.textContent = "Lumi should stay on safe paths.";
-    return;
-  }
   state.player = next;
   state.playerNode = closestNodeFromLegacy(state.player);
+  activeHotspot = nearbyHotspot();
+  if (activeHotspot) {
+    elements.statusMessage.textContent = `${activeHotspot.label}: ${travelActionLabel(activeHotspot)}.`;
+  }
   elements.playerToken.classList.add("walking");
   window.setTimeout(() => elements.playerToken.classList.remove("walking"), 180);
   persist();
@@ -1064,32 +1263,29 @@ function moveOnMap(dx, dy) {
 }
 
 function isWalkable(x, y) {
-  if (y > 78 && (x < 28 || x > 76)) return false;
-  if (y > 70 && x > 77) return false;
-  if (x < 16 && y < 24) return false;
-  if (x > 84 && y < 17) return false;
-  const zones = [
-    [58, 51, 36, 31],
-    [55, 68, 35, 18],
-    [70, 35, 21, 24],
-    [49, 28, 12, 10],
-    [43, 44, 16, 12],
-    [51, 60, 25, 15],
-    [38, 75, 19, 10],
-    [73, 78, 11, 9],
-    [77, 24, 20, 13],
-    [65, 55, 15, 11],
-    [58, 69, 16, 10],
-    [72, 47, 16, 11],
-    [30, 52, 18, 12],
-    [38, 61, 17, 11]
-  ];
-  return zones.some(([cx, cy, rx, ry]) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1);
+  return x >= 0 && x <= 100 && y >= 0 && y <= 100;
 }
 
 function interactNearby() {
-  if (!activeHotspot) return;
-  openSceneAdv(activeHotspot);
+  const hotspot = activeHotspot || nearbyHotspot();
+  if (!hotspot) return;
+  activeHotspot = hotspot;
+  if (hotspot.kind === "gate" && hotspot.targetArea) {
+    enterTravelGate(hotspot);
+    return;
+  }
+  openSceneAdv(hotspot);
+}
+
+function enterTravelGate(hotspot) {
+  if (!hotspot?.targetArea) return;
+  if (hotspot.targetArea === "castle" && castleMapNodes.castleGate) {
+    state.playerNode = "castleGate";
+    state.player = { x: castleMapNodes.castleGate.x, y: castleMapNodes.castleGate.y };
+    activeCastleHotspot = castleHotspots.find((item) => item.id === "castleGate") || null;
+    activeHotspot = null;
+  }
+  openArea(hotspot.targetArea);
 }
 
 function openAdvBase(hotspot, mode) {
@@ -1833,36 +2029,160 @@ function resetProgress() {
   render();
 }
 
-function beginMapDrag(event) {
-  if (!isMobileTravelMap()) return;
-  if (event.target.closest("button, .nearby-card, .destination-panel")) return;
-  mapDrag = {
-    pointerId: event.pointerId,
-    startX: event.clientX,
-    startY: event.clientY,
-    panX: mapPan.x,
-    panY: mapPan.y,
-    moved: false
+function relativeStagePoint(stage, pointer) {
+  const rect = stage.getBoundingClientRect();
+  return {
+    x: pointer.clientX - rect.left,
+    y: pointer.clientY - rect.top
   };
-  elements.mapStage.classList.add("is-dragging");
-  elements.mapStage.setPointerCapture?.(event.pointerId);
+}
+
+function pointerDistance(a, b) {
+  return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+}
+
+function pointerCenter(a, b) {
+  return {
+    clientX: (a.clientX + b.clientX) / 2,
+    clientY: (a.clientY + b.clientY) / 2
+  };
+}
+
+function resetMapGestureStart() {
+  if (!mapGesture) return;
+  const viewport = areaMapViewport(mapGesture.areaId);
+  const metrics = areaMapMetrics(mapGesture.areaId);
+  const pointers = [...mapGesture.pointers.values()];
+  mapGesture.startPan = { ...viewport.pan };
+  mapGesture.startZoom = viewport.zoom;
+  mapGesture.startPoints = pointers.map((pointer) => ({ ...pointer }));
+  if (pointers.length >= 2) {
+    const center = pointerCenter(pointers[0], pointers[1]);
+    const centerStage = relativeStagePoint(mapGesture.stage, center);
+    mapGesture.startDistance = Math.max(1, pointerDistance(pointers[0], pointers[1]));
+    mapGesture.startCenterStage = centerStage;
+    mapGesture.startMapFocus = {
+      x: clamp((centerStage.x - metrics.offsetX) / metrics.displayWidth, 0, 1),
+      y: clamp((centerStage.y - metrics.offsetY) / metrics.displayHeight, 0, 1)
+    };
+  } else if (pointers.length === 1) {
+    mapGesture.startCenterStage = relativeStagePoint(mapGesture.stage, pointers[0]);
+  }
+}
+
+function applyAreaMapViewport(areaId, viewport) {
+  areaMapViewports[areaId] = clampAreaMapViewport(areaId, viewport);
+}
+
+function refreshAreaMapPositions(areaId) {
+  if (areaId === "castle") {
+    refreshCastleMapPositions();
+  } else {
+    refreshMapPositions();
+  }
+}
+
+function scheduleAreaMapPositionRefresh(areaId) {
+  pendingMapRefreshArea = areaId;
+  if (pendingMapPositionFrame) return;
+  pendingMapPositionFrame = requestAnimationFrame(() => {
+    const areaToRefresh = pendingMapRefreshArea || state.area || "kingdom";
+    pendingMapPositionFrame = 0;
+    pendingMapRefreshArea = "";
+    refreshAreaMapPositions(areaToRefresh);
+  });
+}
+
+function mapGestureBlocked(event) {
+  return Boolean(event.target.closest("button, .nearby-card, .destination-panel, .area-nav"));
+}
+
+function beginAreaMapGesture(areaId, event) {
+  if (!isMobileTravelMap()) return;
+  if (mapGestureBlocked(event)) return;
+  const stage = areaMapStage(areaId);
+  if (!mapGesture || mapGesture.areaId !== areaId) {
+    mapGesture = {
+      areaId,
+      stage,
+      pointers: new Map(),
+      moved: false
+    };
+  }
+  mapGesture.pointers.set(event.pointerId, { pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY });
+  resetMapGestureStart();
+  stage.classList.add("is-dragging");
+  stage.setPointerCapture?.(event.pointerId);
+}
+
+function moveAreaMapGesture(areaId, event) {
+  if (!mapGesture || mapGesture.areaId !== areaId || !mapGesture.pointers.has(event.pointerId)) return;
+  mapGesture.pointers.set(event.pointerId, { pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY });
+  const pointers = [...mapGesture.pointers.values()];
+  if (pointers.length >= 2) {
+    const center = pointerCenter(pointers[0], pointers[1]);
+    const centerStage = relativeStagePoint(mapGesture.stage, center);
+    const distance = Math.max(1, pointerDistance(pointers[0], pointers[1]));
+    const zoom = clamp(mapGesture.startZoom * (distance / mapGesture.startDistance), mapZoomLimits.min, mapZoomLimits.max);
+    const stageRect = mapGesture.stage.getBoundingClientRect();
+    const baseDisplay = baseAreaMapDisplay(areaId, stageRect);
+    const displayWidth = baseDisplay.width * zoom;
+    const displayHeight = baseDisplay.height * zoom;
+    const pan = {
+      x: centerStage.x - mapGesture.startMapFocus.x * displayWidth - (stageRect.width - displayWidth) / 2,
+      y: centerStage.y - mapGesture.startMapFocus.y * displayHeight - (stageRect.height - displayHeight) / 2
+    };
+    applyAreaMapViewport(areaId, { pan, zoom });
+  } else if (pointers.length === 1) {
+    const pointer = pointers[0];
+    const startPoint = mapGesture.startPoints[0];
+    const dx = pointer.clientX - startPoint.clientX;
+    const dy = pointer.clientY - startPoint.clientY;
+    if (Math.abs(dx) + Math.abs(dy) > 4) mapGesture.moved = true;
+    applyAreaMapViewport(areaId, {
+      pan: { x: mapGesture.startPan.x + dx, y: mapGesture.startPan.y + dy },
+      zoom: mapGesture.startZoom
+    });
+  }
+  event.preventDefault();
+  scheduleAreaMapPositionRefresh(areaId);
+}
+
+function finishAreaMapGesture(areaId, event) {
+  if (!mapGesture || mapGesture.areaId !== areaId || !mapGesture.pointers.has(event.pointerId)) return;
+  const stage = areaMapStage(areaId);
+  mapGesture.pointers.delete(event.pointerId);
+  stage.releasePointerCapture?.(event.pointerId);
+  if (mapGesture.pointers.size) {
+    resetMapGestureStart();
+    return;
+  }
+  stage.classList.remove("is-dragging");
+  mapGesture = null;
+}
+
+function beginMapDrag(event) {
+  beginAreaMapGesture("kingdom", event);
 }
 
 function moveMapDrag(event) {
-  if (!mapDrag || mapDrag.pointerId !== event.pointerId) return;
-  const dx = event.clientX - mapDrag.startX;
-  const dy = event.clientY - mapDrag.startY;
-  if (Math.abs(dx) + Math.abs(dy) > 4) mapDrag.moved = true;
-  mapPan = { x: mapDrag.panX + dx, y: mapDrag.panY + dy };
-  event.preventDefault();
-  scheduleMapPositionRefresh();
+  moveAreaMapGesture("kingdom", event);
 }
 
 function finishMapDrag(event) {
-  if (!mapDrag || mapDrag.pointerId !== event.pointerId) return;
-  elements.mapStage.classList.remove("is-dragging");
-  elements.mapStage.releasePointerCapture?.(event.pointerId);
-  mapDrag = null;
+  finishAreaMapGesture("kingdom", event);
+}
+
+function beginCastleMapDrag(event) {
+  beginAreaMapGesture("castle", event);
+}
+
+function moveCastleMapDrag(event) {
+  moveAreaMapGesture("castle", event);
+}
+
+function finishCastleMapDrag(event) {
+  finishAreaMapGesture("castle", event);
 }
 
 function bindEvents() {
@@ -1933,14 +2253,52 @@ function bindEvents() {
     if (elements.castleStage?.offsetParent !== null) renderCastleMap();
   });
   elements.castleStage?.addEventListener("keydown", (event) => {
-    if ((event.key === "Enter" || event.key === " ") && activeCastleHotspot) {
+    const key = event.key.toLowerCase();
+    if (event.key === "+" || event.key === "=") {
       event.preventDefault();
+      event.stopPropagation();
+      zoomAreaMapFromKeyboard("castle", 1);
+    } else if (event.key === "-" || event.key === "_") {
+      event.preventDefault();
+      event.stopPropagation();
+      zoomAreaMapFromKeyboard("castle", -1);
+    } else if (event.key === "ArrowUp" || key === "w") {
+      event.preventDefault();
+      event.stopPropagation();
+      moveOnCastleMap(0, -1);
+    } else if (event.key === "ArrowDown" || key === "s") {
+      event.preventDefault();
+      event.stopPropagation();
+      moveOnCastleMap(0, 1);
+    } else if (event.key === "ArrowLeft" || key === "a") {
+      event.preventDefault();
+      event.stopPropagation();
+      moveOnCastleMap(-1, 0);
+    } else if (event.key === "ArrowRight" || key === "d") {
+      event.preventDefault();
+      event.stopPropagation();
+      moveOnCastleMap(1, 0);
+    } else if ((event.key === "Enter" || event.key === " ") && activeCastleHotspot) {
+      event.preventDefault();
+      event.stopPropagation();
       interactCastleHotspot();
     }
   });
+  elements.castleStage?.addEventListener("pointerdown", beginCastleMapDrag);
+  elements.castleStage?.addEventListener("pointermove", moveCastleMapDrag);
+  elements.castleStage?.addEventListener("pointerup", finishCastleMapDrag);
+  elements.castleStage?.addEventListener("pointercancel", finishCastleMapDrag);
   elements.mapStage.addEventListener("keydown", (event) => {
     const key = event.key.toLowerCase();
-    if (event.key === "ArrowUp" || key === "w") {
+    if (event.key === "+" || event.key === "=") {
+      event.preventDefault();
+      event.stopPropagation();
+      zoomAreaMapFromKeyboard("kingdom", 1);
+    } else if (event.key === "-" || event.key === "_") {
+      event.preventDefault();
+      event.stopPropagation();
+      zoomAreaMapFromKeyboard("kingdom", -1);
+    } else if (event.key === "ArrowUp" || key === "w") {
       event.preventDefault();
       event.stopPropagation();
       moveOnMap(0, -1);
@@ -2088,7 +2446,23 @@ installTestingHooks({
   createRandomQuest,
   difficultyConfig,
   elements,
+  focusCastle: (place = "princessRoom") => {
+    const hotspot = hotspotById(place);
+    if (!hotspot || areaForHotspot(hotspot) !== "castle") throw new Error("Unknown castle hotspot");
+    openArea("castle");
+    focusCastleHotspot(hotspot.id);
+  },
+  focusKingdom: (place = "garden") => {
+    const hotspot = hotspotById(place);
+    if (!hotspot || areaForHotspot(hotspot) !== "kingdom") throw new Error("Unknown kingdom hotspot");
+    openArea("kingdom");
+    focusTravelHotspot(hotspot.id);
+  },
   freshState,
+  getMapMetrics: (areaId = state.area) => {
+    if (!areaRegistry[areaId]) throw new Error("Unknown area");
+    return areaMapMetrics(areaId);
+  },
   hotspotById,
   interactNearby,
   isWalkable,
@@ -2108,6 +2482,14 @@ installTestingHooks({
   render,
   renderAdvShop,
   renderMap,
+  setMapViewport: (areaId, viewport = {}) => {
+    if (!areaRegistry[areaId]) throw new Error("Unknown area");
+    applyAreaMapViewport(areaId, {
+      pan: viewport.pan || { x: Number(viewport.x) || 0, y: Number(viewport.y) || 0 },
+      zoom: Number(viewport.zoom) || 1
+    });
+    refreshAreaMapPositions(areaId);
+  },
   shopItems,
   showHelp,
   toggleEquip

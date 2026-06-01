@@ -33,24 +33,21 @@
 
         <section class="view-stack">
           <section class="view active" id="homeView" aria-labelledby="homeTitle">
+            <h2 class="visually-hidden" id="homeTitle">Castle Map</h2>
             <div class="castle-stage" id="castleStage" tabindex="0" aria-label="Castle area map. Tap a room marker, or use the area buttons.">
-              <img src="assets/castle-map.png?v=20260531-user-castle" alt="Luminara castle grounds map" />
-              <div class="castle-title-panel">
-                <h2 id="homeTitle">Luminara Castle</h2>
+              <img src="assets/castle-map2.png?v=20260531-stair-map" alt="Luminara castle grounds map" />
+              <div class="map-marker player castle-player" id="castlePlayerToken" aria-label="Princess Lumi in the castle">
+                <div class="paper-doll map-doll" data-doll="castle-map"></div>
               </div>
               <div id="castleMarkerLayer"></div>
             </div>
           </section>
 
           <section class="view" id="mapView" aria-labelledby="mapTitle">
-            <div class="map-toolbar">
-              <div>
-                <h2 id="mapTitle">Lumi's Travel Map</h2>
-              </div>
-              <button class="soft-button" id="returnHomeButton" type="button">Castle</button>
-            </div>
+            <h2 class="visually-hidden" id="mapTitle">Kingdom Map</h2>
+            <button class="soft-button map-return-button" id="returnHomeButton" type="button">Castle</button>
             <div class="map-stage" id="mapStage" tabindex="0" aria-label="Kingdom travel map. Drag to look around, tap a place, or use keyboard arrows.">
-              <img id="mapImage" src="assets/kingdom-map.png?v=handdrawn-20260531" alt="Luminara kingdom map" />
+              <img id="mapImage" src="assets/kingdom-map2.png?v=20260531-stair-map" alt="Luminara kingdom map" />
               <div class="map-life-layer" id="mapLifeLayer" aria-hidden="true"></div>
               <svg class="route-layer" id="routeLayer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
               <div id="nodeLayer"></div>
