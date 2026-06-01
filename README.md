@@ -38,6 +38,7 @@
 - 新增 gameplay surface 時，必須同步定義資料 registry、state mutation、render path、interaction flow、visual QA surface 與 selftest 需要的 hook。
 - 不允許為單一地點或單一商品新增不可擴充的特殊分支；若需求看似特殊，先檢查是否應抽成 config、strategy 或共用 renderer option。
 - 不允許複製既有流程後只改文字、圖片或 class name；應用共用 module 與資料設定完成差異化。
+- 只共用 renderer 不算完成模組共用。Room / Shop / Refund 這類共用 gameplay surface 必須同時共用資料選擇、empty state、item row、action button、Back / Leave 行為、focus 與手機排版契約；不得只共用畫面產生器，卻在各流程外圍保留互相矛盾的特殊分支。
 - 不允許以 CSS 疊層、隱藏 DOM、臨時全域變數或 query string hack 取代正式狀態與流程設計。
 - 不允許為了解決單一問題而引入與 GitHub Pages 靜態部署相衝突的 build step、後端依賴或大型框架。
 - 每次完成宣告前，必須能說明本輪功能落在哪些 module、是否讓 `main.js` 變薄或至少沒有變厚，以及測試如何覆蓋新增 module 邊界。
@@ -177,6 +178,7 @@ Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return
 - Wardrobe 應像玩具衣櫃或抽屜，支援點選預覽與裝備狀態，但不得在預設畫面直接展開佔據主視覺。
 - Wardrobe 的衣物、鞋子與配件試穿必須直接套在上方既有 Princess Lumi 主舞台，不另開獨立小紙娃娃或小試穿畫面；點選商品才進入暫時試穿，按 `Equip` 後才寫入正式 outfit state。
 - Wardrobe / Decoration detail panel 與各商店共用同一套 item detail panel：固定顯示 3 列高度、單列商品、列表內捲動、底部 `Back` 固定在列表外。
+- Wardrobe / Decoration detail panel 必須尊重玩家選擇的分類。點 `Shoes` 就只能顯示 shoes；點 `Room Treasures` 就只能顯示 room items。若該分類尚未擁有物品，顯示分類專屬 empty state，不得 fallback 到 Dresses 或其他已擁有分類。
 - Room / Wardrobe 不顯示 refund；退款只能回到原購買店家，在店內 `Refund` action 中處理，避免兒童在換裝時誤按。
 
 ### Mobile Travel Map
@@ -199,6 +201,7 @@ Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return
 
 - 每個地點一個短場景：專屬背景、專屬 NPC、Princess Lumi、底部對話框。
 - 進入地點時先顯示 scene action choices，不得直接進入商品列表、換裝列表或大型資料 panel。
+- 非任務 `Chat` / `Talk` / hint 流程完成後必須提供 `Back` 回目前 scene action choices；`Leave` 才代表離開地點回 Map。
 - 每回合只練一個短英文句子。
 - 選項直排、大尺寸、適合觸控。
 - 支援方向鍵 / W/S、數字鍵、Enter / Space。
@@ -214,8 +217,9 @@ Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return
 - 商品要有大預覽與立即 try-on。點商品名稱只做 preview / try-on，不扣 coins、不寫入 outfit state。
 - Shop / Wardrobe 的 try-on 不得使用獨立小畫面、小紙娃娃或另外的試穿框；可穿戴商品必須直接暫時套用在上方既有 Princess Lumi 主舞台，房間物件只顯示選取 / 放置狀態。
 - 進入 Shop / Wardrobe detail panel 時不自動試穿第一件商品；必須等玩家點選商品後，才讓上方 Princess Lumi 進入暫時試穿狀態。
-- Shop、Wardrobe、Refund 共用同一個 item detail panel 模組；不同模式只替換資料來源與列內 action，不複製互動流程。
-- Item detail panel 的商品區固定保留 3 列高度；每列高度固定、單列顯示 item preview / name / status / inline action。超過 3 件時只讓商品列表捲動，少於 3 件時保留空白高度，底部 `Back` 位置不跳動。
+- Shop、Wardrobe、Refund 共用同一個 item detail panel contract；不同模式只替換資料來源、empty state 與列內 action，不複製互動流程，也不得在 contract 外另寫 Back / focus / 手機排版規則。
+- Item detail panel 的商品區固定保留 3 列高度；每列顯示 item preview / name / status / inline action。超過 3 件時只讓商品列表捲動，少於 3 件時保留空白高度，底部 `Back` 位置不跳動。
+- 手機直向 item row 必須讓商品名稱與狀態保留可理解文字；不得用 `nowrap + ellipsis` 把主要品名截到無法辨識，也不得讓文字、商品圖與 action button 互相覆蓋。
 - 每個可買商品必須顯示 price 與列內 `BUY` / `Need N`；點 `BUY` 才扣 coins、加入 owned、立即 equip wearable item，並顯示店員回饋。
 - 若 coins 不足，保留試穿 preview 並顯示 `Need more coins` 類回饋，不得扣款或加入 owned。
 - Detail panel 底部使用 `Back`，返回目前店家或 Princess Room 的 action choices；scene-level `Leave` / `Go Outside` 才代表離開地點回到地圖或城堡。
@@ -588,7 +592,7 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
   * [ ] Map 移動到任務地點並觸發 hotspot focus。
   * [ ] ADV 測試答錯、答對、上下鍵、數字鍵。
   * [ ] Shop 測試進入、試穿、購買、離開。
-  * [ ] 回 Room 測試 wardrobe 與房間變化。
+  * [ ] 回 Room 測試 wardrobe 與房間變化；Dresses、Accessories、Shoes、Room Treasures 都必須逐一驗證，空分類不得跳到其他分類。
   * [ ] Diary 檢查任務、購買、學習事件是否記錄。
 
 * **完成條件**
@@ -629,6 +633,8 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
   * [ ] 測試任務、地點、商店選單操作一致。
   * [ ] 測試焦點高亮或 `▶`。
   * [ ] 測試 `Leave`、`Back to Map`、game menu overlay 返回。
+  * [ ] 測試 Shop / Wardrobe / Refund 共用 item detail contract：長商品名、price / Owned / Equipped / Need / Refund、inline action 與底部 `Back` 在手機直向都可讀、可點且不遮擋。
+  * [ ] 測試非任務 `Chat` / `Talk` / hint 流程同時有 `Back` 回 scene action choices 與 `Leave` 回 Map。
   * [ ] 確認文字大小、行高、按鈕區域適合兒童。
   * [ ] 確認 Help / speaker / menu button 不突兀。
 
