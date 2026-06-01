@@ -237,6 +237,15 @@
   font-weight: 900;
 }
 
+.choice-button:disabled {
+  opacity: 0.58;
+  cursor: default;
+}
+
+.adv-doll.try-on-active {
+  filter: drop-shadow(0 0 14px rgba(255, 214, 80, 0.62));
+}
+
 .choice-button.correct {
   color: #2d7259;
   background: #effbf2;
