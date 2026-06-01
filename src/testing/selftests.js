@@ -143,9 +143,33 @@ function runVisualQa(api) {
     api.render();
     api.openShopDetail(hotspot);
     const item = api.itemById(params.get("item"));
-    if (item && api.allowedShopCategories(hotspot).includes(item.type)) {
+    if (item && api.allowedShopCategories(hotspot).includes(item.type) && !api.state.owned.includes(item.id)) {
       api.shopPreviewItemId = item.id;
       api.renderAdvShop(true);
+    }
+    return;
+  }
+
+  if (surface === "shop-sold-out") {
+    api.shopItems
+      .filter((item) => api.allowedShopCategories(hotspot).includes(item.type))
+      .forEach((item) => {
+        if (!api.state.owned.includes(item.id)) api.state.owned.push(item.id);
+      });
+    api.render();
+    api.openShopDetail(hotspot);
+    return;
+  }
+
+  if (surface === "shop-not-enough") {
+    api.state.coins = 0;
+    api.render();
+    api.openShopDetail(hotspot);
+    const item = api.itemById(params.get("item")) || api.shopItems.find((candidate) => api.allowedShopCategories(hotspot).includes(candidate.type) && !api.state.owned.includes(candidate.id));
+    if (item) {
+      api.shopPreviewItemId = item.id;
+      api.renderAdvShop(true);
+      api.buyItemInAdv(item);
     }
     return;
   }
