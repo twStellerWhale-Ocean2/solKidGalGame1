@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>solKidGalGame</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23d8678c'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-size='38' font-family='Arial' fill='white'%3EL%3C/text%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="styles.css?v=20260531-map-v2-10" />
+    <link rel="stylesheet" href="styles/main.css?v=20260601-architecture-22" />
   </head>
   <body>
     <div class="app-shell">
@@ -116,6 +116,11 @@
                 <button class="soft-button" id="speakToggleButton" type="button">Voice: On</button>
                 <button class="danger-button" id="resetButton" type="button">Reset Progress</button>
               </div>
+              <div class="version-card" aria-label="Software version">
+                <strong>Version</strong>
+                <span id="versionValue">2026.06.01-architecture-22</span>
+                <small>Build date: <span id="buildDateValue">2026-06-01</span></small>
+              </div>
               <form class="openai-settings" id="openaiSettingsForm" autocomplete="off">
                 <h3>Help Teacher</h3>
                 <p>For local family use only. Public GitHub Pages should use a backend proxy instead of a browser key.</p>
@@ -183,6 +188,6 @@
       </div>
     </section>
 
-    <script src="script.js?v=20260531-map-v2-10"></script>
+    <script type="module" src="src/main.js?v=20260601-architecture-22"></script>
   </body>
 </html>

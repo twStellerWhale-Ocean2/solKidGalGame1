@@ -1,0 +1,167 @@
+{
+  "interactionResults": [
+    {
+      "flow": "princess-room-click-dresses",
+      "passed": true,
+      "ui": {
+        "activeView": "homeView",
+        "activeViewCount": 1,
+        "advFeedback": null,
+        "advLine": "Choose dresses for Lumi.",
+        "advPrompt": "Pick a treasure to preview, then equip it.",
+        "advShown": true,
+        "advTitle": "Princess Room",
+        "bodyWidth": 391,
+        "buildDate": "2026-06-01",
+        "systemShown": false,
+        "version": "2026.06.01-architecture-22",
+        "viewport": {
+          "height": 845,
+          "width": 391
+        },
+        "visiblePanel": "diaryView"
+      }
+    },
+    {
+      "flow": "boutique-click-shop-leave",
+      "passed": true,
+      "detailUi": {
+        "activeView": "mapView",
+        "activeViewCount": 1,
+        "advFeedback": null,
+        "advLine": "Welcome, Princess. Outfits are ready for a bright day.",
+        "advPrompt": "Choose a treasure to preview. Press B or Buy when Lumi wants it.",
+        "advShown": true,
+        "advTitle": "Dress Boutique",
+        "bodyWidth": 391,
+        "buildDate": "2026-06-01",
+        "systemShown": false,
+        "version": "2026.06.01-architecture-22",
+        "viewport": {
+          "height": 845,
+          "width": 391
+        },
+        "visiblePanel": "diaryView"
+      },
+      "detailHasItem": true,
+      "afterLeaveUi": {
+        "activeView": "mapView",
+        "activeViewCount": 1,
+        "advFeedback": null,
+        "advLine": "Welcome, Princess. Outfits are ready for a bright day.",
+        "advPrompt": "Choose a treasure to preview. Press B or Buy when Lumi wants it.",
+        "advShown": false,
+        "advTitle": "Dress Boutique",
+        "bodyWidth": 391,
+        "buildDate": "2026-06-01",
+        "systemShown": false,
+        "version": "2026.06.01-architecture-22",
+        "viewport": {
+          "height": 845,
+          "width": 391
+        },
+        "visiblePanel": "diaryView"
+      }
+    },
+    {
+      "flow": "quest-keyboard-number-2",
+      "passed": true,
+      "ui": {
+        "activeView": "mapView",
+        "activeViewCount": 1,
+        "advFeedback": "Try again.",
+        "advLine": "Look! A small cat is under the rose.",
+        "advPrompt": "Find the garden cat: Pick what Lumi sees.",
+        "advShown": true,
+        "advTitle": "Castle Garden",
+        "bodyWidth": 391,
+        "buildDate": "2026-06-01",
+        "systemShown": false,
+        "version": "2026.06.01-architecture-22",
+        "viewport": {
+          "height": 845,
+          "width": 391
+        },
+        "visiblePanel": "diaryView"
+      }
+    },
+    {
+      "flow": "system-tabs-settings-save-back",
+      "passed": true,
+      "startUi": {
+        "activeView": "homeView",
+        "activeViewCount": 1,
+        "advFeedback": null,
+        "advLine": "Hello, Princess.",
+        "advPrompt": "Choose a short answer.",
+        "advShown": false,
+        "advTitle": "Castle Garden",
+        "bodyWidth": 391,
+        "buildDate": "2026-06-01",
+        "systemShown": true,
+        "version": "2026.06.01-architecture-22",
+        "viewport": {
+          "height": 845,
+          "width": 391
+        },
+        "visiblePanel": "diaryView"
+      },
+      "settingsUi": {
+        "activeView": "homeView",
+        "activeViewCount": 1,
+        "advFeedback": null,
+        "advLine": "Hello, Princess.",
+        "advPrompt": "Choose a short answer.",
+        "advShown": false,
+        "advTitle": "Castle Garden",
+        "bodyWidth": 391,
+        "buildDate": "2026-06-01",
+        "systemShown": true,
+        "version": "2026.06.01-architecture-22",
+        "viewport": {
+          "height": 845,
+          "width": 391
+        },
+        "visiblePanel": "settingsView"
+      },
+      "saveUi": {
+        "activeView": "homeView",
+        "activeViewCount": 1,
+        "advFeedback": null,
+        "advLine": "Hello, Princess.",
+        "advPrompt": "Choose a short answer.",
+        "advShown": false,
+        "advTitle": "Castle Garden",
+        "bodyWidth": 391,
+        "buildDate": "2026-06-01",
+        "systemShown": true,
+        "version": "2026.06.01-architecture-22",
+        "viewport": {
+          "height": 845,
+          "width": 391
+        },
+        "visiblePanel": "saveView"
+      },
+      "afterBackUi": {
+        "activeView": "homeView",
+        "activeViewCount": 1,
+        "advFeedback": null,
+        "advLine": "Hello, Princess.",
+        "advPrompt": "Choose a short answer.",
+        "advShown": false,
+        "advTitle": "Castle Garden",
+        "bodyWidth": 391,
+        "buildDate": "2026-06-01",
+        "systemShown": false,
+        "version": "2026.06.01-architecture-22",
+        "viewport": {
+          "height": 845,
+          "width": 391
+        },
+        "visiblePanel": "saveView"
+      }
+    }
+  ],
+  "interactionErrors": [],
+  "logs": []
+}

@@ -20,7 +20,7 @@
 - 主要裝置：手機瀏覽器直向。
 - 次要裝置：桌機瀏覽器可保留可用性，但桌機寬地圖不再是產品完成目標。
 - 發布目標：GitHub Pages，repository root 即靜態網站根目錄。
-- 技術邊界：維持 `index.html`、`styles.css`、`script.js`、`assets/` 為主，不引入需要後端才能遊玩的核心流程。
+- 技術邊界：維持 `index.html`、`src/` ES modules、`styles/` CSS modules、`assets/` 為主，不引入需要後端或 build step 才能遊玩的核心流程。
 
 ## 產品主旨
 
@@ -304,9 +304,9 @@ Visual surface sweep 應覆蓋所有會改變版面的狀態，不只截最終 p
 
 ## 專案檔案
 
-- `index.html`：DOM game shell、Room、Map、Diary、Settings、ADV modal。
-- `styles.css`：主要視覺樣式、map、room、ADV、shops、paper doll。
-- `script.js`：game data、state、map coordinates、hotspots、ADV、shops、save/load、monkey test。
+- `index.html`：DOM game shell、Room、Map、Diary、Settings、ADV modal，載入 `src/main.js` 與 `styles/main.css`。
+- `src/`：原生 ES modules；包含 data、state、flow、render、testing、build/version。
+- `styles/`：CSS modules；由 `styles/main.css` 依序匯入 base、wardrobe、map、system、paper-doll、ADV、shop、mobile rules。
 - `server.mjs`：local OpenAI help proxy 與 static file server。
 - `assets/`：背景、角色、商品、map layer 與 UI 圖像。
 - `doc/AUDIT-111.md`： broad audit issue source of truth。
@@ -450,7 +450,7 @@ node server.mjs
   - Map marker focus no longer renders visible text labels.
   - First tap selects / highlights a marker; second tap enters the selected scene.
   - Targeted mobile QA evidence is under `.codex/log/20260531-190528-qa/`.
-- `node --check script.js` has passed multiple times.
+- `node --check src/main.js` and module syntax checks have passed multiple times.
 - The 300-step monkey test has passed multiple times.
 
 ## 剩餘問題

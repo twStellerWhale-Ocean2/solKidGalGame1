@@ -1,0 +1,86 @@
+{
+  "run": "20260601-110623",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "label": "mobile portrait"
+  },
+  "scope": [
+    "#22",
+    "#5"
+  ],
+  "excludedIssues": [
+    "#19",
+    "#20",
+    "#21"
+  ],
+  "browser": {
+    "primary": "Browser plugin iab for DOM/selftest",
+    "screenshotFallback": "Chrome headless CLI after iab Page.captureScreenshot timeout"
+  },
+  "shots": [
+    {
+      "flow_node_id": "castle-map",
+      "file": "mobile-castle-map.png",
+      "captured": true,
+      "bytes": 597066,
+      "conclusion": "captured"
+    },
+    {
+      "flow_node_id": "princess-room-scene",
+      "file": "mobile-princess-room-scene.png",
+      "captured": true,
+      "bytes": 278636,
+      "conclusion": "captured"
+    },
+    {
+      "flow_node_id": "wardrobe-detail",
+      "file": "mobile-wardrobe-detail.png",
+      "captured": true,
+      "bytes": 281684,
+      "conclusion": "captured"
+    },
+    {
+      "flow_node_id": "kingdom-map",
+      "file": "mobile-kingdom-map.png",
+      "captured": true,
+      "bytes": 564997,
+      "conclusion": "captured"
+    },
+    {
+      "flow_node_id": "shop-scene",
+      "file": "mobile-shop-scene.png",
+      "captured": true,
+      "bytes": 324664,
+      "conclusion": "captured"
+    },
+    {
+      "flow_node_id": "shop-detail",
+      "file": "mobile-shop-detail.png",
+      "captured": true,
+      "bytes": 289209,
+      "conclusion": "captured"
+    },
+    {
+      "flow_node_id": "settings-version",
+      "file": "mobile-settings-version.png",
+      "captured": true,
+      "bytes": 172874,
+      "conclusion": "captured"
+    },
+    {
+      "flow_node_id": "save-load-selftest",
+      "file": "mobile-save-load-selftest.png",
+      "captured": true,
+      "bytes": 587648,
+      "conclusion": "captured"
+    },
+    {
+      "flow_node_id": "monkey-selftest",
+      "file": "mobile-monkey-selftest.png",
+      "captured": true,
+      "bytes": 586758,
+      "conclusion": "captured"
+    }
+  ]
+}
