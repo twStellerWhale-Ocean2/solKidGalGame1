@@ -1,0 +1,65 @@
+[
+  {
+    "id": "castle-map",
+    "file": "mobile-castle-map.png",
+    "code": 0,
+    "size": 597066,
+    "stderr": "597066 bytes written to file C:\\Users\\User\\Documents\\Github\\solKidGalGame\\.codex\\log\\20260601-110623-qa\\mobile-castle-map.png\r\n"
+  },
+  {
+    "id": "princess-room-scene",
+    "file": "mobile-princess-room-scene.png",
+    "code": 0,
+    "size": 278636,
+    "stderr": "278636 bytes written to file C:\\Users\\User\\Documents\\Github\\solKidGalGame\\.codex\\log\\20260601-110623-qa\\mobile-princess-room-scene.png\r\n"
+  },
+  {
+    "id": "wardrobe-detail",
+    "file": "mobile-wardrobe-detail.png",
+    "code": 0,
+    "size": 281684,
+    "stderr": "281684 bytes written to file C:\\Users\\User\\Documents\\Github\\solKidGalGame\\.codex\\log\\20260601-110623-qa\\mobile-wardrobe-detail.png\r\n"
+  },
+  {
+    "id": "kingdom-map",
+    "file": "mobile-kingdom-map.png",
+    "code": 0,
+    "size": 564997,
+    "stderr": "564997 bytes written to file C:\\Users\\User\\Documents\\Github\\solKidGalGame\\.codex\\log\\20260601-110623-qa\\mobile-kingdom-map.png\r\n"
+  },
+  {
+    "id": "shop-scene",
+    "file": "mobile-shop-scene.png",
+    "code": 0,
+    "size": 324664,
+    "stderr": "324664 bytes written to file C:\\Users\\User\\Documents\\Github\\solKidGalGame\\.codex\\log\\20260601-110623-qa\\mobile-shop-scene.png\r\n"
+  },
+  {
+    "id": "shop-detail",
+    "file": "mobile-shop-detail.png",
+    "code": 0,
+    "size": 289209,
+    "stderr": "289209 bytes written to file C:\\Users\\User\\Documents\\Github\\solKidGalGame\\.codex\\log\\20260601-110623-qa\\mobile-shop-detail.png\r\n"
+  },
+  {
+    "id": "settings-version",
+    "file": "mobile-settings-version.png",
+    "code": 0,
+    "size": 172874,
+    "stderr": "172874 bytes written to file C:\\Users\\User\\Documents\\Github\\solKidGalGame\\.codex\\log\\20260601-110623-qa\\mobile-settings-version.png\r\n"
+  },
+  {
+    "id": "save-load-selftest",
+    "file": "mobile-save-load-selftest.png",
+    "code": 0,
+    "size": 587648,
+    "stderr": "587648 bytes written to file C:\\Users\\User\\Documents\\Github\\solKidGalGame\\.codex\\log\\20260601-110623-qa\\mobile-save-load-selftest.png\r\n"
+  },
+  {
+    "id": "monkey-selftest",
+    "file": "mobile-monkey-selftest.png",
+    "code": 0,
+    "size": 586758,
+    "stderr": "586758 bytes written to file C:\\Users\\User\\Documents\\Github\\solKidGalGame\\.codex\\log\\20260601-110623-qa\\mobile-monkey-selftest.png\r\n"
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "browserSkillRead": true,
+  "setupBrowserRuntimeAttempted": true,
+  "browsersListIncludedIab": true,
+  "iabGetSucceeded": true,
+  "tabNavigationSucceeded": true,
+  "failedStep": "iabTab.screenshot({ fullPage: false })",
+  "error": "Timed out running CDP command Page.captureScreenshot for tab 1",
+  "currentUrl": "http://127.0.0.1:4174/?selftest=visual-qa&surface=castle-map#home"
+}

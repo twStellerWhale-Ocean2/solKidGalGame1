@@ -1,0 +1,9 @@
+{
+  "buildDate": "2026-06-01",
+  "hasOpenAISettingsKey": false,
+  "hasSaveKey": false,
+  "keys": [],
+  "storageError": "Cannot read properties of undefined (reading 'length')",
+  "systemMenuShown": true,
+  "version": "2026.06.01-architecture-22"
+}

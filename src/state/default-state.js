@@ -1,0 +1,21 @@
+export const defaultState = {
+  coins: 100,
+  energy: 84,
+  vocab: 0,
+  expression: 0,
+  kindness: 0,
+  mood: 72,
+  difficulty: 100,
+  speechEnabled: true,
+  owned: ["pinkDress"],
+  outfit: { outfit: "pinkDress", shoes: "none", accessory: "none", room: "none" },
+  diary: [],
+  completedLessons: [],
+  metNpcs: [],
+  learnedWords: [],
+  badges: [],
+  activeQuest: null,
+  area: "castle",
+  player: { x: 51.5, y: 50 },
+  playerNode: "princessRoom"
+};

@@ -1,0 +1,22 @@
+{
+  "browserList": [
+    {
+      "id": "-dd4d-4090-a5b4-956f297701f9",
+      "name": "Chrome",
+      "type": "extension"
+    },
+    {
+      "id": "-6dfc-4c34-b27d-a2dc01fbed02",
+      "name": "Codex In-app Browser",
+      "type": "iab"
+    }
+  ],
+  "selectedBrowser": "iab",
+  "finalUrl": "http://127.0.0.1:4174/?selftest=visual-qa&surface=settings#settings",
+  "domResultFile": "C:\\Users\\User\\Documents\\Github\\solKidGalGame\\.codex\\log\\20260601-114356-qa\\iab-dom-results.json",
+  "screenshotResult": {
+    "ok": true,
+    "file": "C:\\Users\\User\\Documents\\Github\\solKidGalGame\\.codex\\log\\20260601-114356-qa\\iab-settings-screenshot.png",
+    "bytes": 57837
+  }
+}
