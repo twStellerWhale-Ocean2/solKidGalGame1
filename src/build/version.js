@@ -1,5 +1,5 @@
 export const buildInfo = {
-  version: "2026.06.01-architecture-22",
+  version: "2026.06.01-scene-art-28",
   buildDate: "2026-06-01",
-  issues: ["#22", "#5"]
+  issues: ["#21", "#3", "#19", "#20"]
 };

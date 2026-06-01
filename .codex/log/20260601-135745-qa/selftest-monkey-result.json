@@ -1,0 +1,10 @@
+{
+  "test": "monkey",
+  "passed": true,
+  "steps": 300,
+  "errors": [],
+  "coins": 10,
+  "playerNode": "princessRoom",
+  "activeQuest": "shoeShop",
+  "activeViews": 1
+}
