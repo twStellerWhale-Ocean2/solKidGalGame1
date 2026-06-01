@@ -1,5 +1,47 @@
 # solKidGalGame
 
+# 0. 模組化主軸
+
+本專案後續所有功能開發都必須以「原生 ES Modules 模組化」作為主要架構主軸。功能可以持續擴充，但不能用疊床架屋的方式把新流程、新 UI、新資料規則都堆回單一檔案或單一特殊分支；每一輪功能都必須同時完成對應的模組歸位、測試入口與 README 設計同步。
+
+## 目前模組化結構
+
+目前專案維持 GitHub Pages 可直接部署的靜態網站形態，不導入 React、npm、Vite 或其他 build step。核心程式以 `index.html` 載入 `src/main.js`，再由 `src/main.js` 組裝下列原生 ES modules：
+
+- `src/app/elements.js`：集中取得 DOM elements 與 selector helper。
+- `src/build/version.js`：版本資訊與 cache busting 來源。
+- `src/data/game-data.js`：area、scene、map node、shop item、lesson、quest template 等資料 registry。
+- `src/state/default-state.js`、`src/state/game-state.js`、`src/state/storage.js`：預設狀態、state normalize、進度變更、diary / badge / reward mutation、localStorage 與 Save data shape。
+- `src/core/lookups.js`：跨模組查找與純函式，例如 hotspot、scene config、item、area、category、node lookup。
+- `src/flow/adv-controls.js`、`src/flow/stages.js`：ADV focus、flow stage 與互動控制。
+- `src/render/paper-doll.js`、`src/render/settings.js`：可重用畫面 renderer。
+- `src/system/save-load.js`：Save / Load Markdown controller 與匯入匯出規則。
+- `src/testing/selftests.js`：`?selftest=save-load`、`?selftest=monkey`、`?selftest=visual-qa` 等測試 hook。
+- `src/main.js`：目前仍負責 app bootstrap、module composition、事件綁定，以及尚未完全拆出的 map / scene / shop orchestration。它是下一階段主要瘦身目標，不應再承接大量新功能細節。
+
+## 下一階段模組化方向
+
+後續重構與功能開發應朝下列方向推進：
+
+- 建立 `src/map/`，承接 Castle / Kingdom / future areas 共用的 map metrics、pan / zoom viewport、marker focus、player token、map actors 與 pointer / keyboard travel 行為。
+- 建立更完整的 `src/scene/` 或擴充 `src/flow/`，承接 scene entry、action choices、quest、hint、feedback / return 的狀態流程，避免各地點在 `main.js` 形成特殊分支。
+- 擴充 `src/render/`，將 Shop detail、Wardrobe detail、Diary / Settings overlay、ADV scene shared layout 等 renderer 從 orchestration 中拆出。
+- 將 shop purchase / equip / try-on 的規則集中在 state 或 domain module，UI renderer 只反映狀態，不直接藏業務規則。
+- 保留 `src/data/` 作為 registry 型資料來源；新增地區、店家、角色、商品、任務時，優先透過資料定義與共用流程生效，不新增硬寫的 Castle / Kingdom / 某店例外邏輯。
+- 讓 `src/main.js` 長期收斂為 bootstrap、composition root、global event delegation、testing hook installation；若新功能讓 `main.js` 明顯變厚，該功能未完成模組化設計。
+
+## 功能開發設計原則
+
+每一個後續 issue、PR 或功能切片都必須符合以下原則：
+
+- 先判定功能歸屬：data、state、core、map、flow、render、system、testing，不能先把流程塞進 `main.js` 再日後整理。
+- 新增 gameplay surface 時，必須同步定義資料 registry、state mutation、render path、interaction flow、visual QA surface 與 selftest 需要的 hook。
+- 不允許為單一地點或單一商品新增不可擴充的特殊分支；若需求看似特殊，先檢查是否應抽成 config、strategy 或共用 renderer option。
+- 不允許複製既有流程後只改文字、圖片或 class name；應用共用 module 與資料設定完成差異化。
+- 不允許以 CSS 疊層、隱藏 DOM、臨時全域變數或 query string hack 取代正式狀態與流程設計。
+- 不允許為了解決單一問題而引入與 GitHub Pages 靜態部署相衝突的 build step、後端依賴或大型框架。
+- 每次完成宣告前，必須能說明本輪功能落在哪些 module、是否讓 `main.js` 變薄或至少沒有變厚，以及測試如何覆蓋新增 module 邊界。
+
 # I. 緣起目的
 
 ## 使用者描述要求
@@ -302,25 +344,36 @@ Visual surface sweep 應覆蓋所有會改變版面的狀態，不只截最終 p
 
 ## 原生 ES Modules 深化模組化
 
-本輪架構方向為原生 ES Modules 深化模組化，不導入 React、npm、Vite 或其他 build step。GitHub Pages 仍以 repository root 的 `index.html`、`src/`、`styles/`、`assets/` 直接部署；核心遊戲流程不得依賴本機 server、bundler 或後端才能遊玩。
+本節是前述「0. 模組化主軸」在實作與驗測上的落地規格。架構方向固定為原生 ES Modules 深化模組化，不導入 React、npm、Vite 或其他 build step。GitHub Pages 仍以 repository root 的 `index.html`、`src/`、`styles/`、`assets/` 直接部署；核心遊戲流程不得依賴本機 server、bundler 或後端才能遊玩。
+
+後續所有功能開發都必須把模組化視為 Definition of Done 的一部分：功能完成不只代表畫面可用，也代表資料、狀態、流程、渲染、系統工具與測試入口各自落在正確 module，不能讓 `main.js` 或單一 CSS 檔繼續累積無邊界的特殊邏輯。
 
 本輪實作順序固定：
 
 1. 先更新本 README，鎖定架構邊界、驗收 surface 與完整測試規則。
 2. 再修改 `src/` 與必要的 `index.html` / `styles/`。
-3. 測試發現本輪重構造成的問題時，必須直接修復並重跑相關測試，不只記錄問題。
+3. 實作時先確認功能歸屬 module，不得先堆進 `main.js` 再視為完成。
+4. 測試發現本輪重構造成的問題時，必須直接修復並重跑相關測試，不只記錄問題。
 
 模組邊界：
 
-- `src/main.js` 應退回 app bootstrap、DOM element registry、module composition 與 testing hook installation，不再長期承載所有遊戲規則與 UI 細節。
+- `src/main.js` 應退回 app bootstrap、module composition、global event delegation 與 testing hook installation，不再長期承載所有遊戲規則與 UI 細節。
+- `src/app/` 負責 DOM element registry 與 shell-level helper。
 - `src/data/` 保留 area、scene、shop item、lesson、quest template 等資料 registry。
 - `src/state/` 負責 state normalize、localStorage persist、quest creation、diary、badge、reward mutation、save data shape。
 - `src/core/` 或等效 helper module 負責跨模組查找與純函式，例如 hotspot、scene config、item、area、category、node lookup。
 - `src/map/` 負責 Castle / Kingdom 共用地圖幾何、pan / zoom viewport、marker focus、player movement 與 map actor 定位。
 - `src/flow/` 負責 ADV scene、action choices、quest、hint、feedback / return 的狀態流程。
-- `src/render/` 負責可重用渲染 helper，例如 paper doll、system settings 或 shared DOM renderer。
+- `src/render/` 負責可重用渲染 helper，例如 paper doll、Shop / Wardrobe / Settings shared DOM renderer。
 - `src/system/` 負責 Diary、Settings、Save / Load overlay 與 Markdown save/load。
 - `src/testing/` 的 selftest hook 必須維持可用；重構後不能讓 `?selftest=save-load`、`?selftest=monkey`、`?selftest=visual-qa` 失效。
+
+禁止事項：
+
+- 禁止為新地區、新店家或新任務複製整段既有流程後只替換文字或圖片。
+- 禁止讓 `main.js` 重新成為商品規則、地圖規則、ADV 規則與系統 overlay 規則的集中堆疊處。
+- 禁止用臨時全域狀態、隱藏 DOM 或 CSS 特例繞過 state / flow / render module 的責任。
+- 禁止把測試入口綁死在單一 surface，導致新增功能無法被 visual QA 或 monkey test 覆蓋。
 
 本輪完整驗測要求：
 
@@ -507,6 +560,7 @@ node server.mjs
 
 ## 本 README 變更紀錄
 
+- 2026-06-01：將「模組化主軸」提升到 README 最前段，記錄目前 ES Modules 結構、下一階段拆分方向，並要求後續功能開發不得背離模組化原則。
 - 2026-05-31：依使用者要求重整為 `I. 緣起目的`、`II. 參考準備`、`III. 內容程序`、`IV. 備註紀錄`。
 - 2026-05-31：將本輪新規劃遊戲的 surface inventory 內容吸收為 README 的正式設計基準。
 - 2026-05-31：補入 Castle / Kingdom area registry、`Area Map -> Scene -> Action Choices -> Detail Panel`、HUD 三格、齒輪系統 overlay、Castle 圖一致性與 visual surface sweep 驗收規則。
