@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>solKidGalGame</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23d8678c'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-size='38' font-family='Arial' fill='white'%3EL%3C/text%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="styles/main.css?v=20260601-scene-art-28" />
+    <link rel="stylesheet" href="styles/main.css?v=20260601-issues-30-33" />
   </head>
   <body>
     <div class="app-shell">
@@ -34,8 +34,8 @@
         <section class="view-stack">
           <section class="view active" id="homeView" aria-labelledby="homeTitle">
             <h2 class="visually-hidden" id="homeTitle">Castle Map</h2>
-            <div class="castle-stage" id="castleStage" tabindex="0" aria-label="Castle area map. Tap a room marker, or use the area buttons.">
-              <img src="assets/castle-map2.png?v=20260531-stair-map" alt="Luminara castle grounds map" />
+            <div class="castle-stage" id="castleStage" tabindex="0" aria-label="Castle area map. Tap a room marker or the castle gate.">
+              <img src="assets/castle-map2.webp?v=20260601-optimized-assets" alt="Luminara castle grounds map" />
               <div class="map-marker player castle-player" id="castlePlayerToken" aria-label="Princess Lumi in the castle">
                 <div class="paper-doll map-doll" data-doll="castle-map"></div>
               </div>
@@ -45,9 +45,8 @@
 
           <section class="view" id="mapView" aria-labelledby="mapTitle">
             <h2 class="visually-hidden" id="mapTitle">Kingdom Map</h2>
-            <button class="soft-button map-return-button" id="returnHomeButton" type="button">Castle</button>
             <div class="map-stage" id="mapStage" tabindex="0" aria-label="Kingdom travel map. Drag to look around, tap a place, or use keyboard arrows.">
-              <img id="mapImage" src="assets/kingdom-map2.png?v=20260531-stair-map" alt="Luminara kingdom map" />
+              <img id="mapImage" src="assets/kingdom-map2.webp?v=20260601-optimized-assets" alt="Luminara kingdom map" />
               <div class="map-life-layer" id="mapLifeLayer" aria-hidden="true"></div>
               <svg class="route-layer" id="routeLayer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
               <div id="nodeLayer"></div>
@@ -64,8 +63,6 @@
               </div>
             </div>
           </section>
-
-          <nav class="area-nav" id="areaNav" aria-label="Luminara areas"></nav>
         </section>
       </main>
     </div>

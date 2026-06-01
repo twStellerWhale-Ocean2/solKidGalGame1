@@ -211,7 +211,7 @@
 .outfit-preview {
   background-image:
     radial-gradient(circle at 50% 22%, rgba(255, 255, 255, 0.28), transparent 28%),
-    url("../assets/characters/princess-outfits-sheet.png");
+    url("../assets/characters/princess-outfits-sheet.webp");
   background-size: 100% 100%, 400% auto;
   background-position: center, var(--sprite-x, 0%) 18%;
   background-repeat: no-repeat;
