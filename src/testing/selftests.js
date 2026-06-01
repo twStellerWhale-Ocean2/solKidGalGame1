@@ -29,6 +29,7 @@ export function installTestingHooks(api) {
     openRoomScene: () => api.openRoomScene(api.hotspotById("princessRoom")),
     openShopScene: (place = "boutique") => api.openSceneAdv(api.hotspotById(place)),
     openShopDetail: (place = "boutique") => api.openShopDetail(api.hotspotById(place)),
+    openRefundDetail: (place = "boutique") => api.openRefundDetail(api.hotspotById(place)),
     openWardrobeDetail: api.openWardrobeDetail,
     interact: api.interactNearby,
     answerCurrent: (choice) => {
@@ -146,6 +147,18 @@ function runVisualQa(api) {
     if (item && api.allowedShopCategories(hotspot).includes(item.type) && !api.state.owned.includes(item.id)) {
       api.shopPreviewItemId = item.id;
       api.renderAdvShop(true);
+    }
+    return;
+  }
+
+  if (surface === "refund-detail") {
+    const item = api.itemById(params.get("item")) || api.shopItems.find((candidate) => candidate.storeId === hotspot.id && candidate.cost > 0);
+    if (item && !api.state.owned.includes(item.id)) api.state.owned.push(item.id);
+    api.render();
+    api.openRefundDetail(hotspot);
+    if (item && item.storeId === hotspot.id && api.state.owned.includes(item.id)) {
+      api.shopPreviewItemId = item.id;
+      api.renderRefundDetail(true);
     }
     return;
   }

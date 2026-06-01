@@ -16,7 +16,9 @@ export function createAdvControls({ elements, getFocusIndex, getMode, setFocusIn
     if (!elements.advModal.classList.contains("show")) return [];
     const mode = getMode();
     const selectors = mode === "shop" || mode === "wardrobe"
-      ? ["#advShopGrid .item-card:not(:disabled)", "#advShopGrid .shop-buy-button:not(:disabled)", "#choiceList .choice-button:not(:disabled)"]
+      ? ["#advShopGrid .item-card:not(:disabled), #advShopGrid .item-panel-action:not(:disabled)", "#choiceList .choice-button:not(:disabled)"]
+      : mode === "refund"
+        ? ["#advShopGrid .item-card:not(:disabled), #advShopGrid .item-panel-action:not(:disabled)", "#choiceList .choice-button:not(:disabled)"]
       : ["#choiceList .choice-button:not(:disabled)", "#advShopGrid .item-card:not(:disabled)"];
     return selectors.flatMap((selector) => [...document.querySelectorAll(selector)]).filter((button) => button.offsetParent !== null);
   }

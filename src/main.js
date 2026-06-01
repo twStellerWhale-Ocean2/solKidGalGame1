@@ -30,6 +30,7 @@ import {
 } from "./data/game-data.js";
 import { createAdvControls } from "./flow/adv-controls.js";
 import { FLOW_STAGE_LABELS } from "./flow/stages.js";
+import { renderItemDetailPanel } from "./render/item-panel.js";
 import { createPaperDollRenderer } from "./render/paper-doll.js";
 import { renderBuildInfo } from "./render/settings.js";
 import { saveMarkerEnd, saveMarkerStart } from "./state/storage.js";
@@ -303,7 +304,7 @@ function renderAdvDoll(outfitState, isTryOn = false) {
 }
 
 function activeTryOnItem() {
-  if (advMode !== "shop" && advMode !== "wardrobe") return null;
+  if (advMode !== "shop" && advMode !== "wardrobe" && advMode !== "refund") return null;
   const item = itemById(shopPreviewItemId);
   return item && item.type !== "room" ? item : null;
 }
@@ -419,7 +420,7 @@ function createItemCard(item, options = {}) {
   button.type = "button";
   button.className = `item-card ${item.type}${options.mode ? ` ${options.mode}-item-card` : ""}${owned ? " owned" : ""}${equipped ? " equipped" : ""}${!owned && !affordable ? " locked" : ""}${options.selected ? " selected" : ""}`;
   button.dataset.itemId = item.id;
-  const previewStyle = `--sprite-x:${item.sprite || "0%"};--c1:${item.colors[0]};--c2:${item.colors[1]};--item-img:url('${cssAssetUrl(item.image)}')`;
+  const previewStyle = itemPreviewStyle(item);
   button.innerHTML = `
     <span class="item-preview item-art item-image ${item.shape}" style="${previewStyle}">
       <span aria-hidden="true">${item.icon || "✦"}</span>
@@ -430,6 +431,10 @@ function createItemCard(item, options = {}) {
   `;
   button.addEventListener("click", options.action || (() => {}));
   return button;
+}
+
+function itemPreviewStyle(item) {
+  return `--sprite-x:${item.sprite || "0%"};--c1:${item.colors[0]};--c2:${item.colors[1]};--item-img:url('${cssAssetUrl(item.image)}')`;
 }
 
 function cssAssetUrl(src) {
@@ -1116,7 +1121,7 @@ function openAdvBase(hotspot, mode) {
   elements.advSpeaker.textContent = scene.npc;
   elements.choiceList.innerHTML = "";
   elements.advShopGrid.innerHTML = "";
-  elements.shopArea.classList.remove("show", "wardrobe-detail");
+  elements.shopArea.classList.remove("show", "wardrobe-detail", "refund-detail");
   elements.advFeedback.textContent = "";
   renderPaperDolls();
   requestAnimationFrame(() => {
@@ -1140,6 +1145,7 @@ function openSceneAdv(hotspot) {
   if (hotspot.kind === "shop") {
     addAdvOption("💬 Chat", () => isTarget ? openQuestAdv(hotspot) : openHintAdv(hotspot));
     addAdvOption("🎁 Shop", () => openShopDetail(hotspot));
+    addAdvOption("💱 Refund", () => openRefundDetail(hotspot));
   } else {
     addAdvOption("💬 Talk", () => isTarget ? openQuestAdv(hotspot) : openHintAdv(hotspot));
   }
@@ -1236,9 +1242,23 @@ function openShopDetail(hotspot) {
   clearTryOnPreview({ renderDoll: false });
   elements.advLine.textContent = shopGreeting(hotspot);
   elements.advPrompt.textContent = "Tap to preview. BUY to keep.";
-  elements.shopArea.classList.remove("wardrobe-detail");
+  elements.shopArea.classList.remove("wardrobe-detail", "refund-detail");
   elements.shopArea.classList.add("show");
   renderAdvShop();
+  scheduleAdvFocus(0);
+  speak(elements.advLine.textContent);
+}
+
+function openRefundDetail(hotspot) {
+  openAdvBase(hotspot, "refund");
+  activeShopHotspot = hotspot;
+  addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
+  clearTryOnPreview({ renderDoll: false });
+  elements.advLine.textContent = `${sceneConfigFor(hotspot).npc} can help return treasures from this shop.`;
+  elements.advPrompt.textContent = "Tap an owned treasure, then Refund.";
+  elements.shopArea.classList.remove("wardrobe-detail");
+  elements.shopArea.classList.add("show", "refund-detail");
+  renderRefundDetail();
   scheduleAdvFocus(0);
   speak(elements.advLine.textContent);
 }
@@ -1252,6 +1272,7 @@ function openWardrobeDetail(category = "outfit") {
   elements.advScene.dataset.mode = "wardrobe";
   elements.advLine.textContent = `Choose ${categoryLabel(category).toLowerCase()} for Lumi.`;
   elements.advPrompt.textContent = "Tap to preview, then equip.";
+  elements.shopArea.classList.remove("refund-detail");
   elements.shopArea.classList.add("show", "wardrobe-detail");
   renderWardrobeDetail();
 }
@@ -1272,25 +1293,20 @@ function renderWardrobeDetail(preserveFocus = false) {
     renderWardrobeDetail();
   }, true);
   renderActiveTryOnDoll();
-  elements.advShopGrid.innerHTML = "";
-  if (!categoryItems.length) {
-    elements.advShopGrid.innerHTML = `<div class="wardrobe-empty">Buy treasures in the kingdom first.</div>`;
-  } else {
-    categoryItems.forEach((item) => {
-      elements.advShopGrid.appendChild(createItemCard(item, {
-        mode: "wardrobe",
-        selected: item.id === shopPreviewItemId,
-        onPreview: previewWardrobeItem,
-        action: () => previewWardrobeItem(item)
-      }));
-    });
-  }
-  elements.choiceList.innerHTML = "";
-  addAdvOption(wardrobeActionLabel(previewItem), () => equipWardrobePreview(previewItem), { leave: false, disabled: !previewItem });
-  addAdvOption("↩ Back", () => openRoomScene(hotspotById("princessRoom")));
-  addAdvOption("↩ Leave", closeAdv, { leave: true });
-  elements.choiceList.classList.add("shop-command-list");
-  elements.shopArea.appendChild(elements.choiceList);
+  const backButton = renderItemDetailPanel({
+    actionForItem: wardrobePanelAction,
+    categoryLabel,
+    emptyText: "Buy treasures in the kingdom first.",
+    items: categoryItems,
+    listElement: elements.advShopGrid,
+    mode: "wardrobe",
+    onAction: equipWardrobePreview,
+    onBack: backToRoomScene,
+    onPreview: previewWardrobeItem,
+    previewStyleForItem: itemPreviewStyle,
+    selectedItemId: shopPreviewItemId
+  });
+  renderItemPanelCommands(backButton);
   const focusIndex = preserveFocus ? Math.max(0, categoryItems.findIndex((item) => item.id === shopPreviewItemId)) : 0;
   scheduleAdvFocus(focusIndex);
 }
@@ -1304,13 +1320,25 @@ function previewWardrobeItem(item) {
 
 function wardrobeActionLabel(item) {
   if (!item) return "Pick a treasure";
-  if (item.type === "room") return "Place";
-  return state.outfit[item.type] === item.id ? "Equipped" : "Equip";
+  if (item.type === "room") return state.outfit.room === item.id ? "Placed" : "Place";
+  return state.outfit[item.type] === item.id ? "Wearing" : "Equip";
+}
+
+function wardrobePanelAction(item) {
+  const equipped = state.outfit[item.type] === item.id;
+  const label = wardrobeActionLabel(item);
+  return {
+    label,
+    status: equipped ? label : "Owned",
+    ariaLabel: equipped ? `${item.name} ${label}` : `${label} ${item.name}`,
+    disabled: equipped
+  };
 }
 
 function equipWardrobePreview(item) {
   if (!item) return;
   if (item.type === "room") {
+    state.outfit.room = item.id;
     elements.advFeedback.textContent = `${item.name} is placed in Lumi's room.`;
   } else {
     state.outfit[item.type] = item.id;
@@ -1328,6 +1356,14 @@ function allowedShopCategories(hotspot = activeShopHotspot) {
 function unownedShopItemsFor(hotspot = activeShopHotspot, category = shopCategory) {
   const allowed = allowedShopCategories(hotspot);
   return shopItems.filter((item) => item.type === category && allowed.includes(item.type) && !state.owned.includes(item.id));
+}
+
+function refundableItemsFor(hotspot = activeShopHotspot) {
+  return shopItems.filter((item) => (
+    item.storeId === hotspot?.id &&
+    item.cost > 0 &&
+    state.owned.includes(item.id)
+  ));
 }
 
 function availableShopCategories(hotspot = activeShopHotspot) {
@@ -1352,11 +1388,20 @@ function renderAdvShop(preserveFocus = false) {
     clearTryOnPreview({ renderDoll: false });
     renderCategoryTabs(elements.advShopTabs, shopCategory, () => {}, false, []);
     renderShopSoldOut();
-    elements.advShopGrid.innerHTML = `<div class="wardrobe-empty">You found all ${activeShopHotspot?.label || "shop"} treasures!</div>`;
-    elements.choiceList.innerHTML = "";
-    addAdvOption("↩ Leave", closeAdv, { leave: true });
-    elements.choiceList.classList.add("shop-command-list");
-    elements.shopArea.appendChild(elements.choiceList);
+    const backButton = renderItemDetailPanel({
+      actionForItem: shopPanelAction,
+      categoryLabel,
+      emptyText: `You found all ${activeShopHotspot?.label || "shop"} treasures!`,
+      items: [],
+      listElement: elements.advShopGrid,
+      mode: "shop",
+      onAction: buyItemInAdv,
+      onBack: backToStoreScene,
+      onPreview: previewShopItem,
+      previewStyleForItem: itemPreviewStyle,
+      selectedItemId: shopPreviewItemId
+    });
+    renderItemPanelCommands(backButton);
     scheduleAdvFocus(0);
     return;
   }
@@ -1369,39 +1414,22 @@ function renderAdvShop(preserveFocus = false) {
     renderAdvShop();
   }, false, stockedCategories);
   renderActiveTryOnDoll();
-  elements.advShopGrid.innerHTML = "";
-  categoryItems.forEach((item) => {
-    elements.advShopGrid.appendChild(createShopPurchaseRow(item));
+  const backButton = renderItemDetailPanel({
+    actionForItem: shopPanelAction,
+    categoryLabel,
+    emptyText: `You found all ${activeShopHotspot?.label || "shop"} treasures!`,
+    items: categoryItems,
+    listElement: elements.advShopGrid,
+    mode: "shop",
+    onAction: buyItemInAdv,
+    onBack: backToStoreScene,
+    onPreview: previewShopItem,
+    previewStyleForItem: itemPreviewStyle,
+    selectedItemId: shopPreviewItemId
   });
-  elements.choiceList.innerHTML = "";
-  addAdvOption(shopActionLabel(previewItem), () => buyItemInAdv(previewItem), { leave: false, disabled: !previewItem });
-  addAdvOption("↩ Leave", closeAdv, { leave: true });
-  elements.choiceList.classList.add("shop-command-list");
-  elements.shopArea.appendChild(elements.choiceList);
+  renderItemPanelCommands(backButton);
   const focusIndex = preserveFocus ? Math.max(0, categoryItems.findIndex((item) => item.id === shopPreviewItemId)) : 0;
   scheduleAdvFocus(focusIndex);
-}
-
-function createShopPurchaseRow(item) {
-  const row = document.createElement("div");
-  row.className = "shop-buy-row";
-  const preview = createItemCard(item, {
-    mode: "shop",
-    selected: item.id === shopPreviewItemId,
-    onPreview: previewShopItem,
-    action: () => previewShopItem(item)
-  });
-  const buy = document.createElement("button");
-  buy.type = "button";
-  buy.className = "shop-buy-button";
-  buy.textContent = state.coins >= item.cost ? "BUY" : `Need ${item.cost - state.coins}`;
-  buy.setAttribute("aria-label", state.coins >= item.cost ? `BUY ${item.name} for ${item.cost} coins` : `Need ${item.cost - state.coins} more coins for ${item.name}`);
-  buy.addEventListener("click", () => {
-    previewShopItem(item);
-    buyItemInAdv(item);
-  });
-  row.append(preview, buy);
-  return row;
 }
 
 function previewShopItem(item) {
@@ -1409,6 +1437,39 @@ function previewShopItem(item) {
   shopPreviewItemId = item.id;
   elements.advFeedback.textContent = tryOnFeedbackText(item, "shop");
   renderAdvShop(true);
+}
+
+function shopPanelAction(item) {
+  const affordable = state.coins >= item.cost;
+  const label = affordable ? "BUY" : `Need ${item.cost - state.coins}`;
+  return {
+    label,
+    status: `${item.cost} coins`,
+    ariaLabel: affordable ? `BUY ${item.name} for ${item.cost} coins` : `Need ${item.cost - state.coins} more coins for ${item.name}`,
+    disabled: false
+  };
+}
+
+function renderItemPanelCommands(backButton) {
+  elements.choiceList.innerHTML = "";
+  elements.choiceList.classList.add("shop-command-list");
+  elements.choiceList.appendChild(backButton);
+  elements.shopArea.appendChild(elements.choiceList);
+}
+
+function backToStoreScene() {
+  const hotspot = activeShopHotspot;
+  clearTryOnPreview({ renderDoll: false });
+  if (hotspot) {
+    openSceneAdv(hotspot);
+  } else {
+    closeAdv();
+  }
+}
+
+function backToRoomScene() {
+  clearTryOnPreview({ renderDoll: false });
+  openRoomScene(hotspotById("princessRoom"));
 }
 
 function shopActionLabel(item) {
@@ -1471,6 +1532,74 @@ function buyItemInAdv(item) {
   render();
   shopPreviewItemId = "";
   renderAdvShop(true);
+}
+
+function renderRefundDetail(preserveFocus = false) {
+  const refundableItems = refundableItemsFor(activeShopHotspot);
+  if (shopPreviewItemId && !refundableItems.some((item) => item.id === shopPreviewItemId)) clearTryOnPreview({ renderDoll: false });
+  renderCategoryTabs(elements.advShopTabs, shopCategory, () => {}, false, []);
+  renderActiveTryOnDoll();
+  const backButton = renderItemDetailPanel({
+    actionForItem: refundPanelAction,
+    categoryLabel,
+    emptyText: `No ${activeShopHotspot?.label || "shop"} treasures to refund.`,
+    items: refundableItems,
+    listElement: elements.advShopGrid,
+    mode: "refund",
+    onAction: refundItemInAdv,
+    onBack: backToStoreScene,
+    onPreview: previewRefundItem,
+    previewStyleForItem: itemPreviewStyle,
+    selectedItemId: shopPreviewItemId
+  });
+  renderItemPanelCommands(backButton);
+  const focusIndex = preserveFocus ? Math.max(0, refundableItems.findIndex((item) => item.id === shopPreviewItemId)) : 0;
+  scheduleAdvFocus(focusIndex);
+}
+
+function previewRefundItem(item) {
+  if (!item) return;
+  shopPreviewItemId = item.id;
+  elements.advFeedback.textContent = `${item.name}: Refund for ${refundAmount(item)} coins.`;
+  renderRefundDetail(true);
+}
+
+function refundPanelAction(item) {
+  const amount = refundAmount(item);
+  return {
+    label: `Refund ${amount}`,
+    status: "Owned",
+    ariaLabel: `Refund ${item.name} for ${amount} coins`,
+    disabled: false
+  };
+}
+
+function refundAmount(item) {
+  return Math.floor((item?.cost || 0) / 2);
+}
+
+function refundItemInAdv(item) {
+  if (!item || item.storeId !== activeShopHotspot?.id || item.cost <= 0 || !state.owned.includes(item.id)) return;
+  const amount = refundAmount(item);
+  state.coins += amount;
+  state.owned = state.owned.filter((ownedId) => ownedId !== item.id);
+  if (state.outfit[item.type] === item.id) {
+    state.outfit[item.type] = fallbackOwnedItemForSlot(item.type);
+  }
+  shopPreviewItemId = "";
+  const feedbackText = `Refunded ${item.name} for ${amount} coins.`;
+  elements.advLine.textContent = feedbackText;
+  elements.advFeedback.textContent = feedbackText;
+  elements.statusMessage.textContent = feedbackText;
+  addDiary({ type: "shop", title: activeShopHotspot?.label || "Refund", body: `Refunded ${item.name}.`, result: `+${amount} coins` });
+  persist();
+  render();
+  renderRefundDetail(true);
+}
+
+function fallbackOwnedItemForSlot(type) {
+  const ownedItems = shopItems.filter((item) => item.type === type && state.owned.includes(item.id));
+  return ownedItems.find((item) => item.cost === 0)?.id || ownedItems[0]?.id || "none";
 }
 
 function recommendedShopHotspot() {
@@ -2201,6 +2330,7 @@ installTestingHooks({
   openArea,
   openHintAdv,
   openQuestAdv,
+  openRefundDetail,
   openRoomScene,
   openSceneAdv,
   openShopDetail,
@@ -2209,7 +2339,9 @@ installTestingHooks({
   persist,
   render,
   renderAdvShop,
+  renderRefundDetail,
   renderMap,
+  refundItemInAdv,
   setMapViewport: (areaId, viewport = {}) => {
     if (!areaRegistry[areaId]) throw new Error("Unknown area");
     applyAreaMapViewport(areaId, {
