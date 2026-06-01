@@ -1,0 +1,139 @@
+{
+  "url": "http://127.0.0.1:4174/?selftest=visual-qa&surface=shop-detail&fresh=1&cachebust=geometry-1780290801591&place=boutique&item=blueDress&coins=100#map",
+  "result": {
+    "feature": "Blue harbor dress",
+    "visibleCards": [
+      {
+        "id": "pinkDress",
+        "className": "item-card outfit owned equipped",
+        "text": "👗 Pink academy dress Equipped Dresses",
+        "rect": {
+          "top": 488.3125,
+          "bottom": 566.5,
+          "left": 49,
+          "right": 348,
+          "width": 299,
+          "height": 78.1875,
+          "scrollTop": 0,
+          "clientHeight": 74,
+          "scrollHeight": 74,
+          "className": "item-card outfit owned equipped"
+        }
+      },
+      {
+        "id": "blueDress",
+        "className": "item-card outfit selected adv-focus",
+        "text": "👗 Blue harbor dress 100 coins Dresses",
+        "rect": {
+          "top": 572.5,
+          "bottom": 650.6875,
+          "left": 49,
+          "right": 348,
+          "width": 299,
+          "height": 78.1875,
+          "scrollTop": 0,
+          "clientHeight": 74,
+          "scrollHeight": 74,
+          "className": "item-card outfit selected adv-focus"
+        }
+      },
+      {
+        "id": "roseDress",
+        "className": "item-card outfit locked",
+        "text": "👗 Rose festival dress 200 coins Dresses",
+        "rect": {
+          "top": 660.6875,
+          "bottom": 738.875,
+          "left": 49,
+          "right": 348,
+          "width": 299,
+          "height": 78.1875,
+          "scrollTop": 0,
+          "clientHeight": 74,
+          "scrollHeight": 74,
+          "className": "item-card outfit locked"
+        }
+      },
+      {
+        "id": "snowDress",
+        "className": "item-card outfit locked",
+        "text": "👗 Snowflake gown 260 coins Dresses",
+        "rect": {
+          "top": 746.875,
+          "bottom": 822.875,
+          "left": 49,
+          "right": 348,
+          "width": 299,
+          "height": 76,
+          "scrollTop": 0,
+          "clientHeight": 72,
+          "scrollHeight": 72,
+          "className": "item-card outfit locked"
+        }
+      }
+    ],
+    "selected": [
+      "blueDress"
+    ],
+    "advBox": {
+      "top": 455.9375,
+      "bottom": 769,
+      "left": 27,
+      "right": 363,
+      "width": 336,
+      "height": 313.0625,
+      "scrollTop": 0,
+      "clientHeight": 311,
+      "scrollHeight": 311,
+      "className": "adv-box"
+    },
+    "shopArea": {
+      "top": 552.3125,
+      "bottom": 707.3125,
+      "left": 38,
+      "right": 352,
+      "width": 314,
+      "height": 155,
+      "scrollTop": 0,
+      "clientHeight": 155,
+      "scrollHeight": 155,
+      "className": "shop-area show"
+    },
+    "shopGrid": {
+      "top": 552.3125,
+      "bottom": 652.3125,
+      "left": 49,
+      "right": 352,
+      "width": 303,
+      "height": 100,
+      "scrollTop": 64,
+      "clientHeight": 100,
+      "scrollHeight": 335,
+      "className": "shop-grid compact-shop"
+    },
+    "shopFeature": {
+      "top": 552.3125,
+      "bottom": 668.3125,
+      "left": 38,
+      "right": 42,
+      "width": 4,
+      "height": 116,
+      "scrollTop": 0,
+      "clientHeight": 112,
+      "scrollHeight": 112,
+      "className": "shop-feature"
+    },
+    "shopFeatureCopy": {
+      "top": 554.3125,
+      "bottom": 666.3125,
+      "left": 172,
+      "right": 193,
+      "width": 21,
+      "height": 112,
+      "scrollTop": 0,
+      "clientHeight": 112,
+      "scrollHeight": 115,
+      "className": "shop-feature-copy"
+    }
+  }
+}
