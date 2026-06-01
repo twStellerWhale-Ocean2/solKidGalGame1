@@ -157,13 +157,13 @@ Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return
 - `Detail Panel` 只在玩家選擇具體動作後出現，例如購物、換衣服、換配件、換鞋子、換擺設、Settings、Save / Load。
 - `Feedback / Return` 必須顯示結果並保留清楚返回路徑，不讓玩家卡在大型 panel。
 
-地區必須透過 area registry 或等效資料結構定義，不把 Castle / Kingdom 寫死成特殊分支。每個 area 至少包含 `id`、`label`、`map image`、`locations`、`default marker`、`bottom navigation label` 與可用 actions。目前啟用地區是 Castle / Kingdom，資料結構需預留 Forest / Ocean 等未來地區。
+地區必須透過 area registry 或等效資料結構定義，不把 Castle / Kingdom 寫死成特殊分支。每個 area 至少包含 `id`、`label`、`map image`、`locations`、`default marker`、gate travel 設定與可用 actions。目前啟用地區是 Castle / Kingdom，資料結構需預留 Forest / Ocean 等未來地區。
 
 ### Castle Area
 
 - App 預設畫面應是 Castle Map / Castle Grounds，而不是 Wardrobe、Save / Load 或其他系統工具面板。
 - Princess Room 是 Castle Map 上的一個 marker，不是啟動畫面的特殊例外。
-- Castle Map 底部 area navigation 與 Kingdom Map 使用同一套地區切換規則，目前顯示 `Castle`、`Kingdom`，未來可由 registry 加入 Forest / Ocean。
+- Castle / Kingdom 之間的可見切換必須走地圖上的 gate marker；底部 `Castle` / `Kingdom` area navigation 不再出現在遊玩畫面。
 - Castle Map 必須預留 `Princess Room`、`King Room`、`Queen Room` 等房間 marker 的擴充位置。
 - Castle 近景圖必須參考現有 kingdom map 中「白色城牆、粉紅屋頂、中央高塔」的城堡語彙；不得使用幾何圖或與原大地圖不一致的臨時圖當正式素材。
 
@@ -250,14 +250,8 @@ Settings 支援五個等級：
 
 目前主要素材：
 
-- `assets/bedroom.png`
-- `assets/castle-map2.png`
-- `assets/kingdom-map2.png`
-- `assets/scenes/*.png`
-- `assets/characters/npc-*.png`
-- `assets/characters/princess-*.png`
-- `assets/characters/princess-outfits-sheet.png`
-- `assets/map-layers/*.png`
+- Runtime 載入優先使用同名 `.webp` 最佳化版本，例如 `assets/castle-map2.webp`、`assets/kingdom-map2.webp`、`assets/scenes/*.webp`、`assets/characters/npc-*.webp`、`assets/characters/princess-outfits-sheet.webp`、`assets/map-layers/*.webp`。
+- 原始 PNG 保留作為 source-quality 素材，例如 `assets/bedroom.png`、`assets/castle-map2.png`、`assets/kingdom-map2.png`、`assets/scenes/*.png`、`assets/characters/*.png`、`assets/map-layers/*.png`。
 
 素材來源分類：
 
@@ -546,7 +540,7 @@ node server.mjs
 
 - Castle / Kingdom 在手機直向單指拖曳時，底圖、地點 icon、小公主 token、map actors 一起位移。
 - Castle / Kingdom 在手機直向雙指縮放時，底圖、地點 icon、小公主 token、map actors 一起縮放與重新定位。
-- HUD 與底部 area navigation 不跟著地圖縮放。
+- HUD 與 gate / marker 操作層不跟著地圖縮放。
 - 沒有水平捲動、重要地圖區域不可到達、或 icon 與底圖位置錯位。
 - 不得用 `node --check`、console clean 或 monkey pass 取代手機直向美術性測試。
 
@@ -780,7 +774,7 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
   - Castle and Kingdom both render movable princess map tokens.
   - Keyboard movement now works on both Castle and Kingdom maps.
   - Keyboard movement updates nearby marker focus, matching pointer/tap marker behavior.
-  - Bottom area navigation stays outside the zoomed map and marks the current area with a princess avatar.
+  - Gate hotspots are the visible area travel path; the earlier bottom Castle / Kingdom area navigation was removed for Issue #30.
   - Targeted QA evidence is under `.codex/log/20260531-200857-*`, `.codex/log/20260531-202502-bugfix-keyboard-map.md`, `.codex/log/20260531-211741-stair-map-revision.md`, `.codex/log/20260531-212337-kingdom-castle-marker.md`, `.codex/log/20260531-212822-unrestricted-map-movement.md`, and `.codex/log/20260531-213816-marker-placement-v9.md`.
 - Corrected new map marker placement and semantics for the latest map art:
   - Kingdom castle entry marker aligns with the purple castle stairway.
@@ -794,6 +788,9 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
 - Added Diary and Settings book-style PNG backgrounds.
 - Fixed Quest ADV choice overflow on desktop and mobile.
 - Fixed mobile Shop command / item overflow so Buy and Leave remain visible.
+- Optimized large runtime images to WebP for Issue #31 while keeping original PNG sources.
+- Compact Shop detail panels now show more visible reward items at once for Issue #32.
+- Princess Room keeps the action-first category menu and hides wardrobe category tabs in the advanced detail panel for Issue #33.
 - Wrapped the Help Teacher key fields in a form and prevented submit reloads, clearing Chromium password-field console warning during selftests.
 - Re-ran full visual QA across 64 desktop/mobile surfaces. Final evidence is under `doc/qa-20260531-final-art-map/`.
 - Removed visible map scene hints for Issue #10 and simplified marker entry for Issue #11:

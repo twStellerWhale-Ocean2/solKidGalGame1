@@ -417,7 +417,7 @@ function createItemCard(item, options = {}) {
   const affordable = state.coins >= item.cost;
   const button = document.createElement("button");
   button.type = "button";
-  button.className = `item-card ${item.type}${owned ? " owned" : ""}${equipped ? " equipped" : ""}${!owned && !affordable ? " locked" : ""}${options.selected ? " selected" : ""}`;
+  button.className = `item-card ${item.type}${options.mode ? ` ${options.mode}-item-card` : ""}${owned ? " owned" : ""}${equipped ? " equipped" : ""}${!owned && !affordable ? " locked" : ""}${options.selected ? " selected" : ""}`;
   button.dataset.itemId = item.id;
   const previewStyle = `--sprite-x:${item.sprite || "0%"};--c1:${item.colors[0]};--c2:${item.colors[1]};--item-img:url('${cssAssetUrl(item.image)}')`;
   button.innerHTML = `
@@ -425,8 +425,8 @@ function createItemCard(item, options = {}) {
       <span aria-hidden="true">${item.icon || "✦"}</span>
     </span>
     <strong>${item.name}</strong>
-    <span>${owned ? equipped ? "Equipped" : "Owned" : `${item.cost} coins`}</span>
-    <small>${categoryLabel(item.type)}</small>
+    <span class="item-state">${owned ? equipped ? "Equipped" : "Owned" : `${item.cost} coins`}</span>
+    <small class="item-category">${categoryLabel(item.type)}</small>
   `;
   button.addEventListener("click", options.action || (() => {}));
   return button;
@@ -1235,7 +1235,7 @@ function openShopDetail(hotspot) {
   shopCategory = stockedCategories.includes(shopCategory) ? shopCategory : stockedCategories[0] || firstCategory;
   clearTryOnPreview({ renderDoll: false });
   elements.advLine.textContent = shopGreeting(hotspot);
-  elements.advPrompt.textContent = "Tap a treasure to try it on Lumi, then press BUY when Lumi wants it.";
+  elements.advPrompt.textContent = "Tap to preview. BUY to keep.";
   elements.shopArea.classList.remove("wardrobe-detail");
   elements.shopArea.classList.add("show");
   renderAdvShop();
@@ -1251,7 +1251,7 @@ function openWardrobeDetail(category = "outfit") {
   clearTryOnPreview({ renderDoll: false });
   elements.advScene.dataset.mode = "wardrobe";
   elements.advLine.textContent = `Choose ${categoryLabel(category).toLowerCase()} for Lumi.`;
-  elements.advPrompt.textContent = "Tap a treasure to try it on Lumi, then equip it.";
+  elements.advPrompt.textContent = "Tap to preview, then equip.";
   elements.shopArea.classList.add("show", "wardrobe-detail");
   renderWardrobeDetail();
 }
@@ -1394,7 +1394,7 @@ function createShopPurchaseRow(item) {
   const buy = document.createElement("button");
   buy.type = "button";
   buy.className = "shop-buy-button";
-  buy.textContent = state.coins >= item.cost ? `BUY ${item.cost}` : `Need ${item.cost - state.coins}`;
+  buy.textContent = state.coins >= item.cost ? "BUY" : `Need ${item.cost - state.coins}`;
   buy.setAttribute("aria-label", state.coins >= item.cost ? `BUY ${item.name} for ${item.cost} coins` : `Need ${item.cost - state.coins} more coins for ${item.name}`);
   buy.addEventListener("click", () => {
     previewShopItem(item);
@@ -1923,7 +1923,7 @@ function bindEvents() {
   });
   elements.systemMenuTabs.forEach((tab) => tab.addEventListener("click", () => changeSystemPanel(tab.dataset.menuPanel)));
   elements.goMapButton?.addEventListener("click", () => openArea("kingdom"));
-  elements.returnHomeButton.addEventListener("click", () => openArea("castle"));
+  elements.returnHomeButton?.addEventListener("click", () => openArea("castle"));
   elements.helpButton.addEventListener("click", showHelp);
   elements.speakPromptButton.addEventListener("click", () => speak(elements.advLine.textContent));
   elements.saveButton.addEventListener("click", saveMarkdown);

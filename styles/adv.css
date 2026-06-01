@@ -34,35 +34,35 @@
 }
 
 .scene-garden {
-  background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/garden.png?v=20260601-scene-art") center / cover no-repeat;
+  background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/garden.webp?v=20260601-optimized-assets") center / cover no-repeat;
 }
 
 .scene-market {
-  background: linear-gradient(180deg, rgba(255, 245, 232, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/market.png?v=20260601-scene-art") center / cover no-repeat;
+  background: linear-gradient(180deg, rgba(255, 245, 232, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/market.webp?v=20260601-optimized-assets") center / cover no-repeat;
 }
 
 .scene-harbor {
-  background: linear-gradient(180deg, rgba(255, 245, 232, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/harbor.png?v=20260601-scene-art") center / cover no-repeat;
+  background: linear-gradient(180deg, rgba(255, 245, 232, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/harbor.webp?v=20260601-optimized-assets") center / cover no-repeat;
 }
 
 .scene-boutique {
-  background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/boutique.png?v=20260601-scene-art") center / cover no-repeat;
+  background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/boutique.webp?v=20260601-optimized-assets") center / cover no-repeat;
 }
 
 .scene-shoes {
-  background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/shoes.png?v=20260601-scene-art") center / cover no-repeat;
+  background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/shoes.webp?v=20260601-optimized-assets") center / cover no-repeat;
 }
 
 .scene-accessory {
-  background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/accessory.png?v=20260601-scene-art") center / cover no-repeat;
+  background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/accessory.webp?v=20260601-optimized-assets") center / cover no-repeat;
 }
 
 .scene-farm {
-  background: linear-gradient(180deg, rgba(255, 245, 232, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/farm.png?v=20260601-scene-art") center / cover no-repeat;
+  background: linear-gradient(180deg, rgba(255, 245, 232, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/farm.webp?v=20260601-optimized-assets") center / cover no-repeat;
 }
 
 .scene-lighthouse {
-  background: linear-gradient(180deg, rgba(255, 245, 232, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/lighthouse.png?v=20260601-scene-art") center / cover no-repeat;
+  background: linear-gradient(180deg, rgba(255, 245, 232, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/lighthouse.webp?v=20260601-optimized-assets") center / cover no-repeat;
 }
 
 .adv-location,
@@ -117,35 +117,35 @@
 }
 
 .npc-garden {
-  background-image: url("../assets/characters/npc-garden.png");
+  background-image: url("../assets/characters/npc-garden.webp");
 }
 
 .npc-market {
-  background-image: url("../assets/characters/npc-market.png");
+  background-image: url("../assets/characters/npc-market.webp");
 }
 
 .npc-harbor {
-  background-image: url("../assets/characters/npc-harbor.png");
+  background-image: url("../assets/characters/npc-harbor.webp");
 }
 
 .npc-boutique {
-  background-image: url("../assets/characters/npc-boutique.png");
+  background-image: url("../assets/characters/npc-boutique.webp");
 }
 
 .npc-shoes {
-  background-image: url("../assets/characters/npc-shoes.png?v=20260601-npc-art-2");
+  background-image: url("../assets/characters/npc-shoes.webp?v=20260601-optimized-assets");
 }
 
 .npc-accessory {
-  background-image: url("../assets/characters/npc-accessory.png?v=20260601-npc-art-2");
+  background-image: url("../assets/characters/npc-accessory.webp?v=20260601-optimized-assets");
 }
 
 .npc-farm {
-  background-image: url("../assets/characters/npc-farm.png");
+  background-image: url("../assets/characters/npc-farm.webp");
 }
 
 .npc-lighthouse {
-  background-image: url("../assets/characters/npc-lighthouse.png");
+  background-image: url("../assets/characters/npc-lighthouse.webp");
 }
 
 .npc-none {
