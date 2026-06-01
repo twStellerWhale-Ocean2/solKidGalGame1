@@ -1224,6 +1224,7 @@ function openHintAdv(hotspot, line = hotspot.hint) {
   elements.advLine.textContent = line;
   elements.advPrompt.textContent = `Hint: today's quest is at ${hotspotById(state.activeQuest.place).label}.`;
   elements.advFeedback.textContent = "";
+  addAdvOption("↩ Back", () => openSceneAdv(hotspot));
   addAdvOption("↩ Leave", closeAdv, { leave: true });
   scheduleAdvFocus(0);
 }
@@ -1277,12 +1278,19 @@ function openWardrobeDetail(category = "outfit") {
   renderWardrobeDetail();
 }
 
+function wardrobeEmptyText(category = shopCategory) {
+  const messages = {
+    accessory: "Buy accessories at the Accessory Shop first.",
+    outfit: "Buy dresses at the Dress Boutique first.",
+    room: "Buy room treasures at Market Square first.",
+    shoes: "Buy shoes at the Shoe Shop first."
+  };
+  return messages[category] || `Buy ${categoryLabel(category).toLowerCase()} in the kingdom first.`;
+}
+
 function renderWardrobeDetail(preserveFocus = false) {
-  const ownedCategories = categories
-    .filter((category) => shopItems.some((item) => item.type === category.id && state.owned.includes(item.id)))
-    .map((category) => category.id);
-  const allowed = ownedCategories.length ? ownedCategories : categories.map((category) => category.id);
-  if (!allowed.includes(shopCategory)) shopCategory = allowed[0] || "outfit";
+  const allCategories = categories.map((category) => category.id);
+  if (!allCategories.includes(shopCategory)) shopCategory = "outfit";
   const categoryItems = shopItems.filter((item) => item.type === shopCategory && state.owned.includes(item.id));
   if (shopPreviewItemId && !categoryItems.some((item) => item.id === shopPreviewItemId)) clearTryOnPreview({ renderDoll: false });
   const previewItem = categoryItems.find((item) => item.id === shopPreviewItemId) || null;
@@ -1291,12 +1299,12 @@ function renderWardrobeDetail(preserveFocus = false) {
     clearTryOnPreview({ renderDoll: false });
     elements.advFeedback.textContent = "";
     renderWardrobeDetail();
-  }, true);
+  }, false, allCategories);
   renderActiveTryOnDoll();
   const backButton = renderItemDetailPanel({
     actionForItem: wardrobePanelAction,
     categoryLabel,
-    emptyText: "Buy treasures in the kingdom first.",
+    emptyText: wardrobeEmptyText(shopCategory),
     items: categoryItems,
     listElement: elements.advShopGrid,
     mode: "wardrobe",
