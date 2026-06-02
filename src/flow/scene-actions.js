@@ -29,10 +29,18 @@ const NPC_ACTIONS = Object.freeze([
   leaveAction()
 ]);
 
-export function firstLayerActionsFor(hotspot) {
+export function firstLayerActionsFor(hotspot, options = {}) {
   if (hotspot?.kind === "room") return ROOM_ACTIONS;
-  if (hotspot?.kind === "shop") return SHOP_ACTIONS;
-  return NPC_ACTIONS;
+  const help = options.hasHelp ? [helpAction()] : [];
+  if (hotspot?.kind === "shop") {
+    return Object.freeze([
+      ...help,
+      { type: SCENE_ACTION_TYPES.SHOP, label: "Shop", icon: "🎁", handlerKey: "shop" },
+      { type: SCENE_ACTION_TYPES.REFUND, label: "Refund", icon: "💱", handlerKey: "refund" },
+      leaveAction()
+    ]);
+  }
+  return Object.freeze([...help, leaveAction()]);
 }
 
 export function sceneActionLabel(action) {

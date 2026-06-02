@@ -99,11 +99,11 @@
   line-height: 1.22;
 }
 
-.adv-scene[data-mode="shop"] {
-  height: min(700px, 86dvh);
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) {
+  height: min(860px, 92dvh);
 }
 
-.adv-scene[data-mode="shop"] .adv-box {
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .adv-box {
   padding-bottom: 10px;
 }
 

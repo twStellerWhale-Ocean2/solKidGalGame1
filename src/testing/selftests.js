@@ -3,9 +3,7 @@ export function installTestingHooks(api) {
     exportMarkdown: api.buildSaveMarkdown,
     importMarkdown: api.loadMarkdownText,
     getState: () => JSON.parse(JSON.stringify(api.state)),
-    setDifficulty: (difficulty) => {
-      if (!api.difficultyConfig[difficulty]) throw new Error("Unsupported difficulty");
-      api.state.difficulty = Number(difficulty);
+    setDifficulty: () => {
       api.persist();
       api.render();
     },
@@ -35,6 +33,7 @@ export function installTestingHooks(api) {
     buy: (itemId) => api.buyItemInAdv(api.itemById(itemId)),
     focusCastle: api.focusCastle,
     focusKingdom: api.focusKingdom,
+    focusSuburb: api.focusSuburb,
     focusForest: api.focusForest
   };
 
@@ -48,8 +47,6 @@ function runSaveLoadSelfTest(api) {
   if (params.get("selftest") !== "save-load") return;
   const before = JSON.parse(JSON.stringify(api.state));
   const markdown = api.buildSaveMarkdown();
-  const changedDifficulty = before.difficulty === 1000 ? 100 : 1000;
-  api.state.difficulty = changedDifficulty;
   api.state.coins = 0;
   api.loadMarkdownText(markdown);
   const after = JSON.parse(JSON.stringify(api.state));
@@ -57,9 +54,7 @@ function runSaveLoadSelfTest(api) {
     markdown.includes("## Diary") &&
     markdown.includes("LUMINARA_SAVE_JSON") &&
     !markdown.includes("OPENAI_API_KEY") &&
-    after.difficulty === before.difficulty &&
     after.coins === before.coins &&
-    after.activeQuest.place === before.activeQuest.place &&
     Math.abs(after.player.x - before.player.x) < 0.01 &&
     Math.abs(after.player.y - before.player.y) < 0.01;
   const result = document.createElement("pre");
@@ -68,8 +63,6 @@ function runSaveLoadSelfTest(api) {
     test: "save-load",
     passed,
     markdownLength: markdown.length,
-    beforeDifficulty: before.difficulty,
-    afterDifficulty: after.difficulty,
     beforeCoins: before.coins,
     afterCoins: after.coins
   });
@@ -80,7 +73,7 @@ function runVisualQa(api) {
   const params = new URLSearchParams(location.search);
   if (params.get("selftest") !== "visual-qa") return;
   const surface = params.get("surface") || "map";
-  const place = params.get("place") || api.state.activeQuest?.place || "garden";
+  const place = params.get("place") || "garden";
   if (params.get("fresh") === "1") api.state = api.freshState();
   if (params.get("report") === "1") scheduleVisualQaMetricsReport();
   const hotspot = api.hotspotById(place) || api.hotspotById("garden");
@@ -145,8 +138,13 @@ function runVisualQa(api) {
     return;
   }
 
+  if (surface === "suburb-map") {
+    api.render();
+    api.openArea("suburb");
+    return;
+  }
+
   if (surface === "map-near") {
-    api.state.activeQuest = api.createQuestForPlace(hotspot.id);
     api.state.playerNode = hotspot.node;
     api.state.player = { x: node.x, y: node.y };
     api.state.area = areaId;
@@ -156,7 +154,6 @@ function runVisualQa(api) {
   }
 
   if (surface === "quest") {
-    api.state.activeQuest = api.createQuestForPlace(hotspot.id);
     api.render();
     api.openQuestAdv(hotspot);
     return;
@@ -219,7 +216,6 @@ function runVisualQa(api) {
   }
 
   if (surface === "hint") {
-    api.state.activeQuest = api.createRandomQuest(hotspot.id);
     api.render();
     api.openHintAdv(hotspot);
     return;
@@ -240,7 +236,7 @@ function runVisualQa(api) {
     return;
   }
 
-  if (["diary", "settings", "save"].includes(surface)) {
+  if (["diary", "settings", "english", "save"].includes(surface)) {
     api.render();
     api.openSystemMenu(surface);
     return;
@@ -340,7 +336,7 @@ function runMonkeyTest(api) {
   const errors = [];
   const actions = [
     () => api.changeView(["home", "map"][Math.floor(Math.random() * 2)]),
-    () => api.openSystemMenu(["diary", "settings", "save"][Math.floor(Math.random() * 3)]),
+    () => api.openSystemMenu(["diary", "settings", "english", "save"][Math.floor(Math.random() * 4)]),
     () => api.closeSystemMenu(),
     () => api.moveOnMap(1, 0),
     () => api.moveOnMap(-1, 0),
@@ -384,7 +380,6 @@ function runMonkeyTest(api) {
       actions[Math.floor(Math.random() * actions.length)]();
       if (api.state.coins < 0) errors.push("coins below zero");
       if (!api.state.player || !api.isWalkable(api.state.player.x, api.state.player.y)) errors.push("invalid player position");
-      if (!api.state.activeQuest || !api.hotspotById(api.state.activeQuest.place)) errors.push("invalid active quest");
       Object.entries(api.state.outfit).forEach(([slot, itemId]) => {
         if (itemId !== "none" && !api.state.owned.includes(itemId)) errors.push(`unowned equipped ${slot}:${itemId}`);
       });
@@ -404,7 +399,7 @@ function runMonkeyTest(api) {
     errors: [...new Set(errors)].slice(0, 10),
     coins: api.state.coins,
     playerNode: api.state.playerNode,
-    activeQuest: api.state.activeQuest?.place,
+    activeQuest: api.state.activeQuest?.place || null,
     activeViews: api.$$(".view.active").length
   });
   document.body.prepend(result);

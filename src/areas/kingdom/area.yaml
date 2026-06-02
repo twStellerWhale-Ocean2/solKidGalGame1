@@ -3,7 +3,9 @@ label: Kingdom
 view: map
 mapImage: assets/kingdom-map2.webp
 defaultNode: garden
-authoringStatus: runtime uses manifest.js; this YAML is the editable source shape.
+vocabularyProfile: cambridge-pre-a1-starters
+rewardCoins: 100
+source: root-panorama
 
 portals:
   castleStair:
@@ -13,6 +15,10 @@ portals:
   forestEdge:
     node: forestEdge
     label: Forest Path
+    markerStyle: portal
+  suburbGate:
+    node: suburbGate
+    label: Suburb Road
     markerStyle: portal
 
 locations:
@@ -24,14 +30,33 @@ locations:
     node: forestEdge
     kind: gate
     portalId: forestEdge
+  - id: suburbGate
+    node: suburbGate
+    kind: gate
+    portalId: suburbGate
   - id: garden
     node: garden
+    kind: npc
+  - id: schoolClassroom
+    node: schoolClassroom
+    kind: npc
+  - id: library
+    node: library
+    kind: npc
+  - id: temple
+    node: temple
+    kind: npc
+  - id: administration
+    node: administration
     kind: npc
   - id: market
     node: market
     kind: shop
   - id: harbor
     node: harbor
+    kind: npc
+  - id: port
+    node: port
     kind: npc
   - id: boutique
     node: boutique
@@ -42,9 +67,6 @@ locations:
   - id: accessoryShop
     node: accessoryShop
     kind: shop
-  - id: farm
-    node: farm
-    kind: npc
   - id: lighthouse
     node: lighthouse
     kind: npc

@@ -43,7 +43,6 @@ export function persistState(state) {
 
 export function freshState() {
   const stateCopy = JSON.parse(JSON.stringify(defaultState));
-  stateCopy.activeQuest = createRandomQuest(null);
   return stateCopy;
 }
 
@@ -65,7 +64,7 @@ export function normalizeState(candidate = {}) {
   merged.playerNode = nodes[candidate.playerNode] ? candidate.playerNode : areaRegistry[merged.area].defaultNode;
   merged.player = normalizePlayer(candidate.player, merged.playerNode, merged.area);
   merged.difficulty = Number(difficultyConfig[candidate.difficulty] ? candidate.difficulty : base.difficulty);
-  merged.activeQuest = normalizeQuest(candidate.activeQuest || candidate.currentQuest) || createRandomQuest(null);
+  merged.activeQuest = normalizeQuest(candidate.activeQuest || candidate.currentQuest);
   delete merged.schedule;
   delete merged.currentQuest;
   delete merged.week;
@@ -230,16 +229,13 @@ export function buildSaveMarkdown(state) {
   return `# solKidGalGame Save
 
 - Saved at: ${new Date().toLocaleString("en-US")}
-- Difficulty: ${difficultyConfig[state.difficulty].label}
 - Coins: ${state.coins}
-- Energy: ${state.energy}
 - Vocabulary: ${state.vocab}
 - Expression: ${state.expression}
 - Kindness: ${state.kindness}
 - Mood: ${moodLabel(state.mood)}
 - Quests completed: ${questRows.length}
 - Outfit: ${outfitSummary(state)}
-- Current quest: ${state.activeQuest.title}
 - Learned words: ${state.learnedWords.join(", ") || "-"}
 - Friends met: ${state.metNpcs.join(", ") || "-"}
 - Badges: ${state.badges.join(", ") || "-"}

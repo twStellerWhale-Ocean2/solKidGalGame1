@@ -2956,6 +2956,7 @@ body {
 }
 
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .shop-area.show {
+  display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
   overflow: hidden;
@@ -2966,9 +2967,10 @@ body {
   grid-column: 1;
   grid-row: 1;
   min-height: 0;
-  max-height: 100%;
-  height: 100%;
+  max-height: none;
+  height: auto;
   overflow-y: auto;
+  overscroll-behavior: contain;
   align-content: start;
   box-sizing: border-box;
 }
@@ -3293,5 +3295,21 @@ body {
   .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .compact-shop .item-card.item-panel-card .item-preview {
     width: 40px !important;
     height: 40px !important;
+  }
+}
+
+@media (min-width: 821px) {
+  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) {
+    height: min(860px, calc(100dvh - 32px));
+    grid-template-rows: minmax(260px, 0.82fr) minmax(360px, 1fr);
+  }
+
+  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .adv-box {
+    max-height: none;
+    height: auto;
+  }
+
+  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .shop-area.show {
+    min-height: 0;
   }
 }

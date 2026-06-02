@@ -1,33 +1,14 @@
 id: forest
 label: Forest
-view: map
-mapImage: ../../../assets/forest-map2.webp?v=20260602-forest-art
-defaultNode: forestEntrance
-authoringStatus: runtime uses manifest.js; this YAML is the editable source shape.
-assetStatus: runtime uses generated hand-drawn bitmap art; SVG files are historical drafts only and must not be referenced by formal gameplay.
-
-portals:
-  entrance:
-    node: forestEntrance
-    label: Kingdom Path
-    markerStyle: portal
-
+vocabularyProfile: cambridge-a2-flyers
+rewardCoins: 2000
+source: kingdom-panorama-left-mountain-forest-river
 locations:
-  - id: forestExit
-    node: forestEntrance
-    kind: gate
-    portalId: entrance
-  - id: cave
-    node: cave
-    kind: npc
-  - id: dwarfCottage
-    node: dwarfCottage
-    kind: shop
-    shopCategories:
-      - outer
-  - id: mountainPeak
-    node: mountainPeak
-    kind: npc
-  - id: treeSpirit
-    node: treeSpirit
-    kind: npc
+  - elfGlade
+  - dwarfCottage
+  - stoneGolemPass
+  - halflingVillage
+  - wizardHut
+  - redHoodPath
+  - threePigsCottage
+  - treeSpiritGrove
