@@ -1,0 +1,1450 @@
+{
+  "runId": "20260602-223322",
+  "tool": "fallback Playwright/Chromium after in-app Browser iab attach timeout",
+  "iabFailure": {
+    "list": "Timed out waiting for the Browser webview to attach for this browser-use page",
+    "selected": "Timed out waiting for the Browser webview to attach for this browser-use page",
+    "newOrGoto": "Timed out waiting for the Browser webview to attach for this browser-use page"
+  },
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "results": [
+    {
+      "index": 1,
+      "id": "softBrownHair",
+      "name": "Soft brown hair",
+      "type": "hairstyle",
+      "category": "hairstyle",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/01-softbrownhair.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 3,
+        "rows": [
+          {
+            "text": "💇 Soft brown hair Wearing Hair Wearing",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "💇 Twin-braid story hair Owned Hair Equip",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "💇 Blonde bob story hair Owned Hair Equip",
+            "x": 54,
+            "y": 655,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 1,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 2,
+      "id": "starterPajama",
+      "name": "Pink-white cotton pajama",
+      "type": "dress",
+      "category": "dress",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/02-starterpajama.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 4,
+        "rows": [
+          {
+            "text": "🌙 Pink-white cotton pajama Wearing Dresses Wearing",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👗 Blue harbor dress Owned Dresses Equip",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👗 Rose festival dress Owned Dresses Equip",
+            "x": 54,
+            "y": 655,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👗 Snowflake gown Owned Dresses Equip",
+            "x": 54,
+            "y": 732,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 1,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 3,
+      "id": "twinBraidHair",
+      "name": "Twin-braid story hair",
+      "type": "hairstyle",
+      "category": "hairstyle",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/03-twinbraidhair.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 3,
+        "rows": [
+          {
+            "text": "💇 Soft brown hair Owned Hair Equip",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "💇 Twin-braid story hair Wearing Hair Wearing",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "💇 Blonde bob story hair Owned Hair Equip",
+            "x": 54,
+            "y": 655,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 4,
+      "id": "blondeBobHair",
+      "name": "Blonde bob story hair",
+      "type": "hairstyle",
+      "category": "hairstyle",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/04-blondebobhair.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 3,
+        "rows": [
+          {
+            "text": "💇 Soft brown hair Owned Hair Equip",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "💇 Twin-braid story hair Owned Hair Equip",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "💇 Blonde bob story hair Wearing Hair Wearing",
+            "x": 54,
+            "y": 655,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 5,
+      "id": "skyBlouse",
+      "name": "Sky blue puff blouse",
+      "type": "top",
+      "category": "top",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/05-skyblouse.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 2,
+        "rows": [
+          {
+            "text": "👚 Sky blue puff blouse Wearing Tops Wearing",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👚 Peach sailor top Owned Tops Equip",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 6,
+      "id": "peachSailorTop",
+      "name": "Peach sailor top",
+      "type": "top",
+      "category": "top",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/06-peachsailortop.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 2,
+        "rows": [
+          {
+            "text": "👚 Sky blue puff blouse Owned Tops Equip",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👚 Peach sailor top Wearing Tops Wearing",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 7,
+      "id": "navyShorts",
+      "name": "Navy story shorts",
+      "type": "bottom",
+      "category": "bottom",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/07-navyshorts.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 2,
+        "rows": [
+          {
+            "text": "🩳 Navy story shorts Wearing Bottoms Wearing",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👗 Rose ribbon skirt Owned Bottoms Equip",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 8,
+      "id": "roseSkirt",
+      "name": "Rose ribbon skirt",
+      "type": "bottom",
+      "category": "bottom",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/08-roseskirt.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 2,
+        "rows": [
+          {
+            "text": "🩳 Navy story shorts Owned Bottoms Equip",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👗 Rose ribbon skirt Wearing Bottoms Wearing",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 9,
+      "id": "blueDress",
+      "name": "Blue harbor dress",
+      "type": "dress",
+      "category": "dress",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/09-bluedress.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 4,
+        "rows": [
+          {
+            "text": "🌙 Pink-white cotton pajama Owned Dresses Equip",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👗 Blue harbor dress Wearing Dresses Wearing",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👗 Rose festival dress Owned Dresses Equip",
+            "x": 54,
+            "y": 655,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👗 Snowflake gown Owned Dresses Equip",
+            "x": 54,
+            "y": 732,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 10,
+      "id": "roseDress",
+      "name": "Rose festival dress",
+      "type": "dress",
+      "category": "dress",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/10-rosedress.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 4,
+        "rows": [
+          {
+            "text": "🌙 Pink-white cotton pajama Owned Dresses Equip",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👗 Blue harbor dress Owned Dresses Equip",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👗 Rose festival dress Wearing Dresses Wearing",
+            "x": 54,
+            "y": 655,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👗 Snowflake gown Owned Dresses Equip",
+            "x": 54,
+            "y": 732,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 11,
+      "id": "snowDress",
+      "name": "Snowflake gown",
+      "type": "dress",
+      "category": "dress",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/11-snowdress.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 4,
+        "rows": [
+          {
+            "text": "🌙 Pink-white cotton pajama Owned Dresses Equip",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👗 Blue harbor dress Owned Dresses Equip",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👗 Rose festival dress Owned Dresses Equip",
+            "x": 54,
+            "y": 655,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👗 Snowflake gown Wearing Dresses Wearing",
+            "x": 54,
+            "y": 732,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 12,
+      "id": "yellowCardigan",
+      "name": "Little yellow cardigan",
+      "type": "outer",
+      "category": "outer",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/12-yellowcardigan.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 3,
+        "rows": [
+          {
+            "text": "🧥 Little yellow cardigan Wearing Outerwear Wearing",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "✨ Starry helper cape Owned Outerwear Equip",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "🍃 Moss helper cloak Owned Outerwear Equip",
+            "x": 54,
+            "y": 655,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 13,
+      "id": "pinkSlippers",
+      "name": "Ribbon walking shoes",
+      "type": "shoes",
+      "category": "shoes",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/13-pinkslippers.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 2,
+        "rows": [
+          {
+            "text": "👞 Ribbon walking shoes Wearing Shoes Wearing",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "🥾 Blue seaside boots Owned Shoes Equip",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 14,
+      "id": "blueBoots",
+      "name": "Blue seaside boots",
+      "type": "shoes",
+      "category": "shoes",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/14-blueboots.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 2,
+        "rows": [
+          {
+            "text": "👞 Ribbon walking shoes Owned Shoes Equip",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "🥾 Blue seaside boots Wearing Shoes Wearing",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 15,
+      "id": "goldCrown",
+      "name": "Tiny gold crown",
+      "type": "headTop",
+      "category": "accessory",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/15-goldcrown.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 6,
+        "rows": [
+          {
+            "text": "👑 Tiny gold crown Wearing Accessories Wearing",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "🎀 Silk party ribbon Owned Accessories Equip",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👓 Round storybook glasses Owned Accessories Equip",
+            "x": 54,
+            "y": 655,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "✦ Lavender star mask Owned Accessories Equip",
+            "x": 54,
+            "y": 732,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "📿 Pearl heart necklace Owned Accessories Equip",
+            "x": 54,
+            "y": 809,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👜 Pearl shell bag Owned Accessories Equip",
+            "x": 54,
+            "y": 886,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 16,
+      "id": "silkRibbon",
+      "name": "Silk party ribbon",
+      "type": "headSide",
+      "category": "accessory",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/16-silkribbon.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 6,
+        "rows": [
+          {
+            "text": "👑 Tiny gold crown Owned Accessories Equip",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "🎀 Silk party ribbon Wearing Accessories Wearing",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👓 Round storybook glasses Owned Accessories Equip",
+            "x": 54,
+            "y": 655,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "✦ Lavender star mask Owned Accessories Equip",
+            "x": 54,
+            "y": 732,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "📿 Pearl heart necklace Owned Accessories Equip",
+            "x": 54,
+            "y": 809,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👜 Pearl shell bag Owned Accessories Equip",
+            "x": 54,
+            "y": 886,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 17,
+      "id": "roundGlasses",
+      "name": "Round storybook glasses",
+      "type": "faceEyes",
+      "category": "accessory",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/17-roundglasses.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 6,
+        "rows": [
+          {
+            "text": "👑 Tiny gold crown Owned Accessories Equip",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "🎀 Silk party ribbon Owned Accessories Equip",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👓 Round storybook glasses Wearing Accessories Wearing",
+            "x": 54,
+            "y": 655,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "✦ Lavender star mask Owned Accessories Equip",
+            "x": 54,
+            "y": 732,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "📿 Pearl heart necklace Owned Accessories Equip",
+            "x": 54,
+            "y": 809,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👜 Pearl shell bag Owned Accessories Equip",
+            "x": 54,
+            "y": 886,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 18,
+      "id": "starMask",
+      "name": "Lavender star mask",
+      "type": "faceMask",
+      "category": "accessory",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/18-starmask.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 6,
+        "rows": [
+          {
+            "text": "👑 Tiny gold crown Owned Accessories Equip",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "🎀 Silk party ribbon Owned Accessories Equip",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👓 Round storybook glasses Owned Accessories Equip",
+            "x": 54,
+            "y": 655,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "✦ Lavender star mask Wearing Accessories Wearing",
+            "x": 54,
+            "y": 732,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "📿 Pearl heart necklace Owned Accessories Equip",
+            "x": 54,
+            "y": 809,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👜 Pearl shell bag Owned Accessories Equip",
+            "x": 54,
+            "y": 886,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 19,
+      "id": "pearlNecklace",
+      "name": "Pearl heart necklace",
+      "type": "neck",
+      "category": "accessory",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/19-pearlnecklace.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 6,
+        "rows": [
+          {
+            "text": "👑 Tiny gold crown Owned Accessories Equip",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "🎀 Silk party ribbon Owned Accessories Equip",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👓 Round storybook glasses Owned Accessories Equip",
+            "x": 54,
+            "y": 655,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "✦ Lavender star mask Owned Accessories Equip",
+            "x": 54,
+            "y": 732,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "📿 Pearl heart necklace Wearing Accessories Wearing",
+            "x": 54,
+            "y": 809,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👜 Pearl shell bag Owned Accessories Equip",
+            "x": 54,
+            "y": 886,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 20,
+      "id": "pearlBag",
+      "name": "Pearl shell bag",
+      "type": "hand",
+      "category": "accessory",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/20-pearlbag.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 6,
+        "rows": [
+          {
+            "text": "👑 Tiny gold crown Owned Accessories Equip",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "🎀 Silk party ribbon Owned Accessories Equip",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👓 Round storybook glasses Owned Accessories Equip",
+            "x": 54,
+            "y": 655,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "✦ Lavender star mask Owned Accessories Equip",
+            "x": 54,
+            "y": 732,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "📿 Pearl heart necklace Owned Accessories Equip",
+            "x": 54,
+            "y": 809,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "👜 Pearl shell bag Wearing Accessories Wearing",
+            "x": 54,
+            "y": 886,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 21,
+      "id": "starCape",
+      "name": "Starry helper cape",
+      "type": "outer",
+      "category": "outer",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/21-starcape.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 3,
+        "rows": [
+          {
+            "text": "🧥 Little yellow cardigan Owned Outerwear Equip",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "✨ Starry helper cape Wearing Outerwear Wearing",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "🍃 Moss helper cloak Owned Outerwear Equip",
+            "x": 54,
+            "y": 655,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    },
+    {
+      "index": 22,
+      "id": "mossCloak",
+      "name": "Moss helper cloak",
+      "type": "outer",
+      "category": "outer",
+      "screenshot": ".codex/log/20260602-223322-qa/paper-doll-wearables/22-mosscloak.png",
+      "metrics": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "clientHeight": 844,
+        "visualViewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1
+        },
+        "devicePixelRatio": 1,
+        "advMode": "wardrobe",
+        "prompt": "Tap to preview, then equip.",
+        "selected": "",
+        "rowCount": 3,
+        "rows": [
+          {
+            "text": "🧥 Little yellow cardigan Owned Outerwear Equip",
+            "x": 54,
+            "y": 501,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "✨ Starry helper cape Owned Outerwear Equip",
+            "x": 54,
+            "y": 578,
+            "w": 278,
+            "h": 70
+          },
+          {
+            "text": "🍃 Moss helper cloak Wearing Outerwear Wearing",
+            "x": 54,
+            "y": 655,
+            "w": 278,
+            "h": 70
+          }
+        ],
+        "dollBox": {
+          "x": -21,
+          "y": 39,
+          "w": 269,
+          "h": 389
+        },
+        "layerCount": 2,
+        "backBox": {
+          "x": 54,
+          "y": 736,
+          "w": 282,
+          "h": 40,
+          "visible": true
+        }
+      }
+    }
+  ],
+  "consoleMessages": [],
+  "contact": ".codex/log/20260602-223322-qa/paper-doll-all-wearables-contact.png",
+  "priorityContact": ".codex/log/20260602-223322-qa/paper-doll-priority-shoes-accessories-contact.png"
+}

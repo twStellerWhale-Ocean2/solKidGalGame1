@@ -11,7 +11,9 @@ export const difficultyConfig = {
   1000: { label: "Common English 1000 words", reward: 1.8, maxTier: 1000 }
 };
 
-export const paperDollBaseLayer = "assets/doll/lumi/v3/layers/base-starter-pajama.webp";
+const dollAssetVersion = "?v=20260602-issue53";
+
+export const paperDollBaseLayer = `assets/doll/lumi/v3/layers/base-starter-pajama.webp${dollAssetVersion}`;
 
 export const paperDollLayerOrder = [
   "outerBack",
@@ -57,8 +59,8 @@ export const categories = [
   { id: "room", label: "Room Treasures", types: ["room"] }
 ];
 
-const dollLayer = (name) => `assets/doll/lumi/v3/layers/${name}.webp`;
-const dollThumb = (name) => `assets/doll/lumi/v3/thumbs/${name}.webp`;
+const dollLayer = (name) => `assets/doll/lumi/v3/layers/${name}.webp${dollAssetVersion}`;
+const dollThumb = (name) => `assets/doll/lumi/v3/thumbs/${name}.webp${dollAssetVersion}`;
 const dollSource = (name) => `assets/doll/lumi/v3/sources/${name}-source.png`;
 const layer = (slot, name) => ({ slot, src: dollLayer(name) });
 

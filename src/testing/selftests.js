@@ -32,7 +32,10 @@ export function installTestingHooks(api) {
       api.answerLesson(button, choice);
     },
     closeAdv: api.closeAdv,
-    buy: (itemId) => api.buyItemInAdv(api.itemById(itemId))
+    buy: (itemId) => api.buyItemInAdv(api.itemById(itemId)),
+    focusCastle: api.focusCastle,
+    focusKingdom: api.focusKingdom,
+    focusForest: api.focusForest
   };
 
   runSaveLoadSelfTest(api);
