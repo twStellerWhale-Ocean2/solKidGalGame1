@@ -170,9 +170,13 @@ Fixed Prompt Area
   -> Fixed Navigation Footer
 ```
 
+- 下半部 `adv-box` 必須被視為固定 row-based shell：speaker、line、prompt、feedback、content slot、footer slot。前四列依內容自動高度，content slot 吃剩餘高度，footer slot 固定在最後一列。
+- 手機直向下半部 `adv-box` 高度由共用 shell 決定，不得再為 `scene`、`hint`、`shop`、`refund`、`wardrobe` 個別設定互相不同的 `max-height` 或讓 mode-specific 規則覆蓋共用高度。
 - `Fixed Prompt Area` 放 speaker、主要台詞、任務提示與必要狀態文案；它只佔自己需要的高度，不被選項或商品列推走。
 - `Scrollable Content Area` 放一般 action choices、quest answer choices、商品列、換裝列、退款列與 empty state；內容超出時只能此區捲動。
+- `Scrollable Content Area` 的高度由 lower panel shell 分配，不得使用商品列數、Chat 是否有選項、退款筆數或 empty state 的 intrinsic height 當 flex basis；少於 3 列時保留空白，多於可視高度時只在此區捲動。
 - `Fixed Navigation Footer` 放 `Leave`、`Go Outside`、`Back`、`Back to Room` 這類 navigation action；它不參與中間清單高度計算，且在手機有效 viewport 內永遠可見、可點。
+- Scene entry 的 `Leave` / `Go Outside` 與 Detail Panel / Hint 的 `Back` 必須佔用同一個 footer slot；第一層與第二層的下半部 dialogue box 高度、位置、內距與 footer top / bottom 不得因 Chat 文案、商品數量、退款筆數或 empty state 而上下跳動。
 - 不得把 navigation action 當成一般選項清單最後一列，也不得把 `Back` 放在固定 3 列商品區後面後任由它被實機瀏覽器地址列或系統列裁掉。
 - 所有 Castle、Kingdom、Forest、Ocean 等地區與未來新增場景都必須透過同一個 layout / focus / return contract 生效，不得為 Princess Room、單一商店或單一任務寫特殊補丁。
 - Scene action choices 與 Detail Panel 都必須保留同一套上半部主舞台：背景是目前場景圖、左側是 Princess Lumi、右側是該場景 NPC；手機直向下上半舞台與下半 dialogue / panel 應接近 1:1，不得因商品數量或分類不同而忽大忽小。
@@ -221,6 +225,7 @@ Fixed Prompt Area
 - 每個地點一個短場景：專屬背景、專屬 NPC、Princess Lumi、底部對話框。
 - 進入地點時先顯示 scene action choices，不得直接進入商品列表、換裝列表或大型資料 panel。
 - 非任務 `Chat` / `Talk` / hint 流程完成後只提供 `Back` 回目前 scene action choices；`Leave` 只出現在 scene action choices，代表離開地點回 Map。
+- 非任務 `Chat` / `Talk` / hint 雖然沒有商品列，也必須保留與 Shop / Refund detail 相同的第二層 content slot；不得讓空內容區消失後把 `Back` 貼到文案下方。
 - 每回合只練一個短英文句子。
 - 選項直排、大尺寸、適合觸控。
 - 支援方向鍵 / W/S、數字鍵、Enter / Space。
@@ -857,6 +862,7 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
 
 - 2026-06-02：新增 Issue #40 的 ADV 三段式 layout contract，要求所有 Scene / Detail Panel 共用固定上方文案、中段可捲動內容與固定底部 navigation footer，並補入使用者實機 viewport 驗證規則。
 - 2026-06-02：新增 Issue #42 的第一層 / 第二層 ADV 主舞台比例、Room category detail 共用 renderer、detail footer 僅 `Back`、以及 build 時間精確到分鐘規格。
+- 2026-06-02：補強 ADV lower panel footer slot 規格，要求第一層 `Leave` 與第二層 `Back` 使用同一固定 footer 位置，Hint / Chat 無商品列時也必須保留中段 content slot。
 - 2026-06-01：同步 Shop / Wardrobe try-on 規格，要求衣物、鞋子與配件直接套在上方既有 Princess Lumi 主舞台，不再使用獨立小試穿畫面，且點選商品後才進入暫時試穿。
 - 2026-06-01：將「模組化主軸」提升到 README 最前段，記錄目前 ES Modules 結構、下一階段拆分方向，並要求後續功能開發不得背離模組化原則。
 - 2026-06-01：新增 Mobile Map Viewport Architecture v3，鎖定 `display/offset` 為 Castle / Kingdom / future areas 的唯一地圖 viewport contract，並逐字納入本輪 SKILL 測試要求。
