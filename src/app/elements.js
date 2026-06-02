@@ -50,6 +50,7 @@ export function createElements() {
     shopArea: $("#shopArea"),
     advShopTabs: $("#advShopTabs"),
     advShopGrid: $("#advShopGrid"),
+    advActionFooter: $("#advActionFooter"),
     advFeedback: $("#advFeedback"),
     speakPromptButton: $("#speakPromptButton"),
     helpButton: $("#helpButton"),

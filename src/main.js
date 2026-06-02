@@ -1112,6 +1112,7 @@ function openAdvBase(hotspot, mode) {
   elements.advScene.dataset.mode = mode;
   elements.shopArea.before(elements.choiceList);
   elements.choiceList.classList.remove("shop-command-list");
+  elements.advActionFooter.innerHTML = "";
   elements.advModal.classList.add("show");
   elements.advModal.setAttribute("aria-hidden", "false");
   elements.advScene.className = `adv-scene ${scene.scene}`;
@@ -1224,7 +1225,7 @@ function openHintAdv(hotspot, line = hotspot.hint) {
   elements.advLine.textContent = line;
   elements.advPrompt.textContent = `Hint: today's quest is at ${hotspotById(state.activeQuest.place).label}.`;
   elements.advFeedback.textContent = "";
-  addAdvOption("↩ Back", () => openSceneAdv(hotspot));
+  addAdvOption("↩ Back", () => openSceneAdv(hotspot), { navigation: true });
   addAdvOption("↩ Leave", closeAdv, { leave: true });
   scheduleAdvFocus(0);
 }
@@ -1460,9 +1461,9 @@ function shopPanelAction(item) {
 
 function renderItemPanelCommands(backButton) {
   elements.choiceList.innerHTML = "";
-  elements.choiceList.classList.add("shop-command-list");
-  elements.choiceList.appendChild(backButton);
-  elements.shopArea.appendChild(elements.choiceList);
+  elements.choiceList.classList.remove("shop-command-list");
+  elements.advActionFooter.innerHTML = "";
+  elements.advActionFooter.appendChild(backButton);
 }
 
 function backToStoreScene() {
@@ -1715,13 +1716,14 @@ function answerLesson(button, choice) {
   advMode = "complete";
   elements.advScene.dataset.mode = "complete";
   elements.choiceList.innerHTML = "";
+  elements.advActionFooter.innerHTML = "";
   if (completedHotspot?.kind === "shop") {
     addAdvOption("🎁 Shop", () => openShopDetail(completedHotspot));
-    addAdvOption("🏰 Back to Room", closeAdvThenHome);
+    addAdvOption("🏰 Back to Room", closeAdvThenHome, { navigation: true });
     addAdvOption("↩ Leave", closeAdv, { leave: true });
   } else {
     addAdvOption("🎁 Choose Reward", openRewardShop);
-    addAdvOption("🏰 Back to Room", closeAdvThenHome);
+    addAdvOption("🏰 Back to Room", closeAdvThenHome, { navigation: true });
     addAdvOption("↩ Leave", closeAdv, { leave: true });
   }
   elements.statusMessage.textContent = `Talk complete. Next place: ${hotspotById(state.activeQuest.place).label}.`;

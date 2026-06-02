@@ -1,14 +1,15 @@
 export function createAdvControls({ elements, getFocusIndex, getMode, setFocusIndex }) {
   function addOption(label, onClick, options = {}) {
     const button = document.createElement("button");
-    button.className = `choice-button${options.leave ? " leave-choice" : ""}`;
+    const isNavigation = options.leave || options.navigation;
+    button.className = `choice-button${isNavigation ? " leave-choice" : ""}`;
     button.type = "button";
     button.textContent = options.number ? `${options.number}. ${label}` : label;
     button.setAttribute("aria-label", label);
     if (options.disabled) button.disabled = true;
     if (options.choice) button.dataset.choice = options.choice;
     button.addEventListener("click", onClick);
-    elements.choiceList.appendChild(button);
+    (isNavigation ? elements.advActionFooter : elements.choiceList).appendChild(button);
     return button;
   }
 
@@ -16,10 +17,10 @@ export function createAdvControls({ elements, getFocusIndex, getMode, setFocusIn
     if (!elements.advModal.classList.contains("show")) return [];
     const mode = getMode();
     const selectors = mode === "shop" || mode === "wardrobe"
-      ? ["#advShopGrid .item-card:not(:disabled), #advShopGrid .item-panel-action:not(:disabled)", "#choiceList .choice-button:not(:disabled)"]
+      ? ["#advShopGrid .item-card:not(:disabled), #advShopGrid .item-panel-action:not(:disabled)", "#advActionFooter .choice-button:not(:disabled)"]
       : mode === "refund"
-        ? ["#advShopGrid .item-card:not(:disabled), #advShopGrid .item-panel-action:not(:disabled)", "#choiceList .choice-button:not(:disabled)"]
-      : ["#choiceList .choice-button:not(:disabled)", "#advShopGrid .item-card:not(:disabled)"];
+        ? ["#advShopGrid .item-card:not(:disabled), #advShopGrid .item-panel-action:not(:disabled)", "#advActionFooter .choice-button:not(:disabled)"]
+      : ["#choiceList .choice-button:not(:disabled)", "#advShopGrid .item-card:not(:disabled)", "#advActionFooter .choice-button:not(:disabled)"];
     return selectors.flatMap((selector) => [...document.querySelectorAll(selector)]).filter((button) => button.offsetParent !== null);
   }
 
@@ -40,6 +41,7 @@ export function createAdvControls({ elements, getFocusIndex, getMode, setFocusIn
       if (buttonRect.bottom > gridRect.bottom) shopGrid.scrollTop += buttonRect.bottom - gridRect.bottom;
       return;
     }
+    if (button.closest("#advActionFooter")) return;
     button.scrollIntoView({ block: "nearest" });
   }
 
