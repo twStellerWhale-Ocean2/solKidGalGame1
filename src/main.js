@@ -1226,7 +1226,6 @@ function openHintAdv(hotspot, line = hotspot.hint) {
   elements.advPrompt.textContent = `Hint: today's quest is at ${hotspotById(state.activeQuest.place).label}.`;
   elements.advFeedback.textContent = "";
   addAdvOption("↩ Back", () => openSceneAdv(hotspot), { navigation: true });
-  addAdvOption("↩ Leave", closeAdv, { leave: true });
   scheduleAdvFocus(0);
 }
 

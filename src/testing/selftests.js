@@ -85,12 +85,22 @@ function runVisualQa(api) {
   const surface = params.get("surface") || "map";
   const place = params.get("place") || api.state.activeQuest?.place || "garden";
   if (params.get("fresh") === "1") api.state = api.freshState();
+  if (params.get("report") === "1") scheduleVisualQaMetricsReport();
   const hotspot = api.hotspotById(place) || api.hotspotById("garden");
   const node = api.mapNodes[hotspot.node];
   const coinsParam = params.get("coins");
   if (coinsParam !== null) {
     const coins = Number(coinsParam);
     if (Number.isFinite(coins)) api.state.coins = Math.max(0, coins);
+  }
+  const ownedParam = params.get("owned");
+  if (ownedParam) {
+    const ownedIds = ownedParam === "all"
+      ? api.shopItems.map((item) => item.id)
+      : ownedParam.split(",").map((item) => item.trim()).filter(Boolean);
+    ownedIds.forEach((itemId) => {
+      if (api.itemById(itemId) && !api.state.owned.includes(itemId)) api.state.owned.push(itemId);
+    });
   }
 
   if (surface === "castle-map") {
@@ -214,6 +224,85 @@ function runVisualQa(api) {
   }
 
   api.render();
+}
+
+function scheduleVisualQaMetricsReport() {
+  window.setTimeout(() => {
+    const existing = document.querySelector("#visualQaMetrics");
+    existing?.remove();
+    const rectFor = (selector) => {
+      const element = document.querySelector(selector);
+      if (!element) return null;
+      const rect = element.getBoundingClientRect();
+      return {
+        x: Math.round(rect.x),
+        y: Math.round(rect.y),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        top: Math.round(rect.top),
+        bottom: Math.round(rect.bottom)
+      };
+    };
+    const buttonInfo = (selector) => [...document.querySelectorAll(selector)].map((element) => {
+      const rect = element.getBoundingClientRect();
+      return {
+        text: element.textContent.trim(),
+        x: Math.round(rect.x),
+        y: Math.round(rect.y),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        top: Math.round(rect.top),
+        bottom: Math.round(rect.bottom)
+      };
+    });
+    const rows = [...document.querySelectorAll("#advShopGrid .item-panel-row")].map((row) => {
+      const rowRect = row.getBoundingClientRect();
+      const card = row.querySelector(".item-panel-card")?.getBoundingClientRect();
+      const preview = row.querySelector(".item-preview")?.getBoundingClientRect();
+      const action = row.querySelector(".item-panel-action")?.getBoundingClientRect();
+      return {
+        text: row.textContent.trim().replace(/\s+/g, " "),
+        row: { width: Math.round(rowRect.width), height: Math.round(rowRect.height), bottom: Math.round(rowRect.bottom) },
+        card: card ? { width: Math.round(card.width), height: Math.round(card.height) } : null,
+        preview: preview ? { width: Math.round(preview.width), height: Math.round(preview.height) } : null,
+        action: action ? { width: Math.round(action.width), height: Math.round(action.height) } : null
+      };
+    });
+    const visualHeight = window.visualViewport?.height || window.innerHeight;
+    const portraits = rectFor(".adv-portraits");
+    const box = rectFor(".adv-box");
+    const footerButtons = buttonInfo("#advActionFooter .choice-button");
+    const metrics = {
+      viewport: {
+        innerWidth: window.innerWidth,
+        innerHeight: window.innerHeight,
+        clientHeight: document.documentElement.clientHeight,
+        visualWidth: window.visualViewport?.width,
+        visualHeight,
+        dpr: window.devicePixelRatio
+      },
+      mode: document.querySelector("#advScene")?.dataset.mode || "",
+      title: document.querySelector("#advTitle")?.textContent || "",
+      speaker: document.querySelector("#advSpeaker")?.textContent || "",
+      scene: rectFor("#advScene"),
+      portraits,
+      box,
+      stagePanelRatio: portraits && box ? Number((portraits.height / box.height).toFixed(2)) : null,
+      choices: buttonInfo("#choiceList .choice-button"),
+      footerButtons,
+      rows,
+      footerVisible: footerButtons.every((button) => button.top >= 0 && button.bottom <= visualHeight),
+      hasBack: footerButtons.some((button) => /Back/.test(button.text)),
+      hasLeave: footerButtons.some((button) => /Leave|Go Outside/.test(button.text)),
+      tryOnActive: Boolean(document.querySelector(".adv-doll.try-on-active")),
+      version: document.querySelector("#versionValue")?.textContent || "",
+      build: document.querySelector("#buildDateValue")?.textContent || ""
+    };
+    const report = document.createElement("pre");
+    report.id = "visualQaMetrics";
+    report.textContent = JSON.stringify(metrics);
+    document.body.prepend(report);
+  }, 120);
 }
 
 function runMonkeyTest(api) {
