@@ -106,7 +106,7 @@ function runVisualQa(api) {
       if (item.type === "room") {
         api.state.outfit.room = item.id;
       } else {
-        api.state.outfit[item.type] = item.id;
+        api.equipOutfitItem(item);
       }
     });
   }
@@ -126,7 +126,7 @@ function runVisualQa(api) {
   if (surface === "wardrobe-detail") {
     api.render();
     api.openRoomScene(api.hotspotById("princessRoom"));
-    api.openWardrobeDetail(params.get("category") || "outfit");
+    api.openWardrobeDetail(params.get("category") || "dress");
     return;
   }
 
@@ -166,10 +166,11 @@ function runVisualQa(api) {
   }
 
   if (surface === "shop" || surface === "shop-detail") {
+    const item = api.itemById(params.get("item"));
+    if (item) selectShopCategoryForItem(api, hotspot, item);
     api.render();
     api.openShopDetail(hotspot);
-    const item = api.itemById(params.get("item"));
-    if (item && api.allowedShopCategories(hotspot).includes(item.type) && !api.state.owned.includes(item.id)) {
+    if (item && api.allowedShopCategories(hotspot).some((category) => api.itemMatchesCategory(item, category)) && !api.state.owned.includes(item.id)) {
       api.shopPreviewItemId = item.id;
       api.renderAdvShop(true);
     }
@@ -190,7 +191,7 @@ function runVisualQa(api) {
 
   if (surface === "shop-sold-out") {
     api.shopItems
-      .filter((item) => api.allowedShopCategories(hotspot).includes(item.type))
+      .filter((item) => api.allowedShopCategories(hotspot).some((category) => api.itemMatchesCategory(item, category)))
       .forEach((item) => {
         if (!api.state.owned.includes(item.id)) api.state.owned.push(item.id);
       });
@@ -200,10 +201,12 @@ function runVisualQa(api) {
   }
 
   if (surface === "shop-not-enough") {
+    const requestedItem = api.itemById(params.get("item"));
+    if (requestedItem) selectShopCategoryForItem(api, hotspot, requestedItem);
     api.state.coins = 0;
     api.render();
     api.openShopDetail(hotspot);
-    const item = api.itemById(params.get("item")) || api.shopItems.find((candidate) => api.allowedShopCategories(hotspot).includes(candidate.type) && !api.state.owned.includes(candidate.id));
+    const item = requestedItem || api.shopItems.find((candidate) => api.allowedShopCategories(hotspot).some((category) => api.itemMatchesCategory(candidate, category)) && !api.state.owned.includes(candidate.id));
     if (item) {
       api.shopPreviewItemId = item.id;
       api.renderAdvShop(true);
@@ -220,9 +223,11 @@ function runVisualQa(api) {
   }
 
   if (surface === "shop-feedback") {
+    const requestedItem = api.itemById(params.get("item"));
+    if (requestedItem) selectShopCategoryForItem(api, hotspot, requestedItem);
     api.render();
     api.openShopDetail(hotspot);
-    const item = api.itemById(params.get("item")) || api.shopItems.find((candidate) => api.allowedShopCategories(hotspot).includes(candidate.type) && !api.state.owned.includes(candidate.id));
+    const item = requestedItem || api.shopItems.find((candidate) => api.allowedShopCategories(hotspot).some((category) => api.itemMatchesCategory(candidate, category)) && !api.state.owned.includes(candidate.id));
     if (item) {
       api.state.coins = Math.max(api.state.coins, item.cost);
       api.shopPreviewItemId = item.id;
@@ -239,6 +244,12 @@ function runVisualQa(api) {
   }
 
   api.render();
+}
+
+function selectShopCategoryForItem(api, hotspot, item) {
+  const category = api.allowedShopCategories(hotspot).find((candidate) => api.itemMatchesCategory(item, candidate))
+    || api.categoryForType(item.type)?.id;
+  if (category) api.shopCategory = category;
 }
 
 function scheduleVisualQaMetricsReport() {

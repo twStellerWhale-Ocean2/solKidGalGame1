@@ -115,9 +115,9 @@ Area Map (Castle / Kingdom / future areas)
 ## 正式素材品質 Gate
 
 - 正式遊玩畫面不得使用程式幾何圖、CSS 色塊、SVG 拼貼、emoji fallback、圓形 / 方形 / 三角形或 `clip-path` 形狀冒充美術素材。
-- 地圖、ADV 場景背景、NPC 立繪、商店商品、Princess Lumi 身上的鞋子 / 飾品 / 披風、房間擺設都必須使用實際 bitmap 美術資產，例如 PNG 或 WebP。
+- 地圖、ADV 場景背景、NPC 立繪、商店商品、Princess Lumi 身上的髮型 / 上衣 / 褲裙 / 洋裝 / 外套 / 鞋子 / 配件 / 房間擺設都必須使用實際 bitmap 美術資產，例如 PNG 或 WebP。
 - CSS 只能負責 UI chrome、排版、陰影、選取狀態與安全的裝飾效果；不能在正式素材路徑中畫衣服、鞋子、皇冠、蝴蝶結、包包、披風、桌子或燈。
-- 商品縮圖與穿戴後的上身效果必須分別驗收。商品看起來像圖示不代表穿在 Lumi 身上成立；每個可裝備道具都必須逐一上身截圖確認比例、位置、美感與兒童吸引力。
+- 商品縮圖與穿戴後的上身效果必須分別驗收。商品看起來像圖示不代表穿在 Lumi 身上成立；每個可裝備道具都必須逐一上身截圖確認比例、位置、遮擋順序、美感與兒童吸引力。
 - 新增地區或商店時，若美術尚未完成，只能在 README / issue / log 中標為未完成；不得把臨時幾何素材寫成 gameplay complete。
 - 完成聲明前必須跑 runtime asset audit，確認正式 runtime 不再引用臨時 SVG 或 CSS shape 素材，並用手機直向瀏覽器截圖覆蓋受影響 surface。
 
@@ -164,8 +164,8 @@ Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return
 - `Area Map` 只負責地區、地標與 marker focus，不直接塞商品清單、換裝清單或系統設定。
 - `Scene` 是進入某個地點後的場景畫面，顯示背景、角色 / NPC、地點標記與 action choices。
 - `Action Choices` 是兒童可理解的短選項，第一層 gameplay action 統一為 `wardrobe`、`help`、`shop`、`refund` 四種；`Leave` / `Back` 屬於 `navigation`，不算 gameplay type。
-- `wardrobe` 用於更換 Lumi 身上的裝扮，可透過 category 呈現 `Dresses`、`Accessories`、`Shoes`；`help` 代表幫助場景人物並取得回報；`shop` 用於購買獎勵；`refund` 只在原購買商店退還商品。
-- `Detail Panel` 只在玩家選擇具體動作後出現，例如購物、換衣服、換配件、換鞋子、Settings、Save / Load。房間佈置未來應以獨立 `decorate` action type 回歸，不混入本階段 Princess Room 第一層。
+- `wardrobe` 用於更換 Lumi 身上的裝扮，可透過 category 呈現 `Hair`、`Tops`、`Bottoms`、`Dresses`、`Outerwear`、`Shoes`、`Accessories`；`help` 代表幫助場景人物並取得回報；`shop` 用於購買獎勵；`refund` 只在原購買商店退還商品。
+- `Detail Panel` 只在玩家選擇具體動作後出現，例如購物、換髮型、換上衣、換褲裙、換洋裝、換外套、換鞋子、換配件、Settings、Save / Load。房間佈置未來應以獨立 `decorate` action type 回歸，不混入本階段 Princess Room 第一層。
 - `Feedback / Return` 必須顯示結果並保留清楚返回路徑，不讓玩家卡在大型 panel。
 - 未來可擴充 action type 包含 `decorate`、`gift`、`inspect`、`miniGame`、`claim`；新增前必須先進入同一套 scene action registry，不得為單一地點硬寫特殊分支。
 
@@ -210,16 +210,21 @@ Fixed Prompt Area
 - Castle Map 必須預留 `Princess Room`、`King Room`、`Queen Room` 等房間 marker 的擴充位置。
 - Castle 近景圖必須參考現有 kingdom map 中「白色城牆、粉紅屋頂、中央高塔」的城堡語彙；不得使用幾何圖或與原大地圖不一致的臨時圖當正式素材。
 
-### Room
+### Room / Professional Paper Doll Wardrobe
 
-- Princess Lumi 以全身紙娃娃呈現。
-- 穿搭、鞋子、帽飾、配件必須有可見差異；既有房間物件資料可保留相容性，但本階段不在 Princess Room 第一層曝光。
-- 房間進入後先顯示功能 action choices：`Dresses`、`Accessories`、`Shoes`、`Leave`。
+- Princess Lumi 以固定姿勢、固定畫布的全身紙娃娃呈現；正式 runtime 使用透明分層素材逐層疊合，不再以整套換裝 sprite sheet 切換造型。
+- Lumi v3 紙娃娃素材採同一張 `1024x1536` 透明 PNG / WebP 畫布，所有髮型、衣服、鞋子與配件都以同一原點疊圖；不得為單件衣服在 runtime 手動調角色位置。角色基準為約 10 歲兒童比例，頭部要比 14 歲版本更明顯，目標頭身比約 5.5 至 6 頭身，且在 ADV / Room 場景中必須以主要角色佔比顯示。
+- 初始可穿狀態只有 `starterPajama` 粉白棉布短袖睡衣上衣、接近膝蓋的睡褲與預設髮型；睡褲需露出小腿以便搭配裙裝，其他衣服、鞋子與配件需透過 Shop / Wardrobe 主循環取得或試穿。
+- 衣物 slot：`hairstyle`、`top`、`bottom`、`dress`、`outer`、`shoes`。`dress` 與 `top` / `bottom` 互斥；穿 `dress` 時上衣與褲裙不顯示，穿 `top` 或 `bottom` 時洋裝不顯示。
+- 外套、大外套、披風與斗篷屬於 `outer`，不是 accessory；需要遮擋時可拆為 `outerBack` / `outerFront` 兩層，後片在角色身後，前扣、領口或袖口在衣服前。
+- 配件不是單一大類欄位；可依部位同時疊加：`headTop`、`headSide`、`faceEyes`、`faceMask`、`neck`、`hand`。同一子 slot 一次只裝一件，不同子 slot 可共存，例如皇冠 + 蝴蝶結 + 眼鏡 + 小包。
+- 可穿戴正式素材都必須由 GPT / `image_gen` 重新產生童話手繪風 bitmap，並搬入 `assets/doll/lumi/v3/`；商品縮圖與上身 layer 分開驗收。
+- 房間進入後先顯示功能 action choices：`Hair`、`Tops`、`Bottoms`、`Dresses`、`Outerwear`、`Shoes`、`Accessories`、`Leave`。
 - Wardrobe detail panel 只能在玩家選擇對應功能後出現。
 - 離開房間應是房間 scene 的 `Leave` action choice 或門口 hotspot，不是網站 hero CTA。
 - Wardrobe 應像玩具衣櫃或抽屜，支援點選預覽與裝備狀態，但不得在預設畫面直接展開佔據主視覺。
 - Wardrobe 的衣物、鞋子與配件試穿必須直接套在上方既有 Princess Lumi 主舞台，不另開獨立小紙娃娃或小試穿畫面；點選商品才進入暫時試穿，按 `Equip` 後才寫入正式 outfit state。
-- Wardrobe 的第二層 `Dresses`、`Accessories`、`Shoes` 必須全部走同一個 detail renderer 與同一套手機排版，不得讓單一分類跳成店家 scene、NPC 對話或另一套按鈕配置。
+- Wardrobe 的第二層所有分類必須全部走同一個 detail renderer 與同一套手機排版，不得讓單一分類跳成店家 scene、NPC 對話或另一套按鈕配置。
 - Wardrobe detail panel 與各商店共用同一套 item detail panel：中段列表最多穩定呈現約 3 列商品並可在列表內捲動；底部 `Back` 屬於固定 navigation footer，不得被列表高度、empty state 或商品文字推離可視區。
 - Wardrobe detail panel 必須尊重玩家選擇的分類。點 `Shoes` 就只能顯示 shoes；若該分類尚未擁有物品，顯示分類專屬 empty state，不得 fallback 到 Dresses 或其他已擁有分類。
 - 房間佈置與家具管理未來應以獨立 `decorate` action type 與 detail renderer 回歸，不得塞回 `wardrobe` 或 Princess Room 特殊分支。
@@ -257,9 +262,10 @@ Fixed Prompt Area
 
 - Shop 是獎勵場景，不是 inventory table。
 - 不同店家必須有不同背景、不同 NPC、不同商品語氣與不同短句，但共用同一套手機直向 scene layout。
+- 店家分類依紙娃娃 slot 定義：Boutique 負責 `top`、`bottom`、`dress`、`outer`；Shoe Shop 負責 `shoes`；Accessory Shop 負責 `headTop`、`headSide`、`faceEyes`、`faceMask`、`neck`、`hand`；Market 保留 `room`；Dwarf Cottage 可販售森林風 `outer`。
 - 地點 / 店內 scene entry 顯示 `Help`、`Shop`、`Refund`、`Leave` 等 action choices；玩家選 `Shop` 或 `Refund` 後才開啟對應 detail panel。
 - 玩家選 `Shop` 後仍維持 ADV 場景感，不跳成後台商品清單頁；上方主舞台保留店員、Princess Lumi 與目前試穿結果，下方選項區才切換成採購選項。
-- Shop 採購清單只顯示尚未擁有的商品；已購買的 wearable 商品從 Shop 清單消失，後續只能在 Wardrobe 管理與更換。既有 room 商品資料保留相容性，未來由 `decorate` 管理。
+- Shop 採購清單只顯示尚未擁有的商品；已購買的 wearable 商品從 Shop 清單消失，後續只能在 Wardrobe 管理與更換。披風、斗篷與外套歸 `outer`，不歸 accessory。既有 room 商品資料保留相容性，未來由 `decorate` 管理。
 - 商品要有大預覽與立即 try-on。點商品名稱只做 preview / try-on，不扣 coins、不寫入 outfit state。
 - Shop / Wardrobe 的 try-on 不得使用獨立小畫面、小紙娃娃或另外的試穿框；可穿戴商品必須直接暫時套用在上方既有 Princess Lumi 主舞台，房間物件只顯示選取 / 放置狀態。
 - 進入 Shop / Wardrobe detail panel 時不自動試穿第一件商品；必須等玩家點選商品後，才讓上方 Princess Lumi 進入暫時試穿狀態。
@@ -308,7 +314,7 @@ Settings 支援五個等級：
 
 目前主要素材：
 
-- Runtime 載入優先使用同名 `.webp` 最佳化版本，例如 `assets/castle-map2.webp`、`assets/kingdom-map2.webp`、`assets/scenes/*.webp`、`assets/characters/npc-*.webp`、`assets/characters/princess-outfits-sheet.webp`、`assets/map-layers/*.webp`。
+- Runtime 載入優先使用同名 `.webp` 最佳化版本，例如 `assets/castle-map2.webp`、`assets/kingdom-map2.webp`、`assets/scenes/*.webp`、`assets/characters/npc-*.webp`、`assets/doll/lumi/v3/layers/*.webp`、`assets/doll/lumi/v3/thumbs/*.webp`、`assets/map-layers/*.webp`。
 - 原始 PNG 保留作為 source-quality 素材，例如 `assets/bedroom.png`、`assets/castle-map2.png`、`assets/kingdom-map2.png`、`assets/scenes/*.png`、`assets/characters/*.png`、`assets/map-layers/*.png`。
 
 素材來源分類：
@@ -531,7 +537,7 @@ node server.mjs
 - Castle / Kingdom 視為兩個 area；未來 Forest / Ocean 等地區應透過 area registry 擴充。
 - 所有地區與地點使用同一層級：`Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return`。
 - Issue #45 決議：第一層 gameplay action 正規化為 `wardrobe`、`help`、`shop`、`refund`；第一層離開一律用 `Leave`，第二層返回一律用 `Back`。
-- Princess Room 進入後先顯示 `Dresses`、`Accessories`、`Shoes`、`Leave` 等 action choices；選擇後才開 Wardrobe detail panel。
+- Princess Room 進入後先顯示 `Hair`、`Tops`、`Bottoms`、`Dresses`、`Outerwear`、`Shoes`、`Accessories`、`Leave` 等 action choices；選擇後才開 Wardrobe detail panel。
 - Shop 進入後先顯示 `Help`、`Shop`、`Refund`、`Leave` 等 action choices；選 `Shop` 或 `Refund` 後才顯示對應 detail panel。
 - Princess Room 第一層不再顯示 `Room Treasures`；既有 room item 資料保留相容性，未來以獨立 `decorate` action type 回歸。
 - Issue #35 決議：Shop / Wardrobe / Refund 使用同一套固定 3 列高度 item detail panel；底部 `Back` 固定在列表外，Room 不顯示 refund，退款只能在原店家進行。
@@ -646,7 +652,7 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
   * [ ] Map 移動到任務地點並觸發 hotspot focus。
   * [ ] ADV 測試答錯、答對、上下鍵、數字鍵。
   * [ ] Shop 測試進入、試穿、購買、離開。
-  * [ ] 回 Room 測試 wardrobe 變化；Dresses、Accessories、Shoes 都必須逐一驗證，空分類不得跳到其他分類。
+  * [ ] 回 Room 測試 wardrobe 變化；Hair、Tops、Bottoms、Dresses、Outerwear、Shoes、Accessories 都必須逐一驗證，空分類不得跳到其他分類。
   * [ ] Diary 檢查任務、購買、學習事件是否記錄。
 
 * **完成條件**
@@ -884,6 +890,7 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
 
 ## 本 README 變更紀錄
 
+- 2026-06-02：新增 Issue #51 專業紙娃娃換裝系統規格，要求 Princess Lumi 採固定 `1024x1536` 透明 layer contract、10 歲兒童比例與較大畫面佔比、初始僅粉白棉布短袖睡衣上衣與近膝睡褲、外套 / 披風歸 `outer` 且可拆前後層、配件依 `headTop` / `headSide` / `faceEyes` / `faceMask` / `neck` / `hand` 多部位疊加，所有 wearable 以 GPT / `image_gen` 童話手繪風 bitmap 重繪並放入 `assets/doll/lumi/v3/`。
 - 2026-06-02：新增 Issue #49 正式素材品質 Gate，禁止正式遊玩 surface 使用 CSS 幾何圖、SVG 拼貼、emoji fallback 或圓形 / 方形 / 三角形素材；Forest、商品縮圖、Princess Lumi 上身道具與房間擺設都必須用實際 bitmap 美術並逐一渲染驗收。
 - 2026-06-02：新增 Issue #40 的 ADV 三段式 layout contract，要求所有 Scene / Detail Panel 共用固定上方文案、中段可捲動內容與固定底部 navigation footer，並補入使用者實機 viewport 驗證規則。
 - 2026-06-02：新增 Issue #42 的第一層 / 第二層 ADV 主舞台比例、Room category detail 共用 renderer、detail footer 僅 `Back`、以及 build 時間精確到分鐘規格。

@@ -3,7 +3,9 @@ import { $, $$, createElements } from "./app/elements.js";
 import {
   areaForHotspot,
   allowedShopCategoriesFor,
+  categoryForType,
   categoryLabel,
+  itemMatchesCategory,
   clamp,
   closestNodeFromLegacy,
   hotspotById,
@@ -23,6 +25,8 @@ import {
   lessons,
   mapImageSize,
   mapNodes,
+  paperDollBaseLayer,
+  paperDollLayerOrder,
   questTemplates,
   routeForPortal,
   sceneConfigs,
@@ -62,9 +66,9 @@ let openAISettings = loadOpenAISettings();
 let activeHotspot = null;
 let activeLesson = null;
 let advMode = "closed";
-let shopCategory = "outfit";
+let shopCategory = "dress";
 let activeShopHotspot = null;
-let wardrobeCategory = "outfit";
+let wardrobeCategory = "dress";
 let princessExpression = "normal";
 let npcExpression = "normal";
 let advFocusIndex = 0;
@@ -85,7 +89,11 @@ let systemMenuPanel = "diary";
 let activeCastleHotspot = null;
 
 const elements = createElements();
-const paperDollRenderer = createPaperDollRenderer({ itemById });
+const paperDollRenderer = createPaperDollRenderer({
+  baseLayer: paperDollBaseLayer,
+  itemById,
+  layerOrder: paperDollLayerOrder
+});
 const advControls = createAdvControls({
   elements,
   getFocusIndex: () => advFocusIndex,
@@ -304,7 +312,7 @@ function avatarMarkup(surface, outfitState = state.outfit) {
 
 function tryOnOutfitFor(item) {
   const previewOutfit = { ...state.outfit };
-  if (item && item.type !== "room") previewOutfit[item.type] = item.id;
+  if (isWearableItem(item)) equipOutfitItem(item, previewOutfit);
   return previewOutfit;
 }
 
@@ -312,9 +320,18 @@ function renderAdvDoll(outfitState, isTryOn = false) {
   const doll = elements.advScene?.querySelector('[data-doll="adv"]');
   if (!doll) return;
   doll.innerHTML = avatarMarkup("adv", outfitState);
-  doll.dataset.outfit = outfitState.outfit || "none";
+  doll.dataset.hairstyle = outfitState.hairstyle || "none";
+  doll.dataset.top = outfitState.top || "none";
+  doll.dataset.bottom = outfitState.bottom || "none";
+  doll.dataset.dress = outfitState.dress || "none";
+  doll.dataset.outer = outfitState.outer || "none";
   doll.dataset.shoes = outfitState.shoes || "none";
-  doll.dataset.accessory = outfitState.accessory || "none";
+  doll.dataset.headTop = outfitState.headTop || "none";
+  doll.dataset.headSide = outfitState.headSide || "none";
+  doll.dataset.faceEyes = outfitState.faceEyes || "none";
+  doll.dataset.faceMask = outfitState.faceMask || "none";
+  doll.dataset.neck = outfitState.neck || "none";
+  doll.dataset.hand = outfitState.hand || "none";
   doll.dataset.expression = princessExpression;
   doll.classList.toggle("try-on-active", isTryOn);
 }
@@ -366,7 +383,7 @@ function renderAreaNav() {
 function renderWardrobeTabs() {
   elements.wardrobeTabs.innerHTML = "";
   categories.forEach((category) => {
-    const ownedCount = shopItems.filter((item) => item.type === category.id && state.owned.includes(item.id)).length;
+    const ownedCount = shopItems.filter((item) => itemMatchesCategory(item, category.id) && state.owned.includes(item.id)).length;
     if (!ownedCount) return;
     const button = document.createElement("button");
     button.type = "button";
@@ -384,7 +401,7 @@ function renderCategoryTabs(container, active, onClick, includeOwnedOnly = false
   container.innerHTML = "";
   categories.forEach((category) => {
     if (allowedCategories && !allowedCategories.includes(category.id)) return;
-    if (includeOwnedOnly && !shopItems.some((item) => item.type === category.id && state.owned.includes(item.id))) return;
+    if (includeOwnedOnly && !shopItems.some((item) => itemMatchesCategory(item, category.id) && state.owned.includes(item.id))) return;
     const button = document.createElement("button");
     button.type = "button";
     button.className = `category-tab${active === category.id ? " active" : ""}`;
@@ -399,7 +416,7 @@ function renderWardrobe() {
   elements.wardrobeGrid.innerHTML = "";
   const ownedGroups = categories.map((category) => ({
     category,
-    items: shopItems.filter((item) => item.type === category.id && state.owned.includes(item.id))
+    items: shopItems.filter((item) => itemMatchesCategory(item, category.id) && state.owned.includes(item.id))
   })).filter((group) => group.items.length);
 
   if (!ownedGroups.length) {
@@ -430,7 +447,7 @@ function renderWardrobe() {
 
 function createItemCard(item, options = {}) {
   const owned = state.owned.includes(item.id);
-  const equipped = state.outfit[item.type] === item.id;
+  const equipped = isItemEquipped(item);
   const affordable = state.coins >= item.cost;
   const button = document.createElement("button");
   button.type = "button";
@@ -458,15 +475,67 @@ function cssAssetUrl(src) {
   return path?.replaceAll("'", "%27");
 }
 
+function isWearableItem(item) {
+  return item && item.type !== "room";
+}
+
+function isItemEquipped(item, outfit = state.outfit) {
+  if (!item) return false;
+  if (item.type === "room") return outfit.room === item.id;
+  return outfit[item.type] === item.id;
+}
+
+function equipOutfitItem(item, outfit = state.outfit) {
+  if (!item) return outfit;
+  if (item.type === "room") {
+    outfit.room = item.id;
+    return outfit;
+  }
+  if (item.type === "dress") {
+    outfit.top = "none";
+    outfit.bottom = "none";
+  }
+  if (item.type === "top" || item.type === "bottom") {
+    outfit.dress = "none";
+  }
+  outfit[item.type] = item.id;
+  return normalizeVisibleOutfit(outfit);
+}
+
+function unequipOutfitItem(item, outfit = state.outfit) {
+  if (!item || item.type === "room") return outfit;
+  outfit[item.type] = "none";
+  return normalizeVisibleOutfit(outfit);
+}
+
+function normalizeVisibleOutfit(outfit = state.outfit) {
+  if (!outfit.hairstyle || outfit.hairstyle === "none") outfit.hairstyle = "softBrownHair";
+  if (outfit.dress && outfit.dress !== "none") {
+    outfit.top = "none";
+    outfit.bottom = "none";
+    return outfit;
+  }
+  if ((!outfit.top || outfit.top === "none") && (!outfit.bottom || outfit.bottom === "none")) {
+    outfit.dress = "starterPajama";
+  }
+  return outfit;
+}
+
 function toggleEquip(item) {
   if (item.type === "room") {
+    state.outfit.room = item.id;
     elements.statusMessage.textContent = `${item.name} is placed in Lumi's room.`;
     persist();
     render();
     return;
   }
-  state.outfit[item.type] = state.outfit[item.type] === item.id ? "none" : item.id;
-  elements.statusMessage.textContent = state.outfit[item.type] === item.id ? `${item.name} equipped.` : `${item.name} removed.`;
+  if (isItemEquipped(item)) {
+    unequipOutfitItem(item);
+    elements.statusMessage.textContent = `${item.name} removed.`;
+  } else {
+    equipOutfitItem(item);
+    elements.statusMessage.textContent = `${item.name} equipped.`;
+  }
   persist();
   render();
 }
@@ -1319,7 +1388,7 @@ function openShopDetail(hotspot) {
   openAdvBase(hotspot, "shop");
   activeShopHotspot = hotspot;
   addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
-  const firstCategory = hotspot.defaultCategory || hotspot.shopCategories?.[0] || "outfit";
+  const firstCategory = hotspot.defaultCategory || hotspot.shopCategories?.[0] || "dress";
   const stockedCategories = availableShopCategories(hotspot);
   shopCategory = stockedCategories.includes(shopCategory) ? shopCategory : stockedCategories[0] || firstCategory;
   clearTryOnPreview({ renderDoll: false });
@@ -1346,7 +1415,7 @@ function openRefundDetail(hotspot) {
   speak(elements.advLine.textContent);
 }
 
-function openWardrobeDetail(category = "outfit") {
+function openWardrobeDetail(category = "dress") {
   const hotspot = hotspotById("princessRoom");
   activeShopHotspot = hotspot;
   advMode = "wardrobe";
@@ -1363,17 +1432,21 @@ function openWardrobeDetail(category = "outfit") {
 function wardrobeEmptyText(category = shopCategory) {
   const messages = {
     accessory: "Buy accessories at the Accessory Shop first.",
-    outfit: "Buy dresses at the Dress Boutique first.",
+    bottom: "Buy bottoms at the Dress Boutique first.",
+    dress: "Buy dresses at the Dress Boutique first.",
+    hairstyle: "Buy hairstyles at the Dress Boutique first.",
+    outer: "Buy outerwear at the Dress Boutique or Dwarf Cottage first.",
     room: "Buy room treasures at Market Square first.",
-    shoes: "Buy shoes at the Shoe Shop first."
+    shoes: "Buy shoes at the Shoe Shop first.",
+    top: "Buy tops at the Dress Boutique first."
   };
   return messages[category] || `Buy ${categoryLabel(category).toLowerCase()} in the kingdom first.`;
 }
 
 function renderWardrobeDetail(preserveFocus = false) {
   const allCategories = categories.map((category) => category.id);
-  if (!allCategories.includes(shopCategory)) shopCategory = "outfit";
-  const categoryItems = shopItems.filter((item) => item.type === shopCategory && state.owned.includes(item.id));
+  if (!allCategories.includes(shopCategory)) shopCategory = "dress";
+  const categoryItems = shopItems.filter((item) => itemMatchesCategory(item, shopCategory) && state.owned.includes(item.id));
   if (shopPreviewItemId && !categoryItems.some((item) => item.id === shopPreviewItemId)) clearTryOnPreview({ renderDoll: false });
   const previewItem = categoryItems.find((item) => item.id === shopPreviewItemId) || null;
   renderCategoryTabs(elements.advShopTabs, shopCategory, (nextCategory) => {
@@ -1411,11 +1484,11 @@ function previewWardrobeItem(item) {
 function wardrobeActionLabel(item) {
   if (!item) return "Pick a treasure";
   if (item.type === "room") return state.outfit.room === item.id ? "Placed" : "Place";
-  return state.outfit[item.type] === item.id ? "Wearing" : "Equip";
+  return isItemEquipped(item) ? "Wearing" : "Equip";
 }
 
 function wardrobePanelAction(item) {
-  const equipped = state.outfit[item.type] === item.id;
+  const equipped = isItemEquipped(item);
   const label = wardrobeActionLabel(item);
   return {
     label,
@@ -1431,7 +1504,7 @@ function equipWardrobePreview(item) {
     state.outfit.room = item.id;
     elements.advFeedback.textContent = `${item.name} is placed in Lumi's room.`;
   } else {
-    state.outfit[item.type] = item.id;
+    equipOutfitItem(item);
     elements.advFeedback.textContent = `${item.name} equipped.`;
   }
   persist();
@@ -1447,8 +1520,8 @@ function unownedShopItemsFor(hotspot = activeShopHotspot, category = shopCategor
   const allowed = allowedShopCategories(hotspot);
   return shopItems.filter((item) => (
     item.storeId === hotspot?.id &&
-    item.type === category &&
-    allowed.includes(item.type) &&
+    itemMatchesCategory(item, category) &&
+    allowed.some((allowedCategory) => itemMatchesCategory(item, allowedCategory)) &&
     !state.owned.includes(item.id)
   ));
 }
@@ -1477,7 +1550,7 @@ function shopGreeting(hotspot) {
 function renderAdvShop(preserveFocus = false) {
   const allowed = allowedShopCategories();
   const stockedCategories = availableShopCategories();
-  if (!stockedCategories.includes(shopCategory)) shopCategory = stockedCategories[0] || allowed[0] || "outfit";
+  if (!stockedCategories.includes(shopCategory)) shopCategory = stockedCategories[0] || allowed[0] || "dress";
   const categoryItems = unownedShopItemsFor(activeShopHotspot, shopCategory);
   if (!stockedCategories.length) {
     clearTryOnPreview({ renderDoll: false });
@@ -1578,7 +1651,7 @@ function shopActionLabel(item) {
 
 function tryOnFeedbackText(item, source) {
   const owned = state.owned.includes(item.id);
-  const equipped = state.outfit[item.type] === item.id;
+  const equipped = isItemEquipped(item);
   const affordable = state.coins >= item.cost;
   const status = owned ? equipped ? "Equipped now" : "Owned treasure" : affordable ? "Ready to buy" : `Need ${item.cost - state.coins} more coins`;
   if (item.type === "room") return `${item.name}: ${status}.`;
@@ -1614,7 +1687,7 @@ function buyItemInAdv(item) {
   state.coins -= item.cost;
   playTone("buy");
   state.owned.push(item.id);
-  if (item.type !== "room") state.outfit[item.type] = item.id;
+  if (item.type !== "room") equipOutfitItem(item);
   awardBadge("First Shopping");
   updateProgressBadges();
   addDiary({ type: "shop", title: activeShopHotspot?.label || "Shop", body: `Bought ${item.name}.`, result: `-${item.cost} coins` });
@@ -1678,8 +1751,9 @@ function refundItemInAdv(item) {
   const amount = refundAmount(item);
   state.coins += amount;
   state.owned = state.owned.filter((ownedId) => ownedId !== item.id);
-  if (state.outfit[item.type] === item.id) {
+  if (isItemEquipped(item)) {
     state.outfit[item.type] = fallbackOwnedItemForSlot(item.type);
+    normalizeVisibleOutfit();
   }
   shopPreviewItemId = "";
   const feedbackText = `Refunded ${item.name} for ${amount} coins.`;
@@ -1703,7 +1777,7 @@ function recommendedShopHotspot() {
     const allowed = allowedShopCategories(hotspot);
     return shopItems.some((item) => (
       item.storeId === hotspot.id &&
-      allowed.includes(item.type) &&
+      allowed.some((allowedCategory) => itemMatchesCategory(item, allowedCategory)) &&
       !state.owned.includes(item.id) &&
       state.coins >= item.cost
     ));
@@ -2394,6 +2468,8 @@ installTestingHooks({
   set state(nextState) { state = nextState; },
   get shopPreviewItemId() { return shopPreviewItemId; },
   set shopPreviewItemId(nextItemId) { shopPreviewItemId = nextItemId; },
+  get shopCategory() { return shopCategory; },
+  set shopCategory(nextCategory) { shopCategory = nextCategory; },
   $$,
   areaForHotspot,
   areaRegistry,
@@ -2409,6 +2485,7 @@ installTestingHooks({
   createRandomQuest,
   difficultyConfig,
   elements,
+  equipOutfitItem,
   focusCastle: (place = "princessRoom") => {
     const hotspot = hotspotById(place);
     if (!hotspot || areaForHotspot(hotspot) !== "castle") throw new Error("Unknown castle hotspot");
@@ -2434,6 +2511,8 @@ installTestingHooks({
   },
   hotspotById,
   interactNearby,
+  categoryForType,
+  itemMatchesCategory,
   isWalkable,
   itemById,
   loadMarkdownText,

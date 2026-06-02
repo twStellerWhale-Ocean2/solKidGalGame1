@@ -1,4 +1,4 @@
-import { areaRegistry, difficultyConfig, questTemplates, shopItems } from "../data/game-data.js";
+import { areaRegistry, difficultyConfig, outfitSlots, questTemplates, shopItems } from "../data/game-data.js";
 import { defaultState } from "./default-state.js";
 import { openAISettingsKey, saveMarkerEnd, saveMarkerStart, storageKey } from "./storage.js";
 import {
@@ -50,14 +50,11 @@ export function freshState() {
 export function normalizeState(candidate = {}) {
   const base = freshState();
   const merged = { ...base, ...candidate };
-  merged.owned = Array.isArray(candidate.owned) ? [...new Set(["pinkDress", ...candidate.owned])] : base.owned;
+  merged.owned = Array.isArray(candidate.owned)
+    ? [...new Set([...base.owned, ...candidate.owned.map(migrateLegacyItemId)])]
+    : base.owned;
   const candidateOutfit = candidate.outfit || {};
-  merged.outfit = { ...base.outfit, ...candidateOutfit };
-  if (candidateOutfit.dress && !candidateOutfit.outfit) merged.outfit.outfit = candidateOutfit.dress;
-  delete merged.outfit.dress;
-  delete merged.outfit.hat;
-  delete merged.outfit.pants;
-  delete merged.outfit.head;
+  merged.outfit = normalizeOutfit(candidateOutfit, base.outfit);
   merged.diary = Array.isArray(candidate.diary) ? candidate.diary : [];
   merged.completedLessons = Array.isArray(candidate.completedLessons) ? candidate.completedLessons : [];
   merged.metNpcs = Array.isArray(candidate.metNpcs) ? [...new Set(candidate.metNpcs)] : [];
@@ -74,6 +71,41 @@ export function normalizeState(candidate = {}) {
   delete merged.week;
   delete merged.dayIndex;
   return merged;
+}
+
+function normalizeOutfit(candidateOutfit = {}, baseOutfit = defaultState.outfit) {
+  const outfit = { ...baseOutfit };
+  outfitSlots.forEach((slot) => {
+    if (candidateOutfit[slot]) outfit[slot] = migrateLegacyItemId(candidateOutfit[slot]);
+  });
+  const legacyDress = candidateOutfit.dress || candidateOutfit.outfit;
+  if (legacyDress) outfit.dress = migrateLegacyItemId(legacyDress);
+  if (candidateOutfit.shoes) outfit.shoes = migrateLegacyItemId(candidateOutfit.shoes);
+  applyLegacyAccessory(outfit, candidateOutfit.accessory || candidateOutfit.hat || candidateOutfit.head);
+  if (candidateOutfit.pants && !candidateOutfit.bottom) outfit.bottom = migrateLegacyItemId(candidateOutfit.pants);
+  outfitSlots.forEach((slot) => {
+    if (slot !== "room" && outfit[slot] !== "none" && !itemById(outfit[slot])) outfit[slot] = baseOutfit[slot] || "none";
+  });
+  if (outfit.dress !== "none") {
+    outfit.top = "none";
+    outfit.bottom = "none";
+  } else if (outfit.top === "none" && outfit.bottom === "none") {
+    outfit.dress = baseOutfit.dress;
+  }
+  return outfit;
+}
+
+function applyLegacyAccessory(outfit, itemId) {
+  const migrated = migrateLegacyItemId(itemId);
+  if (!migrated || migrated === "none") return;
+  const item = itemById(migrated);
+  if (!item) return;
+  outfit[item.type] = migrated;
+}
+
+function migrateLegacyItemId(itemId) {
+  if (itemId === "pinkDress") return "starterPajama";
+  return itemId || "none";
 }
 
 export function normalizePlayer(player, nodeId, areaId = "kingdom") {
@@ -180,7 +212,7 @@ export function moodLabel(mood) {
 
 export function outfitSummary(state) {
   const labels = [];
-  ["outfit", "shoes", "accessory"].forEach((type) => {
+  ["hairstyle", "top", "bottom", "dress", "outer", "shoes", "headTop", "headSide", "faceEyes", "faceMask", "neck", "hand"].forEach((type) => {
     const item = itemById(state.outfit[type]);
     if (item) labels.push(item.name);
   });

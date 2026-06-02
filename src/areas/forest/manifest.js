@@ -14,7 +14,7 @@ export const forestArea = Object.freeze({
   locations: [
     { id: "forestExit", area: "forest", node: "forestEntrance", label: "Kingdom Path", icon: "↩", npcClass: "npc-none", npc: "Forest Sign", kind: "gate", markerStyle: "portal", portalId: "entrance", hint: "The path returns to the kingdom town." },
     { id: "cave", area: "forest", node: "cave", label: "Cave", icon: "🕯", npcClass: "npc-cave-guide", npc: "Cave Guide", scene: "scene-forest-cave", hint: "A quiet cave glows with tiny learning lights." },
-    { id: "dwarfCottage", area: "forest", node: "dwarfCottage", label: "Dwarf Cottage", icon: "🛖", npcClass: "npc-dwarf", npc: "Pip", scene: "scene-dwarf-cottage", kind: "shop", shopCategories: ["accessory"], defaultCategory: "accessory", hint: "Pip keeps handmade forest treasures in a warm cottage." },
+    { id: "dwarfCottage", area: "forest", node: "dwarfCottage", label: "Dwarf Cottage", icon: "🛖", npcClass: "npc-dwarf", npc: "Pip", scene: "scene-dwarf-cottage", kind: "shop", shopCategories: ["outer"], defaultCategory: "outer", hint: "Pip keeps handmade forest outerwear in a warm cottage." },
     { id: "mountainPeak", area: "forest", node: "mountainPeak", label: "Mountain Peak", icon: "⛰", npcClass: "npc-mountain-guide", npc: "Alto", scene: "scene-mountain-peak", hint: "The mountain peak has a clear view over the treetops." },
     { id: "treeSpirit", area: "forest", node: "treeSpirit", label: "Tree Spirit Tree", icon: "✨", npcClass: "npc-tree-spirit", npc: "Sylvie", scene: "scene-tree-spirit", hint: "A gentle tree spirit listens to children practicing English." }
   ],

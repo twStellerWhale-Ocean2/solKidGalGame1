@@ -39,6 +39,15 @@ export function itemById(id) {
   return shopItems.find((item) => item.id === id) || null;
 }
 
+export function categoryTypes(categoryId) {
+  const category = categories.find((candidate) => candidate.id === categoryId);
+  return category?.types?.length ? category.types : [categoryId];
+}
+
+export function categoryForType(type) {
+  return categories.find((category) => category.id === type || categoryTypes(category.id).includes(type)) || null;
+}
+
 export function areaForHotspot(hotspot) {
   if (!hotspot) return "kingdom";
   if (hotspot.area) return hotspot.area;
@@ -64,7 +73,11 @@ export function closestNodeFromLegacy(player, areaId = "kingdom") {
 }
 
 export function categoryLabel(type) {
-  return categories.find((category) => category.id === type)?.label || type;
+  return categoryForType(type)?.label || type;
+}
+
+export function itemMatchesCategory(item, categoryId) {
+  return categoryTypes(categoryId).includes(item?.type);
 }
 
 export function allowedShopCategoriesFor(hotspot) {
