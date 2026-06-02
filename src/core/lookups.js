@@ -1,9 +1,6 @@
 import {
   areaRegistry,
-  castleHotspots,
-  castleMapNodes,
   categories,
-  hotspots,
   mapNodes,
   sceneConfigs,
   shopItems
@@ -17,8 +14,16 @@ export function nodeMapForArea(areaId) {
   return areaRegistry[areaId]?.nodes || mapNodes;
 }
 
+export function locationsForArea(areaId) {
+  return areaRegistry[areaId]?.locations || [];
+}
+
+export function allHotspots() {
+  return Object.values(areaRegistry).flatMap((area) => area.locations || []);
+}
+
 export function hotspotById(id) {
-  return [...castleHotspots, ...hotspots].find((hotspot) => hotspot.id === id);
+  return allHotspots().find((hotspot) => hotspot.id === id);
 }
 
 export function sceneConfigFor(hotspot) {
@@ -27,7 +32,7 @@ export function sceneConfigFor(hotspot) {
 }
 
 export function hotspotByNode(nodeId) {
-  return [...castleHotspots, ...hotspots].find((hotspot) => hotspot.node === nodeId) || null;
+  return allHotspots().find((hotspot) => hotspot.node === nodeId) || null;
 }
 
 export function itemById(id) {
@@ -37,7 +42,8 @@ export function itemById(id) {
 export function areaForHotspot(hotspot) {
   if (!hotspot) return "kingdom";
   if (hotspot.area) return hotspot.area;
-  if (castleMapNodes[hotspot.node]) return "castle";
+  const area = Object.values(areaRegistry).find((candidate) => candidate.nodes?.[hotspot.node]);
+  if (area) return area.id;
   return "kingdom";
 }
 

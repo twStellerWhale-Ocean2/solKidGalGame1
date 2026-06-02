@@ -1,3 +1,8 @@
+import { castleArea, castleSceneConfigs } from "../areas/castle/manifest.js";
+import { forestArea, forestLessons, forestQuestTemplates, forestSceneConfigs } from "../areas/forest/manifest.js";
+import { kingdomArea, kingdomSceneConfigs } from "../areas/kingdom/manifest.js";
+export { routeForPortal, worldRoutes } from "../areas/world.js";
+
 export const difficultyConfig = {
   100: { label: "Common English 100 words", reward: 1, maxTier: 100 },
   250: { label: "Common English 250 words", reward: 1.15, maxTier: 250 },
@@ -25,122 +30,36 @@ export const shopItems = [
   { id: "pearlBag", storeId: "accessoryShop", type: "accessory", name: "Pearl shell bag", cost: 170, icon: "👜", colors: ["#fff0f5", "#d7a64b"], shape: "bag", image: "assets/items/pearlBag.png" },
   { id: "starCape", storeId: "accessoryShop", type: "accessory", name: "Starry helper cape", cost: 240, icon: "✨", colors: ["#5b6fa6", "#d9e4ff"], shape: "cape", image: "assets/items/starCape.png" },
   { id: "studyDesk", storeId: "market", type: "room", name: "New study desk", cost: 180, icon: "🪑", colors: ["#b98963", "#f2c083"], shape: "desk", image: "assets/items/studyDesk.png" },
-  { id: "seaLamp", storeId: "market", type: "room", name: "Sea glass lamp", cost: 220, icon: "💡", colors: ["#70bfc9", "#e0fbff"], shape: "lamp", image: "assets/items/seaLamp.png" }
+  { id: "seaLamp", storeId: "market", type: "room", name: "Sea glass lamp", cost: 220, icon: "💡", colors: ["#70bfc9", "#e0fbff"], shape: "lamp", image: "assets/items/seaLamp.png" },
+  { id: "mossCloak", storeId: "dwarfCottage", type: "accessory", name: "Moss helper cloak", cost: 130, icon: "🍃", colors: ["#4d9a5f", "#dff5cf"], shape: "cape", image: "src/areas/forest/assets/moss-cloak.svg" }
 ];
 
-export const hotspots = [
-  { id: "luminaraCastle", node: "castleRoom", label: "Luminara Castle", icon: "🏰", npcClass: "npc-none", npc: "Gate Guard", kind: "gate", targetArea: "castle", hint: "Climb the purple castle stairway back inside." },
-  { id: "port", node: "port", label: "Harbor Port", icon: "⚓", npcClass: "npc-none", npc: "Dock Guide", scene: "scene-harbor", hint: "The docks are ready for boats and sea trips." },
-  { id: "garden", node: "garden", label: "Castle Garden", icon: "🌷", npcClass: "npc-garden", npc: "Mira", scene: "scene-garden", hint: "The garden is quiet. A small cat may be hiding near the roses." },
-  { id: "market", node: "market", label: "Market Square", icon: "🥖", npcClass: "npc-market", npc: "Auntie Pom", scene: "scene-market", kind: "shop", shopCategories: ["room"], defaultCategory: "room", hint: "The market has warm bread on one side and cozy room treasures on the other." },
-  { id: "harbor", node: "harbor", label: "Fish Shop", icon: "🐟", npcClass: "npc-harbor", npc: "Nami", scene: "scene-harbor", hint: "The fish shop has fresh fish for dinner." },
-  { id: "boutique", node: "boutique", label: "Dress Boutique", icon: "👗", npcClass: "npc-boutique", npc: "Rena", scene: "scene-boutique", kind: "shop", shopCategories: ["outfit"], defaultCategory: "outfit", hint: "Rena's boutique has dresses for doll play." },
-  { id: "shoeShop", node: "shoeShop", label: "Shoe Shop", icon: "👞", npcClass: "npc-shoes", npc: "Mina", scene: "scene-shoes", kind: "shop", shopCategories: ["shoes"], defaultCategory: "shoes", hint: "Mina shows shoes for long walks." },
-  { id: "accessoryShop", node: "accessoryShop", label: "Accessory Shop", icon: "🎀", npcClass: "npc-accessory", npc: "Lili", scene: "scene-accessory", kind: "shop", shopCategories: ["accessory"], defaultCategory: "accessory", hint: "Lili sells crowns, ribbons, bags, and capes." },
-  { id: "farm", node: "farm", label: "Sunny Farm", icon: "🐄", npcClass: "npc-farm", npc: "Theo", scene: "scene-farm", hint: "The farm is busy. Theo is brushing the big cow." },
-  { id: "lighthouse", node: "lighthouse", label: "Lighthouse", icon: "🗼", npcClass: "npc-lighthouse", npc: "Captain Sol", scene: "scene-lighthouse", hint: "The lighthouse watches the sea before ships sail." }
-];
-
-export const sceneConfigs = {
-  castleRoom: { scene: "scene-garden", npcClass: "npc-garden", npc: "Lumi", travelAction: "Room", travelLine: "Return to Lumi's room for dress-up time." },
-  princessRoom: { scene: "scene-princess-room", npcClass: "npc-none", npc: "Lumi", travelAction: "Enter", travelLine: "Lumi's room is ready for dress-up and room treasures." },
-  kingRoom: { scene: "scene-princess-room", npcClass: "npc-none", npc: "Royal Guard", travelAction: "Preview", travelLine: "The king's room is reserved for a later story." },
-  queenRoom: { scene: "scene-princess-room", npcClass: "npc-none", npc: "Royal Guard", travelAction: "Preview", travelLine: "The queen's room will open in a later chapter." },
-  castleGate: { scene: "scene-garden", npcClass: "npc-garden", npc: "Gate Guard", travelAction: "Travel", travelLine: "The castle gate leads back to the kingdom map." },
-  garden: { scene: "scene-garden", npcClass: "npc-garden", npc: "Mira", travelAction: "Visit", travelLine: "Mira is watching the roses and a shy garden cat." },
-  market: { scene: "scene-market", npcClass: "npc-market", npc: "Auntie Pom", travelAction: "Shop", travelLine: "Auntie Pom's market stall has warm bread and a tiny room-treasures corner.", shopGreeting: "Welcome to the room-treasures stall. Pick something cozy for Lumi's room." },
-  harbor: { scene: "scene-harbor", npcClass: "npc-harbor", npc: "Nami", travelAction: "Visit", travelLine: "Nami is waiting by the bright harbor boats." },
-  port: { scene: "scene-harbor", npcClass: "npc-none", npc: "Dock Guide", travelAction: "Visit", travelLine: "Boats arrive at the harbor port for sea trips and dock visits." },
-  boutique: { scene: "scene-boutique", npcClass: "npc-boutique", npc: "Rena", travelAction: "Shop", travelLine: "Rena has dresses ready for a bright day.", shopGreeting: "Welcome, Princess. Outfits are ready for a bright day." },
-  shoeShop: { scene: "scene-shoes", npcClass: "npc-shoes", npc: "Mina", travelAction: "Shop", travelLine: "Mina has walking shoes for Lumi's next trip.", shopGreeting: "Hello, Princess. Try shoes for the road." },
-  accessoryShop: { scene: "scene-accessory", npcClass: "npc-accessory", npc: "Lili", travelAction: "Shop", travelLine: "Lili has ribbons, crowns, bags, and capes.", shopGreeting: "Good day, Princess. Pick a ribbon, crown, bag, or cape." },
-  farm: { scene: "scene-farm", npcClass: "npc-farm", npc: "Theo", travelAction: "Visit", travelLine: "Theo is caring for the animals at Sunny Farm." },
-  lighthouse: { scene: "scene-lighthouse", npcClass: "npc-lighthouse", npc: "Captain Sol", travelAction: "Visit", travelLine: "Captain Sol checks the sea from the lighthouse." }
-};
-
-export const mapNodes = {
-  castleRoom: { id: "castleRoom", label: "Castle Stairway", x: 49.4, y: 37.4, links: ["garden", "market", "farm"] },
-  garden: { id: "garden", label: "Castle Garden", x: 49.7, y: 52.8, links: ["castleRoom", "market"] },
-  market: { id: "market", label: "Market Square", x: 28.0, y: 61.6, links: ["garden", "boutique", "shoeShop", "harbor", "port"] },
-  boutique: { id: "boutique", label: "Dress Boutique", x: 64.0, y: 59.0, links: ["market", "shoeShop", "accessoryShop", "farm"] },
-  shoeShop: { id: "shoeShop", label: "Shoe Shop", x: 67.5, y: 65.0, links: ["market", "harbor", "boutique"] },
-  accessoryShop: { id: "accessoryShop", label: "Accessory Shop", x: 74.2, y: 61.1, links: ["boutique", "farm"] },
-  farm: { id: "farm", label: "Sunny Farm", x: 87.0, y: 19.8, links: ["castleRoom", "accessoryShop", "boutique"] },
-  harbor: { id: "harbor", label: "Fish Shop", x: 35.6, y: 63.0, links: ["market", "shoeShop", "port"] },
-  port: { id: "port", label: "Harbor Port", x: 40.8, y: 87.6, links: ["market", "harbor", "lighthouse"] },
-  lighthouse: { id: "lighthouse", label: "Lighthouse", x: 77.3, y: 78.2, links: ["port"] }
-};
-
-export const mapImageSize = { width: 1672, height: 941 };
-
-export const mapActors = [
-  { id: "river-flow", type: "water", src: "assets/map-layers/river-flow.webp", x: 14.6, y: 29.5, w: 11.5, h: 39.0, z: 2, phase: 0.3 },
-  { id: "harbor-flow", type: "water", src: "assets/map-layers/harbor-flow.webp", x: 41.5, y: 86.8, w: 33.5, h: 23.6, z: 2, phase: 1.1 },
-  { id: "ocean-flow", type: "water", src: "assets/map-layers/ocean-flow.webp", x: 91.2, y: 56.5, w: 19.0, h: 48.0, z: 2, phase: 1.8 },
-  { id: "harbor-ship-large", type: "ship", src: "assets/map-layers/harbor-ship-large.webp", x: 42.7, y: 89.0, w: 14.8, h: 14.0, z: 3, phase: 0.2 },
-  { id: "harbor-ship-small", type: "ship", src: "assets/map-layers/harbor-ship-small.webp", x: 31.2, y: 91.2, w: 4.6, h: 7.1, z: 3, phase: 1.4 },
-  { id: "lighthouse-boat", type: "ship", src: "assets/map-layers/lighthouse-boat.webp", x: 55.6, y: 92.7, w: 4.8, h: 7.1, z: 3, phase: 2.0 },
-  { id: "castle-flag", type: "flag", src: "assets/map-layers/castle-flag.webp", x: 49.7, y: 3.4, w: 3.4, h: 5.1, anchorX: 0.5, anchorY: 0.95, z: 6 },
-  { id: "farm-windmill", type: "windmill", src: "assets/map-layers/windmill-blades.webp", x: 89.5, y: 20.4, w: 4.8, h: 8.6, z: 4 },
-  { id: "lighthouse-glow", type: "glow", x: 78.7, y: 75.4, w: 12, h: 12, z: 1 },
-  { id: "sea-bird-a", type: "bird", x: 42.8, y: 86.5, w: 3.4, h: 1.5, z: 5, phase: 0.4 },
-  { id: "sea-bird-b", type: "bird", x: 65.0, y: 84.6, w: 3.0, h: 1.3, z: 5, phase: 1.6 }
-];
-
-export const castleMapImageSize = { width: 1312, height: 1199 };
-
-export const castleMapNodes = {
-  princessRoom: { id: "princessRoom", label: "Princess Room", x: 40.7, y: 56.5 },
-  kingRoom: { id: "kingRoom", label: "King Room", x: 50.2, y: 31.5 },
-  queenRoom: { id: "queenRoom", label: "Queen Room", x: 30.2, y: 52.8 },
-  castleGate: { id: "castleGate", label: "Castle Gate", x: 40.7, y: 79.8 }
-};
-
-export const castleHotspots = [
-  { id: "princessRoom", area: "castle", node: "princessRoom", label: "Princess Room", icon: "🚪", npcClass: "npc-none", npc: "Lumi", scene: "scene-princess-room", kind: "room", hint: "Enter Lumi's room for dress-up, shoes, accessories, and room treasures." },
-  { id: "kingRoom", area: "castle", node: "kingRoom", label: "King Room", icon: "👑", npcClass: "npc-none", npc: "Royal Guard", scene: "scene-princess-room", kind: "future", hint: "The king's room is reserved for a future story." },
-  { id: "queenRoom", area: "castle", node: "queenRoom", label: "Queen Room", icon: "💐", npcClass: "npc-none", npc: "Royal Guard", scene: "scene-princess-room", kind: "future", hint: "The queen's room will open in a future chapter." },
-  { id: "castleGate", area: "castle", node: "castleGate", label: "Castle Gate", icon: "🏰", npcClass: "npc-garden", npc: "Gate Guard", scene: "scene-garden", kind: "gate", targetArea: "kingdom", hint: "Go out to the kingdom travel map." }
-];
-
-export const areaRegistry = {
-  castle: {
-    id: "castle",
-    label: "Castle",
-    view: "home",
-    mapImage: "assets/castle-map2.webp?v=20260601-optimized-assets",
-    imageSize: castleMapImageSize,
-    locations: castleHotspots,
-    nodes: castleMapNodes,
-    defaultNode: "princessRoom",
-    enabled: true
-  },
-  kingdom: {
-    id: "kingdom",
-    label: "Kingdom",
-    view: "map",
-    mapImage: "assets/kingdom-map2.webp?v=20260601-optimized-assets",
-    imageSize: mapImageSize,
-    locations: hotspots,
-    nodes: mapNodes,
-    defaultNode: "garden",
-    enabled: true
-  },
-  forest: {
-    id: "forest",
-    label: "Forest",
-    enabled: false,
-    defaultNode: ""
-  },
+export const areaRegistry = Object.freeze({
+  castle: castleArea,
+  kingdom: kingdomArea,
+  forest: forestArea,
   ocean: {
     id: "ocean",
     label: "Ocean",
     enabled: false,
     defaultNode: ""
   }
-};
+});
 
-export const questTemplates = [
+export const hotspots = kingdomArea.locations;
+export const mapNodes = kingdomArea.nodes;
+export const mapImageSize = kingdomArea.imageSize;
+export const mapActors = kingdomArea.actors;
+export const castleHotspots = castleArea.locations;
+export const castleMapNodes = castleArea.nodes;
+export const castleMapImageSize = castleArea.imageSize;
+export const sceneConfigs = Object.freeze({
+  ...kingdomSceneConfigs,
+  ...castleSceneConfigs,
+  ...forestSceneConfigs
+});
+
+const baseQuestTemplates = [
   { id: "harborFish", place: "harbor", title: "Buy a fish at the harbor", opening: "Good morning, Princess! We have fresh fish today.", ending: "Thank you, Princess. Dinner will be delicious tonight." },
   { id: "bakeryHelp", place: "market", title: "Help Auntie Pom at the market bakery", opening: "Hello, Princess! The apples are red and sweet.", ending: "Thank you, dear. The market stall is bright and happy again." },
   { id: "gardenCat", place: "garden", title: "Find the garden cat", opening: "Look! A small cat is under the rose.", ending: "You found the cat. The garden feels peaceful again." },
@@ -151,7 +70,9 @@ export const questTemplates = [
   { id: "seaWeather", place: "lighthouse", title: "Check the sea weather", opening: "Hello, Princess! It is sunny by the sea.", ending: "Now the ships can sail safely. Well done." }
 ];
 
-export const lessons = [
+export const questTemplates = [...baseQuestTemplates, ...forestQuestTemplates];
+
+const baseLessons = [
   { id: "harbor-fish-100", place: "harbor", tier: 100, prompt: "Pick the sentence that buys one fish.", answer: "I want a fish.", choices: ["I want a fish.", "I want a book.", "I want a dress.", "I want a flower."], words: ["want", "fish"], reward: { vocab: 1, expression: 1 } },
   { id: "market-apple-100", place: "market", tier: 100, prompt: "Pick the sentence that buys an apple.", answer: "I want an apple.", choices: ["I want an apple.", "I want a fish.", "I see a cat.", "It is sunny."], words: ["apple", "want"], reward: { vocab: 1, expression: 1 } },
   { id: "garden-cat-100", place: "garden", tier: 100, prompt: "Pick what Lumi sees.", answer: "I see a cat.", choices: ["I see a cat.", "I eat bread.", "I need shoes.", "I ride a boat."], words: ["see", "cat"], reward: { vocab: 1, kindness: 1 } },
@@ -170,3 +91,5 @@ export const lessons = [
   { id: "harbor-compare-750", place: "harbor", tier: 750, prompt: "Pick the sentence that compares the boats.", answer: "This boat is bigger than that boat.", choices: ["This boat is bigger than that boat.", "This boat is the smallest apple.", "That fish is bigger than the sky.", "The boat wants a dress."], words: ["boat", "bigger", "than"], reward: { vocab: 2, expression: 2 } },
   { id: "lighthouse-safety-1000", place: "lighthouse", tier: 1000, prompt: "Pick what we should do before sailing.", answer: "We should check the weather report before we sail.", choices: ["We should check the weather report before we sail.", "We should sail before the weather can read.", "The report should wear a blue dress.", "The lighthouse buys bread because it is cloudy."], words: ["should", "weather", "before", "sail"], reward: { vocab: 3, expression: 3 } }
 ];
+
+export const lessons = [...baseLessons, ...forestLessons];

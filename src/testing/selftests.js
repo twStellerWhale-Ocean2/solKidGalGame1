@@ -10,20 +10,14 @@ export function installTestingHooks(api) {
       api.render();
     },
     moveToNode: (nodeId) => {
-      if (api.castleMapNodes[nodeId]) {
-        api.state.area = "castle";
-        api.state.playerNode = nodeId;
-        api.state.player = { x: api.castleMapNodes[nodeId].x, y: api.castleMapNodes[nodeId].y };
-        api.persist();
-        api.changeView("home");
-        return;
-      }
-      if (!api.mapNodes[nodeId]) throw new Error("Unknown node");
-      api.state.area = "kingdom";
+      const area = Object.values(api.areaRegistry).find((candidate) => candidate.nodes?.[nodeId]);
+      if (!area) throw new Error("Unknown node");
+      const node = area.nodes[nodeId];
+      api.state.area = area.id;
       api.state.playerNode = nodeId;
-      api.state.player = { x: api.mapNodes[nodeId].x, y: api.mapNodes[nodeId].y };
+      api.state.player = { x: node.x, y: node.y };
       api.persist();
-      api.renderMap();
+      api.changeView(area.view || "map");
     },
     openArea: api.openArea,
     openRoomScene: () => api.openRoomScene(api.hotspotById("princessRoom")),
@@ -87,7 +81,8 @@ function runVisualQa(api) {
   if (params.get("fresh") === "1") api.state = api.freshState();
   if (params.get("report") === "1") scheduleVisualQaMetricsReport();
   const hotspot = api.hotspotById(place) || api.hotspotById("garden");
-  const node = api.mapNodes[hotspot.node];
+  const areaId = api.areaForHotspot(hotspot);
+  const node = api.nodeMapForArea(areaId)[hotspot.node];
   const coinsParam = params.get("coins");
   if (coinsParam !== null) {
     const coins = Number(coinsParam);
@@ -128,12 +123,19 @@ function runVisualQa(api) {
     return;
   }
 
+  if (surface === "forest-map") {
+    api.render();
+    api.openArea("forest");
+    return;
+  }
+
   if (surface === "map-near") {
     api.state.activeQuest = api.createQuestForPlace(hotspot.id);
     api.state.playerNode = hotspot.node;
     api.state.player = { x: node.x, y: node.y };
+    api.state.area = areaId;
     api.render();
-    api.changeView("map");
+    api.changeView(areaId === "castle" ? "home" : "map");
     return;
   }
 

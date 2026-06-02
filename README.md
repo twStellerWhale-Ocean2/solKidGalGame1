@@ -162,6 +162,14 @@ Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return
 
 地區必須透過 area registry 或等效資料結構定義，不把 Castle / Kingdom 寫死成特殊分支。每個 area 至少包含 `id`、`label`、`map image`、`locations`、`default marker`、gate travel 設定與可用 actions。目前啟用地區是 Castle / Kingdom，資料結構需預留 Forest / Ocean 等未來地區。
 
+Issue #47 決議：新增地區應以 area resource pack 進入專案。每個地區包可包含 `manifest.js` runtime 資料、`area.yaml` 作者組態、`area.md` 設計與素材狀態說明，以及該地區專屬臨時或正式素材。瀏覽器 runtime 仍維持 GitHub Pages 可直接使用的 ES Modules；YAML 是作者維護格式，不要求玩家端直接解析 YAML。
+
+跨地區交通由世界層 route 管理，不讓地區包彼此直接相依。地區包只宣告自己的 portal，例如 Kingdom 的 `forestEdge` 或 Forest 的 `entrance`；`src/areas/world.js` / `world.yaml` 決定 portal 如何互相連接。正式遊玩 UI 不使用底部快速地區切換按鈕；Castle、Kingdom、Forest 等地區之間必須走地圖上的 gate / portal marker。
+
+Portal marker 必須與一般 scene marker 有明顯視覺區隔。一般場景點代表可進入對話、商店或幫忙；portal 代表地圖邊界、路牌、門或小徑入口，文案使用 `Enter Forest`、`Back to Kingdom`、`Castle` 這類交通語意，不使用普通 `Visit`。
+
+Forest 最小範例地區包含 `Cave`、`Dwarf Cottage`、`Mountain Peak`、`Tree Spirit Tree` 與回 Kingdom 的 portal。若 Forest 使用臨時 SVG 或非正式素材，只能標記為 gameplay slice art，不得宣稱為最終手繪或 image generation 完成素材。
+
 ### ADV Layout Contract
 
 所有 Scene entry、Quest、Help / Hint、Shop detail、Wardrobe detail、Refund detail 與未來新增地區 / 房間 / 店家的 ADV 介面都必須共用同一套三段式 layout contract：

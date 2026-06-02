@@ -1,0 +1,33 @@
+id: forest
+label: Forest
+view: map
+mapImage: ./assets/forest-map.svg
+defaultNode: forestEntrance
+authoringStatus: runtime uses manifest.js; this YAML is the editable source shape.
+assetStatus: temporary SVG gameplay slice art, not final generated illustration.
+
+portals:
+  entrance:
+    node: forestEntrance
+    label: Kingdom Path
+    markerStyle: portal
+
+locations:
+  - id: forestExit
+    node: forestEntrance
+    kind: gate
+    portalId: entrance
+  - id: cave
+    node: cave
+    kind: npc
+  - id: dwarfCottage
+    node: dwarfCottage
+    kind: shop
+    shopCategories:
+      - accessory
+  - id: mountainPeak
+    node: mountainPeak
+    kind: npc
+  - id: treeSpirit
+    node: treeSpirit
+    kind: npc

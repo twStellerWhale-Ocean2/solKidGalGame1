@@ -29,6 +29,7 @@ export function createElements() {
     castlePlayerToken: $("#castlePlayerToken"),
     castleMarkerLayer: $("#castleMarkerLayer"),
     mapStage: $("#mapStage"),
+    mapTitle: $("#mapTitle"),
     mapImage: $("#mapImage"),
     playerToken: $("#playerToken"),
     hotspotLayer: $("#hotspotLayer"),
