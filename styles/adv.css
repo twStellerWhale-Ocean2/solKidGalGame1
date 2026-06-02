@@ -118,16 +118,17 @@
 .adv-npc {
   position: absolute;
   bottom: 0;
-  width: min(420px, 29vw);
   height: min(590px, 66vh);
 }
 
 .adv-princess {
   left: 34px;
+  width: min(650px, 45vw);
 }
 
 .adv-npc {
   right: 34px;
+  width: min(420px, 29vw);
   background-size: contain;
   background-position: center bottom;
   background-color: transparent;

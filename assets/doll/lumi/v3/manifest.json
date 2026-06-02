@@ -1,0 +1,140 @@
+{
+  "version": "v3",
+  "character": "Princess Lumi",
+  "age": 10,
+  "canvas": [
+    1024,
+    1536
+  ],
+  "generatedAt": "2026-06-02T12:59:59.647Z",
+  "baseGenerated": "C:/Users/User/Documents/Github/codexHome/generated_images/019e87cb-24d9-7cb2-ad45-d3ab866cec80/ig_087d044a80ca81fd016a1ed48bccb48191afb2999a4582c258.png",
+  "note": "v3 uses a 10-year-old base with short-sleeve pajama top and pajama shorts ending near the knees, plus GPT wearable sources re-aligned into fixed v3 slot boxes.",
+  "assets": [
+    {
+      "name": "base-starter-pajama",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/base-starter-pajama-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/base-starter-pajama.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/base-starter-pajama.webp"
+    },
+    {
+      "name": "top-sky-blouse",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/top-sky-blouse-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/top-sky-blouse.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/top-sky-blouse.webp"
+    },
+    {
+      "name": "top-peach-sailor",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/top-peach-sailor-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/top-peach-sailor.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/top-peach-sailor.webp"
+    },
+    {
+      "name": "bottom-navy-shorts",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/bottom-navy-shorts-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/bottom-navy-shorts.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/bottom-navy-shorts.webp"
+    },
+    {
+      "name": "bottom-rose-skirt",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/bottom-rose-skirt-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/bottom-rose-skirt.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/bottom-rose-skirt.webp"
+    },
+    {
+      "name": "dress-blue-harbor",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/dress-blue-harbor-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/dress-blue-harbor.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/dress-blue-harbor.webp"
+    },
+    {
+      "name": "dress-rose-festival",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/dress-rose-festival-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/dress-rose-festival.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/dress-rose-festival.webp"
+    },
+    {
+      "name": "dress-snowflake-gown",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/dress-snowflake-gown-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/dress-snowflake-gown.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/dress-snowflake-gown.webp"
+    },
+    {
+      "name": "outer-yellow-cardigan",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/outer-yellow-cardigan-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/outer-yellow-cardigan.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/outer-yellow-cardigan.webp"
+    },
+    {
+      "name": "outer-starry-cape",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/outer-starry-cape-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/outer-starry-cape.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/outer-starry-cape.webp"
+    },
+    {
+      "name": "outer-moss-cloak",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/outer-moss-cloak-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/outer-moss-cloak.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/outer-moss-cloak.webp"
+    },
+    {
+      "name": "shoes-pink-ribbon",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/shoes-pink-ribbon-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/shoes-pink-ribbon.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/shoes-pink-ribbon.webp"
+    },
+    {
+      "name": "shoes-blue-boots",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/shoes-blue-boots-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/shoes-blue-boots.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/shoes-blue-boots.webp"
+    },
+    {
+      "name": "headtop-gold-crown",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/headtop-gold-crown-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/headtop-gold-crown.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/headtop-gold-crown.webp"
+    },
+    {
+      "name": "headside-silk-ribbon",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/headside-silk-ribbon-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/headside-silk-ribbon.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/headside-silk-ribbon.webp"
+    },
+    {
+      "name": "faceeyes-round-glasses",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/faceeyes-round-glasses-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/faceeyes-round-glasses.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/faceeyes-round-glasses.webp"
+    },
+    {
+      "name": "facemask-star-mask",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/facemask-star-mask-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/facemask-star-mask.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/facemask-star-mask.webp"
+    },
+    {
+      "name": "neck-pearl-necklace",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/neck-pearl-necklace-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/neck-pearl-necklace.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/neck-pearl-necklace.webp"
+    },
+    {
+      "name": "hand-pearl-bag",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/hand-pearl-bag-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/hand-pearl-bag.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/hand-pearl-bag.webp"
+    },
+    {
+      "name": "hairstyle-twin-braid",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/hairstyle-twin-braid-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/hairstyle-twin-braid.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/hairstyle-twin-braid.webp"
+    },
+    {
+      "name": "hairstyle-blonde-bob",
+      "source": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/sources/hairstyle-blonde-bob-source.png",
+      "layer": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/layers/hairstyle-blonde-bob.webp",
+      "thumb": "C:/Users/User/Documents/Github/solKidGalGame/assets/doll/lumi/v3/thumbs/hairstyle-blonde-bob.webp"
+    }
+  ]
+}

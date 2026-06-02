@@ -2,284 +2,7 @@
   position: relative;
   width: 100%;
   height: 100%;
-}
-
-.side-doll {
-  width: 126px;
-  height: 168px;
-  margin: 7px auto 0;
-}
-
-.map-doll {
-  width: 58px;
-  height: 76px;
-}
-
-.adv-doll {
-  width: 260px;
-  height: 390px;
-}
-
-.doll-shadow,
-.doll-leg,
-.doll-shoe,
-.doll-body,
-.doll-dress,
-.doll-cape,
-.doll-arm,
-.doll-neck,
-.doll-head,
-.doll-hair,
-.doll-face,
-.doll-mouth,
-.doll-hat,
-.doll-bag {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.doll-shadow {
-  bottom: 1%;
-  width: 48%;
-  height: 5%;
-  background: rgba(80, 56, 70, 0.18);
-  border-radius: 50%;
-}
-
-.doll-leg {
-  bottom: 10%;
-  width: 9%;
-  height: 30%;
-  background: #f3c1ad;
-  border-radius: 999px;
-  z-index: 2;
-}
-
-.leg-left {
-  margin-left: -7%;
-}
-
-.leg-right {
-  margin-left: 7%;
-}
-
-.doll-shoe {
-  bottom: 7%;
-  width: 15%;
-  height: 7%;
-  background: #7b4a38;
-  border-radius: 60% 60% 45% 45%;
-  z-index: 5;
-}
-
-.shoe-left {
-  margin-left: -8%;
-}
-
-.shoe-right {
-  margin-left: 8%;
-}
-
-.doll-body {
-  bottom: 34%;
-  width: 28%;
-  height: 25%;
-  background: #f3c1ad;
-  border-radius: 45% 45% 36% 36%;
-  z-index: 3;
-}
-
-.doll-dress {
-  bottom: 12%;
-  width: 58%;
-  height: 46%;
-  background: linear-gradient(160deg, #f6a1bf, #ffd8e8);
-  border-radius: 14% 14% 28% 28%;
-  z-index: 5;
-}
-
-.doll-cape {
-  display: none;
-  bottom: 13%;
-  width: 68%;
-  height: 50%;
-  background: rgba(91, 111, 166, 0.82);
-  border-radius: 16%;
-  z-index: 2;
-}
-
-.doll-arm {
-  bottom: 34%;
-  width: 8%;
-  height: 25%;
-  background: #f3c1ad;
-  border-radius: 999px;
-  z-index: 6;
-}
-
-.arm-left {
-  margin-left: -24%;
-  transform: translateX(-50%) rotate(15deg);
-}
-
-.arm-right {
-  margin-left: 24%;
-  transform: translateX(-50%) rotate(-15deg);
-}
-
-.doll-neck {
-  bottom: 57%;
-  width: 12%;
-  height: 9%;
-  background: #f3c1ad;
-  border-radius: 999px;
-  z-index: 7;
-}
-
-.doll-head {
-  bottom: 61%;
-  width: 39%;
-  height: 29%;
-  background: #f6c8b5;
-  border-radius: 48% 48% 46% 46%;
-  z-index: 8;
-}
-
-.doll-hair.hair-back {
-  bottom: 54%;
-  width: 50%;
-  height: 41%;
-  background: #9b633e;
-  border-radius: 50% 50% 42% 42%;
-  z-index: 7;
-}
-
-.doll-hair.hair-front {
-  bottom: 77%;
-  width: 43%;
-  height: 15%;
-  background: #b8754d;
-  border-radius: 50% 50% 40% 40%;
-  z-index: 10;
-}
-
-.doll-face {
-  bottom: 71%;
-  width: 30%;
-  height: 8%;
-  z-index: 11;
-}
-
-.doll-mouth {
-  bottom: 68.5%;
-  width: 9%;
-  height: 3%;
-  border-bottom: 2px solid #a75157;
-  border-radius: 0 0 999px 999px;
-  z-index: 11;
-}
-
-.doll-face::before,
-.doll-face::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  width: 18%;
-  height: 35%;
-  background: #5d4035;
-  border-radius: 50%;
-}
-
-.doll-face::before {
-  left: 18%;
-}
-
-.doll-face::after {
-  right: 18%;
-}
-
-.doll-hat {
-  display: none;
-  bottom: 88%;
-  width: 42%;
-  height: 13%;
-  z-index: 12;
-}
-
-.doll-bag {
-  display: none;
-  bottom: 25%;
-  width: 18%;
-  height: 14%;
-  margin-left: 32%;
-  background: #fff0f5;
-  border: 2px solid #d7a64b;
-  border-radius: 30%;
-  z-index: 9;
-}
-
-.paper-doll[data-dress="blueDress"] .doll-dress {
-  background: linear-gradient(160deg, #82b9dc, #d8f0ff);
-}
-
-.paper-doll[data-dress="roseDress"] .doll-dress {
-  background: linear-gradient(160deg, #cf5d89, #ffc1d7);
-}
-
-.paper-doll[data-dress="snowDress"] .doll-dress {
-  background: linear-gradient(160deg, #bde9ff, #fff);
-}
-
-.paper-doll[data-dress="none"] .doll-dress {
-  opacity: 0.32;
-}
-
-.paper-doll[data-shoes="blueBoots"] .doll-shoe {
-  background: #4b668c;
-}
-
-.paper-doll[data-shoes="none"] .doll-shoe {
-  opacity: 0.25;
-}
-
-.paper-doll[data-hat="goldCrown"] .doll-hat {
-  display: block;
-  background: url("../assets/items/goldCrown.png") center / contain no-repeat;
-}
-
-.paper-doll[data-hat="silkRibbon"] .doll-hat {
-  display: block;
-  width: 34%;
-  height: 9%;
-  background: url("../assets/items/silkRibbon.png") center / contain no-repeat;
-  border-radius: 50%;
-}
-
-.paper-doll[data-accessory="starCape"] .doll-cape {
-  display: block;
-}
-
-.paper-doll[data-accessory="pearlBag"] .doll-bag {
-  display: block;
-}
-
-.paper-doll[data-expression="happy"] .doll-mouth {
-  width: 12%;
-  height: 4%;
-  border-bottom-width: 3px;
-}
-
-.paper-doll[data-expression="thinking"] .doll-mouth {
-  width: 8%;
-  border-bottom: 0;
-  border-top: 2px solid #a75157;
-  border-radius: 999px 999px 0 0;
-}
-
-.paper-doll[data-expression="thinking"] .doll-face::before,
-.paper-doll[data-expression="thinking"] .doll-face::after {
-  height: 24%;
+  contain: layout paint;
 }
 
 .side-doll {
@@ -298,155 +21,56 @@
   height: 560px;
 }
 
-.avatar-base,
-.avatar-layer,
-.avatar-shadow {
+.avatar-shadow,
+.lumi-layer {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-}
-
-.avatar-base {
-  bottom: 0;
-  width: auto;
-  height: 100%;
-  max-width: none;
-  object-fit: contain;
-  object-position: center bottom;
-  z-index: 2;
-  filter: drop-shadow(0 14px 18px rgba(58, 37, 46, 0.22));
-}
-
-.avatar-sprite {
-  width: 100%;
-  background-image: url("../assets/characters/princess-outfits-sheet.webp");
-  background-repeat: no-repeat;
-  background-size: 400% 100%;
-  background-position: var(--sprite-x, 0%) 50%;
+  pointer-events: none;
 }
 
 .avatar-shadow {
   bottom: 0;
   width: 52%;
   height: 5%;
-  background: rgba(80, 56, 70, 0.2);
+  z-index: 0;
   border-radius: 50%;
-  z-index: 1;
+  background: rgba(80, 56, 70, 0.2);
 }
 
-.avatar-layer {
-  z-index: 3;
-  pointer-events: none;
-}
-
-.avatar-dress {
-  display: none;
-  bottom: 8%;
-  width: 42%;
-  height: 34%;
-  opacity: 0.55;
-  mix-blend-mode: multiply;
-  background-position: center;
+.lumi-layer {
+  inset: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
+  background-image: var(--layer-img);
+  background-position: center bottom;
   background-repeat: no-repeat;
   background-size: contain;
+  filter: drop-shadow(0 14px 18px rgba(58, 37, 46, 0.16));
 }
 
-.paper-doll[data-dress="blueDress"] .avatar-dress {
-  display: block;
-  background-image: url("../assets/items/blueDress.png");
+.lumi-layer-outerBack { z-index: 1; }
+.lumi-layer-base { z-index: 2; }
+.lumi-layer-hairstyle { z-index: 3; }
+.lumi-layer-dress,
+.lumi-layer-bottom,
+.lumi-layer-top { z-index: 4; }
+.lumi-layer-outerFront { z-index: 5; }
+.lumi-layer-shoes { z-index: 6; }
+.lumi-layer-neck { z-index: 7; }
+.lumi-layer-hand { z-index: 7; }
+.lumi-layer-headTop,
+.lumi-layer-headSide,
+.lumi-layer-faceEyes,
+.lumi-layer-faceMask { z-index: 8; }
+
+.map-doll .lumi-layer {
+  background-position: center bottom;
+  filter: drop-shadow(0 4px 5px rgba(58, 37, 46, 0.18));
 }
 
-.paper-doll[data-dress="roseDress"] .avatar-dress {
-  display: block;
-  background-image: url("../assets/items/roseDress.png");
-}
-
-.paper-doll[data-dress="snowDress"] .avatar-dress {
-  display: block;
-  background-image: url("../assets/items/snowDress.png");
-}
-
-.avatar-hat {
-  display: none;
-  top: 3%;
-  width: 24%;
-  height: 11%;
-  z-index: 4;
-}
-
-.paper-doll[data-hat="goldCrown"] .avatar-hat {
-  display: block;
-  background: url("../assets/items/goldCrown.png") center / contain no-repeat;
-}
-
-.paper-doll[data-hat="silkRibbon"] .avatar-hat {
-  display: block;
-  top: 15%;
-  width: 20%;
-  margin-left: 25%;
-  background: url("../assets/items/silkRibbon.png") center / contain no-repeat;
-}
-
-.avatar-accessory {
-  display: none;
-}
-
-.paper-doll[data-accessory="starCape"] .avatar-accessory {
-  display: block;
-  top: 30%;
-  bottom: auto;
-  width: 72%;
-  height: 64%;
-  background: url("../assets/items/starCape.png") center top / contain no-repeat;
-  z-index: 3;
-}
-
-.paper-doll[data-accessory="pearlBag"] .avatar-accessory {
-  display: block;
-  bottom: 28%;
-  width: 22%;
-  height: 16%;
-  margin-left: 25%;
-  background: url("../assets/items/pearlBag.png") center / contain no-repeat;
-}
-
-.paper-doll[data-accessory="mossCloak"] .avatar-accessory {
-  display: block;
-  top: 30%;
-  bottom: auto;
-  width: 72%;
-  height: 64%;
-  background: url("../assets/items/mossCloak.png") center top / contain no-repeat;
-  z-index: 3;
-}
-
-.map-doll .avatar-base {
-  bottom: -18%;
-  height: 118%;
-  width: 100%;
-}
-
-.map-doll .avatar-dress,
-.map-doll .avatar-shoes,
-.map-doll .avatar-hat,
-.map-doll .avatar-accessory {
-  display: none !important;
-}
-
-.side-doll .avatar-dress,
-.side-doll .avatar-shoes,
-.side-doll .avatar-hat,
-.side-doll .avatar-head,
-.side-doll .avatar-accessory,
-.big-doll .avatar-dress,
-.big-doll .avatar-shoes,
-.big-doll .avatar-hat,
-.big-doll .avatar-head,
-.big-doll .avatar-accessory,
-.adv-doll .avatar-dress,
-.adv-doll .avatar-shoes,
-.adv-doll .avatar-hat,
-.adv-doll .avatar-head,
-.adv-doll .avatar-accessory {
-  display: none !important;
+.adv-doll.try-on-active {
+  filter: drop-shadow(0 0 14px rgba(255, 214, 80, 0.62));
 }

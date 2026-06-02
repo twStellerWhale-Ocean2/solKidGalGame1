@@ -4,7 +4,7 @@ Castle keeps the current Lumi room loop and gate to the Kingdom. Runtime data li
 
 ## Gameplay
 
-- `Princess Room`: room scene with Dresses, Accessories, Shoes, and Leave.
+- `Princess Room`: room scene with Hair, Tops, Bottoms, Dresses, Outerwear, Shoes, Accessories, and Leave.
 - `King Room` / `Queen Room`: future markers.
 - `Castle Gate`: portal marker connected by `src/areas/world.js`.
 

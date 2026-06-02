@@ -7,9 +7,13 @@ export const SCENE_ACTION_TYPES = Object.freeze({
 });
 
 const ROOM_ACTIONS = Object.freeze([
-  wardrobeAction("Dresses", "outfit", "👗"),
-  wardrobeAction("Accessories", "accessory", "🎀"),
+  wardrobeAction("Hair", "hairstyle", "💇"),
+  wardrobeAction("Tops", "top", "👚"),
+  wardrobeAction("Bottoms", "bottom", "🩳"),
+  wardrobeAction("Dresses", "dress", "👗"),
+  wardrobeAction("Outerwear", "outer", "🧥"),
   wardrobeAction("Shoes", "shoes", "👞"),
+  wardrobeAction("Accessories", "accessory", "🎀"),
   leaveAction()
 ]);
 

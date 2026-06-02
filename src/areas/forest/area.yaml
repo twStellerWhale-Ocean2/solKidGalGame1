@@ -24,7 +24,7 @@ locations:
     node: dwarfCottage
     kind: shop
     shopCategories:
-      - accessory
+      - outer
   - id: mountainPeak
     node: mountainPeak
     kind: npc
