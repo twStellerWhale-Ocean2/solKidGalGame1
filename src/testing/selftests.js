@@ -293,7 +293,7 @@ function scheduleVisualQaMetricsReport() {
       rows,
       footerVisible: footerButtons.every((button) => button.top >= 0 && button.bottom <= visualHeight),
       hasBack: footerButtons.some((button) => /Back/.test(button.text)),
-      hasLeave: footerButtons.some((button) => /Leave|Go Outside/.test(button.text)),
+      hasLeave: footerButtons.some((button) => /Leave/.test(button.text)),
       tryOnActive: Boolean(document.querySelector(".adv-doll.try-on-active")),
       version: document.querySelector("#versionValue")?.textContent || "",
       build: document.querySelector("#buildDateValue")?.textContent || ""
