@@ -29,6 +29,7 @@ import {
   shopItems
 } from "./data/game-data.js";
 import { createAdvControls } from "./flow/adv-controls.js";
+import { firstLayerActionsFor, sceneActionLabel } from "./flow/scene-actions.js";
 import { FLOW_STAGE_LABELS } from "./flow/stages.js";
 import { renderItemDetailPanel } from "./render/item-panel.js";
 import { createPaperDollRenderer } from "./render/paper-doll.js";
@@ -805,7 +806,7 @@ function renderDestinationPicker() {
         <strong>${hotspot.label}</strong>
         <small>${destinationActionText(hotspot, isTarget)}</small>
       </span>
-      <span class="destination-badge">${isTarget ? "Talk" : isShop ? "Shop" : "Visit"}</span>
+      <span class="destination-badge">${isTarget ? "Help" : isShop ? "Shop" : "Visit"}</span>
     `;
     button.addEventListener("click", () => chooseDestination(hotspot.id));
     elements.destinationList.appendChild(button);
@@ -1033,7 +1034,7 @@ function travelActionLabel(hotspot, isTarget = hotspot?.id === state.activeQuest
   if (hotspot.kind === "room") return "Enter";
   if (hotspot.kind === "gate") return hotspot.targetArea === "castle" ? "Castle" : "Kingdom";
   if (hotspot.kind === "future") return "Soon";
-  if (isTarget) return "Talk";
+  if (isTarget) return "Help";
   if (hotspot.kind === "shop") return "Shop";
   return sceneConfigFor(hotspot).travelAction || "Visit";
 }
@@ -1140,17 +1141,9 @@ function openSceneAdv(hotspot) {
   openAdvBase(hotspot, "scene");
   addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
   const scene = sceneConfigFor(hotspot);
-  const isTarget = hotspot.id === state.activeQuest.place;
   elements.advLine.textContent = scene.travelLine || hotspot.hint;
   elements.advPrompt.textContent = "Choose what to do here.";
-  if (hotspot.kind === "shop") {
-    addAdvOption("💬 Chat", () => isTarget ? openQuestAdv(hotspot) : openHintAdv(hotspot));
-    addAdvOption("🎁 Shop", () => openShopDetail(hotspot));
-    addAdvOption("💱 Refund", () => openRefundDetail(hotspot));
-  } else {
-    addAdvOption("💬 Talk", () => isTarget ? openQuestAdv(hotspot) : openHintAdv(hotspot));
-  }
-  addAdvOption("↩ Leave", closeAdv, { leave: true });
+  renderFirstLayerSceneActions(hotspot);
   scheduleAdvFocus(0);
   speak(elements.advLine.textContent);
 }
@@ -1160,15 +1153,52 @@ function openRoomScene(hotspot = hotspotById("princessRoom")) {
   addUnique("metNpcs", ["Lumi"]);
   elements.advLine.textContent = "Lumi is in her room. What should we change today?";
   elements.advPrompt.textContent = "Choose a room action.";
-  addAdvOption("👗 Dresses", () => openWardrobeDetail("outfit"));
-  addAdvOption("🎀 Accessories", () => openWardrobeDetail("accessory"));
-  addAdvOption("👞 Shoes", () => openWardrobeDetail("shoes"));
-  addAdvOption("🧸 Room Treasures", () => openWardrobeDetail("room"));
-  addAdvOption("↩ Go Outside", () => {
-    closeAdv();
-    openArea("castle");
-  }, { leave: true });
+  renderFirstLayerSceneActions(hotspot);
   scheduleAdvFocus(0);
+}
+
+function renderFirstLayerSceneActions(hotspot) {
+  firstLayerActionsFor(hotspot).forEach((action) => {
+    addAdvOption(sceneActionLabel(action), () => handleFirstLayerSceneAction(action, hotspot), {
+      leave: action.handlerKey === "leave",
+      navigation: action.navigation && action.handlerKey !== "leave"
+    });
+  });
+}
+
+function handleFirstLayerSceneAction(action, hotspot) {
+  switch (action.handlerKey) {
+    case "wardrobe":
+      openWardrobeDetail(action.category);
+      return;
+    case "help":
+      openHelpAction(hotspot);
+      return;
+    case "shop":
+      openShopDetail(hotspot);
+      return;
+    case "refund":
+      openRefundDetail(hotspot);
+      return;
+    case "leave":
+      leaveScene(hotspot);
+      return;
+    default:
+      openHintAdv(hotspot);
+  }
+}
+
+function openHelpAction(hotspot) {
+  if (hotspot?.id === state.activeQuest.place) {
+    openQuestAdv(hotspot);
+    return;
+  }
+  openHintAdv(hotspot);
+}
+
+function leaveScene(hotspot) {
+  closeAdv();
+  if (hotspot?.kind === "room") openArea("castle");
 }
 
 function addAdvOption(label, onClick, options = {}) {
@@ -1708,7 +1738,7 @@ function answerLesson(button, choice) {
   const oldPlace = state.activeQuest.place;
   const completedHotspot = hotspotById(oldPlace);
   elements.advLine.textContent = state.activeQuest.ending;
-  elements.advPrompt.textContent = "Talk complete. Try a reward now, or go back to Lumi's room.";
+  elements.advPrompt.textContent = "Help complete. Try a reward now, or go back to Lumi's room.";
   elements.advFeedback.textContent = `${effectText(reward)}.`;
   state.activeQuest = createRandomQuest(oldPlace);
   activeLesson = null;
@@ -1725,7 +1755,7 @@ function answerLesson(button, choice) {
     addAdvOption("🏰 Back to Room", closeAdvThenHome, { navigation: true });
     addAdvOption("↩ Leave", closeAdv, { leave: true });
   }
-  elements.statusMessage.textContent = `Talk complete. Next place: ${hotspotById(state.activeQuest.place).label}.`;
+  elements.statusMessage.textContent = `Help complete. Next place: ${hotspotById(state.activeQuest.place).label}.`;
   persist();
   render();
   scheduleAdvFocus(0);
