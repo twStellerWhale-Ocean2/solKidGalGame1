@@ -19,19 +19,19 @@ export const categories = [
 ];
 
 export const shopItems = [
-  { id: "pinkDress", storeId: "boutique", type: "outfit", name: "Pink academy dress", cost: 0, icon: "👗", colors: ["#f6a1bf", "#ffd8e8"], shape: "dress-ball", sprite: "0%", image: "assets/items/pinkDress.png" },
-  { id: "blueDress", storeId: "boutique", type: "outfit", name: "Blue harbor dress", cost: 100, icon: "👗", colors: ["#82b9dc", "#d8f0ff"], shape: "dress-sailor", sprite: "33.333%", image: "assets/items/blueDress.png" },
-  { id: "roseDress", storeId: "boutique", type: "outfit", name: "Rose festival dress", cost: 200, icon: "👗", colors: ["#cf5d89", "#ffc1d7"], shape: "dress-rose", sprite: "66.666%", image: "assets/items/roseDress.png" },
-  { id: "snowDress", storeId: "boutique", type: "outfit", name: "Snowflake gown", cost: 260, icon: "👗", colors: ["#bde9ff", "#ffffff"], shape: "dress-snow", sprite: "100%", image: "assets/items/snowDress.png" },
-  { id: "pinkSlippers", storeId: "shoeShop", type: "shoes", name: "Ribbon walking shoes", cost: 90, icon: "👞", colors: ["#f19ab7", "#ffe1ec"], shape: "shoes-round", image: "assets/items/pinkSlippers.png" },
-  { id: "blueBoots", storeId: "shoeShop", type: "shoes", name: "Blue seaside boots", cost: 150, icon: "🥾", colors: ["#4b668c", "#b7d8f2"], shape: "shoes-boots", image: "assets/items/blueBoots.png" },
-  { id: "goldCrown", storeId: "accessoryShop", type: "accessory", name: "Tiny gold crown", cost: 140, icon: "👑", colors: ["#d7a64b", "#fff2a6"], shape: "crown", image: "assets/items/goldCrown.png" },
-  { id: "silkRibbon", storeId: "accessoryShop", type: "accessory", name: "Silk party ribbon", cost: 120, icon: "🎀", colors: ["#c98dd6", "#ffe4fb"], shape: "ribbon", image: "assets/items/silkRibbon.png" },
-  { id: "pearlBag", storeId: "accessoryShop", type: "accessory", name: "Pearl shell bag", cost: 170, icon: "👜", colors: ["#fff0f5", "#d7a64b"], shape: "bag", image: "assets/items/pearlBag.png" },
-  { id: "starCape", storeId: "accessoryShop", type: "accessory", name: "Starry helper cape", cost: 240, icon: "✨", colors: ["#5b6fa6", "#d9e4ff"], shape: "cape", image: "assets/items/starCape.png" },
-  { id: "studyDesk", storeId: "market", type: "room", name: "New study desk", cost: 180, icon: "🪑", colors: ["#b98963", "#f2c083"], shape: "desk", image: "assets/items/studyDesk.png" },
-  { id: "seaLamp", storeId: "market", type: "room", name: "Sea glass lamp", cost: 220, icon: "💡", colors: ["#70bfc9", "#e0fbff"], shape: "lamp", image: "assets/items/seaLamp.png" },
-  { id: "mossCloak", storeId: "dwarfCottage", type: "accessory", name: "Moss helper cloak", cost: 130, icon: "🍃", colors: ["#4d9a5f", "#dff5cf"], shape: "cape", image: "src/areas/forest/assets/moss-cloak.svg" }
+  { id: "pinkDress", storeId: "boutique", type: "outfit", name: "Pink academy dress", cost: 0, icon: "👗", sprite: "0%", image: "assets/items/pinkDress.png" },
+  { id: "blueDress", storeId: "boutique", type: "outfit", name: "Blue harbor dress", cost: 100, icon: "👗", sprite: "33.333%", image: "assets/items/blueDress.png" },
+  { id: "roseDress", storeId: "boutique", type: "outfit", name: "Rose festival dress", cost: 200, icon: "👗", sprite: "66.666%", image: "assets/items/roseDress.png" },
+  { id: "snowDress", storeId: "boutique", type: "outfit", name: "Snowflake gown", cost: 260, icon: "👗", sprite: "100%", image: "assets/items/snowDress.png" },
+  { id: "pinkSlippers", storeId: "shoeShop", type: "shoes", name: "Ribbon walking shoes", cost: 90, icon: "👞", image: "assets/items/pinkSlippers.png" },
+  { id: "blueBoots", storeId: "shoeShop", type: "shoes", name: "Blue seaside boots", cost: 150, icon: "🥾", image: "assets/items/blueBoots.png" },
+  { id: "goldCrown", storeId: "accessoryShop", type: "accessory", name: "Tiny gold crown", cost: 140, icon: "👑", image: "assets/items/goldCrown.png" },
+  { id: "silkRibbon", storeId: "accessoryShop", type: "accessory", name: "Silk party ribbon", cost: 120, icon: "🎀", image: "assets/items/silkRibbon.png" },
+  { id: "pearlBag", storeId: "accessoryShop", type: "accessory", name: "Pearl shell bag", cost: 170, icon: "👜", image: "assets/items/pearlBag.png" },
+  { id: "starCape", storeId: "accessoryShop", type: "accessory", name: "Starry helper cape", cost: 240, icon: "✨", image: "assets/items/starCape.png" },
+  { id: "studyDesk", storeId: "market", type: "room", name: "New study desk", cost: 180, icon: "🪑", image: "assets/items/studyDesk.png" },
+  { id: "seaLamp", storeId: "market", type: "room", name: "Sea glass lamp", cost: 220, icon: "💡", image: "assets/items/seaLamp.png" },
+  { id: "mossCloak", storeId: "dwarfCottage", type: "accessory", name: "Moss helper cloak", cost: 130, icon: "🍃", image: "assets/items/mossCloak.png" }
 ];
 
 export const areaRegistry = Object.freeze({
