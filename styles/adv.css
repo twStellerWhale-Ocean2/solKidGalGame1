@@ -65,6 +65,26 @@
   background: linear-gradient(180deg, rgba(255, 245, 232, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/lighthouse.webp?v=20260601-optimized-assets") center / cover no-repeat;
 }
 
+.scene-forest-path {
+  background: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../src/areas/forest/assets/forest-map.svg") center / cover no-repeat;
+}
+
+.scene-forest-cave {
+  background: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../src/areas/forest/assets/forest-cave.svg") center / cover no-repeat;
+}
+
+.scene-dwarf-cottage {
+  background: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../src/areas/forest/assets/dwarf-cottage.svg") center / cover no-repeat;
+}
+
+.scene-mountain-peak {
+  background: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../src/areas/forest/assets/mountain-peak.svg") center / cover no-repeat;
+}
+
+.scene-tree-spirit {
+  background: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../src/areas/forest/assets/tree-spirit.svg") center / cover no-repeat;
+}
+
 .adv-location,
 .help-button {
   position: absolute;
@@ -146,6 +166,22 @@
 
 .npc-lighthouse {
   background-image: url("../assets/characters/npc-lighthouse.webp");
+}
+
+.npc-cave-guide {
+  background-image: url("../assets/characters/npc-lighthouse.webp");
+}
+
+.npc-dwarf {
+  background-image: url("../assets/characters/npc-farm.webp");
+}
+
+.npc-mountain-guide {
+  background-image: url("../assets/characters/npc-market.webp");
+}
+
+.npc-tree-spirit {
+  background-image: url("../assets/characters/npc-garden.webp");
 }
 
 .npc-none {

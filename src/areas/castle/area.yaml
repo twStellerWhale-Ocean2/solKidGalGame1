@@ -1,0 +1,27 @@
+id: castle
+label: Castle
+view: home
+mapImage: assets/castle-map2.webp
+defaultNode: princessRoom
+authoringStatus: runtime uses manifest.js; this YAML is the editable source shape.
+
+portals:
+  castleGate:
+    node: castleGate
+    label: Castle Gate
+    markerStyle: portal
+
+locations:
+  - id: princessRoom
+    node: princessRoom
+    kind: room
+  - id: kingRoom
+    node: kingRoom
+    kind: future
+  - id: queenRoom
+    node: queenRoom
+    kind: future
+  - id: castleGate
+    node: castleGate
+    kind: gate
+    portalId: castleGate

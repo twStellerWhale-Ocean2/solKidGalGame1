@@ -8,6 +8,7 @@ import {
   closestNodeFromLegacy,
   hotspotById,
   hotspotByNode,
+  locationsForArea,
   itemById,
   nodeMapForArea,
   sceneConfigFor
@@ -19,12 +20,11 @@ import {
   castleMapNodes,
   categories,
   difficultyConfig,
-  hotspots,
   lessons,
-  mapActors,
   mapImageSize,
   mapNodes,
   questTemplates,
+  routeForPortal,
   sceneConfigs,
   shopItems
 } from "./data/game-data.js";
@@ -74,9 +74,10 @@ let shopPreviewItemId = "";
 const mapZoomLimits = { min: 1, max: 2.2, mobileBaseScale: 1.06 };
 const areaMapViewports = {
   castle: { pan: { x: 0, y: 0 }, zoom: 1 },
-  kingdom: { pan: { x: 0, y: 0 }, zoom: 1 }
+  kingdom: { pan: { x: 0, y: 0 }, zoom: 1 },
+  forest: { pan: { x: 0, y: 0 }, zoom: 1 }
 };
-const centerMapOnNextRender = { castle: true, kingdom: true };
+const centerMapOnNextRender = { castle: true, kingdom: true, forest: true };
 let mapGesture = null;
 let pendingMapPositionFrame = 0;
 let pendingMapRefreshArea = "";
@@ -123,6 +124,24 @@ function ensureCastlePosition() {
   state.player = { x: node.x, y: node.y };
 }
 
+function ensureAreaPosition(areaId = state.area) {
+  if (areaId === "castle") {
+    ensureCastlePosition();
+    return;
+  }
+  if (areaId === "kingdom") {
+    ensureKingdomPosition();
+    return;
+  }
+  const area = areaRegistry[areaId];
+  const nodes = area?.nodes || {};
+  if (nodes[state.playerNode]) return;
+  const node = nodes[area?.defaultNode] || Object.values(nodes)[0];
+  if (!node) return;
+  state.playerNode = node.id;
+  state.player = { x: node.x, y: node.y };
+}
+
 function openArea(areaId) {
   const area = areaRegistry[areaId];
   if (!area?.enabled) {
@@ -130,11 +149,7 @@ function openArea(areaId) {
     return;
   }
   state.area = areaId;
-  if (areaId === "kingdom") {
-    ensureKingdomPosition();
-  } else if (areaId === "castle") {
-    ensureCastlePosition();
-  }
+  ensureAreaPosition(areaId);
   centerMapOnNextRender[areaId] = true;
   persist();
   changeView(area.view);
@@ -151,8 +166,8 @@ function changeView(viewName) {
     state.area = "castle";
     ensureCastlePosition();
   } else if (viewName === "map") {
-    state.area = "kingdom";
-    ensureKingdomPosition();
+    if (state.area === "castle" || !areaRegistry[state.area]?.enabled) state.area = "kingdom";
+    ensureAreaPosition(state.area);
   }
   elements.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.view === viewName));
   elements.views.forEach((view) => view.classList.toggle("active", view.id === `${viewName}View`));
@@ -461,7 +476,7 @@ function areaMapStage(areaId) {
 }
 
 function areaMapImageSize(areaId) {
-  return areaId === "castle" ? castleMapImageSize : mapImageSize;
+  return areaRegistry[areaId]?.imageSize || mapImageSize;
 }
 
 function areaMapViewport(areaId) {
@@ -469,6 +484,10 @@ function areaMapViewport(areaId) {
     areaMapViewports[areaId] = { pan: { x: 0, y: 0 }, zoom: 1 };
   }
   return areaMapViewports[areaId];
+}
+
+function activeTravelMapArea() {
+  return state.area !== "castle" && areaRegistry[state.area]?.enabled ? state.area : "kingdom";
 }
 
 function baseAreaMapDisplay(areaId, rect) {
@@ -657,8 +676,9 @@ function renderCastleMap() {
     const node = castleMapNodes[hotspot.node];
     if (!node) return;
     const marker = document.createElement("button");
+    const isPortal = hotspot.kind === "gate" || hotspot.markerStyle === "portal";
     marker.type = "button";
-    marker.className = `map-marker hotspot castle-marker${activeCastleHotspot?.id === hotspot.id ? " nearby" : ""}${hotspot.kind === "future" ? " disabled" : ""}`;
+    marker.className = `map-marker hotspot castle-marker${activeCastleHotspot?.id === hotspot.id ? " nearby" : ""}${hotspot.kind === "future" ? " disabled" : ""}${isPortal ? " portal" : ""}`;
     marker.dataset.hotspotId = hotspot.id;
     marker.dataset.label = hotspot.label;
     marker.setAttribute("aria-label", `${hotspot.label}. ${travelActionLabel(hotspot)}.`);
@@ -719,13 +739,8 @@ function interactCastleHotspot() {
   const hotspot = activeCastleHotspot || nearbyCastleHotspot();
   if (!hotspot) return;
   activeCastleHotspot = hotspot;
-  if (hotspot.kind === "gate" && hotspot.targetArea) {
-    if (hotspot.targetArea === "kingdom" && mapNodes.castleRoom) {
-      state.playerNode = "castleRoom";
-      state.player = { x: mapNodes.castleRoom.x, y: mapNodes.castleRoom.y };
-      activeHotspot = null;
-    }
-    openArea(hotspot.targetArea);
+  if (hotspot.kind === "gate") {
+    enterTravelGate(hotspot);
     return;
   }
   if (hotspot.kind === "future") {
@@ -774,26 +789,35 @@ function moveOnCastleMap(dx, dy) {
 
 function renderMap() {
   if (!elements.mapStage || (elements.mapStage.offsetParent === null && activeViewName() !== "map")) return;
-  ensureKingdomPosition();
-  centerAreaMapIfRequested("kingdom");
+  const areaId = activeTravelMapArea();
+  ensureAreaPosition(areaId);
+  centerAreaMapIfRequested(areaId);
   const target = hotspotById(state.activeQuest.place);
   if (elements.destinationHint) elements.destinationHint.textContent = `${target.icon} ${target.label} is waiting.`;
+  const area = areaRegistry[areaId];
+  if (elements.mapImage && area?.mapImage && !elements.mapImage.src.endsWith(area.mapImage)) {
+    elements.mapImage.src = area.mapImage;
+    elements.mapImage.alt = `${area.label} travel map`;
+  }
+  if (elements.mapTitle) elements.mapTitle.textContent = `${area?.label || "Area"} Map`;
+  elements.mapStage.setAttribute("aria-label", `${area?.label || "Area"} travel map. Drag to look around, tap a place, or use keyboard arrows.`);
   elements.routeLayer.innerHTML = "";
   elements.nodeLayer.innerHTML = "";
-  const metrics = mapCoverMetrics();
-  syncMapPanStyles(metrics);
-  renderMapActors(metrics);
-  renderHotspots(metrics);
-  updatePlayerPosition(metrics);
+  const metrics = mapCoverMetrics(areaId);
+  syncMapPanStyles(metrics, areaId);
+  renderMapActors(metrics, areaId);
+  renderHotspots(metrics, areaId);
+  updatePlayerPosition(metrics, areaId);
   updateNearbyHotspot();
   startMapLife();
 }
 
 function renderDestinationPicker() {
   if (!elements.destinationList) return;
+  const areaId = activeTravelMapArea();
   const targetId = state.activeQuest.place;
   elements.destinationList.innerHTML = "";
-  hotspots.filter((hotspot) => hotspot.kind !== "room").forEach((hotspot) => {
+  locationsForArea(areaId).filter((hotspot) => hotspot.kind !== "room").forEach((hotspot) => {
     const isTarget = hotspot.id === targetId;
     const isShop = hotspot.kind === "shop";
     const button = document.createElement("button");
@@ -823,10 +847,12 @@ function destinationActionText(hotspot, isTarget) {
 }
 
 function chooseDestination(hotspotId) {
-  const hotspot = hotspots.find((item) => item.id === hotspotId);
+  const areaId = activeTravelMapArea();
+  const hotspot = locationsForArea(areaId).find((item) => item.id === hotspotId);
   if (!hotspot) return;
-  const node = mapNodes[hotspot.node];
+  const node = nodeMapForArea(areaId)[hotspot.node];
   if (node) {
+    state.area = areaId;
     state.playerNode = node.id;
     state.player = { x: node.x, y: node.y };
   }
@@ -834,21 +860,22 @@ function chooseDestination(hotspotId) {
   renderMap();
   activeHotspot = hotspot;
   updateHotspotFocus();
-  if (hotspot.kind === "gate" && hotspot.targetArea) {
+  if (hotspot.kind === "gate") {
     enterTravelGate(hotspot);
     return;
   }
   openSceneAdv(hotspot);
 }
 
-function focusTravelHotspot(hotspotId) {
-  const hotspot = hotspots.find((item) => item.id === hotspotId);
-  const node = mapNodes[hotspot?.node];
+function focusTravelHotspot(hotspotId, areaId = activeTravelMapArea()) {
+  const hotspot = locationsForArea(areaId).find((item) => item.id === hotspotId);
+  const node = nodeMapForArea(areaId)[hotspot?.node];
   if (!hotspot || !node) return;
+  state.area = areaId;
   state.playerNode = node.id;
   state.player = { x: node.x, y: node.y };
   activeHotspot = hotspot;
-  centerAreaMapOnPoint("kingdom", node.x, node.y);
+  centerAreaMapOnPoint(areaId, node.x, node.y);
   persist();
   renderMap();
   activeHotspot = hotspot;
@@ -869,11 +896,11 @@ function isMobileTravelMap() {
 }
 
 function syncMapPanStyles(metrics = mapCoverMetrics()) {
-  syncAreaMapStyles("kingdom", metrics);
+  syncAreaMapStyles(activeTravelMapArea(), metrics);
 }
 
-function mapCoverMetrics() {
-  return areaMapMetrics("kingdom");
+function mapCoverMetrics(areaId = activeTravelMapArea()) {
+  return areaMapMetrics(areaId);
 }
 
 function mapPointToStage(x, y, metrics = mapCoverMetrics()) {
@@ -889,11 +916,11 @@ function positionMapElement(element, x, y, metrics = mapCoverMetrics()) {
   element.style.top = `${point.y}px`;
 }
 
-function renderMapActors(metrics = mapCoverMetrics()) {
+function renderMapActors(metrics = mapCoverMetrics(), areaId = activeTravelMapArea()) {
   if (!elements.mapLifeLayer) return;
   if (!metrics.width || !metrics.height) return;
   elements.mapLifeLayer.innerHTML = "";
-  mapActors.forEach((actor) => {
+  (areaRegistry[areaId]?.actors || []).forEach((actor) => {
     const point = mapPointToStage(actor.x, actor.y, metrics);
     const item = document.createElement("span");
     item.className = `map-actor map-actor-${actor.type}${actor.src ? " map-actor-image" : ""}`;
@@ -966,13 +993,15 @@ function startMapLife() {
 
 function renderRoutes() {
   const drawn = new Set();
+  const nodes = nodeMapForArea(activeTravelMapArea());
   elements.routeLayer.innerHTML = "";
-  Object.values(mapNodes).forEach((node) => {
-    node.links.forEach((linkId) => {
+  Object.values(nodes).forEach((node) => {
+    (node.links || []).forEach((linkId) => {
       const key = [node.id, linkId].sort().join("-");
       if (drawn.has(key)) return;
       drawn.add(key);
-      const other = mapNodes[linkId];
+      const other = nodes[linkId];
+      if (!other) return;
       const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
       line.setAttribute("x1", node.x);
       line.setAttribute("y1", node.y);
@@ -984,24 +1013,30 @@ function renderRoutes() {
 }
 
 function renderNodes() {
+  const areaId = activeTravelMapArea();
+  const nodes = nodeMapForArea(areaId);
   const metrics = mapCoverMetrics();
   elements.nodeLayer.innerHTML = "";
-  Object.values(mapNodes).forEach((node) => {
+  Object.values(nodes).forEach((node) => {
     const marker = document.createElement("div");
-    marker.className = `road-node${node.id === state.playerNode ? " current" : ""}${mapNodes[state.playerNode].links.includes(node.id) ? " reachable" : ""}`;
+    const currentLinks = nodes[state.playerNode]?.links || [];
+    marker.className = `road-node${node.id === state.playerNode ? " current" : ""}${currentLinks.includes(node.id) ? " reachable" : ""}`;
     positionMapElement(marker, node.x, node.y, metrics);
     elements.nodeLayer.appendChild(marker);
   });
 }
 
-function renderHotspots(metrics = mapCoverMetrics()) {
+function renderHotspots(metrics = mapCoverMetrics(), areaId = activeTravelMapArea()) {
+  const nodes = nodeMapForArea(areaId);
   elements.hotspotLayer.innerHTML = "";
-  hotspots.forEach((hotspot) => {
-    const node = mapNodes[hotspot.node];
+  locationsForArea(areaId).forEach((hotspot) => {
+    const node = nodes[hotspot.node];
+    if (!node) return;
     const marker = document.createElement("button");
     const isTarget = state.activeQuest.place === hotspot.id;
+    const isPortal = hotspot.kind === "gate" || hotspot.markerStyle === "portal";
     marker.type = "button";
-    marker.className = `map-marker hotspot${isTarget ? " target" : ""}${hotspot.kind === "shop" ? " shop" : ""}`;
+    marker.className = `map-marker hotspot${isTarget ? " target" : ""}${hotspot.kind === "shop" ? " shop" : ""}${isPortal ? " portal" : ""}`;
     marker.dataset.hotspotId = hotspot.id;
     marker.dataset.label = hotspot.label;
     marker.setAttribute("aria-label", `${hotspot.label}. ${travelActionLabel(hotspot, isTarget)}.`);
@@ -1016,23 +1051,29 @@ function renderHotspots(metrics = mapCoverMetrics()) {
   });
 }
 
-function updatePlayerPosition(metrics = mapCoverMetrics()) {
-  positionMapElement(elements.playerToken, state.player.x, state.player.y, metrics);
+function updatePlayerPosition(metrics = mapCoverMetrics(), areaId = activeTravelMapArea()) {
+  const point = currentPlayerPoint(areaId);
+  if (!point) return;
+  positionMapElement(elements.playerToken, point.x, point.y, metrics);
 }
 
 function refreshMapPositions() {
-  const metrics = mapCoverMetrics();
+  const areaId = activeTravelMapArea();
+  const metrics = mapCoverMetrics(areaId);
   syncMapPanStyles(metrics);
-  renderMapActors(metrics);
-  renderHotspots(metrics);
-  updatePlayerPosition(metrics);
+  renderMapActors(metrics, areaId);
+  renderHotspots(metrics, areaId);
+  updatePlayerPosition(metrics, areaId);
   updateHotspotFocus();
 }
 
 function travelActionLabel(hotspot, isTarget = hotspot?.id === state.activeQuest.place) {
   if (!hotspot) return "Visit";
   if (hotspot.kind === "room") return "Enter";
-  if (hotspot.kind === "gate") return hotspot.targetArea === "castle" ? "Castle" : "Kingdom";
+  if (hotspot.kind === "gate") {
+    const route = routeForPortal(areaForHotspot(hotspot), hotspot.portalId);
+    return route?.label || sceneConfigFor(hotspot).travelAction || "Travel";
+  }
   if (hotspot.kind === "future") return "Soon";
   if (isTarget) return "Help";
   if (hotspot.kind === "shop") return "Shop";
@@ -1051,17 +1092,20 @@ function updateHotspotFocus() {
 }
 
 function nearbyHotspot() {
-  return nearbyAreaHotspot("kingdom", 6.8);
+  return nearbyAreaHotspot(activeTravelMapArea(), 6.8);
 }
 
 function moveOnMap(dx, dy) {
+  const areaId = activeTravelMapArea();
   const speed = 1.45;
+  const current = currentPlayerPoint(areaId) || nodeMapForArea(areaId)[areaRegistry[areaId]?.defaultNode];
   const next = {
-    x: clamp(state.player.x + dx * speed, 0, 100),
-    y: clamp(state.player.y + dy * speed, 0, 100)
+    x: clamp(current.x + dx * speed, 0, 100),
+    y: clamp(current.y + dy * speed, 0, 100)
   };
+  state.area = areaId;
   state.player = next;
-  state.playerNode = closestNodeFromLegacy(state.player);
+  state.playerNode = closestNodeFromLegacy(state.player, areaId);
   activeHotspot = nearbyHotspot();
   if (activeHotspot) {
     elements.statusMessage.textContent = `${activeHotspot.label}: ${travelActionLabel(activeHotspot)}.`;
@@ -1080,7 +1124,7 @@ function interactNearby() {
   const hotspot = activeHotspot || nearbyHotspot();
   if (!hotspot) return;
   activeHotspot = hotspot;
-  if (hotspot.kind === "gate" && hotspot.targetArea) {
+  if (hotspot.kind === "gate") {
     enterTravelGate(hotspot);
     return;
   }
@@ -1088,14 +1132,22 @@ function interactNearby() {
 }
 
 function enterTravelGate(hotspot) {
-  if (!hotspot?.targetArea) return;
-  if (hotspot.targetArea === "castle" && castleMapNodes.castleGate) {
-    state.playerNode = "castleGate";
-    state.player = { x: castleMapNodes.castleGate.x, y: castleMapNodes.castleGate.y };
-    activeCastleHotspot = castleHotspots.find((item) => item.id === "castleGate") || null;
-    activeHotspot = null;
+  const route = routeForPortal(areaForHotspot(hotspot), hotspot?.portalId);
+  if (!route) return;
+  const targetArea = areaRegistry[route.to.area];
+  const targetNode = targetArea?.nodes?.[route.to.node] || targetArea?.nodes?.[targetArea.defaultNode];
+  if (!targetArea?.enabled || !targetNode) return;
+  state.area = targetArea.id;
+  state.playerNode = targetNode.id;
+  state.player = { x: targetNode.x, y: targetNode.y };
+  activeHotspot = null;
+  activeCastleHotspot = null;
+  if (targetArea.id === "castle") {
+    activeCastleHotspot = locationsForArea("castle").find((item) => item.node === targetNode.id) || null;
+  } else {
+    activeHotspot = locationsForArea(targetArea.id).find((item) => item.node === targetNode.id) || null;
   }
-  openArea(hotspot.targetArea);
+  openArea(targetArea.id);
 }
 
 function openAdvBase(hotspot, mode) {
@@ -1393,7 +1445,12 @@ function allowedShopCategories(hotspot = activeShopHotspot) {
 
 function unownedShopItemsFor(hotspot = activeShopHotspot, category = shopCategory) {
   const allowed = allowedShopCategories(hotspot);
-  return shopItems.filter((item) => item.type === category && allowed.includes(item.type) && !state.owned.includes(item.id));
+  return shopItems.filter((item) => (
+    item.storeId === hotspot?.id &&
+    item.type === category &&
+    allowed.includes(item.type) &&
+    !state.owned.includes(item.id)
+  ));
 }
 
 function refundableItemsFor(hotspot = activeShopHotspot) {
@@ -1641,10 +1698,15 @@ function fallbackOwnedItemForSlot(type) {
 }
 
 function recommendedShopHotspot() {
-  const shopHotspots = hotspots.filter((hotspot) => hotspot.kind === "shop");
+  const shopHotspots = Object.values(areaRegistry).flatMap((area) => area.locations || []).filter((hotspot) => hotspot.kind === "shop");
   const affordableShop = shopHotspots.find((hotspot) => {
     const allowed = allowedShopCategories(hotspot);
-    return shopItems.some((item) => allowed.includes(item.type) && !state.owned.includes(item.id) && state.coins >= item.cost);
+    return shopItems.some((item) => (
+      item.storeId === hotspot.id &&
+      allowed.includes(item.type) &&
+      !state.owned.includes(item.id) &&
+      state.coins >= item.cost
+    ));
   });
   return affordableShop || shopHotspots[0] || null;
 }
@@ -1655,8 +1717,10 @@ function openRewardShop() {
     closeAdv();
     return;
   }
-  const node = mapNodes[hotspot.node];
+  const areaId = areaForHotspot(hotspot);
+  const node = nodeMapForArea(areaId)[hotspot.node];
   if (node) {
+    state.area = areaId;
     state.playerNode = node.id;
     state.player = { x: node.x, y: node.y };
   }
@@ -2058,15 +2122,15 @@ function finishAreaMapGesture(areaId, event) {
 }
 
 function beginMapDrag(event) {
-  beginAreaMapGesture("kingdom", event);
+  beginAreaMapGesture(activeTravelMapArea(), event);
 }
 
 function moveMapDrag(event) {
-  moveAreaMapGesture("kingdom", event);
+  moveAreaMapGesture(activeTravelMapArea(), event);
 }
 
 function finishMapDrag(event) {
-  finishAreaMapGesture("kingdom", event);
+  finishAreaMapGesture(activeTravelMapArea(), event);
 }
 
 function beginCastleMapDrag(event) {
@@ -2186,14 +2250,15 @@ function bindEvents() {
   elements.castleStage?.addEventListener("pointercancel", finishCastleMapDrag);
   elements.mapStage.addEventListener("keydown", (event) => {
     const key = event.key.toLowerCase();
+    const areaId = activeTravelMapArea();
     if (event.key === "+" || event.key === "=") {
       event.preventDefault();
       event.stopPropagation();
-      zoomAreaMapFromKeyboard("kingdom", 1);
+      zoomAreaMapFromKeyboard(areaId, 1);
     } else if (event.key === "-" || event.key === "_") {
       event.preventDefault();
       event.stopPropagation();
-      zoomAreaMapFromKeyboard("kingdom", -1);
+      zoomAreaMapFromKeyboard(areaId, -1);
     } else if (event.key === "ArrowUp" || key === "w") {
       event.preventDefault();
       event.stopPropagation();
@@ -2330,6 +2395,8 @@ installTestingHooks({
   get shopPreviewItemId() { return shopPreviewItemId; },
   set shopPreviewItemId(nextItemId) { shopPreviewItemId = nextItemId; },
   $$,
+  areaForHotspot,
+  areaRegistry,
   allowedShopCategories,
   answerLesson,
   buildSaveMarkdown,
@@ -2352,7 +2419,13 @@ installTestingHooks({
     const hotspot = hotspotById(place);
     if (!hotspot || areaForHotspot(hotspot) !== "kingdom") throw new Error("Unknown kingdom hotspot");
     openArea("kingdom");
-    focusTravelHotspot(hotspot.id);
+    focusTravelHotspot(hotspot.id, "kingdom");
+  },
+  focusForest: (place = "cave") => {
+    const hotspot = hotspotById(place);
+    if (!hotspot || areaForHotspot(hotspot) !== "forest") throw new Error("Unknown forest hotspot");
+    openArea("forest");
+    focusTravelHotspot(hotspot.id, "forest");
   },
   freshState,
   getMapMetrics: (areaId = state.area) => {
@@ -2366,6 +2439,7 @@ installTestingHooks({
   loadMarkdownText,
   mapNodes,
   moveOnMap,
+  nodeMapForArea,
   openArea,
   openHintAdv,
   openQuestAdv,

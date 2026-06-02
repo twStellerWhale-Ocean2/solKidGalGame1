@@ -1,0 +1,50 @@
+id: kingdom
+label: Kingdom
+view: map
+mapImage: assets/kingdom-map2.webp
+defaultNode: garden
+authoringStatus: runtime uses manifest.js; this YAML is the editable source shape.
+
+portals:
+  castleStair:
+    node: castleRoom
+    label: Luminara Castle
+    markerStyle: portal
+  forestEdge:
+    node: forestEdge
+    label: Forest Path
+    markerStyle: portal
+
+locations:
+  - id: luminaraCastle
+    node: castleRoom
+    kind: gate
+    portalId: castleStair
+  - id: forestEdge
+    node: forestEdge
+    kind: gate
+    portalId: forestEdge
+  - id: garden
+    node: garden
+    kind: npc
+  - id: market
+    node: market
+    kind: shop
+  - id: harbor
+    node: harbor
+    kind: npc
+  - id: boutique
+    node: boutique
+    kind: shop
+  - id: shoeShop
+    node: shoeShop
+    kind: shop
+  - id: accessoryShop
+    node: accessoryShop
+    kind: shop
+  - id: farm
+    node: farm
+    kind: npc
+  - id: lighthouse
+    node: lighthouse
+    kind: npc
