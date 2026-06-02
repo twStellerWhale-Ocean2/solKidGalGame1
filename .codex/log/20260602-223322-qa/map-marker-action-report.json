@@ -1,0 +1,951 @@
+{
+  "runId": "20260602-223322",
+  "tool": "fallback Playwright/Chromium after in-app Browser iab attach timeout",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "markerCount": 20,
+  "clickedCount": 20,
+  "failures": [],
+  "consoleMessages": [],
+  "contact": ".codex/log/20260602-223322-qa/map-marker-surfaces-contact.png",
+  "results": [
+    {
+      "area": "castle",
+      "markerId": "princessRoom",
+      "label": "Princess Room",
+      "ariaLabel": "Princess Room. Enter.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/castle-princessRoom.png",
+      "before": {
+        "exists": true,
+        "label": "Princess Room",
+        "className": "map-marker hotspot castle-marker nearby",
+        "box": {
+          "x": 178,
+          "y": 509,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "homeView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#home"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": true,
+        "label": "Princess Room",
+        "className": "map-marker hotspot castle-marker nearby",
+        "box": {
+          "x": 178,
+          "y": 509,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": false,
+        "activeView": "homeView",
+        "advOpen": true,
+        "advMode": "scene",
+        "advTitle": "Princess Room",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#home"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "castle",
+      "markerId": "kingRoom",
+      "label": "King Room",
+      "ariaLabel": "King Room. Soon.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/castle-kingRoom.png",
+      "before": {
+        "exists": true,
+        "label": "King Room",
+        "className": "map-marker hotspot castle-marker nearby disabled",
+        "box": {
+          "x": 178,
+          "y": 336,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "homeView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#home"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": true,
+        "label": "King Room",
+        "className": "map-marker hotspot castle-marker nearby disabled",
+        "box": {
+          "x": 178,
+          "y": 336,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "homeView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "King Room is reserved for a later chapter.",
+        "hash": "#home"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "castle",
+      "markerId": "queenRoom",
+      "label": "Queen Room",
+      "ariaLabel": "Queen Room. Soon.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/castle-queenRoom.png",
+      "before": {
+        "exists": true,
+        "label": "Queen Room",
+        "className": "map-marker hotspot castle-marker nearby disabled",
+        "box": {
+          "x": 178,
+          "y": 476,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "homeView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#home"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": true,
+        "label": "Queen Room",
+        "className": "map-marker hotspot castle-marker nearby disabled",
+        "box": {
+          "x": 178,
+          "y": 476,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "homeView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "Queen Room is reserved for a later chapter.",
+        "hash": "#home"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "castle",
+      "markerId": "castleGate",
+      "label": "Castle Gate",
+      "ariaLabel": "Castle Gate. Kingdom.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/castle-castleGate.png",
+      "before": {
+        "exists": true,
+        "label": "Castle Gate",
+        "className": "map-marker hotspot castle-marker nearby portal",
+        "box": {
+          "x": 161,
+          "y": 711,
+          "w": 67,
+          "h": 49,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "homeView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#home"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": false,
+        "label": "",
+        "className": "",
+        "box": null,
+        "hitTarget": false,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "kingdom",
+      "markerId": "luminaraCastle",
+      "label": "Luminara Castle",
+      "ariaLabel": "Luminara Castle. Castle.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/kingdom-luminaraCastle.png",
+      "before": {
+        "exists": true,
+        "label": "Luminara Castle",
+        "className": "map-marker hotspot portal nearby",
+        "box": {
+          "x": 161,
+          "y": 382,
+          "w": 67,
+          "h": 49,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": false,
+        "label": "",
+        "className": "",
+        "box": null,
+        "hitTarget": false,
+        "activeView": "homeView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#home"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "kingdom",
+      "markerId": "forestEdge",
+      "label": "Forest Path",
+      "ariaLabel": "Forest Path. Enter Forest.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/kingdom-forestEdge.png",
+      "before": {
+        "exists": true,
+        "label": "Forest Path",
+        "className": "map-marker hotspot portal nearby",
+        "box": {
+          "x": 135,
+          "y": 212,
+          "w": 67,
+          "h": 49,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": false,
+        "label": "",
+        "className": "",
+        "box": null,
+        "hitTarget": false,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "kingdom",
+      "markerId": "port",
+      "label": "Harbor Port",
+      "ariaLabel": "Harbor Port. Visit.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/kingdom-port.png",
+      "before": {
+        "exists": true,
+        "label": "Harbor Port",
+        "className": "map-marker hotspot nearby",
+        "box": {
+          "x": 178,
+          "y": 787,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": true,
+        "label": "Harbor Port",
+        "className": "map-marker hotspot nearby",
+        "box": {
+          "x": 178,
+          "y": 787,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": false,
+        "activeView": "mapView",
+        "advOpen": true,
+        "advMode": "scene",
+        "advTitle": "Harbor Port",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "kingdom",
+      "markerId": "garden",
+      "label": "Castle Garden",
+      "ariaLabel": "Castle Garden. Visit.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/kingdom-garden.png",
+      "before": {
+        "exists": true,
+        "label": "Castle Garden",
+        "className": "map-marker hotspot nearby",
+        "box": {
+          "x": 178,
+          "y": 476,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": true,
+        "label": "Castle Garden",
+        "className": "map-marker hotspot nearby",
+        "box": {
+          "x": 178,
+          "y": 476,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": false,
+        "activeView": "mapView",
+        "advOpen": true,
+        "advMode": "scene",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "kingdom",
+      "markerId": "market",
+      "label": "Market Square",
+      "ariaLabel": "Market Square. Shop.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/kingdom-market.png",
+      "before": {
+        "exists": true,
+        "label": "Market Square",
+        "className": "map-marker hotspot shop nearby",
+        "box": {
+          "x": 178,
+          "y": 555,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": true,
+        "label": "Market Square",
+        "className": "map-marker hotspot shop nearby",
+        "box": {
+          "x": 178,
+          "y": 555,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": false,
+        "activeView": "mapView",
+        "advOpen": true,
+        "advMode": "scene",
+        "advTitle": "Market Square",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "kingdom",
+      "markerId": "harbor",
+      "label": "Fish Shop",
+      "ariaLabel": "Fish Shop. Visit.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/kingdom-harbor.png",
+      "before": {
+        "exists": true,
+        "label": "Fish Shop",
+        "className": "map-marker hotspot nearby",
+        "box": {
+          "x": 178,
+          "y": 567,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": true,
+        "label": "Fish Shop",
+        "className": "map-marker hotspot nearby",
+        "box": {
+          "x": 178,
+          "y": 567,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": false,
+        "activeView": "mapView",
+        "advOpen": true,
+        "advMode": "scene",
+        "advTitle": "Fish Shop",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "kingdom",
+      "markerId": "boutique",
+      "label": "Dress Boutique",
+      "ariaLabel": "Dress Boutique. Help.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/kingdom-boutique.png",
+      "before": {
+        "exists": true,
+        "label": "Dress Boutique",
+        "className": "map-marker hotspot target shop nearby",
+        "box": {
+          "x": 178,
+          "y": 532,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": true,
+        "label": "Dress Boutique",
+        "className": "map-marker hotspot target shop nearby",
+        "box": {
+          "x": 178,
+          "y": 532,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": false,
+        "activeView": "mapView",
+        "advOpen": true,
+        "advMode": "scene",
+        "advTitle": "Dress Boutique",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "kingdom",
+      "markerId": "shoeShop",
+      "label": "Shoe Shop",
+      "ariaLabel": "Shoe Shop. Shop.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/kingdom-shoeShop.png",
+      "before": {
+        "exists": true,
+        "label": "Shoe Shop",
+        "className": "map-marker hotspot shop nearby",
+        "box": {
+          "x": 178,
+          "y": 585,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": true,
+        "label": "Shoe Shop",
+        "className": "map-marker hotspot shop nearby",
+        "box": {
+          "x": 178,
+          "y": 585,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": false,
+        "activeView": "mapView",
+        "advOpen": true,
+        "advMode": "scene",
+        "advTitle": "Shoe Shop",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "kingdom",
+      "markerId": "accessoryShop",
+      "label": "Accessory Shop",
+      "ariaLabel": "Accessory Shop. Shop.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/kingdom-accessoryShop.png",
+      "before": {
+        "exists": true,
+        "label": "Accessory Shop",
+        "className": "map-marker hotspot shop nearby",
+        "box": {
+          "x": 178,
+          "y": 550,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": true,
+        "label": "Accessory Shop",
+        "className": "map-marker hotspot shop nearby",
+        "box": {
+          "x": 178,
+          "y": 550,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": false,
+        "activeView": "mapView",
+        "advOpen": true,
+        "advMode": "scene",
+        "advTitle": "Accessory Shop",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "kingdom",
+      "markerId": "farm",
+      "label": "Sunny Farm",
+      "ariaLabel": "Sunny Farm. Visit.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/kingdom-farm.png",
+      "before": {
+        "exists": true,
+        "label": "Sunny Farm",
+        "className": "map-marker hotspot nearby",
+        "box": {
+          "x": 178,
+          "y": 232,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": true,
+        "label": "Sunny Farm",
+        "className": "map-marker hotspot nearby",
+        "box": {
+          "x": 178,
+          "y": 232,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": false,
+        "activeView": "mapView",
+        "advOpen": true,
+        "advMode": "scene",
+        "advTitle": "Sunny Farm",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "kingdom",
+      "markerId": "lighthouse",
+      "label": "Lighthouse",
+      "ariaLabel": "Lighthouse. Visit.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/kingdom-lighthouse.png",
+      "before": {
+        "exists": true,
+        "label": "Lighthouse",
+        "className": "map-marker hotspot nearby",
+        "box": {
+          "x": 178,
+          "y": 703,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": true,
+        "label": "Lighthouse",
+        "className": "map-marker hotspot nearby",
+        "box": {
+          "x": 178,
+          "y": 703,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": false,
+        "activeView": "mapView",
+        "advOpen": true,
+        "advMode": "scene",
+        "advTitle": "Lighthouse",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "forest",
+      "markerId": "forestExit",
+      "label": "Kingdom Path",
+      "ariaLabel": "Kingdom Path. Back to Kingdom.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/forest-forestExit.png",
+      "before": {
+        "exists": true,
+        "label": "Kingdom Path",
+        "className": "map-marker hotspot portal nearby",
+        "box": {
+          "x": 110,
+          "y": 686,
+          "w": 67,
+          "h": 49,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": false,
+        "label": "",
+        "className": "",
+        "box": null,
+        "hitTarget": false,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "forest",
+      "markerId": "cave",
+      "label": "Cave",
+      "ariaLabel": "Cave. Visit.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/forest-cave.png",
+      "before": {
+        "exists": true,
+        "label": "Cave",
+        "className": "map-marker hotspot nearby",
+        "box": {
+          "x": 178,
+          "y": 523,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": true,
+        "label": "Cave",
+        "className": "map-marker hotspot nearby",
+        "box": {
+          "x": 178,
+          "y": 523,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": false,
+        "activeView": "mapView",
+        "advOpen": true,
+        "advMode": "scene",
+        "advTitle": "Cave",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "forest",
+      "markerId": "dwarfCottage",
+      "label": "Dwarf Cottage",
+      "ariaLabel": "Dwarf Cottage. Shop.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/forest-dwarfCottage.png",
+      "before": {
+        "exists": true,
+        "label": "Dwarf Cottage",
+        "className": "map-marker hotspot shop nearby",
+        "box": {
+          "x": 178,
+          "y": 558,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": true,
+        "label": "Dwarf Cottage",
+        "className": "map-marker hotspot shop nearby",
+        "box": {
+          "x": 178,
+          "y": 558,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": false,
+        "activeView": "mapView",
+        "advOpen": true,
+        "advMode": "scene",
+        "advTitle": "Dwarf Cottage",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "forest",
+      "markerId": "mountainPeak",
+      "label": "Mountain Peak",
+      "ariaLabel": "Mountain Peak. Visit.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/forest-mountainPeak.png",
+      "before": {
+        "exists": true,
+        "label": "Mountain Peak",
+        "className": "map-marker hotspot nearby",
+        "box": {
+          "x": 178,
+          "y": 251,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": true,
+        "label": "Mountain Peak",
+        "className": "map-marker hotspot nearby",
+        "box": {
+          "x": 178,
+          "y": 251,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": false,
+        "activeView": "mapView",
+        "advOpen": true,
+        "advMode": "scene",
+        "advTitle": "Mountain Peak",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    },
+    {
+      "area": "forest",
+      "markerId": "treeSpirit",
+      "label": "Tree Spirit Tree",
+      "ariaLabel": "Tree Spirit Tree. Visit.",
+      "screenshot": ".codex/log/20260602-223322-qa/map-marker-surfaces/forest-treeSpirit.png",
+      "before": {
+        "exists": true,
+        "label": "Tree Spirit Tree",
+        "className": "map-marker hotspot nearby",
+        "box": {
+          "x": 178,
+          "y": 376,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": true,
+        "activeView": "mapView",
+        "advOpen": false,
+        "advMode": "",
+        "advTitle": "Castle Garden",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "status": "clicked",
+      "after": {
+        "exists": true,
+        "label": "Tree Spirit Tree",
+        "className": "map-marker hotspot nearby",
+        "box": {
+          "x": 178,
+          "y": 376,
+          "w": 35,
+          "h": 35,
+          "inViewport": true
+        },
+        "hitTarget": false,
+        "activeView": "mapView",
+        "advOpen": true,
+        "advMode": "scene",
+        "advTitle": "Tree Spirit Tree",
+        "statusMessage": "\n                Choose a place, help someone, then dress Lumi with the reward.\n          ",
+        "hash": "#map"
+      },
+      "newConsoleMessages": [],
+      "conclusion": "Accept"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "runId": "20260602-223322",
+  "tool": "fallback Playwright/Chromium after in-app Browser iab attach timeout",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "tests": [
+    {
+      "id": "save-load",
+      "passed": true,
+      "result": {
+        "test": "save-load",
+        "passed": true,
+        "markdownLength": 1495,
+        "beforeDifficulty": 100,
+        "afterDifficulty": 100,
+        "beforeCoins": 100,
+        "afterCoins": 100
+      },
+      "screenshot": ".codex/log/20260602-223322-qa/regression-surfaces/save-load.png",
+      "newConsoleMessages": []
+    },
+    {
+      "id": "monkey",
+      "passed": true,
+      "result": {
+        "test": "monkey",
+        "passed": true,
+        "steps": 300,
+        "errors": [],
+        "coins": 0,
+        "playerNode": "princessRoom",
+        "activeQuest": "lighthouse",
+        "activeViews": 1
+      },
+      "screenshot": ".codex/log/20260602-223322-qa/regression-surfaces/monkey.png",
+      "newConsoleMessages": []
+    }
+  ],
+  "passedCount": 2,
+  "failures": [],
+  "consoleMessages": [],
+  "contact": ".codex/log/20260602-223322-qa/regression-surfaces-contact.png"
+}

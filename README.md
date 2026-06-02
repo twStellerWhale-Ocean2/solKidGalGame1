@@ -213,12 +213,15 @@ Fixed Prompt Area
 ### Room / Professional Paper Doll Wardrobe
 
 - Princess Lumi 以固定姿勢、固定畫布的全身紙娃娃呈現；正式 runtime 使用透明分層素材逐層疊合，不再以整套換裝 sprite sheet 切換造型。
-- Lumi v3 紙娃娃素材採同一張 `1024x1536` 透明 PNG / WebP 畫布，所有髮型、衣服、鞋子與配件都以同一原點疊圖；不得為單件衣服在 runtime 手動調角色位置。角色基準為約 10 歲兒童比例，頭部要比 14 歲版本更明顯，目標頭身比約 5.5 至 6 頭身，且在 ADV / Room 場景中必須以主要角色佔比顯示。
+- Issue #53 修訂後，Lumi v3 紙娃娃 runtime 與 source 素材採同一張 `512x768` 透明 PNG / WebP 畫布；所有髮型、衣服、鞋子與配件都以同一原點疊圖。不得為單件衣服在 runtime 手動調角色位置；若位移不對，優先修透明圖層本身的像素位置、縮放、裁切與透明邊界。
+- `1024x1536` 高解析圖只屬於歷史來源，不再作為本分支 runtime 或 source contract。若需要回到高解析重新製作，應從 Git 歷史或重新生成取得，不在目前工作樹保留大型 source。
+- 角色基準為約 10 歲兒童比例，頭部要比 14 歲版本更明顯，目標頭身比約 5.5 至 6 頭身，且在 ADV / Room 場景中必須以主要角色佔比顯示。
 - 初始可穿狀態只有 `starterPajama` 粉白棉布短袖睡衣上衣、接近膝蓋的睡褲與預設髮型；睡褲需露出小腿以便搭配裙裝，其他衣服、鞋子與配件需透過 Shop / Wardrobe 主循環取得或試穿。
 - 衣物 slot：`hairstyle`、`top`、`bottom`、`dress`、`outer`、`shoes`。`dress` 與 `top` / `bottom` 互斥；穿 `dress` 時上衣與褲裙不顯示，穿 `top` 或 `bottom` 時洋裝不顯示。
 - 外套、大外套、披風與斗篷屬於 `outer`，不是 accessory；需要遮擋時可拆為 `outerBack` / `outerFront` 兩層，後片在角色身後，前扣、領口或袖口在衣服前。
 - 配件不是單一大類欄位；可依部位同時疊加：`headTop`、`headSide`、`faceEyes`、`faceMask`、`neck`、`hand`。同一子 slot 一次只裝一件，不同子 slot 可共存，例如皇冠 + 蝴蝶結 + 眼鏡 + 小包。
 - 可穿戴正式素材都必須由 GPT / `image_gen` 重新產生童話手繪風 bitmap，並搬入 `assets/doll/lumi/v3/`；商品縮圖與上身 layer 分開驗收。
+- Issue #53 的穿搭修正優先順序固定為 `shoes` 與 `accessory` 第一批，因為既有截圖中鞋子、頭飾、眼鏡、面具、項鍊與手持物位移落差最大；它們必須先通過腳底接地、左右腳位置、臉部中心、脖子中心與手部接觸點檢查，再處理 tops / bottoms / dresses / outerwear / hair。
 - 房間進入後先顯示功能 action choices：`Hair`、`Tops`、`Bottoms`、`Dresses`、`Outerwear`、`Shoes`、`Accessories`、`Leave`。
 - Wardrobe detail panel 只能在玩家選擇對應功能後出現。
 - 離開房間應是房間 scene 的 `Leave` action choice 或門口 hotspot，不是網站 hero CTA。
@@ -448,6 +451,7 @@ Visual surface sweep 應覆蓋所有會改變版面的狀態，不只截最終 p
 - 功能性測試必須覆蓋 Castle Map、Kingdom Map、Princess Room scene、Wardrobe detail、Shop scene、Shop detail、Diary、Settings、Save / Load。
 - 系統性測試必須覆蓋 Save / Load roundtrip、Settings 生效、console error / warning、coins 不為負、裝備不指向未擁有物、active view 唯一、modal 可離開。
 - 介面性測試必須覆蓋手機觸控、方向鍵、W/S、Enter、Space、數字鍵、Back / Leave / system overlay 返回路徑。
+- Issue #53 介面性與功能性測試不得只抽查代表頁；必須以 action manifest 逐一列出所有可見頁面、按鈕、marker 與 overlay command，逐項操作並確認點擊後功能正常、返回路徑存在、文字與美術沒有溢出或崩壞。
 - 猴子性測試必須執行 `?selftest=monkey`；若 fail，修復後重跑到 pass，或明確列出第三輪後仍無法解的阻塞原因。
 - 美術性測試以手機直向為主要必要 viewport，至少截圖並檢查 Castle Map、Castle marker focus、Princess Room scene、Wardrobe detail、Kingdom Map、Kingdom marker focus、Kingdom scene action choices、Shop scene、Shop detail、Shop feedback、Diary、Settings、Save / Load。
 - 美術性測試需依 Must Fix / Should Fix / Accept 分組；本輪重構造成的 Must Fix 必須修復、重截同一 manifest row 並複審。
@@ -504,6 +508,8 @@ node server.mjs
 - Monkey selftest：`?selftest=monkey`
 - Visual QA selftest：`?selftest=visual-qa&surface=<surface-id>`
 - Visual QA 可用 `owned=all` 或 `owned=itemId,itemId` 注入已擁有物品，專門驗證 Wardrobe detail panel 的多筆 row、empty state 與 footer 位置；此參數只供測試，不是正式遊戲入口。
+- Visual QA 可用 `fresh=1&owned=all&equip=<itemId>` 從乾淨狀態截指定穿搭，避免 localStorage 或前一張截圖殘留配件干擾紙娃娃判定。
+- Issue #53 完成驗收必須建立全流程 action manifest，逐一操作所有可見頁面與按鈕：Room、Castle / Kingdom / Forest Map、地點 marker、Scene action choices、Quest、Help / Hint、Shop、Refund、Wardrobe、Diary、Settings、Save / Load、menu、Back、Leave、speaker、help、HUD 與 area nav。每個按鈕都要記錄點擊前後狀態、功能結果、返回路徑、console health 與美術判定；不得只用單張 contact sheet 或 monkey pass 取代全流程按鈕驗收。
 
 常用 QA URLs：
 
@@ -890,6 +896,7 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
 
 ## 本 README 變更紀錄
 
+- 2026-06-02：新增 Issue #53 紙娃娃修訂，將 Lumi v3 runtime / source layer contract 從 `1024x1536` 改為 `512x768` 以降低載入，鞋子與配件作為第一批修正與截圖驗收目標，並要求最後建立全流程 action manifest，逐一操作每個頁面、按鈕、marker 與 overlay command，確認功能與美術同時通過。
 - 2026-06-02：新增 Issue #51 專業紙娃娃換裝系統規格，要求 Princess Lumi 採固定 `1024x1536` 透明 layer contract、10 歲兒童比例與較大畫面佔比、初始僅粉白棉布短袖睡衣上衣與近膝睡褲、外套 / 披風歸 `outer` 且可拆前後層、配件依 `headTop` / `headSide` / `faceEyes` / `faceMask` / `neck` / `hand` 多部位疊加，所有 wearable 以 GPT / `image_gen` 童話手繪風 bitmap 重繪並放入 `assets/doll/lumi/v3/`。
 - 2026-06-02：新增 Issue #49 正式素材品質 Gate，禁止正式遊玩 surface 使用 CSS 幾何圖、SVG 拼貼、emoji fallback 或圓形 / 方形 / 三角形素材；Forest、商品縮圖、Princess Lumi 上身道具與房間擺設都必須用實際 bitmap 美術並逐一渲染驗收。
 - 2026-06-02：新增 Issue #40 的 ADV 三段式 layout contract，要求所有 Scene / Detail Panel 共用固定上方文案、中段可捲動內容與固定底部 navigation footer，並補入使用者實機 viewport 驗證規則。

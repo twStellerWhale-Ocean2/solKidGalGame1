@@ -3,12 +3,12 @@
   "character": "Princess Lumi",
   "age": 10,
   "canvas": [
-    1024,
-    1536
+    512,
+    768
   ],
-  "generatedAt": "2026-06-02T12:59:59.647Z",
-  "baseGenerated": "C:/Users/User/Documents/Github/codexHome/generated_images/019e87cb-24d9-7cb2-ad45-d3ab866cec80/ig_087d044a80ca81fd016a1ed48bccb48191afb2999a4582c258.png",
-  "note": "v3 uses a 10-year-old base with short-sleeve pajama top and pajama shorts ending near the knees, plus GPT wearable sources re-aligned into fixed v3 slot boxes.",
+  "generatedAt": "2026-06-02T14:25:58.039Z",
+  "baseGenerated": "Issue #53 downsized from prior v3 source; original high-resolution source is available from Git history.",
+  "note": "Issue #53: v3 keeps the fixed transparent layer contract but downsizes runtime and source canvases to 512x768; shoes and accessories were tuned first because existing screenshots showed the largest offsets.",
   "assets": [
     {
       "name": "base-starter-pajama",
