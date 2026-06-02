@@ -175,6 +175,8 @@ Fixed Prompt Area
 - `Fixed Navigation Footer` 放 `Leave`、`Go Outside`、`Back`、`Back to Room` 這類 navigation action；它不參與中間清單高度計算，且在手機有效 viewport 內永遠可見、可點。
 - 不得把 navigation action 當成一般選項清單最後一列，也不得把 `Back` 放在固定 3 列商品區後面後任由它被實機瀏覽器地址列或系統列裁掉。
 - 所有 Castle、Kingdom、Forest、Ocean 等地區與未來新增場景都必須透過同一個 layout / focus / return contract 生效，不得為 Princess Room、單一商店或單一任務寫特殊補丁。
+- Scene action choices 與 Detail Panel 都必須保留同一套上半部主舞台：背景是目前場景圖、左側是 Princess Lumi、右側是該場景 NPC；手機直向下上半舞台與下半 dialogue / panel 應接近 1:1，不得因商品數量或分類不同而忽大忽小。
+- `Leave` / `Go Outside` 只屬於 scene-level；進入 Shop、Wardrobe、Refund 或 Room category detail 後，底部 navigation footer 只使用 `Back` 回到上一層 action choices。
 
 ### Castle Area
 
@@ -193,6 +195,7 @@ Fixed Prompt Area
 - 出門應是房間 scene 的 action choice 或門口 hotspot，不是網站 hero CTA。
 - Wardrobe 應像玩具衣櫃或抽屜，支援點選預覽與裝備狀態，但不得在預設畫面直接展開佔據主視覺。
 - Wardrobe 的衣物、鞋子與配件試穿必須直接套在上方既有 Princess Lumi 主舞台，不另開獨立小紙娃娃或小試穿畫面；點選商品才進入暫時試穿，按 `Equip` 後才寫入正式 outfit state。
+- Wardrobe / Decoration 的第二層 `Dresses`、`Accessories`、`Shoes`、`Room Treasures` 必須全部走同一個 detail renderer 與同一套手機排版，不得讓單一分類跳成店家 scene、NPC 對話或另一套按鈕配置。
 - Wardrobe / Decoration detail panel 與各商店共用同一套 item detail panel：中段列表最多穩定呈現約 3 列商品並可在列表內捲動；底部 `Back` 屬於固定 navigation footer，不得被列表高度、empty state 或商品文字推離可視區。
 - Wardrobe / Decoration detail panel 必須尊重玩家選擇的分類。點 `Shoes` 就只能顯示 shoes；點 `Room Treasures` 就只能顯示 room items。若該分類尚未擁有物品，顯示分類專屬 empty state，不得 fallback 到 Dresses 或其他已擁有分類。
 - Room / Wardrobe 不顯示 refund；退款只能回到原購買店家，在店內 `Refund` action 中處理，避免兒童在換裝時誤按。
@@ -217,7 +220,7 @@ Fixed Prompt Area
 
 - 每個地點一個短場景：專屬背景、專屬 NPC、Princess Lumi、底部對話框。
 - 進入地點時先顯示 scene action choices，不得直接進入商品列表、換裝列表或大型資料 panel。
-- 非任務 `Chat` / `Talk` / hint 流程完成後必須提供 `Back` 回目前 scene action choices；`Leave` 才代表離開地點回 Map。
+- 非任務 `Chat` / `Talk` / hint 流程完成後只提供 `Back` 回目前 scene action choices；`Leave` 只出現在 scene action choices，代表離開地點回 Map。
 - 每回合只練一個短英文句子。
 - 選項直排、大尺寸、適合觸控。
 - 支援方向鍵 / W/S、數字鍵、Enter / Space。
@@ -234,6 +237,7 @@ Fixed Prompt Area
 - Shop / Wardrobe 的 try-on 不得使用獨立小畫面、小紙娃娃或另外的試穿框；可穿戴商品必須直接暫時套用在上方既有 Princess Lumi 主舞台，房間物件只顯示選取 / 放置狀態。
 - 進入 Shop / Wardrobe detail panel 時不自動試穿第一件商品；必須等玩家點選商品後，才讓上方 Princess Lumi 進入暫時試穿狀態。
 - Shop、Wardrobe、Refund 共用同一個 item detail panel contract；不同模式只替換資料來源、empty state 與列內 action，不複製互動流程，也不得在 contract 外另寫 Back / focus / 手機排版規則。
+- Item detail panel 的列內比例必須固定：item preview、商品名稱 / 狀態文字、inline action button 使用同一套 grid 欄寬；一件商品、多件商品或 empty state 都不得改變整體上下半比例。
 - Item detail panel 的中段商品區可穩定呈現約 3 列高度；每列顯示 item preview / name / status / inline action。超過 3 件時只讓商品列表捲動，少於 3 件時可保留空白，但底部 `Back` 必須固定在 navigation footer，不得跟著商品區一起被裁切。
 - 手機直向 item row 必須讓商品名稱與狀態保留可理解文字；不得用 `nowrap + ellipsis` 把主要品名截到無法辨識，也不得讓文字、商品圖與 action button 互相覆蓋。
 - 每個可買商品必須顯示 price 與列內 `BUY` / `Need N`；點 `BUY` 才扣 coins、加入 owned、立即 equip wearable item，並顯示店員回饋。
@@ -253,6 +257,7 @@ Fixed Prompt Area
 - Diary、Settings、Save、Load 必須收進齒輪或 game menu overlay，不佔用預設主畫面。
 - Save MD 匯出可讀 diary 與 `LUMINARA_SAVE_JSON` data block。
 - Load MD 還原 coins、energy、stats、difficulty、outfit、owned items、current quest、diary、completed lessons、learned words、met NPCs、badges。
+- Settings 的版本卡必須顯示版本號與 build 日期時間；build 時間至少精確到分鐘，建議格式為 `YYYY-MM-DD HH:mm (UTC+8)`，方便同一天多次版本比對。
 
 ### HUD
 
@@ -465,12 +470,14 @@ node server.mjs
 - Save/load selftest：`?selftest=save-load`
 - Monkey selftest：`?selftest=monkey`
 - Visual QA selftest：`?selftest=visual-qa&surface=<surface-id>`
+- Visual QA 可用 `owned=all` 或 `owned=itemId,itemId` 注入已擁有物品，專門驗證 Wardrobe / Room Treasures detail panel 的多筆 row、empty state 與 footer 位置；此參數只供測試，不是正式遊戲入口。
 
 常用 QA URLs：
 
 - `http://127.0.0.1:4174/#home`
 - `http://127.0.0.1:4174/#map`
 - `http://127.0.0.1:4174/?selftest=visual-qa&surface=shop-scene&place=boutique#map`
+- `http://127.0.0.1:4174/?selftest=visual-qa&surface=wardrobe-detail&category=accessory&owned=all#home`
 - `http://127.0.0.1:4174/?selftest=visual-qa&surface=shop-detail&place=boutique&item=blueDress#map`
 - `http://127.0.0.1:4174/?selftest=visual-qa&surface=shop-not-enough&place=boutique&item=blueDress#map`
 - `http://127.0.0.1:4174/?selftest=visual-qa&surface=shop-sold-out&place=boutique#map`
@@ -653,7 +660,7 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
   * [ ] 測試 `Leave`、`Back to Map`、game menu overlay 返回。
   * [ ] 測試所有 ADV 三段式 layout：上方台詞固定、中段選項 / 商品 / empty state 可捲動、底部 `Leave` / `Go Outside` / `Back` 在手機有效 viewport 內固定可見且可點。
   * [ ] 測試 Shop / Wardrobe / Refund 共用 item detail contract：長商品名、price / Owned / Equipped / Need / Refund、inline action 與底部 `Back` 在手機直向都可讀、可點且不遮擋。
-  * [ ] 測試非任務 `Chat` / `Talk` / hint 流程同時有 `Back` 回 scene action choices 與 `Leave` 回 Map。
+  * [ ] 測試非任務 `Chat` / `Talk` / hint 流程只有 `Back` 回 scene action choices，回到 scene action choices 後才可用 `Leave` 回 Map。
   * [ ] 確認文字大小、行高、按鈕區域適合兒童。
   * [ ] 確認 Help / speaker / menu button 不突兀。
 
@@ -849,6 +856,7 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
 ## 本 README 變更紀錄
 
 - 2026-06-02：新增 Issue #40 的 ADV 三段式 layout contract，要求所有 Scene / Detail Panel 共用固定上方文案、中段可捲動內容與固定底部 navigation footer，並補入使用者實機 viewport 驗證規則。
+- 2026-06-02：新增 Issue #42 的第一層 / 第二層 ADV 主舞台比例、Room category detail 共用 renderer、detail footer 僅 `Back`、以及 build 時間精確到分鐘規格。
 - 2026-06-01：同步 Shop / Wardrobe try-on 規格，要求衣物、鞋子與配件直接套在上方既有 Princess Lumi 主舞台，不再使用獨立小試穿畫面，且點選商品後才進入暫時試穿。
 - 2026-06-01：將「模組化主軸」提升到 README 最前段，記錄目前 ES Modules 結構、下一階段拆分方向，並要求後續功能開發不得背離模組化原則。
 - 2026-06-01：新增 Mobile Map Viewport Architecture v3，鎖定 `display/offset` 為 Castle / Kingdom / future areas 的唯一地圖 viewport contract，並逐字納入本輪 SKILL 測試要求。
