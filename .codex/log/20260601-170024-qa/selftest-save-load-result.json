@@ -1,9 +1,0 @@
-{
-  "test": "save-load",
-  "passed": true,
-  "markdownLength": 1570,
-  "beforeDifficulty": 100,
-  "afterDifficulty": 100,
-  "beforeCoins": 360,
-  "afterCoins": 360
-}
