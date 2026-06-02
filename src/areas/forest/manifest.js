@@ -2,8 +2,8 @@ export const forestArea = Object.freeze({
   id: "forest",
   label: "Forest",
   view: "map",
-  mapImage: "src/areas/forest/assets/forest-map.svg",
-  imageSize: { width: 1200, height: 900 },
+  mapImage: "assets/forest-map2.webp?v=20260602-forest-art",
+  imageSize: { width: 1448, height: 1086 },
   nodes: {
     forestEntrance: { id: "forestEntrance", label: "Forest Entrance", x: 12, y: 77, links: ["cave", "dwarfCottage"] },
     cave: { id: "cave", label: "Cave", x: 26, y: 58, links: ["forestEntrance", "dwarfCottage", "treeSpirit"] },

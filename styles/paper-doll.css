@@ -95,7 +95,6 @@
   width: 58%;
   height: 46%;
   background: linear-gradient(160deg, #f6a1bf, #ffd8e8);
-  clip-path: polygon(34% 0, 66% 0, 78% 32%, 96% 100%, 4% 100%, 22% 32%);
   border-radius: 14% 14% 28% 28%;
   z-index: 5;
 }
@@ -106,7 +105,6 @@
   width: 68%;
   height: 50%;
   background: rgba(91, 111, 166, 0.82);
-  clip-path: polygon(28% 0, 72% 0, 100% 100%, 0 100%);
   border-radius: 16%;
   z-index: 2;
 }
@@ -247,17 +245,15 @@
 
 .paper-doll[data-hat="goldCrown"] .doll-hat {
   display: block;
-  background: #d7a64b;
-  clip-path: polygon(0 100%, 8% 28%, 28% 68%, 50% 0, 72% 68%, 92% 28%, 100% 100%);
+  background: url("../assets/items/goldCrown.png") center / contain no-repeat;
 }
 
 .paper-doll[data-hat="silkRibbon"] .doll-hat {
   display: block;
   width: 34%;
   height: 9%;
-  background: #c98dd6;
+  background: url("../assets/items/silkRibbon.png") center / contain no-repeat;
   border-radius: 50%;
-  clip-path: polygon(50% 20%, 0 0, 20% 50%, 0 100%, 50% 80%, 100% 100%, 80% 50%, 100% 0);
 }
 
 .paper-doll[data-accessory="starCape"] .doll-cape {
@@ -348,25 +344,26 @@
   bottom: 8%;
   width: 42%;
   height: 34%;
-  clip-path: polygon(32% 0, 68% 0, 83% 38%, 100% 100%, 0 100%, 17% 38%);
   opacity: 0.55;
   mix-blend-mode: multiply;
-  border-radius: 18% 18% 30% 30%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 
 .paper-doll[data-dress="blueDress"] .avatar-dress {
   display: block;
-  background: linear-gradient(160deg, #82b9dc, #d8f0ff);
+  background-image: url("../assets/items/blueDress.png");
 }
 
 .paper-doll[data-dress="roseDress"] .avatar-dress {
   display: block;
-  background: linear-gradient(160deg, #cf5d89, #ffc1d7);
+  background-image: url("../assets/items/roseDress.png");
 }
 
 .paper-doll[data-dress="snowDress"] .avatar-dress {
   display: block;
-  background: linear-gradient(160deg, #bde9ff, #fff);
+  background-image: url("../assets/items/snowDress.png");
 }
 
 .avatar-hat {
@@ -379,8 +376,7 @@
 
 .paper-doll[data-hat="goldCrown"] .avatar-hat {
   display: block;
-  background: #d7a64b;
-  clip-path: polygon(0 100%, 8% 28%, 28% 68%, 50% 0, 72% 68%, 92% 28%, 100% 100%);
+  background: url("../assets/items/goldCrown.png") center / contain no-repeat;
 }
 
 .paper-doll[data-hat="silkRibbon"] .avatar-hat {
@@ -388,8 +384,7 @@
   top: 15%;
   width: 20%;
   margin-left: 25%;
-  background: #c98dd6;
-  clip-path: polygon(50% 20%, 0 0, 20% 50%, 0 100%, 50% 80%, 100% 100%, 80% 50%, 100% 0);
+  background: url("../assets/items/silkRibbon.png") center / contain no-repeat;
 }
 
 .avatar-accessory {
@@ -398,23 +393,31 @@
 
 .paper-doll[data-accessory="starCape"] .avatar-accessory {
   display: block;
-  bottom: 2%;
-  width: 56%;
-  height: 48%;
-  background: rgba(91, 111, 166, 0.42);
-  clip-path: polygon(24% 0, 76% 0, 100% 100%, 0 100%);
-  z-index: 1;
+  top: 30%;
+  bottom: auto;
+  width: 72%;
+  height: 64%;
+  background: url("../assets/items/starCape.png") center top / contain no-repeat;
+  z-index: 3;
 }
 
 .paper-doll[data-accessory="pearlBag"] .avatar-accessory {
   display: block;
   bottom: 28%;
-  width: 13%;
-  height: 10%;
+  width: 22%;
+  height: 16%;
   margin-left: 25%;
-  background: #fff0f5;
-  border: 2px solid #d7a64b;
-  border-radius: 30%;
+  background: url("../assets/items/pearlBag.png") center / contain no-repeat;
+}
+
+.paper-doll[data-accessory="mossCloak"] .avatar-accessory {
+  display: block;
+  top: 30%;
+  bottom: auto;
+  width: 72%;
+  height: 64%;
+  background: url("../assets/items/mossCloak.png") center top / contain no-repeat;
+  z-index: 3;
 }
 
 .map-doll .avatar-base {

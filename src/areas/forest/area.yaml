@@ -1,10 +1,10 @@
 id: forest
 label: Forest
 view: map
-mapImage: ./assets/forest-map.svg
+mapImage: ../../../assets/forest-map2.webp?v=20260602-forest-art
 defaultNode: forestEntrance
 authoringStatus: runtime uses manifest.js; this YAML is the editable source shape.
-assetStatus: temporary SVG gameplay slice art, not final generated illustration.
+assetStatus: runtime uses generated hand-drawn bitmap art; SVG files are historical drafts only and must not be referenced by formal gameplay.
 
 portals:
   entrance:

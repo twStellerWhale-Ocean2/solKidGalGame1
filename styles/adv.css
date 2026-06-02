@@ -66,23 +66,23 @@
 }
 
 .scene-forest-path {
-  background: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../src/areas/forest/assets/forest-map.svg") center / cover no-repeat;
+  background: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../assets/scenes/forest-path.webp?v=20260602-forest-art") center / cover no-repeat;
 }
 
 .scene-forest-cave {
-  background: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../src/areas/forest/assets/forest-cave.svg") center / cover no-repeat;
+  background: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../assets/scenes/forest-cave.webp?v=20260602-forest-art") center / cover no-repeat;
 }
 
 .scene-dwarf-cottage {
-  background: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../src/areas/forest/assets/dwarf-cottage.svg") center / cover no-repeat;
+  background: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../assets/scenes/dwarf-cottage.webp?v=20260602-forest-art") center / cover no-repeat;
 }
 
 .scene-mountain-peak {
-  background: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../src/areas/forest/assets/mountain-peak.svg") center / cover no-repeat;
+  background: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../assets/scenes/mountain-peak.webp?v=20260602-forest-art") center / cover no-repeat;
 }
 
 .scene-tree-spirit {
-  background: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../src/areas/forest/assets/tree-spirit.svg") center / cover no-repeat;
+  background: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../assets/scenes/tree-spirit.webp?v=20260602-forest-art") center / cover no-repeat;
 }
 
 .adv-location,
@@ -169,19 +169,19 @@
 }
 
 .npc-cave-guide {
-  background-image: url("../assets/characters/npc-lighthouse.webp");
+  background-image: url("../assets/characters/forest/npc-cave-guide.webp?v=20260602-forest-art");
 }
 
 .npc-dwarf {
-  background-image: url("../assets/characters/npc-farm.webp");
+  background-image: url("../assets/characters/forest/npc-dwarf.webp?v=20260602-forest-art");
 }
 
 .npc-mountain-guide {
-  background-image: url("../assets/characters/npc-market.webp");
+  background-image: url("../assets/characters/forest/npc-mountain-guide.webp?v=20260602-forest-art");
 }
 
 .npc-tree-spirit {
-  background-image: url("../assets/characters/npc-garden.webp");
+  background-image: url("../assets/characters/forest/npc-tree-spirit.webp?v=20260602-forest-art");
 }
 
 .npc-none {

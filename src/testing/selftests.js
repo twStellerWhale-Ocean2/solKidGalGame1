@@ -97,6 +97,19 @@ function runVisualQa(api) {
       if (api.itemById(itemId) && !api.state.owned.includes(itemId)) api.state.owned.push(itemId);
     });
   }
+  const equipParam = params.get("equip");
+  if (equipParam) {
+    equipParam.split(",").map((item) => item.trim()).filter(Boolean).forEach((itemId) => {
+      const item = api.itemById(itemId);
+      if (!item) return;
+      if (!api.state.owned.includes(item.id)) api.state.owned.push(item.id);
+      if (item.type === "room") {
+        api.state.outfit.room = item.id;
+      } else {
+        api.state.outfit[item.type] = item.id;
+      }
+    });
+  }
 
   if (surface === "castle-map") {
     api.render();

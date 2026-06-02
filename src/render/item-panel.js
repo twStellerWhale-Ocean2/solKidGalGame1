@@ -55,7 +55,7 @@ function createItemPanelRow({ action, categoryLabel, item, mode, onAction, onPre
   preview.dataset.itemId = item.id;
   preview.setAttribute("aria-label", `${item.name} ${action.status}`);
   preview.innerHTML = `
-    <span class="item-preview item-art item-image ${item.shape}" style="${previewStyle}">
+    <span class="item-preview item-art item-image" style="${previewStyle}">
       <span aria-hidden="true">${item.icon || "✦"}</span>
     </span>
     <strong>${item.name}</strong>

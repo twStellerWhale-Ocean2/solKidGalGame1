@@ -438,7 +438,7 @@ function createItemCard(item, options = {}) {
   button.dataset.itemId = item.id;
   const previewStyle = itemPreviewStyle(item);
   button.innerHTML = `
-    <span class="item-preview item-art item-image ${item.shape}" style="${previewStyle}">
+    <span class="item-preview item-art item-image" style="${previewStyle}">
       <span aria-hidden="true">${item.icon || "✦"}</span>
     </span>
     <strong>${item.name}</strong>
@@ -450,7 +450,7 @@ function createItemCard(item, options = {}) {
 }
 
 function itemPreviewStyle(item) {
-  return `--sprite-x:${item.sprite || "0%"};--c1:${item.colors[0]};--c2:${item.colors[1]};--item-img:url('${cssAssetUrl(item.image)}')`;
+  return `--item-img:url('${cssAssetUrl(item.image)}')`;
 }
 
 function cssAssetUrl(src) {
