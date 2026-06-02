@@ -187,7 +187,9 @@
   min-height: 0;
   margin: 0 18px 18px;
   padding: 14px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: rgba(255, 250, 246, 0.97);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -206,6 +208,14 @@
   font-weight: 900;
 }
 
+.dialog-title,
+.english-line,
+.task-line,
+.lesson-feedback,
+.adv-action-footer {
+  flex: 0 0 auto;
+}
+
 .english-line {
   margin: 8px 0;
   color: var(--ink);
@@ -222,7 +232,37 @@
 .choice-list {
   display: grid;
   grid-template-columns: 1fr;
+  align-content: start;
+  flex: 1 1 auto;
   gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.choice-list:empty,
+.lesson-feedback:empty,
+.adv-action-footer:empty {
+  display: none;
+}
+
+.shop-area.show {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.adv-action-footer {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.adv-action-footer .choice-button {
+  width: 100%;
+  min-height: 42px;
 }
 
 .choice-button {

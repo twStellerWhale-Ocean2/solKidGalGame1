@@ -2974,3 +2974,98 @@ body {
     font-size: 0.7rem;
   }
 }
+
+/* Issue #40: all ADV panels use fixed prompt, scrollable middle, fixed navigation footer. */
+.adv-box {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.adv-box > .dialog-title,
+.adv-box > .english-line,
+.adv-box > .task-line,
+.adv-box > .lesson-feedback,
+.adv-box > .adv-action-footer {
+  flex: 0 0 auto;
+}
+
+.adv-box > .lesson-feedback:empty,
+.adv-box > .choice-list:empty,
+.adv-box > .adv-action-footer:empty {
+  display: none;
+}
+
+.adv-box > .choice-list,
+.adv-box > .shop-area.show {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.adv-box > .choice-list {
+  align-content: start;
+  overflow-y: auto;
+  padding: 0 4px 0 0;
+}
+
+.adv-action-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.adv-action-footer .choice-button {
+  width: 100%;
+  min-height: 42px;
+}
+
+.adv-action-footer .choice-button + .choice-button {
+  margin-top: 0;
+}
+
+.adv-scene[data-mode="scene"] .choice-list,
+.adv-scene[data-mode="complete"] .choice-list,
+.adv-scene[data-mode="quest"] .choice-list,
+.adv-scene[data-mode="hint"] .choice-list {
+  align-content: start;
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .shop-area.show {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+  gap: 0;
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-list {
+  grid-column: 1;
+  grid-row: 1;
+  min-height: 0;
+  max-height: 100%;
+  height: 100%;
+  overflow-y: auto;
+  align-content: start;
+  box-sizing: border-box;
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-empty {
+  min-height: 0;
+  height: 100%;
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-back {
+  min-height: 42px;
+}
+
+@media (max-width: 480px) {
+  .adv-action-footer {
+    gap: 7px;
+    margin-top: 7px;
+  }
+
+  .adv-action-footer .choice-button,
+  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-back {
+    min-height: 40px;
+  }
+}

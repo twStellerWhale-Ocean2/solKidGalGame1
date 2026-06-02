@@ -160,6 +160,22 @@ Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return
 
 地區必須透過 area registry 或等效資料結構定義，不把 Castle / Kingdom 寫死成特殊分支。每個 area 至少包含 `id`、`label`、`map image`、`locations`、`default marker`、gate travel 設定與可用 actions。目前啟用地區是 Castle / Kingdom，資料結構需預留 Forest / Ocean 等未來地區。
 
+### ADV Layout Contract
+
+所有 Scene entry、Quest、Hint / Chat / Talk、Shop detail、Wardrobe detail、Refund detail 與未來新增地區 / 房間 / 店家的 ADV 介面都必須共用同一套三段式 layout contract：
+
+```text
+Fixed Prompt Area
+  -> Scrollable Content Area
+  -> Fixed Navigation Footer
+```
+
+- `Fixed Prompt Area` 放 speaker、主要台詞、任務提示與必要狀態文案；它只佔自己需要的高度，不被選項或商品列推走。
+- `Scrollable Content Area` 放一般 action choices、quest answer choices、商品列、換裝列、退款列與 empty state；內容超出時只能此區捲動。
+- `Fixed Navigation Footer` 放 `Leave`、`Go Outside`、`Back`、`Back to Room` 這類 navigation action；它不參與中間清單高度計算，且在手機有效 viewport 內永遠可見、可點。
+- 不得把 navigation action 當成一般選項清單最後一列，也不得把 `Back` 放在固定 3 列商品區後面後任由它被實機瀏覽器地址列或系統列裁掉。
+- 所有 Castle、Kingdom、Forest、Ocean 等地區與未來新增場景都必須透過同一個 layout / focus / return contract 生效，不得為 Princess Room、單一商店或單一任務寫特殊補丁。
+
 ### Castle Area
 
 - App 預設畫面應是 Castle Map / Castle Grounds，而不是 Wardrobe、Save / Load 或其他系統工具面板。
@@ -177,7 +193,7 @@ Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return
 - 出門應是房間 scene 的 action choice 或門口 hotspot，不是網站 hero CTA。
 - Wardrobe 應像玩具衣櫃或抽屜，支援點選預覽與裝備狀態，但不得在預設畫面直接展開佔據主視覺。
 - Wardrobe 的衣物、鞋子與配件試穿必須直接套在上方既有 Princess Lumi 主舞台，不另開獨立小紙娃娃或小試穿畫面；點選商品才進入暫時試穿，按 `Equip` 後才寫入正式 outfit state。
-- Wardrobe / Decoration detail panel 與各商店共用同一套 item detail panel：固定顯示 3 列高度、單列商品、列表內捲動、底部 `Back` 固定在列表外。
+- Wardrobe / Decoration detail panel 與各商店共用同一套 item detail panel：中段列表最多穩定呈現約 3 列商品並可在列表內捲動；底部 `Back` 屬於固定 navigation footer，不得被列表高度、empty state 或商品文字推離可視區。
 - Wardrobe / Decoration detail panel 必須尊重玩家選擇的分類。點 `Shoes` 就只能顯示 shoes；點 `Room Treasures` 就只能顯示 room items。若該分類尚未擁有物品，顯示分類專屬 empty state，不得 fallback 到 Dresses 或其他已擁有分類。
 - Room / Wardrobe 不顯示 refund；退款只能回到原購買店家，在店內 `Refund` action 中處理，避免兒童在換裝時誤按。
 
@@ -218,7 +234,7 @@ Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return
 - Shop / Wardrobe 的 try-on 不得使用獨立小畫面、小紙娃娃或另外的試穿框；可穿戴商品必須直接暫時套用在上方既有 Princess Lumi 主舞台，房間物件只顯示選取 / 放置狀態。
 - 進入 Shop / Wardrobe detail panel 時不自動試穿第一件商品；必須等玩家點選商品後，才讓上方 Princess Lumi 進入暫時試穿狀態。
 - Shop、Wardrobe、Refund 共用同一個 item detail panel contract；不同模式只替換資料來源、empty state 與列內 action，不複製互動流程，也不得在 contract 外另寫 Back / focus / 手機排版規則。
-- Item detail panel 的商品區固定保留 3 列高度；每列顯示 item preview / name / status / inline action。超過 3 件時只讓商品列表捲動，少於 3 件時保留空白高度，底部 `Back` 位置不跳動。
+- Item detail panel 的中段商品區可穩定呈現約 3 列高度；每列顯示 item preview / name / status / inline action。超過 3 件時只讓商品列表捲動，少於 3 件時可保留空白，但底部 `Back` 必須固定在 navigation footer，不得跟著商品區一起被裁切。
 - 手機直向 item row 必須讓商品名稱與狀態保留可理解文字；不得用 `nowrap + ellipsis` 把主要品名截到無法辨識，也不得讓文字、商品圖與 action button 互相覆蓋。
 - 每個可買商品必須顯示 price 與列內 `BUY` / `Need N`；點 `BUY` 才扣 coins、加入 owned、立即 equip wearable item，並顯示店員回饋。
 - 若 coins 不足，保留試穿 preview 並顯示 `Need more coins` 類回饋，不得扣款或加入 owned。
@@ -576,6 +592,8 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
 
 實際渲染工具選擇遵循全域工具規範；本 SKILL 只要求遊玩驗證、截圖與 log 證據，不規定或替代底層工具流程。
 
+涉及手機 UI、使用者實機截圖或 GitHub Pages 畫面不一致時，驗證必須記錄使用者可視 viewport 條件：URL 來源、`innerWidth`、`innerHeight`、`document.documentElement.clientHeight`、`window.visualViewport.width`、`window.visualViewport.height`、`devicePixelRatio`，並量測 `Leave` / `Go Outside` / `Back` 等 footer action 的 bounding box 是否落在有效 viewport 內。不得用沒有瀏覽器地址列 / 系統列的理想 `390x844` 截圖反駁 Android Chrome 或 iOS Safari 實機截圖。
+
 若使用者只是在討論美術、版面、構圖、視覺焦點，且未說「請修改 / 請執行」，不得直接改檔；先列具體問題、影響與建議，等確認後再修。
 
 ### stage: 功能性測試
@@ -633,6 +651,7 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
   * [ ] 測試任務、地點、商店選單操作一致。
   * [ ] 測試焦點高亮或 `▶`。
   * [ ] 測試 `Leave`、`Back to Map`、game menu overlay 返回。
+  * [ ] 測試所有 ADV 三段式 layout：上方台詞固定、中段選項 / 商品 / empty state 可捲動、底部 `Leave` / `Go Outside` / `Back` 在手機有效 viewport 內固定可見且可點。
   * [ ] 測試 Shop / Wardrobe / Refund 共用 item detail contract：長商品名、price / Owned / Equipped / Need / Refund、inline action 與底部 `Back` 在手機直向都可讀、可點且不遮擋。
   * [ ] 測試非任務 `Chat` / `Talk` / hint 流程同時有 `Back` 回 scene action choices 與 `Leave` 回 Map。
   * [ ] 確認文字大小、行高、按鈕區域適合兒童。
@@ -829,6 +848,7 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
 
 ## 本 README 變更紀錄
 
+- 2026-06-02：新增 Issue #40 的 ADV 三段式 layout contract，要求所有 Scene / Detail Panel 共用固定上方文案、中段可捲動內容與固定底部 navigation footer，並補入使用者實機 viewport 驗證規則。
 - 2026-06-01：同步 Shop / Wardrobe try-on 規格，要求衣物、鞋子與配件直接套在上方既有 Princess Lumi 主舞台，不再使用獨立小試穿畫面，且點選商品後才進入暫時試穿。
 - 2026-06-01：將「模組化主軸」提升到 README 最前段，記錄目前 ES Modules 結構、下一階段拆分方向，並要求後續功能開發不得背離模組化原則。
 - 2026-06-01：新增 Mobile Map Viewport Architecture v3，鎖定 `display/offset` 為 Castle / Kingdom / future areas 的唯一地圖 viewport contract，並逐字納入本輪 SKILL 測試要求。
