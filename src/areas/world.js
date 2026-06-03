@@ -15,8 +15,18 @@ export const worldRoutes = Object.freeze([
     label: "Enter Forest"
   },
   {
+    from: { area: "kingdom", portal: "suburbGate" },
+    to: { area: "suburb", node: "suburbEntrance", portal: "entrance" },
+    label: "Enter Suburb"
+  },
+  {
     from: { area: "forest", portal: "entrance" },
     to: { area: "kingdom", node: "forestEdge", portal: "forestEdge" },
+    label: "Back to Kingdom"
+  },
+  {
+    from: { area: "suburb", portal: "entrance" },
+    to: { area: "kingdom", node: "suburbGate", portal: "suburbGate" },
     label: "Back to Kingdom"
   }
 ]);

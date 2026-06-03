@@ -85,6 +85,78 @@
   background: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../assets/scenes/tree-spirit.webp?v=20260602-forest-art") center / cover no-repeat;
 }
 
+.scene-castle-king-hall,
+.scene-castle-queen-study,
+.scene-castle-kitchen,
+.scene-castle-knights-room,
+.scene-castle-maids-room {
+  background-image: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/castle-rooms-atlas.png?v=20260603-region-vocab");
+  background-size: auto, 500% 100%;
+  background-repeat: no-repeat;
+}
+
+.scene-castle-king-hall { background-position: center, 0% 50%; }
+.scene-castle-queen-study { background-position: center, 25% 50%; }
+.scene-castle-kitchen { background-position: center, 50% 50%; }
+.scene-castle-knights-room { background-position: center, 75% 50%; }
+.scene-castle-maids-room { background-position: center, 100% 50%; }
+
+.scene-kingdom-school,
+.scene-kingdom-library,
+.scene-kingdom-temple,
+.scene-kingdom-administration {
+  background-image: linear-gradient(180deg, rgba(255, 245, 232, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/kingdom-civic-atlas.png?v=20260603-region-vocab");
+  background-size: auto, 400% 100%;
+  background-repeat: no-repeat;
+}
+
+.scene-kingdom-school { background-position: center, 0% 50%; }
+.scene-kingdom-library { background-position: center, 33.333% 50%; }
+.scene-kingdom-temple { background-position: center, 66.666% 50%; }
+.scene-kingdom-administration { background-position: center, 100% 50%; }
+
+.scene-suburb-mine,
+.scene-suburb-logging,
+.scene-suburb-fishing,
+.scene-suburb-pasture,
+.scene-suburb-farm,
+.scene-suburb-mill,
+.scene-suburb-home {
+  background-image: linear-gradient(180deg, rgba(255, 245, 232, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/suburb-scenes-atlas.png?v=20260603-region-vocab");
+  background-size: auto, 700% 100%;
+  background-repeat: no-repeat;
+}
+
+.scene-suburb-mine { background-position: center, 0% 50%; }
+.scene-suburb-logging { background-position: center, 16.666% 50%; }
+.scene-suburb-fishing { background-position: center, 33.333% 50%; }
+.scene-suburb-pasture { background-position: center, 50% 50%; }
+.scene-suburb-farm { background-position: center, 66.666% 50%; }
+.scene-suburb-mill { background-position: center, 83.333% 50%; }
+.scene-suburb-home { background-position: center, 100% 50%; }
+
+.scene-forest-elf-glade,
+.scene-forest-dwarf-cottage,
+.scene-forest-golem-pass,
+.scene-forest-halfling-village,
+.scene-forest-wizard-hut,
+.scene-forest-red-hood-path,
+.scene-forest-three-pigs,
+.scene-forest-tree-spirit-grove {
+  background-image: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../assets/scenes/forest-scenes-atlas.png?v=20260603-region-vocab");
+  background-size: auto, 800% 100%;
+  background-repeat: no-repeat;
+}
+
+.scene-forest-elf-glade { background-position: center, 0% 50%; }
+.scene-forest-dwarf-cottage { background-position: center, 14.285% 50%; }
+.scene-forest-golem-pass { background-position: center, 28.571% 50%; }
+.scene-forest-halfling-village { background-position: center, 42.857% 50%; }
+.scene-forest-wizard-hut { background-position: center, 57.143% 50%; }
+.scene-forest-red-hood-path { background-position: center, 71.429% 50%; }
+.scene-forest-three-pigs { background-position: center, 85.714% 50%; }
+.scene-forest-tree-spirit-grove { background-position: center, 100% 50%; }
+
 .adv-location,
 .help-button {
   position: absolute;

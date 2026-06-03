@@ -38,7 +38,7 @@ import { FLOW_STAGE_LABELS } from "./flow/stages.js";
 import { renderItemDetailPanel } from "./render/item-panel.js";
 import { createPaperDollRenderer } from "./render/paper-doll.js";
 import { renderBuildInfo } from "./render/settings.js";
-import { saveMarkerEnd, saveMarkerStart } from "./state/storage.js";
+import { openAISettingsKey, saveMarkerEnd, saveMarkerStart } from "./state/storage.js";
 import {
   addDiary as addStateDiary,
   addUnique as addStateUnique,
@@ -119,8 +119,7 @@ function persist() {
 
 function ensureKingdomPosition() {
   if (mapNodes[state.playerNode]) return;
-  const target = hotspotById(state.activeQuest?.place) || hotspotById(areaRegistry.kingdom.defaultNode);
-  const node = mapNodes[target?.node] || mapNodes[areaRegistry.kingdom.defaultNode];
+  const node = mapNodes[areaRegistry.kingdom.defaultNode];
   state.playerNode = node.id;
   state.player = { x: node.x, y: node.y };
 }
@@ -165,7 +164,7 @@ function openArea(areaId) {
 }
 
 function changeView(viewName) {
-  if (["diary", "settings", "save"].includes(viewName)) {
+  if (["diary", "settings", "english", "save"].includes(viewName)) {
     openSystemMenu(viewName);
     return;
   }
@@ -222,14 +221,14 @@ function closeSystemMenu() {
   elements.systemMenu.setAttribute("aria-hidden", "true");
   document.body.classList.remove("system-menu-open");
   const viewName = activeViewName();
-  if (["diary", "settings", "save"].includes(location.hash.slice(1))) {
+  if (["diary", "settings", "english", "save"].includes(location.hash.slice(1))) {
     history.replaceState(null, "", `#${viewName}`);
   }
   elements.systemMenuButton?.focus({ preventScroll: true });
 }
 
 function changeSystemPanel(panel = "diary") {
-  if (!["diary", "settings", "save"].includes(panel)) panel = "diary";
+  if (!["diary", "settings", "english", "save"].includes(panel)) panel = "diary";
   systemMenuPanel = panel;
   elements.systemMenuTabs.forEach((tab) => {
     const isActive = tab.dataset.menuPanel === panel;
@@ -288,8 +287,6 @@ function render() {
 
 function renderStatus() {
   elements.coinValue.textContent = state.coins;
-  elements.energyValue.textContent = state.energy;
-  elements.levelValue.textContent = `Lv ${state.difficulty}`;
   elements.outfitSummary.textContent = outfitSummary();
 }
 
@@ -812,13 +809,11 @@ function interactCastleHotspot() {
     enterTravelGate(hotspot);
     return;
   }
-  if (hotspot.kind === "future") {
-    elements.statusMessage.textContent = `${hotspot.label} is reserved for a later chapter.`;
-    return;
-  }
   if (hotspot.kind === "room") {
     openRoomScene(hotspot);
+    return;
   }
+  openSceneAdv(hotspot);
 }
 
 function updateNearbyCastleHotspot() {
@@ -861,8 +856,7 @@ function renderMap() {
   const areaId = activeTravelMapArea();
   ensureAreaPosition(areaId);
   centerAreaMapIfRequested(areaId);
-  const target = hotspotById(state.activeQuest.place);
-  if (elements.destinationHint) elements.destinationHint.textContent = `${target.icon} ${target.label} is waiting.`;
+  if (elements.destinationHint) elements.destinationHint.textContent = "Choose any place to help.";
   const area = areaRegistry[areaId];
   if (elements.mapImage && area?.mapImage && !elements.mapImage.src.endsWith(area.mapImage)) {
     elements.mapImage.src = area.mapImage;
@@ -884,30 +878,28 @@ function renderMap() {
 function renderDestinationPicker() {
   if (!elements.destinationList) return;
   const areaId = activeTravelMapArea();
-  const targetId = state.activeQuest.place;
   elements.destinationList.innerHTML = "";
   locationsForArea(areaId).filter((hotspot) => hotspot.kind !== "room").forEach((hotspot) => {
-    const isTarget = hotspot.id === targetId;
     const isShop = hotspot.kind === "shop";
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `destination-card${isTarget ? " target" : ""}${isShop ? " shop" : ""}`;
+    button.className = `destination-card${isShop ? " shop" : ""}`;
     button.dataset.destinationId = hotspot.id;
     button.innerHTML = `
       <span class="destination-icon" aria-hidden="true">${hotspot.icon}</span>
       <span class="destination-copy">
         <strong>${hotspot.label}</strong>
-        <small>${destinationActionText(hotspot, isTarget)}</small>
+        <small>${destinationActionText(hotspot)}</small>
       </span>
-      <span class="destination-badge">${isTarget ? "Help" : isShop ? "Shop" : "Visit"}</span>
+      <span class="destination-badge">${hasLessonsForPlace(hotspot.id) ? "Help" : isShop ? "Shop" : "Visit"}</span>
     `;
     button.addEventListener("click", () => chooseDestination(hotspot.id));
     elements.destinationList.appendChild(button);
   });
 }
 
-function destinationActionText(hotspot, isTarget) {
-  if (isTarget) return `${sceneConfigFor(hotspot).npc} has today's English task.`;
+function destinationActionText(hotspot) {
+  if (hasLessonsForPlace(hotspot.id)) return `${sceneConfigFor(hotspot).npc} has a local English task.`;
   if (hotspot.kind === "shop") {
     const categoriesText = allowedShopCategories(hotspot).map(categoryLabel).join(" / ");
     return `Try ${categoriesText.toLowerCase()} rewards.`;
@@ -1102,13 +1094,12 @@ function renderHotspots(metrics = mapCoverMetrics(), areaId = activeTravelMapAre
     const node = nodes[hotspot.node];
     if (!node) return;
     const marker = document.createElement("button");
-    const isTarget = state.activeQuest.place === hotspot.id;
     const isPortal = hotspot.kind === "gate" || hotspot.markerStyle === "portal";
     marker.type = "button";
-    marker.className = `map-marker hotspot${isTarget ? " target" : ""}${hotspot.kind === "shop" ? " shop" : ""}${isPortal ? " portal" : ""}`;
+    marker.className = `map-marker hotspot${hotspot.kind === "shop" ? " shop" : ""}${isPortal ? " portal" : ""}`;
     marker.dataset.hotspotId = hotspot.id;
     marker.dataset.label = hotspot.label;
-    marker.setAttribute("aria-label", `${hotspot.label}. ${travelActionLabel(hotspot, isTarget)}.`);
+    marker.setAttribute("aria-label", `${hotspot.label}. ${travelActionLabel(hotspot)}.`);
     positionMapElement(marker, node.x, node.y, metrics);
     marker.innerHTML = `<span class="hotspot-icon" aria-hidden="true">${hotspot.icon}</span>`;
     marker.addEventListener("click", (event) => {
@@ -1136,7 +1127,7 @@ function refreshMapPositions() {
   updateHotspotFocus();
 }
 
-function travelActionLabel(hotspot, isTarget = hotspot?.id === state.activeQuest.place) {
+function travelActionLabel(hotspot) {
   if (!hotspot) return "Visit";
   if (hotspot.kind === "room") return "Enter";
   if (hotspot.kind === "gate") {
@@ -1144,7 +1135,7 @@ function travelActionLabel(hotspot, isTarget = hotspot?.id === state.activeQuest
     return route?.label || sceneConfigFor(hotspot).travelAction || "Travel";
   }
   if (hotspot.kind === "future") return "Soon";
-  if (isTarget) return "Help";
+  if (hasLessonsForPlace(hotspot.id)) return "Help";
   if (hotspot.kind === "shop") return "Shop";
   return sceneConfigFor(hotspot).travelAction || "Visit";
 }
@@ -1198,6 +1189,14 @@ function interactNearby() {
     return;
   }
   openSceneAdv(hotspot);
+}
+
+function interactCurrentLocation() {
+  if (activeViewName() === "home") {
+    interactCastleHotspot();
+    return;
+  }
+  interactNearby();
 }
 
 function enterTravelGate(hotspot) {
@@ -1279,7 +1278,7 @@ function openRoomScene(hotspot = hotspotById("princessRoom")) {
 }
 
 function renderFirstLayerSceneActions(hotspot) {
-  firstLayerActionsFor(hotspot).forEach((action) => {
+  firstLayerActionsFor(hotspot, { hasHelp: hasLessonsForPlace(hotspot?.id) }).forEach((action) => {
     addAdvOption(sceneActionLabel(action), () => handleFirstLayerSceneAction(action, hotspot), {
       leave: action.handlerKey === "leave",
       navigation: action.navigation && action.handlerKey !== "leave"
@@ -1310,11 +1309,11 @@ function handleFirstLayerSceneAction(action, hotspot) {
 }
 
 function openHelpAction(hotspot) {
-  if (hotspot?.id === state.activeQuest.place) {
+  if (hasLessonsForPlace(hotspot?.id)) {
     openQuestAdv(hotspot);
     return;
   }
-  openHintAdv(hotspot);
+  openHintAdv(hotspot, hotspot?.hint || "There is no English help task here.");
 }
 
 function leaveScene(hotspot) {
@@ -1353,28 +1352,32 @@ function confirmAdvFocus() {
 function openQuestAdv(hotspot) {
   const lesson = pickLesson(hotspot.id);
   if (!lesson) {
-    openHintAdv(hotspot, `No task for ${state.difficulty} words here. Try another word level.`);
+    openHintAdv(hotspot, "No English task is ready for this place yet.");
     return;
   }
+  const quest = createQuestForPlace(hotspot.id);
+  state.activeQuest = quest;
   openAdvBase(hotspot, "quest");
   addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
   activeLesson = lesson;
-  elements.advLine.textContent = state.activeQuest.opening;
-  elements.advPrompt.textContent = `${state.activeQuest.title}: ${lesson.prompt}`;
+  elements.advLine.textContent = quest.opening;
+  elements.advPrompt.textContent = `${quest.title}: ${lesson.prompt}`;
   shuffled(lesson.choices).forEach((choice, index) => {
     let button;
     button = addAdvOption(choice, () => answerLesson(button, choice), { number: index + 1, choice });
   });
   addAdvOption("↩ Leave", closeAdv, { leave: true });
   scheduleAdvFocus(0);
-  speak(state.activeQuest.opening);
+  speak(quest.opening);
 }
 
 function openHintAdv(hotspot, line = hotspot.hint) {
   openAdvBase(hotspot, "hint");
   setExpressions("thinking", "normal");
   elements.advLine.textContent = line;
-  elements.advPrompt.textContent = `Hint: today's quest is at ${hotspotById(state.activeQuest.place).label}.`;
+  elements.advPrompt.textContent = hasLessonsForPlace(hotspot?.id)
+    ? "Choose Help to practice this place's English."
+    : "This place is for travel or story only.";
   elements.advFeedback.textContent = "";
   addAdvOption("↩ Back", () => openSceneAdv(hotspot), { navigation: true });
   scheduleAdvFocus(0);
@@ -1822,12 +1825,13 @@ function clearRewardBursts() {
 }
 
 function pickLesson(place) {
-  const maxTier = difficultyConfig[state.difficulty].maxTier;
-  const pool = lessons.filter((lesson) => lesson.place === place && lesson.tier <= maxTier);
+  const pool = lessons.filter((lesson) => lesson.place === place);
   if (!pool.length) return null;
-  const unfinished = pool.filter((lesson) => !state.completedLessons.includes(lesson.id));
-  const candidates = unfinished.length ? unfinished : pool;
-  return candidates[Math.floor(Math.random() * candidates.length)];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function hasLessonsForPlace(place) {
+  return Boolean(place && lessons.some((lesson) => lesson.place === place));
 }
 
 function answerLesson(button, choice) {
@@ -1842,20 +1846,20 @@ function answerLesson(button, choice) {
     return;
   }
 
-  const multiplier = difficultyConfig[state.difficulty].reward;
+  const quest = state.activeQuest || createQuestForPlace(activeLesson.place);
+  const completedHotspot = hotspotById(activeLesson.place);
   const reward = {
-    coins: 100,
-    vocab: Math.max(1, Math.round((activeLesson.reward.vocab || 0) * multiplier)),
-    expression: Math.max(0, Math.round((activeLesson.reward.expression || 0) * multiplier)),
-    kindness: Math.max(0, Math.round((activeLesson.reward.kindness || 0) * multiplier)),
-    energy: -3,
+    coins: activeLesson.reward.coins || 0,
+    vocab: activeLesson.reward.vocab || 0,
+    expression: activeLesson.reward.expression || 0,
+    kindness: activeLesson.reward.kindness || 0,
     mood: 2
   };
   applyEffects(reward);
   playTone("correct");
   addUnique("completedLessons", [activeLesson.id]);
   addUnique("learnedWords", activeLesson.words);
-  addUnique("metNpcs", [sceneConfigFor(hotspotById(state.activeQuest.place)).npc]);
+  addUnique("metNpcs", [sceneConfigFor(completedHotspot).npc]);
   updateProgressBadges();
   setExpressions("happy", "happy");
   button.classList.add("correct");
@@ -1866,19 +1870,17 @@ function answerLesson(button, choice) {
   });
   addDiary({
     type: "quest",
-    title: `${state.activeQuest.title} at ${hotspotById(state.activeQuest.place).label}`,
+    title: `${quest.title} at ${completedHotspot.label}`,
     body: `Sentence: "${activeLesson.answer}"`,
     result: effectText(reward),
     lessonId: activeLesson.id,
     words: activeLesson.words,
-    difficulty: state.difficulty
+    vocabProfile: activeLesson.vocabProfile
   });
-  const oldPlace = state.activeQuest.place;
-  const completedHotspot = hotspotById(oldPlace);
-  elements.advLine.textContent = state.activeQuest.ending;
+  elements.advLine.textContent = quest.ending;
   elements.advPrompt.textContent = "Help complete. Try a reward now, or go back to Lumi's room.";
   elements.advFeedback.textContent = `${effectText(reward)}.`;
-  state.activeQuest = createRandomQuest(oldPlace);
+  state.activeQuest = null;
   activeLesson = null;
   advMode = "complete";
   elements.advScene.dataset.mode = "complete";
@@ -1893,7 +1895,7 @@ function answerLesson(button, choice) {
     addAdvOption("🏰 Back to Room", closeAdvThenHome, { navigation: true });
     addAdvOption("↩ Leave", closeAdv, { leave: true });
   }
-  elements.statusMessage.textContent = `Help complete. Next place: ${hotspotById(state.activeQuest.place).label}.`;
+  elements.statusMessage.textContent = `Help complete at ${completedHotspot.label}.`;
   persist();
   render();
   scheduleAdvFocus(0);
@@ -1905,11 +1907,13 @@ function closeAdv() {
   elements.advModal.setAttribute("aria-hidden", "true");
   advMode = "closed";
   elements.advScene.dataset.mode = "closed";
+  state.activeQuest = null;
   activeLesson = null;
   activeShopHotspot = null;
   clearTryOnPreview({ renderDoll: false });
   setExpressions("normal", "normal");
   renderPaperDolls();
+  persist();
   const focusTarget = activeViewName() === "home" ? elements.castleStage : elements.mapStage;
   focusTarget?.focus({ preventScroll: true });
 }
@@ -2002,7 +2006,6 @@ function renderCollectionSummary() {
 }
 
 function renderSettings() {
-  elements.difficultySelect.value = String(state.difficulty);
   elements.speakToggleButton.textContent = `Voice: ${state.speechEnabled ? "On" : "Off"}`;
   elements.openaiOrgInput.value = openAISettings.orgId;
   elements.openaiKeyInput.value = openAISettings.apiKey ? "••••••••" : "";
@@ -2244,11 +2247,6 @@ function bindEvents() {
     } finally {
       elements.loadFileInput.value = "";
     }
-  });
-  elements.difficultySelect.addEventListener("change", () => {
-    state.difficulty = Number(elements.difficultySelect.value);
-    persist();
-    render();
   });
   elements.speakToggleButton.addEventListener("click", () => {
     state.speechEnabled = !state.speechEnabled;
@@ -2498,7 +2496,13 @@ installTestingHooks({
     openArea("kingdom");
     focusTravelHotspot(hotspot.id, "kingdom");
   },
-  focusForest: (place = "cave") => {
+  focusSuburb: (place = "farm") => {
+    const hotspot = hotspotById(place);
+    if (!hotspot || areaForHotspot(hotspot) !== "suburb") throw new Error("Unknown suburb hotspot");
+    openArea("suburb");
+    focusTravelHotspot(hotspot.id, "suburb");
+  },
+  focusForest: (place = "elfGlade") => {
     const hotspot = hotspotById(place);
     if (!hotspot || areaForHotspot(hotspot) !== "forest") throw new Error("Unknown forest hotspot");
     openArea("forest");
@@ -2510,7 +2514,7 @@ installTestingHooks({
     return areaMapMetrics(areaId);
   },
   hotspotById,
-  interactNearby,
+  interactNearby: interactCurrentLocation,
   categoryForType,
   itemMatchesCategory,
   isWalkable,

@@ -19,8 +19,6 @@
             <p class="subtitle">A little princess who learns English, earns coins, and dresses up.</p>
           <div class="status-grid">
             <div class="stat"><span>Coins</span><strong id="coinValue">0</strong></div>
-            <div class="stat"><span>Energy</span><strong id="energyValue">0</strong></div>
-            <div class="stat"><span>Level</span><strong id="levelValue">Lv 100</strong></div>
           </div>
           <div class="equipped-box">
             <h2>Equipped</h2>
@@ -80,6 +78,7 @@
         <div class="system-menu-tabs" role="tablist" aria-label="Lumi Diary pages">
           <button class="system-menu-tab active" data-menu-panel="diary" type="button" role="tab" aria-selected="true" aria-controls="diaryView">Diary</button>
           <button class="system-menu-tab" data-menu-panel="settings" type="button" role="tab" aria-selected="false" aria-controls="settingsView">Settings</button>
+          <button class="system-menu-tab" data-menu-panel="english" type="button" role="tab" aria-selected="false" aria-controls="englishView">English</button>
           <button class="system-menu-tab" data-menu-panel="save" type="button" role="tab" aria-selected="false" aria-controls="saveView">Save / Load</button>
         </div>
         <div class="system-menu-body">
@@ -100,15 +99,6 @@
           <section class="system-panel" id="settingsView" data-menu-panel="settings" role="tabpanel" aria-labelledby="settingsTitle" hidden>
             <div class="simple-panel settings-card">
               <h2 id="settingsTitle">Settings</h2>
-              <label for="difficultySelect">Word Level</label>
-              <select id="difficultySelect">
-                <option value="100">Common English 100 words</option>
-                <option value="250">Common English 250 words</option>
-                <option value="500">Common English 500 words</option>
-                <option value="750">Common English 750 words</option>
-                <option value="1000">Common English 1000 words</option>
-              </select>
-              <p>The level changes words, sentence length, choice similarity, and stat rewards.</p>
               <div class="settings-actions">
                 <button class="soft-button" id="speakToggleButton" type="button">Voice: On</button>
                 <button class="danger-button" id="resetButton" type="button">Reset Progress</button>
@@ -131,6 +121,21 @@
                 </div>
                 <p id="aiStatus">No help key saved. The ? button will use local hints.</p>
               </form>
+            </div>
+          </section>
+
+          <section class="system-panel" id="englishView" data-menu-panel="english" role="tabpanel" aria-labelledby="englishTitle" hidden>
+            <div class="simple-panel settings-card english-guide">
+              <h2 id="englishTitle">English Map</h2>
+              <p>Each area has its own English word set. Lumi does not choose a level in Settings.</p>
+              <div class="english-guide-grid">
+                <div><strong>Castle</strong><span>Dolch Sight Words 220</span><small>20 coins for each Help question.</small></div>
+                <div><strong>Kingdom</strong><span>Cambridge Pre-A1 Starters</span><small>100 coins for each Help question.</small></div>
+                <div><strong>Suburb</strong><span>Cambridge A1 Movers</span><small>500 coins for each Help question.</small></div>
+                <div><strong>Forest</strong><span>Cambridge A2 Flyers</span><small>2000 coins for each Help question.</small></div>
+              </div>
+              <p>Every Help place keeps five local questions in its own area pack. Questions do not move between places.</p>
+              <p>Princess Room has no Help questions because Lumi cannot reward herself.</p>
             </div>
           </section>
 

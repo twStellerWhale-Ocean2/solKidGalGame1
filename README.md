@@ -72,7 +72,7 @@
 完整主循環：
 
 ```text
-Area Map (Castle / Kingdom / future areas)
+Area Map (Castle / Kingdom / Suburb / Forest)
   -> marker focus
   -> Scene entry
   -> Action Choices
@@ -169,15 +169,17 @@ Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return
 - `Feedback / Return` 必須顯示結果並保留清楚返回路徑，不讓玩家卡在大型 panel。
 - 未來可擴充 action type 包含 `decorate`、`gift`、`inspect`、`miniGame`、`claim`；新增前必須先進入同一套 scene action registry，不得為單一地點硬寫特殊分支。
 
-地區必須透過 area registry 或等效資料結構定義，不把 Castle / Kingdom 寫死成特殊分支。每個 area 至少包含 `id`、`label`、`map image`、`locations`、`default marker`、gate travel 設定與可用 actions。目前啟用地區是 Castle / Kingdom，資料結構需預留 Forest / Ocean 等未來地區。
+地區必須透過 area registry 或等效資料結構定義，不把 Castle / Kingdom 寫死成特殊分支。每個 area 至少包含 `id`、`label`、`map image`、`locations`、`default marker`、gate travel 設定與可用 actions。目前啟用地區是 Castle / Kingdom / Suburb / Forest，資料結構仍可預留 Ocean 等未來地區。
 
 Issue #47 決議：新增地區應以 area resource pack 進入專案。每個地區包可包含 `manifest.js` runtime 資料、`area.yaml` 作者組態、`area.md` 設計與素材狀態說明，以及該地區專屬臨時或正式素材。瀏覽器 runtime 仍維持 GitHub Pages 可直接使用的 ES Modules；YAML 是作者維護格式，不要求玩家端直接解析 YAML。
 
-跨地區交通由世界層 route 管理，不讓地區包彼此直接相依。地區包只宣告自己的 portal，例如 Kingdom 的 `forestEdge` 或 Forest 的 `entrance`；`src/areas/world.js` / `world.yaml` 決定 portal 如何互相連接。正式遊玩 UI 不使用底部快速地區切換按鈕；Castle、Kingdom、Forest 等地區之間必須走地圖上的 gate / portal marker。
+跨地區交通由世界層 route 管理，不讓地區包彼此直接相依。地區包只宣告自己的 portal，例如 Kingdom 的 `forestEdge`、`suburbGate` 或 Forest / Suburb 的 `entrance`；`src/areas/world.js` / `world.yaml` 決定 portal 如何互相連接。正式遊玩 UI 不使用底部快速地區切換按鈕；Castle、Kingdom、Suburb、Forest 等地區之間必須走地圖上的 gate / portal marker。
 
 Portal marker 必須與一般 scene marker 有明顯視覺區隔。一般場景點代表可進入對話、商店或幫忙；portal 代表地圖邊界、路牌、門或小徑入口，文案使用 `Enter Forest`、`Back to Kingdom`、`Castle` 這類交通語意，不使用普通 `Visit`。
 
-Forest 最小範例地區包含 `Cave`、`Dwarf Cottage`、`Mountain Peak`、`Tree Spirit Tree` 與回 Kingdom 的 portal。Forest 的正式 runtime 必須使用手繪風格 PNG / WebP 地圖、場景、NPC 與商品素材；臨時 SVG 或 CSS 幾何素材只能留作歷史來源或設計草稿，不得出現在正式遊玩引用中。
+Suburb 是 Kingdom 右上農場入口細化出的原物料產區，包含礦場、林場、漁撈岸、牧場、農場、磨坊與民家，必須能在 Kingdom 全景右側找到對應入口。
+
+Forest 是 Kingdom 左側山林入口細化出的寬地圖，入口視覺需與 Kingdom 左側山、中段森林、右側河流的全景關係對照。Forest 場景以奇幻童話角色為主，目前包含 Elf Glade、Dwarf Cottage、Stone Golem Pass、Halfling Village、Wizard Hut、Red Hood Path、Three Pigs Cottage、Tree Spirit Grove 與回 Kingdom 的 portal。Forest 的正式 runtime 必須使用手繪風格 PNG / WebP 地圖、場景、NPC 與商品素材；臨時 SVG 或 CSS 幾何素材只能留作歷史來源或設計草稿，不得出現在正式遊玩引用中。
 
 ### ADV Layout Contract
 
@@ -198,7 +200,7 @@ Fixed Prompt Area
 - 第一層 scene entry 的離開文案一律使用 `Leave`；第二層 Detail Panel / Help / Hint 返回上一層一律使用 `Back`。
 - Scene entry 的 `Leave` 與 Detail Panel / Hint 的 `Back` 必須佔用同一個 footer slot；第一層與第二層的下半部 dialogue box 高度、位置、內距與 footer top / bottom 不得因 Help 文案、商品數量、退款筆數或 empty state 而上下跳動。
 - 不得把 navigation action 當成一般選項清單最後一列，也不得把 `Back` 放在固定 3 列商品區後面後任由它被實機瀏覽器地址列或系統列裁掉。
-- 所有 Castle、Kingdom、Forest、Ocean 等地區與未來新增場景都必須透過同一個 layout / focus / return contract 生效，不得為 Princess Room、單一商店或單一任務寫特殊補丁。
+- 所有 Castle、Kingdom、Suburb、Forest、Ocean 等地區與未來新增場景都必須透過同一個 layout / focus / return contract 生效，不得為 Princess Room、單一商店或單一任務寫特殊補丁。
 - Scene action choices 與 Detail Panel 都必須保留同一套上半部主舞台：背景是目前場景圖、左側是 Princess Lumi、右側是該場景 NPC；手機直向下上半舞台與下半 dialogue / panel 應接近 1:1，不得因商品數量或分類不同而忽大忽小。
 - `Leave` 只屬於 scene-level；進入 Shop、Wardrobe、Refund 或 Room category detail 後，底部 navigation footer 只使用 `Back` 回到上一層 action choices。
 
@@ -207,7 +209,8 @@ Fixed Prompt Area
 - App 預設畫面應是 Castle Map / Castle Grounds，而不是 Wardrobe、Save / Load 或其他系統工具面板。
 - Princess Room 是 Castle Map 上的一個 marker，不是啟動畫面的特殊例外。
 - Castle / Kingdom 之間的可見切換必須走地圖上的 gate marker；底部 `Castle` / `Kingdom` area navigation 不再出現在遊玩畫面。
-- Castle Map 必須預留 `Princess Room`、`King Room`、`Queen Room` 等房間 marker 的擴充位置。
+- Castle Map 包含 `Princess Room`、`King Hall`、`Queen Study`、`Kitchen`、`Knights Room`、`Maids Room` 與 Castle Gate 等 marker。
+- Princess Room 只提供 Lumi 自己的 Wardrobe / room flow，不提供英文 Help，因為 Lumi 不能獎勵自己。
 - Castle 近景圖必須參考現有 kingdom map 中「白色城牆、粉紅屋頂、中央高塔」的城堡語彙；不得使用幾何圖或與原大地圖不一致的臨時圖當正式素材。
 
 ### Room / Professional Paper Doll Wardrobe
@@ -237,23 +240,27 @@ Fixed Prompt Area
 
 - 手機直向主流程使用可拖拉的小地圖，不使用卡片清單作為主要地點選擇 UI。
 - 地圖可比手機 viewport 稍大，玩家可用手指拖拉地圖，看見不同地點。
-- 城堡與王國地圖必須支援單指拖曳與雙指縮放；縮放只作用在地圖、地標、map actors 與小公主圖示，不影響 HUD 與下方地區選單。
+- 城堡、王國、郊區與森林地圖必須支援單指拖曳與雙指縮放；縮放只作用在地圖、地標、map actors 與小公主圖示，不影響 HUD 與下方地區選單。
 - 手機直向地圖允許超出 viewport；超出部分應透過 pan / zoom 可到達，不可因裁切導致王國地圖或城堡地圖的重要區域無法查看。
 - 地圖縮放範圍預設為 `1.0` 至 `2.2`，pan 必須限制在可視範圍內，避免拖到只剩空白。
-- 每個地點以大尺寸童話地標或標記呈現，點選後顯示遊戲式 preview：NPC 頭像、地點名、今日任務或商店目的、`Visit` / `Shop` / `Help`。
+- 每個地點以大尺寸童話地標或標記呈現，點選後顯示遊戲式 preview：NPC 頭像、地點名、Help / Shop / portal 目的與 `Visit` / `Shop` / `Help`。
 - 可保留一個小型羅盤、推薦地點或回到 Lumi 按鈕，避免年幼玩家拖拉迷路。
 - 卡片清單不得作為主畫面；若保留，只能作 accessibility fallback、測試入口或隱藏式輔助。
-- Kingdom 地點包含：Luminara Castle、Castle Garden、Market Square / Bakery、Harbor Port、Fish Shop、Dress Boutique、Shoe Shop、Accessory Shop、Sunny Farm、Lighthouse。
-- Castle、Kingdom、Forest、Ocean 等地區都必須共用同一套 marker focus、scene entry、action choices、detail panel 與 return path。
+- Kingdom 地點包含：Luminara Castle、Castle Garden、School Classroom、Library、Temple、Administration Hall、Market Square / Bakery、Harbor Port、Fish Shop、Dress Boutique、Shoe Shop、Accessory Shop、Suburb Road、Forest Edge、Lighthouse。
+- Castle、Kingdom、Suburb、Forest、Ocean 等地區都必須共用同一套 marker focus、scene entry、action choices、detail panel 與 return path。
 - 可見地圖畫面以圖片與地標為主，不顯示 `Luminara Castle`、`Lumi's Travel Map` 這類標題提示詞；必要標題只保留在無障礙語意中。
 - 下方地區按鈕全部維持同一套綠色童話按鈕；目前所在地用公主小頭像標示，不用紅 / 綠色差作為主要識別。
-- Castle 與 Kingdom 都必須顯示可移動的小公主圖示；小公主圖示永遠位於地點 marker 之前景層，不被地點 icon 遮住，也不阻擋 marker 點擊。
+- 各地區地圖都必須顯示可移動的小公主圖示；小公主圖示永遠位於地點 marker 之前景層，不被地點 icon 遮住，也不阻擋 marker 點擊。
 
 ### ADV Conversation
 
 - 每個地點一個短場景：專屬背景、專屬 NPC、Princess Lumi、底部對話框。
 - 進入地點時先顯示 scene action choices，不得直接進入商品列表、換裝列表或大型資料 panel。
 - 第一層 `Help` 取代舊有 `Chat` / `Talk`，代表幫助場景人物、練習一句短英文，完成後取得 coins、learned words、diary 等回報。
+- 每個可 Help 地點隨時都可 Help，不再限制成一次只有當日任務地點可幫忙。
+- 每個可 Help 地點固定有 5 題專屬題目，可為任意題型，但題目必須與場景主題相關，且跨地點不共用題目。
+- 題目資料屬於 map / area resource pack，由各地區 `manifest.js` 匯出 lessons / quest templates；中央 registry 只彙整，不在全域硬寫題庫。
+- 答題後不扣 energy。Energy 可作為 legacy state 相容欄位存在，但不參與目前 Help 獎懲。
 - 非任務 `Help` / hint 流程完成後只提供 `Back` 回目前 scene action choices；`Leave` 只出現在 scene action choices，代表離開地點回 Map。
 - 非任務 `Help` / hint 雖然沒有商品列，也必須保留與 Shop / Refund detail 相同的第二層 content slot；不得讓空內容區消失後把 `Back` 貼到文案下方。
 - 每回合只練一個短英文句子。
@@ -289,29 +296,29 @@ Fixed Prompt Area
 ### Diary / Settings / Save Load
 
 - Diary 是公主日記本，顯示幫了誰、學到什麼、買了什麼、拿到什麼 badge / sticker。
-- Settings 收 word level、voice、Help Teacher，不破壞遊戲沉浸感。
+- Settings 收 voice、Help Teacher、版本資訊與 English 說明，不破壞遊戲沉浸感。
+- English 說明分頁需列出各地區單字配置、每題 coins 獎勵與「每地點 5 題、Princess Room 不出英文 Help」等規則。
 - Diary、Settings、Save、Load 必須收進齒輪或 game menu overlay，不佔用預設主畫面。
 - Save MD 匯出可讀 diary 與 `LUMINARA_SAVE_JSON` data block。
-- Load MD 還原 coins、energy、stats、difficulty、outfit、owned items、current quest、diary、completed lessons、learned words、met NPCs、badges。
+- Load MD 還原 coins、stats、outfit、owned items、diary、completed lessons、learned words、met NPCs、badges，並保留 energy / difficulty / active quest 等舊存檔相容欄位。
 - Settings 的版本卡必須顯示版本號與 build 日期時間；build 時間至少精確到分鐘，建議格式為 `YYYY-MM-DD HH:mm (UTC+8)`，方便同一天多次版本比對。
 
 ### HUD
 
-- 預設 HUD 只保留玩家立即需要的 `Coins`、`Energy`、`Level`。
+- 預設 HUD 只保留玩家立即需要的 `Coins`。
 - `Words`、`Talk`、`Kind`、`Mood` 等非即時操作必要數值不放在預設主 HUD；若需要，可放入 Diary、Profile 或 Settings。
 - 手機直向 HUD 不得超出 viewport、造成水平捲動或壓縮主場景。
 
-## Word Levels
+## English Region Configuration
 
-Settings 支援五個等級：
+英文難度不由 Settings 讓玩家手動切換，而是固定綁定地區，讓世界地圖本身形成清楚的進階路徑：
 
-- Common English 100 words
-- Common English 250 words
-- Common English 500 words
-- Common English 750 words
-- Common English 1000 words
+- Castle 使用 Dolch Sight Words 220，答對每題獎勵 20 coins。
+- Kingdom / 城區使用 Cambridge Pre A1 Starters 約 500 字，答對每題獎勵 100 coins。
+- Suburb / 郊區使用 Cambridge A1 Movers 約 800 字，答對每題獎勵 500 coins。
+- Forest / 森林使用 Cambridge A2 Flyers 約 1500 字，答對每題獎勵 2000 coins。
 
-等級影響可用句庫與 reward multiplier，但不應讓低年齡玩家感到挫折。
+各地點題目必須維持場景主題一致，例如礦場問 mine / stone / tunnel，圖書館問 book / read / quiet，森林奇幻場景問 wizard / cottage / bridge 等。單字 profile 與 rewards 必須寫在對應 area resource pack 中，不能依全域 difficulty 或 UI 下拉選單動態改變。
 
 ## 素材與畫風規格
 
@@ -376,7 +383,23 @@ Settings 支援五個等級：
 - Dress Boutique
 - Shoe Shop
 - Accessory Shop
-- Sunny Farm
+- Suburb Map
+- Mine
+- Logging Camp
+- Fishing Shore
+- Pasture
+- Farm
+- Mill
+- Village Home
+- Forest Map
+- Elf Glade
+- Dwarf Cottage
+- Stone Golem Pass
+- Halfling Village
+- Wizard Hut
+- Red Hood Path
+- Three Pigs Cottage
+- Tree Spirit Grove
 - Lighthouse
 
 必要 viewport：
@@ -400,7 +423,7 @@ Visual surface sweep 應覆蓋所有會改變版面的狀態，不只截最終 p
 
 ## 實作順序建議
 
-1. 建立 area registry，讓 Castle / Kingdom 先啟用，Forest / Ocean 可日後擴充。
+1. 建立 area registry，讓 Castle / Kingdom / Suburb / Forest 透過同一套地區包啟用，Ocean 可日後擴充。
 2. 重整手機直向主流程：Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return。
 3. 將預設畫面改為 Castle Map；Princess Room 作為 Castle marker 進入。
 4. 將目的地選擇改為可拖拉、可點選地標的手機小地圖，移除卡片清單作為主操作。
@@ -432,7 +455,7 @@ Visual surface sweep 應覆蓋所有會改變版面的狀態，不只截最終 p
 - `src/data/` 保留 area、scene、shop item、lesson、quest template 等資料 registry。
 - `src/state/` 負責 state normalize、localStorage persist、quest creation、diary、badge、reward mutation、save data shape。
 - `src/core/` 或等效 helper module 負責跨模組查找與純函式，例如 hotspot、scene config、item、area、category、node lookup。
-- `src/map/` 負責 Castle / Kingdom 共用地圖幾何、pan / zoom viewport、marker focus、player movement 與 map actor 定位。
+- `src/map/` 負責 Castle / Kingdom / Suburb / Forest 共用地圖幾何、pan / zoom viewport、marker focus、player movement 與 map actor 定位。
 - `src/flow/` 負責 ADV scene、action choices、quest、hint、feedback / return 的狀態流程。
 - `src/render/` 負責可重用渲染 helper，例如 paper doll、Shop / Wardrobe / Settings shared DOM renderer。
 - `src/system/` 負責 Diary、Settings、Save / Load overlay 與 Markdown save/load。
@@ -448,12 +471,12 @@ Visual surface sweep 應覆蓋所有會改變版面的狀態，不只截最終 p
 本輪完整驗測要求：
 
 - 開始測試前必須建立 `.codex/log/<yyyyMMdd-hhmmss>-surface-inventory.md`，使用繁體中文記錄主循環、操作流程樹、screenshot manifest、受影響 surface 與未觸及 surface。
-- 功能性測試必須覆蓋 Castle Map、Kingdom Map、Princess Room scene、Wardrobe detail、Shop scene、Shop detail、Diary、Settings、Save / Load。
+- 功能性測試必須覆蓋 Castle Map、Kingdom Map、Suburb Map、Forest Map、Princess Room scene、Wardrobe detail、Help scene、Shop scene、Shop detail、Diary、Settings / English、Save / Load。
 - 系統性測試必須覆蓋 Save / Load roundtrip、Settings 生效、console error / warning、coins 不為負、裝備不指向未擁有物、active view 唯一、modal 可離開。
 - 介面性測試必須覆蓋手機觸控、方向鍵、W/S、Enter、Space、數字鍵、Back / Leave / system overlay 返回路徑。
 - Issue #53 介面性與功能性測試不得只抽查代表頁；必須以 action manifest 逐一列出所有可見頁面、按鈕、marker 與 overlay command，逐項操作並確認點擊後功能正常、返回路徑存在、文字與美術沒有溢出或崩壞。
 - 猴子性測試必須執行 `?selftest=monkey`；若 fail，修復後重跑到 pass，或明確列出第三輪後仍無法解的阻塞原因。
-- 美術性測試以手機直向為主要必要 viewport，至少截圖並檢查 Castle Map、Castle marker focus、Princess Room scene、Wardrobe detail、Kingdom Map、Kingdom marker focus、Kingdom scene action choices、Shop scene、Shop detail、Shop feedback、Diary、Settings、Save / Load。
+- 美術性測試以手機直向為主要必要 viewport，至少截圖並檢查 Castle Map、Castle marker focus、Princess Room scene、Wardrobe detail、Kingdom Map、Kingdom marker focus、Suburb Map、Forest Map、各地區 scene action choices、Help / Shop scene、Shop detail、Shop feedback、Diary、Settings / English、Save / Load。
 - 美術性測試需依 Must Fix / Should Fix / Accept 分組；本輪重構造成的 Must Fix 必須修復、重截同一 manifest row 並複審。
 - 好玩性測試必須從兒童玩家角度走一輪「選地點 -> 短英文 -> coins -> Shop / Wardrobe -> Diary」，確認主循環沒有因模組化拆分而變得不清楚或卡住。
 
@@ -520,6 +543,8 @@ node server.mjs
 - `http://127.0.0.1:4174/?selftest=visual-qa&surface=shop-detail&place=boutique&item=blueDress#map`
 - `http://127.0.0.1:4174/?selftest=visual-qa&surface=shop-not-enough&place=boutique&item=blueDress#map`
 - `http://127.0.0.1:4174/?selftest=visual-qa&surface=shop-sold-out&place=boutique#map`
+- `http://127.0.0.1:4174/?selftest=visual-qa&surface=suburb-map&place=farm#map`
+- `http://127.0.0.1:4174/?selftest=visual-qa&surface=forest-map&place=elfGlade#map`
 - `http://127.0.0.1:4174/?selftest=monkey#home`
 - `http://127.0.0.1:4174/?selftest=save-load#home`
 
@@ -539,8 +564,8 @@ node server.mjs
 
 - 預設主畫面改以 Castle Map / Castle Grounds 作為起點；Princess Room 是 Castle map 上的地點 marker。
 - 系統功能如 Diary、Settings、Save、Load 收進齒輪或 game menu overlay，不在預設畫面長期佔位。
-- HUD 預設只保留 `Coins`、`Energy`、`Level`，避免手機直向 stat grid 超界或壓縮主場景。
-- Castle / Kingdom 視為兩個 area；未來 Forest / Ocean 等地區應透過 area registry 擴充。
+- HUD 預設只保留 `Coins`，避免手機直向 stat grid 超界或壓縮主場景；Energy / Level 不再放在 HUD。
+- Castle / Kingdom / Suburb / Forest 視為啟用 area；未來 Ocean 等地區應透過 area registry 擴充。
 - 所有地區與地點使用同一層級：`Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return`。
 - Issue #45 決議：第一層 gameplay action 正規化為 `wardrobe`、`help`、`shop`、`refund`；第一層離開一律用 `Leave`，第二層返回一律用 `Back`。
 - Princess Room 進入後先顯示 `Hair`、`Tops`、`Bottoms`、`Dresses`、`Outerwear`、`Shoes`、`Accessories`、`Leave` 等 action choices；選擇後才開 Wardrobe detail panel。
@@ -884,10 +909,10 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
 ## 剩餘問題
 
 1. Shop、Diary、全場景內容擴展仍保留後續版本處理；本分支完成範圍鎖定在 Mobile Map Interaction v2 與地圖 marker 修正。
-2. 需要把本 README 的 area registry 與 scene layering 設計完整落實到程式碼，並避免 Castle / Kingdom 被寫死成不可擴充的特殊分支。
+2. Castle / Kingdom / Suburb / Forest 已進入 area registry；後續仍需把 `main.js` 中尚未拆出的 map / scene orchestration 逐步移到 `src/map/`、`src/flow/` 等模組。
 3. 需要將 Princess Room 與各商店都穩定拆成 scene action choices 與 detail panel，避免再次在 scene entry 直接顯示清單。
 4. 需要建立全場景 visual surface sweep，覆蓋所有 marker focus、scene entry、detail panel、feedback 與返回路徑，不只測少數截圖。
-5. 各店與各地點需要專屬背景、NPC、商品語氣與任務短句，但共用統一手機版型。
+5. 新增地區已具備專屬地圖、場景 atlas 與地點題目；後續仍可依嚴格 asset provenance 逐一重製 NPC 立繪與場景細節。
 6. 手機主循環需要更強的答對後立即換裝回饋。
 7. Shop reward appeal 需要加強：try-on 變化、購買慶祝、房間 / outfit 可見效果。
 8. Diary / Settings / Save / Load 仍需持續避免變成工具頁或後台表單。
@@ -896,6 +921,7 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
 
 ## 本 README 變更紀錄
 
+- 2026-06-03：新增四地區固定英文配置：Castle 使用 Dolch Sight Words 220 且每題 20 coins，Kingdom 使用 Cambridge Pre-A1 Starters 且每題 100 coins，Suburb 使用 Cambridge A1 Movers 且每題 500 coins，Forest 使用 Cambridge A2 Flyers 且每題 2000 coins；取消 Settings word level、HUD Level / Energy、答題扣 energy 與單一 current quest 限制，改為每個可 Help 地點各自保有 5 題本地題目。
 - 2026-06-02：新增 Issue #53 紙娃娃修訂，將 Lumi v3 runtime / source layer contract 從 `1024x1536` 改為 `512x768` 以降低載入，鞋子與配件作為第一批修正與截圖驗收目標，並要求最後建立全流程 action manifest，逐一操作每個頁面、按鈕、marker 與 overlay command，確認功能與美術同時通過。
 - 2026-06-02：新增 Issue #51 專業紙娃娃換裝系統規格，要求 Princess Lumi 採固定 `1024x1536` 透明 layer contract、10 歲兒童比例與較大畫面佔比、初始僅粉白棉布短袖睡衣上衣與近膝睡褲、外套 / 披風歸 `outer` 且可拆前後層、配件依 `headTop` / `headSide` / `faceEyes` / `faceMask` / `neck` / `hand` 多部位疊加，所有 wearable 以 GPT / `image_gen` 童話手繪風 bitmap 重繪並放入 `assets/doll/lumi/v3/`。
 - 2026-06-02：新增 Issue #49 正式素材品質 Gate，禁止正式遊玩 surface 使用 CSS 幾何圖、SVG 拼貼、emoji fallback 或圓形 / 方形 / 三角形素材；Forest、商品縮圖、Princess Lumi 上身道具與房間擺設都必須用實際 bitmap 美術並逐一渲染驗收。
