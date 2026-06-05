@@ -1,6 +1,13 @@
 import { makeLessons, makeQuestTemplates } from "../lesson-helpers.js";
 
 const npcImage = (name) => `assets/areas/suburb/characters/${name}.webp?v=20260605-npc-r2`;
+const sceneArt = (src, options = {}) => ({ sceneArt: { src, tone: "suburb", ...options } });
+const suburbAtlasArt = (position) => sceneArt("assets/scenes/suburb-scenes-atlas.png?v=20260603-region-vocab", {
+  atlas: "suburb-scenes",
+  position,
+  size: "700% 100%"
+});
+const suburbShopArt = (name) => sceneArt(`assets/areas/suburb/scenes/${name}.webp?v=20260604-issues56-60`, { tone: "shop" });
 
 export const suburbVocabularyProfile = Object.freeze({
   id: "cambridge-a1-movers",
@@ -70,16 +77,16 @@ export const suburbArea = Object.freeze({
 });
 
 export const suburbSceneConfigs = Object.freeze({
-  suburbExit: { scene: "scene-suburb-farm", npcClass: "npc-none", npc: "Suburb Sign", travelAction: "Back to Kingdom", travelLine: "The road returns to the kingdom town." },
-  mine: { scene: "scene-suburb-mine", npc: "Miner Gemma", npcImage: npcImage("miner-gemma"), travelAction: "Visit", travelLine: "Miner Gemma is sorting shiny stones." },
-  loggingCamp: { scene: "scene-suburb-logging", npc: "Logger Rowan", npcImage: npcImage("logger-rowan"), travelAction: "Visit", travelLine: "Logger Rowan stacks logs beside the cabin." },
-  fishingShore: { scene: "scene-suburb-fishing", npc: "Fisher Nami", npcImage: npcImage("fisher-nami"), travelAction: "Visit", travelLine: "Fisher Nami pulls a net near the bright shore." },
-  pasture: { scene: "scene-suburb-pasture", npc: "Farmer Theo", npcImage: npcImage("farmer-theo"), travelAction: "Visit", travelLine: "Farmer Theo counts animals in the pasture." },
-  farm: { scene: "scene-suburb-farm", npc: "Auntie Pom", npcImage: npcImage("auntie-pom"), travelAction: "Visit", travelLine: "Auntie Pom waters vegetables and wheat." },
-  mill: { scene: "scene-suburb-mill", npc: "Miller Bell", npcImage: npcImage("miller-bell"), travelAction: "Visit", travelLine: "Miller Bell carries flour by the windmill." },
-  workwearStall: { scene: "scene-suburb-workwear-stall", npc: "Workwear Keeper", npcImage: npcImage("workwear-stall-keeper"), travelAction: "Shop", travelLine: "The Workwear Keeper has sturdy tops and bottoms.", shopGreeting: "Welcome to the Workwear Stall. Pick tops or bottoms." },
-  fieldCobbler: { scene: "scene-suburb-field-cobbler", npc: "Field Cobbler", npcImage: npcImage("field-cobbler"), travelAction: "Shop", travelLine: "The Field Cobbler has shoes and hats for country roads.", shopGreeting: "Welcome to the Field Cobbler. Pick shoes or hats." },
-  villageHome: { scene: "scene-suburb-home", npc: "Grandma Fina", npcImage: npcImage("grandma-fina"), travelAction: "Visit", travelLine: "Grandma Fina tidies the warm village porch." }
+  suburbExit: { ...suburbAtlasArt("66.666% 50%"), scene: "scene-suburb-farm", npcClass: "npc-none", npc: "Suburb Sign", travelAction: "Back to Kingdom", travelLine: "The road returns to the kingdom town." },
+  mine: { ...suburbAtlasArt("0% 50%"), scene: "scene-suburb-mine", npc: "Miner Gemma", npcImage: npcImage("miner-gemma"), travelAction: "Visit", travelLine: "Miner Gemma is sorting shiny stones." },
+  loggingCamp: { ...suburbAtlasArt("16.666% 50%"), scene: "scene-suburb-logging", npc: "Logger Rowan", npcImage: npcImage("logger-rowan"), travelAction: "Visit", travelLine: "Logger Rowan stacks logs beside the cabin." },
+  fishingShore: { ...suburbAtlasArt("33.333% 50%"), scene: "scene-suburb-fishing", npc: "Fisher Nami", npcImage: npcImage("fisher-nami"), travelAction: "Visit", travelLine: "Fisher Nami pulls a net near the bright shore." },
+  pasture: { ...suburbAtlasArt("50% 50%"), scene: "scene-suburb-pasture", npc: "Farmer Theo", npcImage: npcImage("farmer-theo"), travelAction: "Visit", travelLine: "Farmer Theo counts animals in the pasture." },
+  farm: { ...suburbAtlasArt("66.666% 50%"), scene: "scene-suburb-farm", npc: "Auntie Pom", npcImage: npcImage("auntie-pom"), travelAction: "Visit", travelLine: "Auntie Pom waters vegetables and wheat." },
+  mill: { ...suburbAtlasArt("83.333% 50%"), scene: "scene-suburb-mill", npc: "Miller Bell", npcImage: npcImage("miller-bell"), travelAction: "Visit", travelLine: "Miller Bell carries flour by the windmill." },
+  workwearStall: { ...suburbShopArt("workwear-stall"), scene: "scene-suburb-workwear-stall", npc: "Workwear Keeper", npcImage: npcImage("workwear-stall-keeper"), travelAction: "Shop", travelLine: "The Workwear Keeper has sturdy tops and bottoms.", shopGreeting: "Welcome to the Workwear Stall. Pick tops or bottoms." },
+  fieldCobbler: { ...suburbShopArt("field-cobbler"), scene: "scene-suburb-field-cobbler", npc: "Field Cobbler", npcImage: npcImage("field-cobbler"), travelAction: "Shop", travelLine: "The Field Cobbler has shoes and hats for country roads.", shopGreeting: "Welcome to the Field Cobbler. Pick shoes or hats." },
+  villageHome: { ...suburbAtlasArt("100% 50%"), scene: "scene-suburb-home", npc: "Grandma Fina", npcImage: npcImage("grandma-fina"), travelAction: "Visit", travelLine: "Grandma Fina tidies the warm village porch." }
 });
 
 export const suburbQuestTemplates = makeQuestTemplates(suburbLessonPlaces);

@@ -81,6 +81,12 @@
   z-index: 4;
 }
 
+.map-marker-offscreen {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none !important;
+}
+
 .player {
   width: 54px;
   height: 70px;
@@ -161,7 +167,8 @@
 
 .hotspot.portal {
   width: 58px;
-  height: 42px;
+  height: 58px;
+  padding-bottom: 16px;
   border-radius: 12px 12px 16px 16px;
   background: linear-gradient(145deg, #fff8d9, #dff3cf);
   box-shadow: 0 0 0 5px rgba(83, 142, 95, 0.22), 0 10px 18px rgba(50, 78, 53, 0.25);
@@ -171,9 +178,9 @@
   content: "";
   position: absolute;
   left: 50%;
-  bottom: -17px;
+  bottom: 2px;
   width: 8px;
-  height: 18px;
+  height: 16px;
   transform: translateX(-50%);
   background: #8c6a45;
   border-radius: 0 0 4px 4px;
@@ -185,10 +192,11 @@
   height: 30px;
   border-radius: 9px;
   background: rgba(255, 255, 255, 0.88);
+  transform: translateY(-8px);
 }
 
 .hotspot.portal::after {
-  top: 48px;
+  top: 58px;
   background: rgba(43, 82, 54, 0.84);
 }
 

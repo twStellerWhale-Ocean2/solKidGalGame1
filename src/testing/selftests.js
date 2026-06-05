@@ -79,6 +79,42 @@ function runDataAudit(api) {
       }
     });
   });
+  const sceneArtSurfaces = [];
+  Object.values(api.areaRegistry).forEach((area) => {
+    (area.locations || []).forEach((hotspot) => {
+      const config = api.sceneConfigFor(hotspot);
+      if (!config.sceneArt?.src) {
+        errors.push(`${area.id}/${hotspot.id} has no sceneArt.src`);
+        return;
+      }
+      sceneArtSurfaces.push({
+        area: area.id,
+        id: hotspot.id,
+        src: config.sceneArt.src,
+        atlas: config.sceneArt.atlas || ""
+      });
+    });
+  });
+  const supportedActorMotions = new Set(api.mapActorMotionTypes || []);
+  const mapActorSurfaces = [];
+  Object.values(api.areaRegistry).forEach((area) => {
+    (area.actors || []).forEach((actor) => {
+      const requiredNumbers = ["x", "y", "w", "h"];
+      requiredNumbers.forEach((field) => {
+        if (!Number.isFinite(actor[field])) errors.push(`${area.id}/${actor.id || "actor"} has invalid ${field}`);
+      });
+      if (!actor.id) errors.push(`${area.id} has actor without id`);
+      if (!actor.type) errors.push(`${area.id}/${actor.id || "actor"} has no type`);
+      const motion = actor.motion || actor.type;
+      if (!supportedActorMotions.has(motion)) errors.push(`${area.id}/${actor.id || "actor"} has unsupported motion ${motion}`);
+      mapActorSurfaces.push({
+        area: area.id,
+        id: actor.id,
+        type: actor.type,
+        motion
+      });
+    });
+  });
 
   const result = document.createElement("pre");
   result.id = "dataAuditResult";
@@ -87,12 +123,17 @@ function runDataAudit(api) {
     passed: errors.length === 0,
     categoryCounts,
     shopCount: shopLocations.length,
+    sceneArtCount: sceneArtSurfaces.length,
+    mapActorCount: mapActorSurfaces.length,
+    supportedActorMotions: [...supportedActorMotions],
     shops: shopLocations.map((hotspot) => ({
       area: api.areaForHotspot(hotspot),
       id: hotspot.id,
       label: hotspot.label,
       categories: hotspot.shopCategories || []
     })),
+    sceneArtSurfaces,
+    mapActorSurfaces,
     errors
   });
   document.body.prepend(result);
@@ -381,6 +422,8 @@ function scheduleVisualQaMetricsReport() {
     };
     const report = document.createElement("pre");
     report.id = "visualQaMetrics";
+    report.hidden = true;
+    report.style.display = "none";
     report.textContent = JSON.stringify(metrics);
     document.body.prepend(report);
   }, 120);

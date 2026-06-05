@@ -1,6 +1,15 @@
 import { makeLessons, makeQuestTemplates } from "../lesson-helpers.js";
 
 const npcImage = (name) => `assets/areas/castle/characters/${name}.webp`;
+const sceneArt = (src, options = {}) => ({ sceneArt: { src, tone: "castle", ...options } });
+const castleRoomAtlasArt = (position) => sceneArt("assets/scenes/castle-rooms-atlas.png?v=20260603-region-vocab", {
+  atlas: "castle-rooms",
+  position,
+  size: "500% 100%"
+});
+const castleShopArt = (name) => sceneArt(`assets/areas/castle/scenes/${name}.webp?v=20260604-issues56-60`, { tone: "shop" });
+const gardenArt = sceneArt("assets/scenes/garden.webp?v=20260601-optimized-assets", { tone: "kingdom" });
+const princessRoomArt = sceneArt("assets/bedroom.webp?v=20260601-optimized-assets", { tone: "room" });
 
 export const castleVocabularyProfile = Object.freeze({
   id: "dolch-220",
@@ -120,15 +129,15 @@ export const castleArea = Object.freeze({
 });
 
 export const castleSceneConfigs = Object.freeze({
-  princessRoom: { scene: "scene-princess-room", npcClass: "npc-none", npc: "Lumi", travelAction: "Enter", travelLine: "Lumi's room is ready for hair, clothes, outerwear, shoes, and accessories." },
-  kingHall: { scene: "scene-castle-king-hall", npc: "King Rowan", npcImage: npcImage("king-rowan"), travelAction: "Visit", travelLine: "King Rowan is waiting in the bright royal hall." },
-  queenStudy: { scene: "scene-castle-queen-study", npc: "Queen Mira", npcImage: npcImage("queen-mira"), travelAction: "Visit", travelLine: "Queen Mira has opened her study book." },
-  castleKitchen: { scene: "scene-castle-kitchen", npc: "Cook Panna", npcImage: npcImage("cook-panna"), travelAction: "Visit", travelLine: "Cook Panna stirs warm soup for the castle." },
-  knightsRoom: { scene: "scene-castle-knights-room", npc: "Knight Theo", npcImage: npcImage("knight-theo"), travelAction: "Visit", travelLine: "Knight Theo is checking the shields." },
-  maidsRoom: { scene: "scene-castle-maids-room", npc: "Maid Lala", npcImage: npcImage("maid-lala"), travelAction: "Visit", travelLine: "Maid Lala is folding soft white cloth." },
-  royalCloakRoom: { scene: "scene-castle-royal-cloak-room", npc: "Cloak Keeper", npcImage: npcImage("royal-cloak-keeper"), travelAction: "Shop", travelLine: "The Cloak Keeper has royal outerwear and hats.", shopGreeting: "Welcome to the Royal Cloak Room. Pick outerwear or hats." },
-  castleSeamstress: { scene: "scene-castle-seamstress", npc: "Seamstress Bea", npcImage: npcImage("castle-seamstress"), travelAction: "Shop", travelLine: "Seamstress Bea has castle tops and bottoms ready.", shopGreeting: "Welcome to the Castle Seamstress. Pick tops or bottoms." },
-  castleGate: { scene: "scene-garden", npcClass: "npc-garden", npc: "Gate Guard", travelAction: "Travel", travelLine: "The castle gate leads back to the kingdom map." }
+  princessRoom: { ...princessRoomArt, scene: "scene-princess-room", npcClass: "npc-none", npc: "Lumi", travelAction: "Enter", travelLine: "Lumi's room is ready for hair, clothes, outerwear, shoes, and accessories." },
+  kingHall: { ...castleRoomAtlasArt("0% 50%"), scene: "scene-castle-king-hall", npc: "King Rowan", npcImage: npcImage("king-rowan"), travelAction: "Visit", travelLine: "King Rowan is waiting in the bright royal hall." },
+  queenStudy: { ...castleRoomAtlasArt("25% 50%"), scene: "scene-castle-queen-study", npc: "Queen Mira", npcImage: npcImage("queen-mira"), travelAction: "Visit", travelLine: "Queen Mira has opened her study book." },
+  castleKitchen: { ...castleRoomAtlasArt("50% 50%"), scene: "scene-castle-kitchen", npc: "Cook Panna", npcImage: npcImage("cook-panna"), travelAction: "Visit", travelLine: "Cook Panna stirs warm soup for the castle." },
+  knightsRoom: { ...castleRoomAtlasArt("75% 50%"), scene: "scene-castle-knights-room", npc: "Knight Theo", npcImage: npcImage("knight-theo"), travelAction: "Visit", travelLine: "Knight Theo is checking the shields." },
+  maidsRoom: { ...castleRoomAtlasArt("100% 50%"), scene: "scene-castle-maids-room", npc: "Maid Lala", npcImage: npcImage("maid-lala"), travelAction: "Visit", travelLine: "Maid Lala is folding soft white cloth." },
+  royalCloakRoom: { ...castleShopArt("royal-cloak-room"), scene: "scene-castle-royal-cloak-room", npc: "Cloak Keeper", npcImage: npcImage("royal-cloak-keeper"), travelAction: "Shop", travelLine: "The Cloak Keeper has royal outerwear and hats.", shopGreeting: "Welcome to the Royal Cloak Room. Pick outerwear or hats." },
+  castleSeamstress: { ...castleShopArt("castle-seamstress"), scene: "scene-castle-seamstress", npc: "Seamstress Bea", npcImage: npcImage("castle-seamstress"), travelAction: "Shop", travelLine: "Seamstress Bea has castle tops and bottoms ready.", shopGreeting: "Welcome to the Castle Seamstress. Pick tops or bottoms." },
+  castleGate: { ...gardenArt, scene: "scene-garden", npcClass: "npc-garden", npc: "Gate Guard", travelAction: "Travel", travelLine: "The castle gate leads back to the kingdom map." }
 });
 
 export const castleQuestTemplates = makeQuestTemplates(castleLessonPlaces);

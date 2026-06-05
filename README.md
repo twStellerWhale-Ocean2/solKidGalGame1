@@ -14,16 +14,18 @@
 - `src/state/default-state.js`、`src/state/game-state.js`、`src/state/storage.js`：預設狀態、state normalize、進度變更、diary / badge / reward mutation、localStorage 與 Save data shape。
 - `src/core/lookups.js`：跨模組查找與純函式，例如 hotspot、scene config、item、area、category、node lookup。
 - `src/flow/adv-controls.js`、`src/flow/stages.js`：ADV focus、flow stage 與互動控制。
+- `src/map/actors.js`：地圖生命層 actor runtime，集中處理水流、船、旗幟、風車與未來人車的 motion registry。
 - `src/render/paper-doll.js`、`src/render/settings.js`：可重用畫面 renderer。
+- `src/scene/scene-art.js`：ADV 場景背景圖 renderer，由 area manifest 的 `sceneArt` descriptor 套圖，避免新增場景時回到 CSS 特例。
 - `src/system/save-load.js`：Save / Load Markdown controller 與匯入匯出規則。
 - `src/testing/selftests.js`：`?selftest=save-load`、`?selftest=monkey`、`?selftest=visual-qa` 等測試 hook。
-- `src/main.js`：目前仍負責 app bootstrap、module composition、事件綁定，以及尚未完全拆出的 map / scene / shop orchestration。它是下一階段主要瘦身目標，不應再承接大量新功能細節。
+- `src/main.js`：目前仍負責 app bootstrap、module composition、事件綁定，以及尚未完全拆出的 map viewport / scene flow / shop orchestration。它是下一階段主要瘦身目標，不應再承接大量新功能細節。
 
 ## 下一階段模組化方向
 
 後續重構與功能開發應朝下列方向推進：
 
-- 建立 `src/map/`，承接 Castle / Kingdom / future areas 共用的 map metrics、pan / zoom viewport、marker focus、player token、map actors 與 pointer / keyboard travel 行為。
+- 擴充 `src/map/`，在既有 `actors.js` 之外承接 Castle / Kingdom / future areas 共用的 map metrics、pan / zoom viewport、marker focus、player token 與 pointer / keyboard travel 行為。
 - 建立更完整的 `src/scene/` 或擴充 `src/flow/`，承接 scene entry、action choices、quest、hint、feedback / return 的狀態流程，避免各地點在 `main.js` 形成特殊分支。
 - 擴充 `src/render/`，將 Shop detail、Wardrobe detail、Diary / Settings overlay、ADV scene shared layout 等 renderer 從 orchestration 中拆出。
 - 將 shop purchase / equip / try-on 的規則集中在 state 或 domain module，UI renderer 只反映狀態，不直接藏業務規則。
@@ -465,10 +467,30 @@ Visual surface sweep 應覆蓋所有會改變版面的狀態，不只截最終 p
 - `src/state/` 負責 state normalize、localStorage persist、quest creation、diary、badge、reward mutation、save data shape。
 - `src/core/` 或等效 helper module 負責跨模組查找與純函式，例如 hotspot、scene config、item、area、category、node lookup。
 - `src/map/` 負責 Castle / Kingdom / Suburb / Forest 共用地圖幾何、pan / zoom viewport、marker focus、player movement 與 map actor 定位。
+- `src/scene/` 負責 ADV scene art descriptor、場景圖套用與後續 scene lifecycle runtime。
 - `src/flow/` 負責 ADV scene、action choices、quest、hint、feedback / return 的狀態流程。
 - `src/render/` 負責可重用渲染 helper，例如 paper doll、Shop / Wardrobe / Settings shared DOM renderer。
 - `src/system/` 負責 Diary、Settings、Save / Load overlay 與 Markdown save/load。
 - `src/testing/` 的 selftest hook 必須維持可用；重構後不能讓 `?selftest=save-load`、`?selftest=monkey`、`?selftest=visual-qa` 失效。
+
+## Map / Scene Runtime Contract
+
+本輪新增的 runtime contract 採資料先行，不把 Unity 或其他外部工具硬接進瀏覽器 runtime。Unity 同步的穩定邊界是命名與 descriptor，而不是 Web 遊戲依賴 Unity 專案才能啟動。
+
+```text
+Area manifest
+  -> locations / nodes / actors / sceneConfigs
+  -> map actor runtime: actor type + motion + geometry
+  -> scene art runtime: sceneArt src + atlas position + tone
+  -> ADV flow runtime: action choices / detail panel / return
+```
+
+Unity 對照時應同步下列欄位：
+
+- Unity scene 或 prefab 名稱對照 `sceneConfigs[placeId].scene`。
+- Unity 背景圖或 atlas slice 對照 `sceneConfigs[placeId].sceneArt`。
+- Unity map object / vehicle / person 對照 `area.actors[]` 的 `id`、`type`、`motion`、`x/y/w/h`。
+- Web runtime 不直接讀 Unity 專案；若未來需要自動同步，應新增獨立轉換工具輸出 manifest，不在 `main.js` 寫特殊分支。
 
 禁止事項：
 
@@ -933,7 +955,7 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
 ## 剩餘問題
 
 1. Shop、Diary、全場景內容擴展仍保留後續版本處理；本分支完成範圍鎖定在 Mobile Map Interaction v2 與地圖 marker 修正。
-2. Castle / Kingdom / Suburb / Forest 已進入 area registry；後續仍需把 `main.js` 中尚未拆出的 map / scene orchestration 逐步移到 `src/map/`、`src/flow/` 等模組。
+2. Castle / Kingdom / Suburb / Forest 已進入 area registry；map actors 與 scene art 已開始移入 `src/map/`、`src/scene/`，後續仍需把 map viewport 與 scene flow orchestration 逐步從 `main.js` 移到專屬模組。
 3. 需要將 Princess Room 與各商店都穩定拆成 scene action choices 與 detail panel，避免再次在 scene entry 直接顯示清單。
 4. 需要建立全場景 visual surface sweep，覆蓋所有 marker focus、scene entry、detail panel、feedback 與返回路徑，不只測少數截圖。
 5. 新增地區已具備專屬地圖、場景 atlas 與地點題目；後續仍可依嚴格 asset provenance 逐一重製 NPC 立繪與場景細節。
@@ -945,6 +967,7 @@ final 與 log 對重大缺陷、修訂優先順序、未修項目必須一致；
 
 ## 本 README 變更紀錄
 
+- 2026-06-05：新增 Map / Scene Runtime Contract，將 ADV 場景背景改為 area manifest 的 `sceneArt` descriptor，並建立 `src/map/actors.js` 地圖生命層 runtime；Unity 同步邊界固定為 manifest descriptor，不讓瀏覽器 runtime 直接依賴 Unity 專案。
 - 2026-06-03：新增四地區固定英文配置：Castle 使用 Dolch Sight Words 220 且每題 20 coins，Kingdom 使用 Cambridge Pre-A1 Starters 且每題 100 coins，Suburb 使用 Cambridge A1 Movers 且每題 500 coins，Forest 使用 Cambridge A2 Flyers 且每題 2000 coins；取消 Settings word level、HUD Level / Energy、答題扣 energy 與單一 current quest 限制，改為每個可 Help 地點各自保有 5 題本地題目。
 - 2026-06-02：新增 Issue #53 紙娃娃修訂，將 Lumi v3 runtime / source layer contract 從 `1024x1536` 改為 `512x768` 以降低載入，鞋子與配件作為第一批修正與截圖驗收目標，並要求最後建立全流程 action manifest，逐一操作每個頁面、按鈕、marker 與 overlay command，確認功能與美術同時通過。
 - 2026-06-02：新增 Issue #51 專業紙娃娃換裝系統規格，要求 Princess Lumi 採固定 `1024x1536` 透明 layer contract、10 歲兒童比例與較大畫面佔比、初始僅粉白棉布短袖睡衣上衣與近膝睡褲、外套 / 披風歸 `outer` 且可拆前後層、配件依 `headTop` / `headSide` / `faceEyes` / `faceMask` / `neck` / `hand` 多部位疊加，所有 wearable 以 GPT / `image_gen` 童話手繪風 bitmap 重繪並放入 `assets/doll/lumi/v3/`。
