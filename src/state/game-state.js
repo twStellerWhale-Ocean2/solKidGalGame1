@@ -59,6 +59,8 @@ export function normalizeState(candidate = {}) {
   merged.metNpcs = Array.isArray(candidate.metNpcs) ? [...new Set(candidate.metNpcs)] : [];
   merged.learnedWords = Array.isArray(candidate.learnedWords) ? [...new Set(candidate.learnedWords)] : [];
   merged.badges = Array.isArray(candidate.badges) ? [...new Set(candidate.badges)] : [];
+  merged.bundleUnlocks = normalizeBundleUnlocks(candidate.bundleUnlocks);
+  merged.purchaseStoreIds = normalizePurchaseStoreIds(candidate.purchaseStoreIds);
   merged.area = areaRegistry[candidate.area]?.enabled ? candidate.area : base.area;
   const nodes = nodeMapForArea(merged.area);
   merged.playerNode = nodes[candidate.playerNode] ? candidate.playerNode : areaRegistry[merged.area].defaultNode;
@@ -70,6 +72,27 @@ export function normalizeState(candidate = {}) {
   delete merged.week;
   delete merged.dayIndex;
   return merged;
+}
+
+function normalizeBundleUnlocks(candidate = {}) {
+  if (!candidate || Array.isArray(candidate) || typeof candidate !== "object") return {};
+  return Object.fromEntries(Object.entries(candidate).flatMap(([bundleId, unlockIds]) => {
+    const bundle = itemById(bundleId);
+    if (bundle?.type !== "outfitSet" || !Array.isArray(unlockIds)) return [];
+    const validUnlockIds = [...new Set(unlockIds)]
+      .map(migrateLegacyItemId)
+      .filter((itemId) => itemId !== bundleId && Boolean(itemById(itemId)));
+    return validUnlockIds.length ? [[bundleId, validUnlockIds]] : [];
+  }));
+}
+
+function normalizePurchaseStoreIds(candidate = {}) {
+  if (!candidate || Array.isArray(candidate) || typeof candidate !== "object") return {};
+  return Object.fromEntries(Object.entries(candidate).flatMap(([itemId, storeId]) => {
+    const item = itemById(migrateLegacyItemId(itemId));
+    if (!item || typeof storeId !== "string" || !storeId.trim()) return [];
+    return [[item.id, storeId]];
+  }));
 }
 
 function normalizeOutfit(candidateOutfit = {}, baseOutfit = defaultState.outfit) {

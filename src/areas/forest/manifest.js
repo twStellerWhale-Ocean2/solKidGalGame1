@@ -1,5 +1,7 @@
 import { makeLessons, makeQuestTemplates } from "../lesson-helpers.js";
 
+const npcImage = (name) => `assets/areas/forest/characters/${name}.webp`;
+
 export const forestVocabularyProfile = Object.freeze({
   id: "cambridge-a2-flyers",
   label: "Cambridge A2 Flyers",
@@ -33,36 +35,38 @@ export const forestArea = Object.freeze({
   id: "forest",
   label: "Forest",
   view: "map",
-  mapImage: "assets/areas/forest-map-wide.png?v=20260603-region-vocab",
-  imageSize: { width: 1774, height: 887 },
+  mapImage: "assets/areas/forest/map-pure.webp?v=20260604-issues56-60",
+  imageSize: { width: 1448, height: 1086 },
   vocabularyProfile: forestVocabularyProfile,
   nodes: {
-    forestEntrance: { id: "forestEntrance", label: "Kingdom Path", x: 9, y: 61, links: ["elfGlade", "redHoodPath"] },
-    elfGlade: { id: "elfGlade", label: "Elf Glade", x: 23, y: 25, links: ["forestEntrance", "dwarfCottage", "halflingVillage"] },
-    dwarfCottage: { id: "dwarfCottage", label: "Dwarf Cottage", x: 44, y: 24, links: ["elfGlade", "stoneGolemPass", "halflingVillage"] },
-    stoneGolemPass: { id: "stoneGolemPass", label: "Stone Golem Pass", x: 65, y: 26, links: ["dwarfCottage", "wizardHut"] },
-    halflingVillage: { id: "halflingVillage", label: "Halfling Village", x: 34, y: 50, links: ["elfGlade", "dwarfCottage", "redHoodPath", "threePigsCottage"] },
-    wizardHut: { id: "wizardHut", label: "Wizard Hut", x: 66, y: 51, links: ["stoneGolemPass", "treeSpiritGrove", "threePigsCottage"] },
-    redHoodPath: { id: "redHoodPath", label: "Red Riding Hood Path", x: 21, y: 79, links: ["forestEntrance", "halflingVillage", "threePigsCottage"] },
-    threePigsCottage: { id: "threePigsCottage", label: "Three Pigs Cottage", x: 49, y: 80, links: ["redHoodPath", "halflingVillage", "wizardHut", "treeSpiritGrove"] },
-    treeSpiritGrove: { id: "treeSpiritGrove", label: "Tree Spirit Grove", x: 82, y: 78, links: ["wizardHut", "threePigsCottage"] }
+    forestEntrance: { id: "forestEntrance", label: "Kingdom Path", x: 87, y: 82, links: ["treeSpiritGrove", "wizardHut", "threePigsCottage"] },
+    elfGlade: { id: "elfGlade", label: "Elf Glade", x: 31, y: 28, links: ["dwarfCottage", "fairyAtelier", "halflingVillage"] },
+    fairyAtelier: { id: "fairyAtelier", label: "Fairy Atelier", x: 38, y: 38, links: ["elfGlade", "halflingVillage", "wizardHut"] },
+    dwarfCottage: { id: "dwarfCottage", label: "Dwarf Cottage", x: 18, y: 48, links: ["elfGlade", "stoneGolemPass", "halflingVillage"] },
+    stoneGolemPass: { id: "stoneGolemPass", label: "Stone Golem Pass", x: 44, y: 18, links: ["dwarfCottage", "wizardHut", "elfGlade"] },
+    halflingVillage: { id: "halflingVillage", label: "Halfling Village", x: 50, y: 58, links: ["elfGlade", "dwarfCottage", "fairyAtelier", "redHoodPath", "threePigsCottage"] },
+    wizardHut: { id: "wizardHut", label: "Wizard Hut", x: 63, y: 44, links: ["stoneGolemPass", "treeSpiritGrove", "threePigsCottage", "fairyAtelier"] },
+    redHoodPath: { id: "redHoodPath", label: "Red Riding Hood Path", x: 14, y: 84, links: ["halflingVillage", "threePigsCottage"] },
+    threePigsCottage: { id: "threePigsCottage", label: "Three Pigs Cottage", x: 57, y: 78, links: ["redHoodPath", "halflingVillage", "wizardHut", "treeSpiritGrove", "forestEntrance"] },
+    treeSpiritGrove: { id: "treeSpiritGrove", label: "Tree Spirit Grove", x: 78, y: 43, links: ["wizardHut", "threePigsCottage", "forestEntrance"] }
   },
   locations: [
     { id: "forestExit", area: "forest", node: "forestEntrance", label: "Kingdom Path", icon: "↩", npcClass: "npc-none", npc: "Forest Sign", kind: "gate", markerStyle: "portal", portalId: "entrance", hint: "The path returns to the kingdom town." },
-    { id: "elfGlade", area: "forest", node: "elfGlade", label: "Elf Glade", icon: "🧝", npcClass: "npc-none", npc: "Elia", scene: "scene-forest-elf-glade", hint: "The elf glade glows with tiny flowers." },
-    { id: "dwarfCottage", area: "forest", node: "dwarfCottage", label: "Dwarf Cottage", icon: "🛖", npcClass: "npc-dwarf", npc: "Pip", scene: "scene-forest-dwarf-cottage", kind: "shop", shopCategories: ["outer"], defaultCategory: "outer", hint: "Pip keeps handmade forest outerwear in a warm cottage." },
-    { id: "stoneGolemPass", area: "forest", node: "stoneGolemPass", label: "Stone Golem Pass", icon: "🪨", npcClass: "npc-none", npc: "Goro", scene: "scene-forest-golem-pass", hint: "A friendly stone golem watches the mountain pass." },
-    { id: "halflingVillage", area: "forest", node: "halflingVillage", label: "Halfling Village", icon: "🏘", npcClass: "npc-none", npc: "Penny", scene: "scene-forest-halfling-village", hint: "Small round doors peek from the hill." },
-    { id: "wizardHut", area: "forest", node: "wizardHut", label: "Wizard Hut", icon: "🪄", npcClass: "npc-none", npc: "Wiz Beryl", scene: "scene-forest-wizard-hut", hint: "A purple roof curls above jars and herbs." },
-    { id: "redHoodPath", area: "forest", node: "redHoodPath", label: "Red Riding Hood Path", icon: "🧺", npcClass: "npc-none", npc: "Ruby", scene: "scene-forest-red-hood-path", hint: "A red hood and basket wait on the forest path." },
-    { id: "threePigsCottage", area: "forest", node: "threePigsCottage", label: "Three Pigs Cottage", icon: "🐷", npcClass: "npc-none", npc: "Pippo", scene: "scene-forest-three-pigs", hint: "Three small cottages stand under warm trees." },
-    { id: "treeSpiritGrove", area: "forest", node: "treeSpiritGrove", label: "Tree Spirit Grove", icon: "✨", npcClass: "npc-tree-spirit", npc: "Sylvie", scene: "scene-forest-tree-spirit-grove", hint: "A gentle tree spirit listens to children practicing English." }
+    { id: "elfGlade", area: "forest", node: "elfGlade", label: "Elf Glade", icon: "🧝", npc: "Elia", scene: "scene-forest-elf-glade", npcImage: npcImage("elia"), hint: "The elf glade glows with tiny flowers." },
+    { id: "fairyAtelier", area: "forest", node: "fairyAtelier", label: "Fairy Atelier", icon: "👗", npc: "Faye", scene: "scene-forest-fairy-atelier", npcImage: npcImage("fairy-atelier"), kind: "shop", shopCategories: ["dresses", "accessories"], defaultCategory: "dresses", hint: "Faye sells fairy dresses and accessories in the glade." },
+    { id: "dwarfCottage", area: "forest", node: "dwarfCottage", label: "Dwarf Cottage", icon: "🛖", npc: "Pip", scene: "scene-forest-dwarf-cottage", npcImage: npcImage("pip"), kind: "shop", shopCategories: ["outerwear", "shoes"], defaultCategory: "outerwear", hint: "Pip keeps handmade forest outerwear and shoes in a warm cottage." },
+    { id: "stoneGolemPass", area: "forest", node: "stoneGolemPass", label: "Stone Golem Pass", icon: "🪨", npc: "Goro", scene: "scene-forest-golem-pass", npcImage: npcImage("goro"), hint: "A friendly stone golem watches the mountain pass." },
+    { id: "halflingVillage", area: "forest", node: "halflingVillage", label: "Halfling Village", icon: "🏘", npc: "Penny", scene: "scene-forest-halfling-village", npcImage: npcImage("penny"), hint: "Small round doors peek from the hill." },
+    { id: "wizardHut", area: "forest", node: "wizardHut", label: "Wizard Hut", icon: "🪄", npc: "Wiz Beryl", scene: "scene-forest-wizard-hut", npcImage: npcImage("wiz-beryl"), hint: "A purple roof curls above jars and herbs." },
+    { id: "redHoodPath", area: "forest", node: "redHoodPath", label: "Red Riding Hood Path", icon: "🧺", npc: "Ruby", scene: "scene-forest-red-hood-path", npcImage: npcImage("ruby"), hint: "A red hood and basket wait on the forest path." },
+    { id: "threePigsCottage", area: "forest", node: "threePigsCottage", label: "Three Pigs Cottage", icon: "🐷", npc: "Pippo", scene: "scene-forest-three-pigs", npcImage: npcImage("pippo"), hint: "Three small cottages stand under warm trees." },
+    { id: "treeSpiritGrove", area: "forest", node: "treeSpiritGrove", label: "Tree Spirit Grove", icon: "✨", npc: "Sylvie", scene: "scene-forest-tree-spirit-grove", npcImage: npcImage("sylvie"), hint: "A gentle tree spirit listens to children practicing English." }
   ],
   actors: [
-    { id: "forest-river-glow", type: "water", x: 92, y: 50, w: 13, h: 70, z: 1, phase: 1.1 },
-    { id: "forest-firefly-a", type: "glow", x: 23, y: 25, w: 8, h: 8, z: 3, phase: 0.2 },
-    { id: "forest-firefly-b", type: "glow", x: 82, y: 78, w: 7, h: 7, z: 3, phase: 1.1 },
-    { id: "forest-bird", type: "bird", x: 54, y: 20, w: 4, h: 2, z: 4, phase: 0.6 }
+    { id: "forest-river-glow", type: "water", x: 70, y: 78, w: 28, h: 18, z: 1, phase: 1.1 },
+    { id: "forest-firefly-a", type: "glow", x: 31, y: 28, w: 8, h: 8, z: 3, phase: 0.2 },
+    { id: "forest-firefly-b", type: "glow", x: 78, y: 43, w: 7, h: 7, z: 3, phase: 1.1 },
+    { id: "forest-bird", type: "bird", x: 52, y: 19, w: 4, h: 2, z: 4, phase: 0.6 }
   ],
   defaultNode: "forestEntrance",
   enabled: true
@@ -70,14 +74,15 @@ export const forestArea = Object.freeze({
 
 export const forestSceneConfigs = Object.freeze({
   forestExit: { scene: "scene-forest-path", npcClass: "npc-none", npc: "Forest Sign", travelAction: "Back to Kingdom", travelLine: "The path returns to the kingdom town." },
-  elfGlade: { scene: "scene-forest-elf-glade", npcClass: "npc-none", npc: "Elia", travelAction: "Visit", travelLine: "Elia the elf listens to the glowing flowers." },
-  dwarfCottage: { scene: "scene-forest-dwarf-cottage", npcClass: "npc-dwarf", npc: "Pip", travelAction: "Shop", travelLine: "Pip has handmade forest treasures ready for Lumi.", shopGreeting: "Welcome to the dwarf cottage. Pick a gentle forest treasure." },
-  stoneGolemPass: { scene: "scene-forest-golem-pass", npcClass: "npc-none", npc: "Goro", travelAction: "Visit", travelLine: "Goro the stone golem blocks the old pass with a friendly smile." },
-  halflingVillage: { scene: "scene-forest-halfling-village", npcClass: "npc-none", npc: "Penny", travelAction: "Visit", travelLine: "Penny waves from a round green door." },
-  wizardHut: { scene: "scene-forest-wizard-hut", npcClass: "npc-none", npc: "Wiz Beryl", travelAction: "Visit", travelLine: "Wiz Beryl is sorting jars under the purple roof." },
-  redHoodPath: { scene: "scene-forest-red-hood-path", npcClass: "npc-none", npc: "Ruby", travelAction: "Visit", travelLine: "Ruby checks her basket on the forest path." },
-  threePigsCottage: { scene: "scene-forest-three-pigs", npcClass: "npc-none", npc: "Pippo", travelAction: "Visit", travelLine: "Pippo looks at three tiny cottages." },
-  treeSpiritGrove: { scene: "scene-forest-tree-spirit-grove", npcClass: "npc-tree-spirit", npc: "Sylvie", travelAction: "Visit", travelLine: "Sylvie the tree spirit smiles from the branches." }
+  elfGlade: { scene: "scene-forest-elf-glade", npc: "Elia", npcImage: npcImage("elia"), travelAction: "Visit", travelLine: "Elia the elf listens to the glowing flowers." },
+  fairyAtelier: { scene: "scene-forest-fairy-atelier", npc: "Faye", npcImage: npcImage("fairy-atelier"), travelAction: "Shop", travelLine: "Faye has fairy dresses and accessories in the glade.", shopGreeting: "Welcome to the Fairy Atelier. Pick dresses or accessories." },
+  dwarfCottage: { scene: "scene-forest-dwarf-cottage", npc: "Pip", npcImage: npcImage("pip"), travelAction: "Shop", travelLine: "Pip has handmade forest outerwear and shoes ready for Lumi.", shopGreeting: "Welcome to the Dwarf Cottage. Pick outerwear or shoes." },
+  stoneGolemPass: { scene: "scene-forest-golem-pass", npc: "Goro", npcImage: npcImage("goro"), travelAction: "Visit", travelLine: "Goro the stone golem blocks the old pass with a friendly smile." },
+  halflingVillage: { scene: "scene-forest-halfling-village", npc: "Penny", npcImage: npcImage("penny"), travelAction: "Visit", travelLine: "Penny waves from a round green door." },
+  wizardHut: { scene: "scene-forest-wizard-hut", npc: "Wiz Beryl", npcImage: npcImage("wiz-beryl"), travelAction: "Visit", travelLine: "Wiz Beryl is sorting jars under the purple roof." },
+  redHoodPath: { scene: "scene-forest-red-hood-path", npc: "Ruby", npcImage: npcImage("ruby"), travelAction: "Visit", travelLine: "Ruby checks her basket on the forest path." },
+  threePigsCottage: { scene: "scene-forest-three-pigs", npc: "Pippo", npcImage: npcImage("pippo"), travelAction: "Visit", travelLine: "Pippo looks at three tiny cottages." },
+  treeSpiritGrove: { scene: "scene-forest-tree-spirit-grove", npc: "Sylvie", npcImage: npcImage("sylvie"), travelAction: "Visit", travelLine: "Sylvie the tree spirit smiles from the branches." }
 });
 
 export const forestQuestTemplates = makeQuestTemplates(forestLessonPlaces);

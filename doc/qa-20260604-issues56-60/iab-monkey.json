@@ -1,0 +1,8 @@
+{
+  "monkeyProbe56": {
+    "body": "{\"test\":\"monkey\",\"passed\":true,\"steps\":300,\"errors\":[],\"coins\":10,\"playerNode\":\"princessRoom\",\"activeQuest\":null,\"activeViews\":1}\n⚙\nPrincess Lumi\nCOINS\n10\nCastle Map\n🚪\n👑\n📖\n🍲\n🛡\n🧺\n🧥\n👚\n🏰\nLumi Diary\nBack\nDiary\nSettings\nEnglish\nSave / Load\nSave / Load MD\n\nKeep Lumi's diary and progress in a Markdown save file.\n\nSave MD\nLoad MD\nFamily save page\nSave MD exports readable diary pages and game progress. Help Teacher keys stay only in this browser.",
+    "resultText": "{\"test\":\"monkey\",\"passed\":true,\"steps\":300,\"errors\":[],\"coins\":10,\"playerNode\":\"princessRoom\",\"activeQuest\":null,\"activeViews\":1}",
+    "url": "http://127.0.0.1:4174/?selftest=monkey#home"
+  },
+  "monkeyLogsRetry56": []
+}

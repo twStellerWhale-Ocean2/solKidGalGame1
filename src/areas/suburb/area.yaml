@@ -10,4 +10,10 @@ locations:
   - pasture
   - farm
   - mill
+  - workwearStall
+  - fieldCobbler
   - villageHome
+
+shops:
+  workwearStall: [tops, bottoms]
+  fieldCobbler: [shoes, hats]

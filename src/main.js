@@ -66,9 +66,9 @@ let openAISettings = loadOpenAISettings();
 let activeHotspot = null;
 let activeLesson = null;
 let advMode = "closed";
-let shopCategory = "dress";
+let shopCategory = "dresses";
 let activeShopHotspot = null;
-let wardrobeCategory = "dress";
+let wardrobeCategory = "dresses";
 let princessExpression = "normal";
 let npcExpression = "normal";
 let advFocusIndex = 0;
@@ -472,6 +472,10 @@ function cssAssetUrl(src) {
   return path?.replaceAll("'", "%27");
 }
 
+function domAssetUrl(src) {
+  return (src || "").replaceAll('"', "%22");
+}
+
 function isWearableItem(item) {
   return item && item.type !== "room";
 }
@@ -479,6 +483,9 @@ function isWearableItem(item) {
 function isItemEquipped(item, outfit = state.outfit) {
   if (!item) return false;
   if (item.type === "room") return outfit.room === item.id;
+  if (item.type === "outfitSet") {
+    return Object.entries(item.equips || {}).every(([slot, itemId]) => outfit[slot] === itemId);
+  }
   return outfit[item.type] === item.id;
 }
 
@@ -487,6 +494,14 @@ function equipOutfitItem(item, outfit = state.outfit) {
   if (item.type === "room") {
     outfit.room = item.id;
     return outfit;
+  }
+  if (item.type === "outfitSet") {
+    Object.entries(item.equips || {}).forEach(([slot, itemId]) => {
+      const component = itemById(itemId);
+      if (component) equipOutfitItem(component, outfit);
+      else outfit[slot] = itemId;
+    });
+    return normalizeVisibleOutfit(outfit);
   }
   if (item.type === "dress") {
     outfit.top = "none";
@@ -501,6 +516,12 @@ function equipOutfitItem(item, outfit = state.outfit) {
 
 function unequipOutfitItem(item, outfit = state.outfit) {
   if (!item || item.type === "room") return outfit;
+  if (item.type === "outfitSet") {
+    Object.keys(item.equips || {}).forEach((slot) => {
+      outfit[slot] = "none";
+    });
+    return normalizeVisibleOutfit(outfit);
+  }
   outfit[item.type] = "none";
   return normalizeVisibleOutfit(outfit);
 }
@@ -1238,7 +1259,9 @@ function openAdvBase(hotspot, mode) {
   elements.advModal.setAttribute("aria-hidden", "false");
   elements.advScene.className = `adv-scene ${scene.scene}`;
   elements.advTitle.textContent = hotspot.label;
-  elements.advNpcPortrait.className = `portrait-card adv-npc ${scene.npcClass}`;
+  const npcClass = scene.npcClass || (scene.npcImage ? "npc-image" : "npc-none");
+  elements.advNpcPortrait.className = `portrait-card adv-npc ${npcClass}`;
+  elements.advNpcPortrait.style.backgroundImage = scene.npcImage ? `url("${domAssetUrl(scene.npcImage)}")` : "";
   elements.advNpcPortrait.dataset.expression = npcExpression;
   elements.advSpeaker.textContent = scene.npc;
   elements.choiceList.innerHTML = "";
@@ -1391,7 +1414,7 @@ function openShopDetail(hotspot) {
   openAdvBase(hotspot, "shop");
   activeShopHotspot = hotspot;
   addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
-  const firstCategory = hotspot.defaultCategory || hotspot.shopCategories?.[0] || "dress";
+  const firstCategory = hotspot.defaultCategory || hotspot.shopCategories?.[0] || "dresses";
   const stockedCategories = availableShopCategories(hotspot);
   shopCategory = stockedCategories.includes(shopCategory) ? shopCategory : stockedCategories[0] || firstCategory;
   clearTryOnPreview({ renderDoll: false });
@@ -1418,7 +1441,7 @@ function openRefundDetail(hotspot) {
   speak(elements.advLine.textContent);
 }
 
-function openWardrobeDetail(category = "dress") {
+function openWardrobeDetail(category = "dresses") {
   const hotspot = hotspotById("princessRoom");
   activeShopHotspot = hotspot;
   advMode = "wardrobe";
@@ -1434,21 +1457,22 @@ function openWardrobeDetail(category = "dress") {
 
 function wardrobeEmptyText(category = shopCategory) {
   const messages = {
-    accessory: "Buy accessories at the Accessory Shop first.",
-    bottom: "Buy bottoms at the Dress Boutique first.",
-    dress: "Buy dresses at the Dress Boutique first.",
-    hairstyle: "Buy hairstyles at the Dress Boutique first.",
-    outer: "Buy outerwear at the Dress Boutique or Dwarf Cottage first.",
-    room: "Buy room treasures at Market Square first.",
+    accessories: "Buy accessories at the Accessory Atelier or Fairy Atelier first.",
+    bottoms: "Buy bottoms at the Tailor Studio, Castle Seamstress, or Workwear Stall first.",
+    dresses: "Buy dresses at the Dress Boutique or Fairy Atelier first.",
+    hair: "Buy hairstyles at the Hair Salon first.",
+    hats: "Buy hats at the Accessory Atelier, Royal Cloak Room, or Field Cobbler first.",
+    outfitSets: "Buy outfit sets at the Dress Boutique first.",
+    outerwear: "Buy outerwear at the Dress Boutique, Royal Cloak Room, or Dwarf Cottage first.",
     shoes: "Buy shoes at the Shoe Shop first.",
-    top: "Buy tops at the Dress Boutique first."
+    tops: "Buy tops at the Tailor Studio, Castle Seamstress, or Workwear Stall first."
   };
   return messages[category] || `Buy ${categoryLabel(category).toLowerCase()} in the kingdom first.`;
 }
 
 function renderWardrobeDetail(preserveFocus = false) {
   const allCategories = categories.map((category) => category.id);
-  if (!allCategories.includes(shopCategory)) shopCategory = "dress";
+  if (!allCategories.includes(shopCategory)) shopCategory = "dresses";
   const categoryItems = shopItems.filter((item) => itemMatchesCategory(item, shopCategory) && state.owned.includes(item.id));
   if (shopPreviewItemId && !categoryItems.some((item) => item.id === shopPreviewItemId)) clearTryOnPreview({ renderDoll: false });
   const previewItem = categoryItems.find((item) => item.id === shopPreviewItemId) || null;
@@ -1533,8 +1557,14 @@ function refundableItemsFor(hotspot = activeShopHotspot) {
   return shopItems.filter((item) => (
     item.storeId === hotspot?.id &&
     item.cost > 0 &&
-    state.owned.includes(item.id)
+    state.owned.includes(item.id) &&
+    purchaseSourceFor(item) === hotspot?.id
   ));
+}
+
+function purchaseSourceFor(item) {
+  ensurePurchaseStoreIdsState();
+  return state.purchaseStoreIds[item.id] || item.storeId;
 }
 
 function availableShopCategories(hotspot = activeShopHotspot) {
@@ -1553,7 +1583,7 @@ function shopGreeting(hotspot) {
 function renderAdvShop(preserveFocus = false) {
   const allowed = allowedShopCategories();
   const stockedCategories = availableShopCategories();
-  if (!stockedCategories.includes(shopCategory)) shopCategory = stockedCategories[0] || allowed[0] || "dress";
+  if (!stockedCategories.includes(shopCategory)) shopCategory = stockedCategories[0] || allowed[0] || "dresses";
   const categoryItems = unownedShopItemsFor(activeShopHotspot, shopCategory);
   if (!stockedCategories.length) {
     clearTryOnPreview({ renderDoll: false });
@@ -1658,7 +1688,9 @@ function tryOnFeedbackText(item, source) {
   const affordable = state.coins >= item.cost;
   const status = owned ? equipped ? "Equipped now" : "Owned treasure" : affordable ? "Ready to buy" : `Need ${item.cost - state.coins} more coins`;
   if (item.type === "room") return `${item.name}: ${status}.`;
-  const action = source === "wardrobe" ? "Trying it on Lumi" : "Trying it on Lumi before buying";
+  const action = item.type === "outfitSet"
+    ? source === "wardrobe" ? "Trying the full set on Lumi" : "Trying the full set before buying"
+    : source === "wardrobe" ? "Trying it on Lumi" : "Trying it on Lumi before buying";
   return `${item.name}: ${action}. ${status}.`;
 }
 
@@ -1689,7 +1721,16 @@ function buyItemInAdv(item) {
   }
   state.coins -= item.cost;
   playTone("buy");
-  state.owned.push(item.id);
+  const unlockIds = purchaseUnlockIds(item);
+  const newlyUnlockedIds = unlockIds.filter((itemId) => !state.owned.includes(itemId));
+  unlockIds.forEach((itemId) => {
+    if (!state.owned.includes(itemId)) state.owned.push(itemId);
+  });
+  recordPurchaseSources(item, newlyUnlockedIds);
+  if (item.type === "outfitSet") {
+    ensureBundleUnlocksState();
+    state.bundleUnlocks[item.id] = newlyUnlockedIds.filter((itemId) => itemId !== item.id);
+  }
   if (item.type !== "room") equipOutfitItem(item);
   awardBadge("First Shopping");
   updateProgressBadges();
@@ -1703,6 +1744,39 @@ function buyItemInAdv(item) {
   render();
   shopPreviewItemId = "";
   renderAdvShop(true);
+}
+
+function purchaseUnlockIds(item) {
+  if (item?.type !== "outfitSet") return [item.id];
+  return [item.id, ...Object.values(item.equips || {})].filter(Boolean);
+}
+
+function ensureBundleUnlocksState() {
+  if (!state.bundleUnlocks || Array.isArray(state.bundleUnlocks) || typeof state.bundleUnlocks !== "object") {
+    state.bundleUnlocks = {};
+  }
+}
+
+function ensurePurchaseStoreIdsState() {
+  if (!state.purchaseStoreIds || Array.isArray(state.purchaseStoreIds) || typeof state.purchaseStoreIds !== "object") {
+    state.purchaseStoreIds = {};
+  }
+}
+
+function recordPurchaseSources(item, newlyUnlockedIds) {
+  ensurePurchaseStoreIdsState();
+  state.purchaseStoreIds[item.id] = item.storeId;
+  if (item.type !== "outfitSet") return;
+  const bundleSource = bundlePurchaseSource(item.id);
+  newlyUnlockedIds
+    .filter((itemId) => itemId !== item.id)
+    .forEach((itemId) => {
+      state.purchaseStoreIds[itemId] = bundleSource;
+    });
+}
+
+function bundlePurchaseSource(bundleId) {
+  return `bundle:${bundleId}`;
 }
 
 function renderRefundDetail(preserveFocus = false) {
@@ -1752,12 +1826,10 @@ function refundAmount(item) {
 function refundItemInAdv(item) {
   if (!item || item.storeId !== activeShopHotspot?.id || item.cost <= 0 || !state.owned.includes(item.id)) return;
   const amount = refundAmount(item);
+  const removedOwnedIds = refundRemovalIds(item);
   state.coins += amount;
-  state.owned = state.owned.filter((ownedId) => ownedId !== item.id);
-  if (isItemEquipped(item)) {
-    state.outfit[item.type] = fallbackOwnedItemForSlot(item.type);
-    normalizeVisibleOutfit();
-  }
+  state.owned = state.owned.filter((ownedId) => !removedOwnedIds.includes(ownedId));
+  clearRemovedEquippedItems(removedOwnedIds);
   shopPreviewItemId = "";
   const feedbackText = `Refunded ${item.name} for ${amount} coins.`;
   elements.advLine.textContent = feedbackText;
@@ -1767,6 +1839,34 @@ function refundItemInAdv(item) {
   persist();
   render();
   renderRefundDetail(true);
+}
+
+function refundRemovalIds(item) {
+  ensurePurchaseStoreIdsState();
+  if (item?.type !== "outfitSet") {
+    delete state.purchaseStoreIds[item.id];
+    return [item.id];
+  }
+  ensureBundleUnlocksState();
+  const recordedUnlocks = Array.isArray(state.bundleUnlocks[item.id]) ? state.bundleUnlocks[item.id] : [];
+  delete state.bundleUnlocks[item.id];
+  delete state.purchaseStoreIds[item.id];
+  const bundleSource = bundlePurchaseSource(item.id);
+  recordedUnlocks.forEach((itemId) => {
+    if (state.purchaseStoreIds[itemId] === bundleSource) delete state.purchaseStoreIds[itemId];
+  });
+  return [item.id, ...recordedUnlocks].filter(Boolean);
+}
+
+function clearRemovedEquippedItems(itemIds) {
+  const removed = new Set(itemIds);
+  let changed = false;
+  Object.entries(state.outfit).forEach(([slot, itemId]) => {
+    if (!removed.has(itemId)) return;
+    state.outfit[slot] = fallbackOwnedItemForSlot(slot);
+    changed = true;
+  });
+  if (changed) normalizeVisibleOutfit();
 }
 
 function fallbackOwnedItemForSlot(type) {
@@ -2516,6 +2616,7 @@ installTestingHooks({
   hotspotById,
   interactNearby: interactCurrentLocation,
   categoryForType,
+  categories,
   itemMatchesCategory,
   isWalkable,
   itemById,
@@ -2538,6 +2639,7 @@ installTestingHooks({
   renderRefundDetail,
   renderMap,
   refundItemInAdv,
+  sceneConfigFor,
   setMapViewport: (areaId, viewport = {}) => {
     if (!areaRegistry[areaId]) throw new Error("Unknown area");
     applyAreaMapViewport(areaId, {

@@ -28,6 +28,8 @@ export const defaultState = {
   metNpcs: [],
   learnedWords: [],
   badges: [],
+  bundleUnlocks: {},
+  purchaseStoreIds: {},
   activeQuest: null,
   area: "castle",
   player: { x: 51.5, y: 50 },

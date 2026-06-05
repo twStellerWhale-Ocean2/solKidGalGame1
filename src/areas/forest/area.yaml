@@ -5,6 +5,7 @@ rewardCoins: 2000
 source: kingdom-panorama-left-mountain-forest-river
 locations:
   - elfGlade
+  - fairyAtelier
   - dwarfCottage
   - stoneGolemPass
   - halflingVillage
@@ -12,3 +13,10 @@ locations:
   - redHoodPath
   - threePigsCottage
   - treeSpiritGrove
+
+mapImage: assets/areas/forest/map-pure.webp
+portalPlacement: right-side kingdom path
+
+shops:
+  fairyAtelier: [dresses, accessories]
+  dwarfCottage: [outerwear, shoes]

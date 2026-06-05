@@ -51,7 +51,7 @@ locations:
     kind: npc
   - id: market
     node: market
-    kind: shop
+    kind: npc
   - id: harbor
     node: harbor
     kind: npc
@@ -61,12 +61,23 @@ locations:
   - id: boutique
     node: boutique
     kind: shop
+    shopCategories: [dresses, outfitSets]
+  - id: hairSalon
+    node: hairSalon
+    kind: shop
+    shopCategories: [hair]
+  - id: tailorStudio
+    node: tailorStudio
+    kind: shop
+    shopCategories: [tops, bottoms]
   - id: shoeShop
     node: shoeShop
     kind: shop
+    shopCategories: [shoes]
   - id: accessoryShop
     node: accessoryShop
     kind: shop
+    shopCategories: [hats, accessories]
   - id: lighthouse
     node: lighthouse
     kind: npc

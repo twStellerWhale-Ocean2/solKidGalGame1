@@ -1,0 +1,59 @@
+[
+  {
+    "area": "castle",
+    "info": {
+      "activeView": "homeView",
+      "castleBackground": "none",
+      "forestExit": [],
+      "mapImageCurrentSrc": "http://127.0.0.1:4174/assets/kingdom-map2.webp?v=20260601-optimized-assets",
+      "mapImageSrc": "assets/kingdom-map2.webp?v=20260601-optimized-assets",
+      "mapTitle": "Kingdom Map",
+      "markers": 9
+    }
+  },
+  {
+    "area": "kingdom",
+    "info": {
+      "activeView": "mapView",
+      "castleBackground": "none",
+      "forestExit": [],
+      "mapImageCurrentSrc": "http://127.0.0.1:4174/assets/kingdom-map2.webp?v=20260601-optimized-assets",
+      "mapImageSrc": "assets/kingdom-map2.webp?v=20260601-optimized-assets",
+      "mapTitle": "Kingdom Map",
+      "markers": 26
+    }
+  },
+  {
+    "area": "suburb",
+    "info": {
+      "activeView": "mapView",
+      "castleBackground": "none",
+      "forestExit": [],
+      "mapImageCurrentSrc": "http://127.0.0.1:4174/assets/areas/suburb-map.png?v=20260603-region-vocab",
+      "mapImageSrc": "assets/areas/suburb-map.png?v=20260603-region-vocab",
+      "mapTitle": "Suburb Map",
+      "markers": 19
+    }
+  },
+  {
+    "area": "forest",
+    "info": {
+      "activeView": "mapView",
+      "castleBackground": "none",
+      "forestExit": [
+        {
+          "height": 49,
+          "place": "Kingdom Path. Back to Kingdom.",
+          "text": "↩",
+          "width": 67,
+          "x": 202,
+          "y": 731
+        }
+      ],
+      "mapImageCurrentSrc": "http://127.0.0.1:4174/assets/areas/forest/map-pure.webp?v=20260604-issues56-60",
+      "mapImageSrc": "assets/areas/forest/map-pure.webp?v=20260604-issues56-60",
+      "mapTitle": "Forest Map",
+      "markers": 19
+    }
+  }
+]
