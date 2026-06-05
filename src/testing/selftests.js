@@ -31,6 +31,7 @@ export function installTestingHooks(api) {
     },
     closeAdv: api.closeAdv,
     buy: (itemId) => api.buyItemInAdv(api.itemById(itemId)),
+    refund: (itemId) => api.refundItemInAdv(api.itemById(itemId)),
     focusCastle: api.focusCastle,
     focusKingdom: api.focusKingdom,
     focusSuburb: api.focusSuburb,
@@ -38,8 +39,63 @@ export function installTestingHooks(api) {
   };
 
   runSaveLoadSelfTest(api);
+  runDataAudit(api);
   runVisualQa(api);
   runMonkeyTest(api);
+}
+
+function runDataAudit(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "data-audit") return;
+  const shopLocations = Object.values(api.areaRegistry)
+    .flatMap((area) => area.locations || [])
+    .filter((hotspot) => hotspot.kind === "shop");
+  const shopIds = new Set(shopLocations.map((hotspot) => hotspot.id));
+  const categoryCounts = Object.fromEntries(api.categories.map((category) => [
+    category.id,
+    api.shopItems.filter((item) => item.cost > 0 && api.itemMatchesCategory(item, category.id)).length
+  ]));
+  const errors = [];
+
+  Object.entries(categoryCounts).forEach(([category, count]) => {
+    if (count < 10) errors.push(`${category} has ${count} paid items`);
+  });
+  shopLocations.forEach((hotspot) => {
+    if ((hotspot.shopCategories || []).length > 2) errors.push(`${hotspot.id} has more than two shop categories`);
+  });
+  api.shopItems.forEach((item) => {
+    if (item.storeId === "starter") return;
+    if (!shopIds.has(item.storeId)) errors.push(`${item.id} points to missing store ${item.storeId}`);
+    if (item.type === "room") errors.push(`${item.id} is a removed room/furniture item`);
+  });
+  const market = api.hotspotById("market");
+  if (market?.kind === "shop") errors.push("market is still a shop");
+  Object.values(api.areaRegistry).forEach((area) => {
+    (area.locations || []).forEach((hotspot) => {
+      if (hotspot.kind === "gate" || hotspot.kind === "room") return;
+      const config = api.sceneConfigFor(hotspot);
+      if (config.npcClass === "npc-none" && !config.npcImage) {
+        errors.push(`${area.id}/${hotspot.id} has no NPC portrait`);
+      }
+    });
+  });
+
+  const result = document.createElement("pre");
+  result.id = "dataAuditResult";
+  result.textContent = JSON.stringify({
+    test: "data-audit",
+    passed: errors.length === 0,
+    categoryCounts,
+    shopCount: shopLocations.length,
+    shops: shopLocations.map((hotspot) => ({
+      area: api.areaForHotspot(hotspot),
+      id: hotspot.id,
+      label: hotspot.label,
+      categories: hotspot.shopCategories || []
+    })),
+    errors
+  });
+  document.body.prepend(result);
 }
 
 function runSaveLoadSelfTest(api) {
@@ -122,7 +178,7 @@ function runVisualQa(api) {
   if (surface === "wardrobe-detail") {
     api.render();
     api.openRoomScene(api.hotspotById("princessRoom"));
-    api.openWardrobeDetail(params.get("category") || "dress");
+    api.openWardrobeDetail(params.get("category") || "dresses");
     return;
   }
 

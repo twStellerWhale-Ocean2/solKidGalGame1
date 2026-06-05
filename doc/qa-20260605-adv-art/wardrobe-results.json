@@ -1,0 +1,245 @@
+[
+  {
+    "cat": "hair",
+    "path": "C:/Users/User/Documents/Github/solKidGalGame/doc/qa-20260605-adv-art/wardrobe-hair.png",
+    "info": {
+      "footer": [
+        "↩ Back"
+      ],
+      "line": "Choose hair for Lumi.",
+      "previews": [
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/base-starter-pajama.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/hairstyle-twin-braid.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/hairstyle-blonde-bob.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/hairstyle-twin-braid-chestnut.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/hairstyle-twin-braid-rose.webp?v=20260604-issues56-60\")"
+      ],
+      "rows": [
+        "Hair Soft brown hair Wearing Hair Wearing",
+        "Hair Twin-braid story hair Owned Hair Equip",
+        "Hair Blonde bob story hair Owned Hair Equip",
+        "Hair Chestnut twin-braid hair Owned Hair Equip",
+        "Hair Rose twin-braid hair Owned Hair Equip"
+      ],
+      "speaker": "Lumi",
+      "title": "Princess Room",
+      "tryOn": false
+    }
+  },
+  {
+    "cat": "tops",
+    "path": "C:/Users/User/Documents/Github/solKidGalGame/doc/qa-20260605-adv-art/wardrobe-tops.png",
+    "info": {
+      "footer": [
+        "↩ Back"
+      ],
+      "line": "Choose tops for Lumi.",
+      "previews": [
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/top-sky-blouse.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/top-peach-sailor.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/top-mint-blouse.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/top-lilac-blouse.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/top-cream-blouse.webp?v=20260604-issues56-60\")"
+      ],
+      "rows": [
+        "Top Sky blue puff blouse Owned Tops Equip",
+        "Top Peach sailor top Owned Tops Equip",
+        "Top Mint puff blouse Owned Tops Equip",
+        "Top Lilac puff blouse Owned Tops Equip",
+        "Top Cream puff blouse Owned Tops Equip"
+      ],
+      "speaker": "Lumi",
+      "title": "Princess Room",
+      "tryOn": false
+    }
+  },
+  {
+    "cat": "bottoms",
+    "path": "C:/Users/User/Documents/Github/solKidGalGame/doc/qa-20260605-adv-art/wardrobe-bottoms.png",
+    "info": {
+      "footer": [
+        "↩ Back"
+      ],
+      "line": "Choose bottoms for Lumi.",
+      "previews": [
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/bottom-navy-shorts.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/bottom-rose-skirt.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/bottom-forest-shorts.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/bottom-plum-shorts.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/bottom-cocoa-shorts.webp?v=20260604-issues56-60\")"
+      ],
+      "rows": [
+        "Bottom Navy story shorts Owned Bottoms Equip",
+        "Bottom Rose ribbon skirt Owned Bottoms Equip",
+        "Bottom Forest story shorts Owned Bottoms Equip",
+        "Bottom Plum story shorts Owned Bottoms Equip",
+        "Bottom Cocoa story shorts Owned Bottoms Equip"
+      ],
+      "speaker": "Lumi",
+      "title": "Princess Room",
+      "tryOn": false
+    }
+  },
+  {
+    "cat": "dresses",
+    "path": "C:/Users/User/Documents/Github/solKidGalGame/doc/qa-20260605-adv-art/wardrobe-dresses.png",
+    "info": {
+      "footer": [
+        "↩ Back"
+      ],
+      "line": "Choose dresses for Lumi.",
+      "previews": [
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/base-starter-pajama.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/dress-blue-harbor.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/dress-rose-festival.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/dress-snowflake-gown.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/dress-mint-harbor.webp?v=20260604-issues56-60\")"
+      ],
+      "rows": [
+        "PJs Pink-white cotton pajama Wearing Dresses Wearing",
+        "Dress Blue harbor dress Owned Dresses Equip",
+        "Dress Rose festival dress Owned Dresses Equip",
+        "Dress Snowflake gown Owned Dresses Equip",
+        "Dress Mint harbor dress Owned Dresses Equip"
+      ],
+      "speaker": "Lumi",
+      "title": "Princess Room",
+      "tryOn": false
+    }
+  },
+  {
+    "cat": "outerwear",
+    "path": "C:/Users/User/Documents/Github/solKidGalGame/doc/qa-20260605-adv-art/wardrobe-outerwear.png",
+    "info": {
+      "footer": [
+        "↩ Back"
+      ],
+      "line": "Choose outerwear for Lumi.",
+      "previews": [
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/outer-yellow-cardigan.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/outer-starry-cape.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/outer-mint-cardigan.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/outer-rose-cardigan.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/outer-moon-cape.webp?v=20260604-issues56-60\")"
+      ],
+      "rows": [
+        "Outer Little yellow cardigan Owned Outerwear Equip",
+        "Outer Starry helper cape Owned Outerwear Equip",
+        "Outer Mint royal cardigan Owned Outerwear Equip",
+        "Outer Rose royal cardigan Owned Outerwear Equip",
+        "Outer Moon royal cape Owned Outerwear Equip"
+      ],
+      "speaker": "Lumi",
+      "title": "Princess Room",
+      "tryOn": false
+    }
+  },
+  {
+    "cat": "shoes",
+    "path": "C:/Users/User/Documents/Github/solKidGalGame/doc/qa-20260605-adv-art/wardrobe-shoes.png",
+    "info": {
+      "footer": [
+        "↩ Back"
+      ],
+      "line": "Choose shoes for Lumi.",
+      "previews": [
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/shoes-pink-ribbon.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/shoes-blue-boots.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/shoes-mint-ribbon.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/shoes-lilac-ribbon.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/shoes-sun-ribbon.webp?v=20260604-issues56-60\")"
+      ],
+      "rows": [
+        "Shoes Ribbon walking shoes Owned Shoes Equip",
+        "Shoes Blue seaside boots Owned Shoes Equip",
+        "Shoes Mint ribbon shoes Owned Shoes Equip",
+        "Shoes Lilac ribbon shoes Owned Shoes Equip",
+        "Shoes Sun ribbon shoes Owned Shoes Equip"
+      ],
+      "speaker": "Lumi",
+      "title": "Princess Room",
+      "tryOn": false
+    }
+  },
+  {
+    "cat": "hats",
+    "path": "C:/Users/User/Documents/Github/solKidGalGame/doc/qa-20260605-adv-art/wardrobe-hats.png",
+    "info": {
+      "footer": [
+        "↩ Back"
+      ],
+      "line": "Choose hats for Lumi.",
+      "previews": [
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/headtop-gold-crown.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/headtop-rose-crown.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/headtop-silver-crown.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/headtop-lilac-crown.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/headtop-mint-crown.webp?v=20260604-issues56-60\")"
+      ],
+      "rows": [
+        "Hat Tiny gold crown Owned Hats Equip",
+        "Hat Tiny rose crown Owned Hats Equip",
+        "Hat Tiny silver crown Owned Hats Equip",
+        "Hat Tiny lilac crown Owned Hats Equip",
+        "Hat Tiny mint crown Owned Hats Equip"
+      ],
+      "speaker": "Lumi",
+      "title": "Princess Room",
+      "tryOn": false
+    }
+  },
+  {
+    "cat": "accessories",
+    "path": "C:/Users/User/Documents/Github/solKidGalGame/doc/qa-20260605-adv-art/wardrobe-accessories.png",
+    "info": {
+      "footer": [
+        "↩ Back"
+      ],
+      "line": "Choose accessories for Lumi.",
+      "previews": [
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/headside-silk-ribbon.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/faceeyes-round-glasses.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/facemask-star-mask.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/neck-pearl-necklace.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/hand-pearl-bag.webp?v=20260604-issues56-60\")"
+      ],
+      "rows": [
+        "Acc Silk party ribbon Owned Accessories Equip",
+        "Acc Round storybook glasses Owned Accessories Equip",
+        "Acc Lavender star mask Owned Accessories Equip",
+        "Acc Pearl heart necklace Owned Accessories Equip",
+        "Acc Pearl shell bag Owned Accessories Equip"
+      ],
+      "speaker": "Lumi",
+      "title": "Princess Room",
+      "tryOn": false
+    }
+  },
+  {
+    "cat": "outfitSets",
+    "path": "C:/Users/User/Documents/Github/solKidGalGame/doc/qa-20260605-adv-art/wardrobe-outfitSets.png",
+    "info": {
+      "footer": [
+        "↩ Back"
+      ],
+      "line": "Choose outfit sets for Lumi.",
+      "previews": [
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/set-rose-classic.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/set-blue-harbor.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/set-snow-princess.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/set-mint-garden.webp?v=20260604-issues56-60\")",
+        "url(\"http://127.0.0.1:4174/assets/doll/lumi/v3/thumbs/set-lilac-dream.webp?v=20260604-issues56-60\")"
+      ],
+      "rows": [
+        "✦ Rose classic outfit set Owned Outfit Sets Equip",
+        "✦ Blue harbor outfit set Owned Outfit Sets Equip",
+        "✦ Snow princess outfit set Owned Outfit Sets Equip",
+        "✦ Mint garden outfit set Owned Outfit Sets Equip",
+        "✦ Lilac dream outfit set Owned Outfit Sets Equip"
+      ],
+      "speaker": "Lumi",
+      "title": "Princess Room",
+      "tryOn": false
+    }
+  }
+]

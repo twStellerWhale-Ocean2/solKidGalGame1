@@ -33,6 +33,14 @@ locations:
   - id: maidsRoom
     node: maidsRoom
     kind: npc
+  - id: royalCloakRoom
+    node: royalCloakRoom
+    kind: shop
+    shopCategories: [outerwear, hats]
+  - id: castleSeamstress
+    node: castleSeamstress
+    kind: shop
+    shopCategories: [tops, bottoms]
   - id: castleGate
     node: castleGate
     kind: gate

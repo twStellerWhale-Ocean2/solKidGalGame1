@@ -57,6 +57,22 @@
   background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/accessory.webp?v=20260601-optimized-assets") center / cover no-repeat;
 }
 
+.scene-kingdom-dress-boutique {
+  background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/areas/kingdom/scenes/dress-boutique.webp?v=20260604-issues56-60") center / cover no-repeat;
+}
+
+.scene-kingdom-hair-salon {
+  background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/areas/kingdom/scenes/hair-salon.webp?v=20260604-issues56-60") center / cover no-repeat;
+}
+
+.scene-kingdom-tailor-studio {
+  background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/areas/kingdom/scenes/tailor-studio.webp?v=20260604-issues56-60") center / cover no-repeat;
+}
+
+.scene-kingdom-accessory-atelier {
+  background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/areas/kingdom/scenes/accessory-atelier.webp?v=20260604-issues56-60") center / cover no-repeat;
+}
+
 .scene-farm {
   background: linear-gradient(180deg, rgba(255, 245, 232, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/scenes/farm.webp?v=20260601-optimized-assets") center / cover no-repeat;
 }
@@ -101,6 +117,14 @@
 .scene-castle-knights-room { background-position: center, 75% 50%; }
 .scene-castle-maids-room { background-position: center, 100% 50%; }
 
+.scene-castle-royal-cloak-room {
+  background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/areas/castle/scenes/royal-cloak-room.webp?v=20260604-issues56-60") center / cover no-repeat;
+}
+
+.scene-castle-seamstress {
+  background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/areas/castle/scenes/castle-seamstress.webp?v=20260604-issues56-60") center / cover no-repeat;
+}
+
 .scene-kingdom-school,
 .scene-kingdom-library,
 .scene-kingdom-temple,
@@ -135,6 +159,14 @@
 .scene-suburb-mill { background-position: center, 83.333% 50%; }
 .scene-suburb-home { background-position: center, 100% 50%; }
 
+.scene-suburb-workwear-stall {
+  background: linear-gradient(180deg, rgba(255, 245, 232, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/areas/suburb/scenes/workwear-stall.webp?v=20260604-issues56-60") center / cover no-repeat;
+}
+
+.scene-suburb-field-cobbler {
+  background: linear-gradient(180deg, rgba(255, 245, 232, 0.02), rgba(255, 250, 246, 0.14)), url("../assets/areas/suburb/scenes/field-cobbler.webp?v=20260604-issues56-60") center / cover no-repeat;
+}
+
 .scene-forest-elf-glade,
 .scene-forest-dwarf-cottage,
 .scene-forest-golem-pass,
@@ -156,6 +188,10 @@
 .scene-forest-red-hood-path { background-position: center, 71.429% 50%; }
 .scene-forest-three-pigs { background-position: center, 85.714% 50%; }
 .scene-forest-tree-spirit-grove { background-position: center, 100% 50%; }
+
+.scene-forest-fairy-atelier {
+  background: linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16)), url("../assets/areas/forest/scenes/fairy-atelier.webp?v=20260604-issues56-60") center / cover no-repeat;
+}
 
 .adv-location,
 .help-button {
@@ -255,6 +291,10 @@
 
 .npc-tree-spirit {
   background-image: url("../assets/characters/forest/npc-tree-spirit.webp?v=20260602-forest-art");
+}
+
+.npc-image {
+  display: block;
 }
 
 .npc-none {
