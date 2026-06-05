@@ -6,7 +6,7 @@
 
 1. 先讀本檔。
 2. 必須研讀 `README.md`，並以它作為設計內容、遊戲流程、部署方式與驗證方式的 source of truth。
-3. 需要追蹤稽核細節時，再讀 `doc/AUDIT-111.md` 與 `doc/AUDIT-IMAGE-ISSUES.md`。
+3. `doc/` 不作為常駐 source 目錄；若後續產生 QA 或 audit artifact，應視為臨時輸出，不要把它當成設計 source of truth。
 
 ## 硬性操作規則
 
