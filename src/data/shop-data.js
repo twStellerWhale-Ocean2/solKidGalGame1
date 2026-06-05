@@ -1,4 +1,4 @@
-const dollAssetVersion = "?v=20260604-issues56-60";
+const dollAssetVersion = "?v=20260605-doll-art-r4";
 
 export const paperDollBaseLayer = `assets/doll/lumi/v3/layers/base-starter-pajama.webp${dollAssetVersion}`;
 

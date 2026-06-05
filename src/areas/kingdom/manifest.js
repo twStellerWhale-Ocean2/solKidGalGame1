@@ -1,6 +1,6 @@
 import { makeLessons, makeQuestTemplates } from "../lesson-helpers.js";
 
-const npcImage = (name) => `assets/areas/kingdom/characters/${name}.webp`;
+const npcImage = (name) => `assets/areas/kingdom/characters/${name}.webp?v=20260605-npc-r2`;
 
 export const kingdomVocabularyProfile = Object.freeze({
   id: "cambridge-pre-a1-starters",

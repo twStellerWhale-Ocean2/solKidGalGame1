@@ -1,6 +1,6 @@
 import { makeLessons, makeQuestTemplates } from "../lesson-helpers.js";
 
-const npcImage = (name) => `assets/areas/suburb/characters/${name}.webp`;
+const npcImage = (name) => `assets/areas/suburb/characters/${name}.webp?v=20260605-npc-r2`;
 
 export const suburbVocabularyProfile = Object.freeze({
   id: "cambridge-a1-movers",

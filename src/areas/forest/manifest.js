@@ -1,6 +1,6 @@
 import { makeLessons, makeQuestTemplates } from "../lesson-helpers.js";
 
-const npcImage = (name) => `assets/areas/forest/characters/${name}.webp`;
+const npcImage = (name) => `assets/areas/forest/characters/${name}.webp?v=20260605-npc-r2`;
 
 export const forestVocabularyProfile = Object.freeze({
   id: "cambridge-a2-flyers",
@@ -35,7 +35,7 @@ export const forestArea = Object.freeze({
   id: "forest",
   label: "Forest",
   view: "map",
-  mapImage: "assets/areas/forest/map-pure.webp?v=20260604-issues56-60",
+  mapImage: "assets/areas/forest/map-pure.webp?v=20260605-forest-map-r2",
   imageSize: { width: 1448, height: 1086 },
   vocabularyProfile: forestVocabularyProfile,
   nodes: {
