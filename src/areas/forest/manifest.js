@@ -1,6 +1,14 @@
 import { makeLessons, makeQuestTemplates } from "../lesson-helpers.js";
 
 const npcImage = (name) => `assets/areas/forest/characters/${name}.webp?v=20260605-npc-r2`;
+const sceneArt = (src, options = {}) => ({ sceneArt: { src, tone: "forest", ...options } });
+const forestAtlasArt = (position) => sceneArt("assets/scenes/forest-scenes-atlas.png?v=20260603-region-vocab", {
+  atlas: "forest-scenes",
+  position,
+  size: "800% 100%"
+});
+const forestShopArt = (name) => sceneArt(`assets/areas/forest/scenes/${name}.webp?v=20260604-issues56-60`, { tone: "shop" });
+const forestPathArt = sceneArt("assets/scenes/forest-path.webp?v=20260602-forest-art");
 
 export const forestVocabularyProfile = Object.freeze({
   id: "cambridge-a2-flyers",
@@ -73,16 +81,16 @@ export const forestArea = Object.freeze({
 });
 
 export const forestSceneConfigs = Object.freeze({
-  forestExit: { scene: "scene-forest-path", npcClass: "npc-none", npc: "Forest Sign", travelAction: "Back to Kingdom", travelLine: "The path returns to the kingdom town." },
-  elfGlade: { scene: "scene-forest-elf-glade", npc: "Elia", npcImage: npcImage("elia"), travelAction: "Visit", travelLine: "Elia the elf listens to the glowing flowers." },
-  fairyAtelier: { scene: "scene-forest-fairy-atelier", npc: "Faye", npcImage: npcImage("fairy-atelier"), travelAction: "Shop", travelLine: "Faye has fairy dresses and accessories in the glade.", shopGreeting: "Welcome to the Fairy Atelier. Pick dresses or accessories." },
-  dwarfCottage: { scene: "scene-forest-dwarf-cottage", npc: "Pip", npcImage: npcImage("pip"), travelAction: "Shop", travelLine: "Pip has handmade forest outerwear and shoes ready for Lumi.", shopGreeting: "Welcome to the Dwarf Cottage. Pick outerwear or shoes." },
-  stoneGolemPass: { scene: "scene-forest-golem-pass", npc: "Goro", npcImage: npcImage("goro"), travelAction: "Visit", travelLine: "Goro the stone golem blocks the old pass with a friendly smile." },
-  halflingVillage: { scene: "scene-forest-halfling-village", npc: "Penny", npcImage: npcImage("penny"), travelAction: "Visit", travelLine: "Penny waves from a round green door." },
-  wizardHut: { scene: "scene-forest-wizard-hut", npc: "Wiz Beryl", npcImage: npcImage("wiz-beryl"), travelAction: "Visit", travelLine: "Wiz Beryl is sorting jars under the purple roof." },
-  redHoodPath: { scene: "scene-forest-red-hood-path", npc: "Ruby", npcImage: npcImage("ruby"), travelAction: "Visit", travelLine: "Ruby checks her basket on the forest path." },
-  threePigsCottage: { scene: "scene-forest-three-pigs", npc: "Pippo", npcImage: npcImage("pippo"), travelAction: "Visit", travelLine: "Pippo looks at three tiny cottages." },
-  treeSpiritGrove: { scene: "scene-forest-tree-spirit-grove", npc: "Sylvie", npcImage: npcImage("sylvie"), travelAction: "Visit", travelLine: "Sylvie the tree spirit smiles from the branches." }
+  forestExit: { ...forestPathArt, scene: "scene-forest-path", npcClass: "npc-none", npc: "Forest Sign", travelAction: "Back to Kingdom", travelLine: "The path returns to the kingdom town." },
+  elfGlade: { ...forestAtlasArt("0% 50%"), scene: "scene-forest-elf-glade", npc: "Elia", npcImage: npcImage("elia"), travelAction: "Visit", travelLine: "Elia the elf listens to the glowing flowers." },
+  fairyAtelier: { ...forestShopArt("fairy-atelier"), scene: "scene-forest-fairy-atelier", npc: "Faye", npcImage: npcImage("fairy-atelier"), travelAction: "Shop", travelLine: "Faye has fairy dresses and accessories in the glade.", shopGreeting: "Welcome to the Fairy Atelier. Pick dresses or accessories." },
+  dwarfCottage: { ...forestAtlasArt("14.285% 50%"), scene: "scene-forest-dwarf-cottage", npc: "Pip", npcImage: npcImage("pip"), travelAction: "Shop", travelLine: "Pip has handmade forest outerwear and shoes ready for Lumi.", shopGreeting: "Welcome to the Dwarf Cottage. Pick outerwear or shoes." },
+  stoneGolemPass: { ...forestAtlasArt("28.571% 50%"), scene: "scene-forest-golem-pass", npc: "Goro", npcImage: npcImage("goro"), travelAction: "Visit", travelLine: "Goro the stone golem blocks the old pass with a friendly smile." },
+  halflingVillage: { ...forestAtlasArt("42.857% 50%"), scene: "scene-forest-halfling-village", npc: "Penny", npcImage: npcImage("penny"), travelAction: "Visit", travelLine: "Penny waves from a round green door." },
+  wizardHut: { ...forestAtlasArt("57.143% 50%"), scene: "scene-forest-wizard-hut", npc: "Wiz Beryl", npcImage: npcImage("wiz-beryl"), travelAction: "Visit", travelLine: "Wiz Beryl is sorting jars under the purple roof." },
+  redHoodPath: { ...forestAtlasArt("71.429% 50%"), scene: "scene-forest-red-hood-path", npc: "Ruby", npcImage: npcImage("ruby"), travelAction: "Visit", travelLine: "Ruby checks her basket on the forest path." },
+  threePigsCottage: { ...forestAtlasArt("85.714% 50%"), scene: "scene-forest-three-pigs", npc: "Pippo", npcImage: npcImage("pippo"), travelAction: "Visit", travelLine: "Pippo looks at three tiny cottages." },
+  treeSpiritGrove: { ...forestAtlasArt("100% 50%"), scene: "scene-forest-tree-spirit-grove", npc: "Sylvie", npcImage: npcImage("sylvie"), travelAction: "Visit", travelLine: "Sylvie the tree spirit smiles from the branches." }
 });
 
 export const forestQuestTemplates = makeQuestTemplates(forestLessonPlaces);

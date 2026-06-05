@@ -1,6 +1,21 @@
 import { makeLessons, makeQuestTemplates } from "../lesson-helpers.js";
 
 const npcImage = (name) => `assets/areas/kingdom/characters/${name}.webp?v=20260605-npc-r2`;
+const sceneArt = (src, options = {}) => ({ sceneArt: { src, tone: "kingdom", ...options } });
+const singleSceneArt = (name, options = {}) => sceneArt(`assets/scenes/${name}.webp?v=20260601-optimized-assets`, options);
+const kingdomShopArt = (name) => sceneArt(`assets/areas/kingdom/scenes/${name}.webp?v=20260604-issues56-60`, { tone: "shop" });
+const civicAtlasArt = (position) => sceneArt("assets/scenes/kingdom-civic-atlas.png?v=20260603-region-vocab", {
+  atlas: "kingdom-civic",
+  position,
+  size: "400% 100%"
+});
+const suburbFarmArt = sceneArt("assets/scenes/suburb-scenes-atlas.png?v=20260603-region-vocab", {
+  atlas: "suburb-scenes",
+  position: "66.666% 50%",
+  size: "700% 100%",
+  tone: "suburb"
+});
+const forestPathArt = sceneArt("assets/scenes/forest-path.webp?v=20260602-forest-art", { tone: "forest" });
 
 export const kingdomVocabularyProfile = Object.freeze({
   id: "cambridge-pre-a1-starters",
@@ -101,23 +116,23 @@ export const kingdomArea = Object.freeze({
 });
 
 export const kingdomSceneConfigs = Object.freeze({
-  luminaraCastle: { scene: "scene-garden", npcClass: "npc-garden", npc: "Gate Guard", travelAction: "Castle", travelLine: "Return to Lumi's room for dress-up time." },
-  forestEdge: { scene: "scene-forest-path", npcClass: "npc-none", npc: "Forest Sign", travelAction: "Enter Forest", travelLine: "The leafy path leads into the wider forest map." },
-  suburbGate: { scene: "scene-suburb-farm", npcClass: "npc-none", npc: "Suburb Sign", travelAction: "Enter Suburb", travelLine: "The old farm road leads to mines, woods, fishers, farms, and homes." },
-  garden: { scene: "scene-garden", npc: "Mira", npcImage: npcImage("mira"), travelAction: "Visit", travelLine: "Mira is watching the roses and a shy garden cat." },
-  schoolClassroom: { scene: "scene-kingdom-school", npc: "Teacher Bell", npcImage: npcImage("teacher-bell"), travelAction: "Visit", travelLine: "Teacher Bell has a short Starters sentence." },
-  library: { scene: "scene-kingdom-library", npc: "Librarian Nola", npcImage: npcImage("librarian-nola"), travelAction: "Visit", travelLine: "Librarian Nola is ready for quiet reading." },
-  temple: { scene: "scene-kingdom-temple", npc: "Sister Luma", npcImage: npcImage("sister-luma"), travelAction: "Visit", travelLine: "Sister Luma keeps the temple flowers bright." },
-  administration: { scene: "scene-kingdom-administration", npc: "Clerk Otto", npcImage: npcImage("clerk-otto"), travelAction: "Visit", travelLine: "Clerk Otto sorts the town notes." },
-  market: { scene: "scene-market", npc: "Auntie Pom", npcImage: npcImage("auntie-pom-market"), travelAction: "Visit", travelLine: "Auntie Pom smiles beside warm bread and bright fruit." },
-  harbor: { scene: "scene-harbor", npc: "Nami", npcImage: npcImage("nami"), travelAction: "Visit", travelLine: "Nami is waiting by the bright harbor boats." },
-  port: { scene: "scene-harbor", npc: "Dock Guide", npcImage: npcImage("dock-guide"), travelAction: "Visit", travelLine: "Boats arrive at the harbor port for sea trips and dock visits." },
-  boutique: { scene: "scene-kingdom-dress-boutique", npc: "Rena", npcImage: npcImage("rena"), travelAction: "Shop", travelLine: "Rena has dresses and complete outfit sets ready for a bright day.", shopGreeting: "Welcome to the Dress Boutique. Dresses and outfit sets are ready." },
-  hairSalon: { scene: "scene-kingdom-hair-salon", npc: "Stylist Lina", npcImage: npcImage("stylist-lina"), travelAction: "Shop", travelLine: "Stylist Lina has soft story hairstyles for Lumi.", shopGreeting: "Welcome to the Hair Salon. Pick a hairstyle for Lumi." },
-  tailorStudio: { scene: "scene-kingdom-tailor-studio", npc: "Tailor Tess", npcImage: npcImage("tailor-tess"), travelAction: "Shop", travelLine: "Tailor Tess keeps tops and bottoms neatly folded.", shopGreeting: "Welcome to the Tailor Studio. Pick tops or bottoms." },
-  shoeShop: { scene: "scene-shoes", npc: "Mina", npcImage: npcImage("mina"), travelAction: "Shop", travelLine: "Mina has walking shoes for Lumi's next trip.", shopGreeting: "Hello, Princess. Try shoes for the road." },
-  accessoryShop: { scene: "scene-kingdom-accessory-atelier", npc: "Lili", npcImage: npcImage("lili"), travelAction: "Shop", travelLine: "Lili has hats and accessories in separate trays.", shopGreeting: "Good day, Princess. Pick a hat or accessory." },
-  lighthouse: { scene: "scene-lighthouse", npc: "Captain Sol", npcImage: npcImage("captain-sol"), travelAction: "Visit", travelLine: "Captain Sol checks the sea from the lighthouse." }
+  luminaraCastle: { ...singleSceneArt("garden"), scene: "scene-garden", npcClass: "npc-garden", npc: "Gate Guard", travelAction: "Castle", travelLine: "Return to Lumi's room for dress-up time." },
+  forestEdge: { ...forestPathArt, scene: "scene-forest-path", npcClass: "npc-none", npc: "Forest Sign", travelAction: "Enter Forest", travelLine: "The leafy path leads into the wider forest map." },
+  suburbGate: { ...suburbFarmArt, scene: "scene-suburb-farm", npcClass: "npc-none", npc: "Suburb Sign", travelAction: "Enter Suburb", travelLine: "The old farm road leads to mines, woods, fishers, farms, and homes." },
+  garden: { ...singleSceneArt("garden"), scene: "scene-garden", npc: "Mira", npcImage: npcImage("mira"), travelAction: "Visit", travelLine: "Mira is watching the roses and a shy garden cat." },
+  schoolClassroom: { ...civicAtlasArt("0% 50%"), scene: "scene-kingdom-school", npc: "Teacher Bell", npcImage: npcImage("teacher-bell"), travelAction: "Visit", travelLine: "Teacher Bell has a short Starters sentence." },
+  library: { ...civicAtlasArt("33.333% 50%"), scene: "scene-kingdom-library", npc: "Librarian Nola", npcImage: npcImage("librarian-nola"), travelAction: "Visit", travelLine: "Librarian Nola is ready for quiet reading." },
+  temple: { ...civicAtlasArt("66.666% 50%"), scene: "scene-kingdom-temple", npc: "Sister Luma", npcImage: npcImage("sister-luma"), travelAction: "Visit", travelLine: "Sister Luma keeps the temple flowers bright." },
+  administration: { ...civicAtlasArt("100% 50%"), scene: "scene-kingdom-administration", npc: "Clerk Otto", npcImage: npcImage("clerk-otto"), travelAction: "Visit", travelLine: "Clerk Otto sorts the town notes." },
+  market: { ...singleSceneArt("market"), scene: "scene-market", npc: "Auntie Pom", npcImage: npcImage("auntie-pom-market"), travelAction: "Visit", travelLine: "Auntie Pom smiles beside warm bread and bright fruit." },
+  harbor: { ...singleSceneArt("harbor"), scene: "scene-harbor", npc: "Nami", npcImage: npcImage("nami"), travelAction: "Visit", travelLine: "Nami is waiting by the bright harbor boats." },
+  port: { ...singleSceneArt("harbor"), scene: "scene-harbor", npc: "Dock Guide", npcImage: npcImage("dock-guide"), travelAction: "Visit", travelLine: "Boats arrive at the harbor port for sea trips and dock visits." },
+  boutique: { ...kingdomShopArt("dress-boutique"), scene: "scene-kingdom-dress-boutique", npc: "Rena", npcImage: npcImage("rena"), travelAction: "Shop", travelLine: "Rena has dresses and complete outfit sets ready for a bright day.", shopGreeting: "Welcome to the Dress Boutique. Dresses and outfit sets are ready." },
+  hairSalon: { ...kingdomShopArt("hair-salon"), scene: "scene-kingdom-hair-salon", npc: "Stylist Lina", npcImage: npcImage("stylist-lina"), travelAction: "Shop", travelLine: "Stylist Lina has soft story hairstyles for Lumi.", shopGreeting: "Welcome to the Hair Salon. Pick a hairstyle for Lumi." },
+  tailorStudio: { ...kingdomShopArt("tailor-studio"), scene: "scene-kingdom-tailor-studio", npc: "Tailor Tess", npcImage: npcImage("tailor-tess"), travelAction: "Shop", travelLine: "Tailor Tess keeps tops and bottoms neatly folded.", shopGreeting: "Welcome to the Tailor Studio. Pick tops or bottoms." },
+  shoeShop: { ...singleSceneArt("shoes", { tone: "shop" }), scene: "scene-shoes", npc: "Mina", npcImage: npcImage("mina"), travelAction: "Shop", travelLine: "Mina has walking shoes for Lumi's next trip.", shopGreeting: "Hello, Princess. Try shoes for the road." },
+  accessoryShop: { ...kingdomShopArt("accessory-atelier"), scene: "scene-kingdom-accessory-atelier", npc: "Lili", npcImage: npcImage("lili"), travelAction: "Shop", travelLine: "Lili has hats and accessories in separate trays.", shopGreeting: "Good day, Princess. Pick a hat or accessory." },
+  lighthouse: { ...singleSceneArt("lighthouse"), scene: "scene-lighthouse", npc: "Captain Sol", npcImage: npcImage("captain-sol"), travelAction: "Visit", travelLine: "Captain Sol checks the sea from the lighthouse." }
 });
 
 export const kingdomQuestTemplates = makeQuestTemplates(kingdomLessonPlaces);

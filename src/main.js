@@ -35,9 +35,12 @@ import {
 import { createAdvControls } from "./flow/adv-controls.js";
 import { firstLayerActionsFor, sceneActionLabel } from "./flow/scene-actions.js";
 import { FLOW_STAGE_LABELS } from "./flow/stages.js";
+import { createMapActorRuntime, mapActorMotionTypes } from "./map/actors.js";
+import { updateMarkerEdgeVisibility } from "./map/marker-visibility.js";
 import { renderItemDetailPanel } from "./render/item-panel.js";
 import { createPaperDollRenderer } from "./render/paper-doll.js";
 import { renderBuildInfo } from "./render/settings.js";
+import { applyAdvSceneArt } from "./scene/scene-art.js";
 import { openAISettingsKey, saveMarkerEnd, saveMarkerStart } from "./state/storage.js";
 import {
   addDiary as addStateDiary,
@@ -73,7 +76,6 @@ let princessExpression = "normal";
 let npcExpression = "normal";
 let advFocusIndex = 0;
 let advFocusTimer = 0;
-let mapLifeFrame = null;
 let shopPreviewItemId = "";
 const mapZoomLimits = { min: 1, max: 2.2, mobileBaseScale: 1.06 };
 const areaMapViewports = {
@@ -99,6 +101,11 @@ const advControls = createAdvControls({
   getFocusIndex: () => advFocusIndex,
   getMode: () => advMode,
   setFocusIndex: (nextIndex) => { advFocusIndex = nextIndex; }
+});
+const mapActorRuntime = createMapActorRuntime({
+  assetUrl: domAssetUrl,
+  layer: elements.mapLifeLayer,
+  pointToStage: mapPointToStage
 });
 const saveLoadController = createSaveLoadController({
   buildSaveMarkdown,
@@ -777,6 +784,7 @@ function renderCastleMap() {
       handleCastleHotspotClick(hotspot.id);
     });
     elements.castleMarkerLayer.appendChild(marker);
+    updateMarkerEdgeVisibility(marker, elements.castleStage);
   });
   updateCastlePlayerPosition(metrics);
   updateNearbyCastleHotspot();
@@ -816,7 +824,10 @@ function refreshCastleMapPositions() {
   castleHotspots.forEach((hotspot) => {
     const marker = elements.castleMarkerLayer?.querySelector(`[data-hotspot-id="${hotspot.id}"]`);
     const node = castleMapNodes[hotspot.node];
-    if (marker && node) positionCastleElement(marker, node.x, node.y, metrics);
+    if (marker && node) {
+      positionCastleElement(marker, node.x, node.y, metrics);
+      updateMarkerEdgeVisibility(marker, elements.castleStage);
+    }
   });
   updateCastlePlayerPosition(metrics);
   updateCastleHotspotFocus();
@@ -999,78 +1010,11 @@ function positionMapElement(element, x, y, metrics = mapCoverMetrics()) {
 }
 
 function renderMapActors(metrics = mapCoverMetrics(), areaId = activeTravelMapArea()) {
-  if (!elements.mapLifeLayer) return;
-  if (!metrics.width || !metrics.height) return;
-  elements.mapLifeLayer.innerHTML = "";
-  (areaRegistry[areaId]?.actors || []).forEach((actor) => {
-    const point = mapPointToStage(actor.x, actor.y, metrics);
-    const item = document.createElement("span");
-    item.className = `map-actor map-actor-${actor.type}${actor.src ? " map-actor-image" : ""}`;
-    item.dataset.actorId = actor.id;
-    item.dataset.actorType = actor.type;
-    item.dataset.phase = String(actor.phase || 0);
-    item.dataset.scale = String(actor.scale || 1);
-    item.dataset.anchorX = String(actor.anchorX ?? 0.5);
-    item.dataset.anchorY = String(actor.anchorY ?? 0.5);
-    item.style.left = `${point.x}px`;
-    item.style.top = `${point.y}px`;
-    item.style.width = `${(actor.w / 100) * metrics.displayWidth}px`;
-    item.style.height = `${(actor.h / 100) * metrics.displayHeight}px`;
-    item.style.zIndex = String(actor.z || 1);
-    if (actor.src) item.style.backgroundImage = `url("${actor.src}")`;
-    elements.mapLifeLayer.appendChild(item);
-  });
+  mapActorRuntime.render(areaRegistry[areaId]?.actors || [], metrics);
 }
 
 function startMapLife() {
-  if (mapLifeFrame) return;
-  const tick = (time) => {
-    const t = time / 1000;
-    document.querySelectorAll(".map-actor").forEach((item) => {
-      const type = item.dataset.actorType;
-      const phase = Number(item.dataset.phase || 0);
-      const scale = Number(item.dataset.scale || 1);
-      const anchorX = Number(item.dataset.anchorX || 0.5) * -100;
-      const anchorY = Number(item.dataset.anchorY || 0.5) * -100;
-      let dx = 0;
-      let dy = 0;
-      let rotate = 0;
-      let skew = 0;
-      let pulse = 1;
-      if (type === "water") {
-        dx = Math.sin(t * 0.34 + phase) * 7;
-        dy = Math.cos(t * 0.28 + phase) * 4;
-        pulse = 1 + Math.sin(t * 0.42 + phase) * 0.012;
-        item.style.opacity = String(0.18 + Math.sin(t * 0.46 + phase) * 0.05);
-      } else if (type === "ship") {
-        dx = Math.sin(t * 0.48 + phase) * 0.9;
-        dy = Math.sin(t * 0.72 + phase) * 1.8;
-        rotate = Math.sin(t * 0.55 + phase) * 0.18;
-        item.style.opacity = "0.38";
-      } else if (type === "wave") {
-        dx = Math.sin(t * 1.7 + phase) * 10;
-        dy = Math.cos(t * 1.3 + phase) * 4;
-        pulse = 1 + Math.sin(t * 1.4 + phase) * 0.07;
-        item.style.opacity = String(0.44 + Math.sin(t * 1.4 + phase) * 0.22);
-      } else if (type === "windmill") {
-        rotate = (t * 72 + phase * 90) % 360;
-        item.style.opacity = "0.8";
-      } else if (type === "flag") {
-        skew = Math.sin(t * 3.2 + phase) * 5;
-        dx = Math.sin(t * 2.4 + phase) * 1.2;
-        item.style.opacity = "0.76";
-      } else if (type === "glow") {
-        pulse = 1 + Math.sin(t * 1.6 + phase) * 0.16;
-        item.style.opacity = String(0.34 + Math.sin(t * 1.6 + phase) * 0.14);
-      } else if (type === "bird") {
-        dx = ((t * 18 + phase * 40) % 70) - 20;
-        dy = Math.sin(t * 2.1 + phase) * 5;
-      }
-      item.style.transform = `translate(${anchorX}%, ${anchorY}%) translate(${dx}px, ${dy}px) rotate(${rotate}deg) skewY(${skew}deg) scale(${scale * pulse})`;
-    });
-    mapLifeFrame = requestAnimationFrame(tick);
-  };
-  mapLifeFrame = requestAnimationFrame(tick);
+  mapActorRuntime.start();
 }
 
 function renderRoutes() {
@@ -1129,6 +1073,7 @@ function renderHotspots(metrics = mapCoverMetrics(), areaId = activeTravelMapAre
       handleTravelHotspotClick(hotspot.id);
     });
     elements.hotspotLayer.appendChild(marker);
+    updateMarkerEdgeVisibility(marker, elements.mapStage);
   });
 }
 
@@ -1257,7 +1202,8 @@ function openAdvBase(hotspot, mode) {
   elements.advActionFooter.innerHTML = "";
   elements.advModal.classList.add("show");
   elements.advModal.setAttribute("aria-hidden", "false");
-  elements.advScene.className = `adv-scene ${scene.scene}`;
+  elements.advScene.className = `adv-scene ${scene.scene || ""}`;
+  applyAdvSceneArt(elements.advScene, scene.sceneArt, { assetUrl: domAssetUrl });
   elements.advTitle.textContent = hotspot.label;
   const npcClass = scene.npcClass || (scene.npcImage ? "npc-image" : "npc-none");
   elements.advNpcPortrait.className = `portrait-card adv-npc ${npcClass}`;
@@ -2621,6 +2567,8 @@ installTestingHooks({
   isWalkable,
   itemById,
   loadMarkdownText,
+  mapActorMotionTypes,
+  mapActorSnapshot: () => mapActorRuntime.snapshot(),
   mapNodes,
   moveOnMap,
   nodeMapForArea,
