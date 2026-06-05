@@ -33,7 +33,7 @@
           <section class="view active" id="homeView" aria-labelledby="homeTitle">
             <h2 class="visually-hidden" id="homeTitle">Castle Map</h2>
             <div class="castle-stage" id="castleStage" tabindex="0" aria-label="Castle area map. Tap a room marker or the castle gate.">
-              <img src="assets/castle-map2.webp?v=20260601-optimized-assets" alt="Luminara castle grounds map" />
+              <img src="content-package/areas/castle/assets/map.webp?v=20260601-optimized-assets" alt="Luminara castle grounds map" />
               <div class="map-marker player castle-player" id="castlePlayerToken" aria-label="Princess Lumi in the castle">
                 <div class="paper-doll map-doll" data-doll="castle-map"></div>
               </div>
@@ -42,9 +42,9 @@
           </section>
 
           <section class="view" id="mapView" aria-labelledby="mapTitle">
-            <h2 class="visually-hidden" id="mapTitle">Kingdom Map</h2>
-            <div class="map-stage" id="mapStage" tabindex="0" aria-label="Kingdom travel map. Drag to look around, tap a place, or use keyboard arrows.">
-              <img id="mapImage" src="assets/kingdom-map2.webp?v=20260601-optimized-assets" alt="Luminara kingdom map" />
+            <h2 class="visually-hidden" id="mapTitle">Urban Map</h2>
+            <div class="map-stage" id="mapStage" tabindex="0" aria-label="Urban travel map. Drag to look around, tap a place, or use keyboard arrows.">
+              <img id="mapImage" src="content-package/areas/urban/assets/map.webp?v=20260601-optimized-assets" alt="Luminara urban map" />
               <div class="map-life-layer" id="mapLifeLayer" aria-hidden="true"></div>
               <svg class="route-layer" id="routeLayer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
               <div id="nodeLayer"></div>
@@ -105,7 +105,7 @@
               </div>
               <div class="version-card" aria-label="Software version">
                 <strong>Version</strong>
-                <span id="versionValue">2026.06.02-area-packs-forest</span>
+                <span id="versionValue">2026.06.02-area-packs-wild</span>
                 <small>Build time: <span id="buildDateValue">2026-06-02 13:55 (UTC+8)</span></small>
               </div>
               <form class="openai-settings" id="openaiSettingsForm" autocomplete="off">
@@ -130,9 +130,9 @@
               <p>Each area has its own English word set. Lumi does not choose a level in Settings.</p>
               <div class="english-guide-grid">
                 <div><strong>Castle</strong><span>Dolch Sight Words 220</span><small>20 coins for each Help question.</small></div>
-                <div><strong>Kingdom</strong><span>Cambridge Pre-A1 Starters</span><small>100 coins for each Help question.</small></div>
-                <div><strong>Suburb</strong><span>Cambridge A1 Movers</span><small>500 coins for each Help question.</small></div>
-                <div><strong>Forest</strong><span>Cambridge A2 Flyers</span><small>2000 coins for each Help question.</small></div>
+                <div><strong>Urban</strong><span>Cambridge Pre-A1 Starters</span><small>100 coins for each Help question.</small></div>
+                <div><strong>Rural</strong><span>Cambridge A1 Movers</span><small>500 coins for each Help question.</small></div>
+                <div><strong>Wild</strong><span>Cambridge A2 Flyers</span><small>2000 coins for each Help question.</small></div>
               </div>
               <p>Every Help place keeps five local questions in its own area pack. Questions do not move between places.</p>
               <p>Princess Room has no Help questions because Lumi cannot reward herself.</p>
@@ -191,6 +191,6 @@
       </div>
     </section>
 
-    <script type="module" src="src/main.js?v=20260605-map-scene-runtime"></script>
+    <script type="module" src="game-engine/main.js?v=20260605-map-scene-runtime"></script>
   </body>
 </html>

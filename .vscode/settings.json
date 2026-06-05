@@ -1,0 +1,17 @@
+{
+  "highlight.regexes": {
+    "^([ \\t]*//[ \\t]*#[ \\t]*region\\b[^\\r\\n]*)$": {
+      "regexFlags": "gm",
+      "filterLanguageRegex": "javascript",
+      "decorations": [
+        {
+          "isWholeLine": true,
+          "backgroundColor": "#021755",
+          "color": "#FFFFFF",
+          "fontWeight": "700",
+          "overviewRulerColor": "#0B2A5A"
+        }
+      ]
+    }
+  }
+}
