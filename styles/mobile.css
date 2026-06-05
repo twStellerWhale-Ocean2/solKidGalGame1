@@ -3313,3 +3313,23 @@ body {
     min-height: 0;
   }
 }
+
+@media (max-width: 820px) {
+  .reward-burst {
+    top: auto;
+    right: 18px;
+    bottom: calc(18px + env(safe-area-inset-bottom));
+    left: auto;
+    max-width: min(168px, calc(100vw - 36px));
+    min-width: 0;
+    transform: none;
+    animation: rewardBurstMobile 1.4s ease forwards;
+  }
+}
+
+@keyframes rewardBurstMobile {
+  0% { opacity: 0; transform: translateY(16px) scale(0.92); }
+  18% { opacity: 1; transform: translateY(0) scale(1.02); }
+  70% { opacity: 1; transform: translateY(-8px) scale(1); }
+  100% { opacity: 0; transform: translateY(-24px) scale(0.98); }
+}
