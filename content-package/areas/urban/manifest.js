@@ -6,21 +6,13 @@ import { makeLessons, makeQuestTemplates } from "../_shared/lesson-helpers.js";
 //#region 素材路徑工具
 // 所有本地區圖片路徑集中在這裡；換素材或快取版本參數時優先改這段。
 const npcImage = (name) => `content-package/areas/urban/assets/characters/${name}.webp?v=20260606-character-scale-r1`;
+const sceneVersion = "20260606-issue66-adv-scenes-r1";
 const sceneArt = (src, options = {}) => ({ sceneArt: { src, tone: "urban", ...options } });
-const singleSceneArt = (name, options = {}) => sceneArt(`content-package/areas/urban/assets/scenes/${name}.webp?v=20260601-optimized-assets`, options);
-const urbanShopArt = (name) => sceneArt(`content-package/areas/urban/assets/scenes/${name}.webp?v=20260604-issues56-60`, { tone: "shop" });
-const civicAtlasArt = (position) => sceneArt("content-package/areas/urban/assets/scenes/civic-atlas.webp?v=20260605-webp-assets", {
-  atlas: "urban-civic",
-  position,
-  size: "400% 100%"
-});
-const ruralFarmArt = sceneArt("content-package/areas/rural/assets/scenes/scenes-atlas.webp?v=20260605-webp-assets", {
-  atlas: "rural-scenes",
-  position: "66.666% 50%",
-  size: "700% 100%",
-  tone: "rural"
-});
-const wildPathArt = sceneArt("content-package/areas/wild/assets/scenes/wild-path.webp?v=20260602-wild-art", { tone: "wild" });
+const singleSceneArt = (name, options = {}) => sceneArt(`content-package/areas/urban/assets/scenes/${name}-1024.webp?v=${sceneVersion}`, options);
+const urbanShopArt = (name) => singleSceneArt(name, { tone: "shop" });
+const civicSceneArt = (name) => singleSceneArt(name);
+const ruralFarmArt = sceneArt(`content-package/areas/rural/assets/scenes/rural-farm-1024.webp?v=${sceneVersion}`, { tone: "rural" });
+const wildPathArt = sceneArt(`content-package/areas/wild/assets/scenes/wild-path-1024.webp?v=${sceneVersion}`, { tone: "wild" });
 //#endregion 素材路徑工具
 
 //#region 英文等級與獎勵設定
@@ -75,34 +67,34 @@ export const urbanArea = Object.freeze({
   id: "urban",
   label: "Urban",
   view: "map",
-  mapImage: "content-package/areas/urban/assets/map.webp?v=20260601-optimized-assets",
-  imageSize: { width: 1672, height: 941 },
+  mapImage: "content-package/areas/urban/assets/map-1536.webp?v=20260606-issue66-map-contract-r1",
+  imageSize: { width: 1536, height: 1536 },
   vocabularyProfile: urbanVocabularyProfile,
   // nodes 控制地圖上的路網與圖示座標；x / y 是相對地圖寬高的百分比。
   nodes: {
-    castleRoom: { id: "castleRoom", label: "Castle Stairway", x: 49.4, y: 37.4, links: ["garden", "schoolClassroom", "library", "temple", "administration", "market", "ruralGate", "wildEdge"] },
-    wildEdge: { id: "wildEdge", label: "Wild Path", x: 16.8, y: 20.8, links: ["castleRoom", "ruralGate"] },
-    garden: { id: "garden", label: "Castle Garden", x: 49.7, y: 52.8, links: ["castleRoom", "market", "library", "temple"] },
-    schoolClassroom: { id: "schoolClassroom", label: "School Classroom", x: 38.8, y: 49.6, links: ["castleRoom", "library", "market"] },
-    library: { id: "library", label: "Library", x: 43.0, y: 48.8, links: ["schoolClassroom", "castleRoom", "garden"] },
-    temple: { id: "temple", label: "Temple", x: 59.5, y: 50.4, links: ["castleRoom", "garden", "administration", "boutique", "hairSalon"] },
-    administration: { id: "administration", label: "Administration Building", x: 56.2, y: 45.6, links: ["castleRoom", "temple", "boutique", "tailorStudio"] },
-    market: { id: "market", label: "Market Square", x: 28.0, y: 61.6, links: ["garden", "schoolClassroom", "tailorStudio", "shoeShop", "harbor", "port"] },
-    boutique: { id: "boutique", label: "Dress Boutique", x: 64.0, y: 59.0, links: ["tailorStudio", "shoeShop", "accessoryShop", "administration", "temple", "hairSalon"] },
-    hairSalon: { id: "hairSalon", label: "Hair Salon", x: 70.8, y: 55.3, links: ["boutique", "accessoryShop", "temple"] },
-    tailorStudio: { id: "tailorStudio", label: "Tailor Studio", x: 61.8, y: 65.2, links: ["market", "boutique", "shoeShop", "administration"] },
-    shoeShop: { id: "shoeShop", label: "Shoe Shop", x: 67.5, y: 65.0, links: ["market", "harbor", "boutique", "tailorStudio"] },
-    accessoryShop: { id: "accessoryShop", label: "Accessory Atelier", x: 74.2, y: 61.1, links: ["boutique", "hairSalon", "ruralGate"] },
-    ruralGate: { id: "ruralGate", label: "Rural Road", x: 87.0, y: 19.8, links: ["castleRoom", "wildEdge", "accessoryShop", "boutique"] },
-    harbor: { id: "harbor", label: "Fish Shop", x: 35.6, y: 63.0, links: ["market", "shoeShop", "port"] },
-    port: { id: "port", label: "Harbor Port", x: 40.8, y: 87.6, links: ["market", "harbor", "lighthouse"] },
-    lighthouse: { id: "lighthouse", label: "Lighthouse", x: 77.3, y: 78.2, links: ["port"] }
+    castleRoom: { id: "castleRoom", label: "Castle Stairway", x: 52.7, y: 15.0, links: ["garden", "schoolClassroom", "library", "temple", "administration", "market", "ruralGate", "wildEdge"] },
+    wildEdge: { id: "wildEdge", label: "Wild Path", x: 12.0, y: 33.2, links: ["castleRoom", "ruralGate"] },
+    garden: { id: "garden", label: "Castle Garden", x: 52.7, y: 44.9, links: ["castleRoom", "market", "library", "temple"] },
+    schoolClassroom: { id: "schoolClassroom", label: "School Classroom", x: 35.2, y: 47.5, links: ["castleRoom", "library", "market"] },
+    library: { id: "library", label: "Library", x: 44.5, y: 44.3, links: ["schoolClassroom", "castleRoom", "garden"] },
+    temple: { id: "temple", label: "Temple", x: 67.1, y: 46.9, links: ["castleRoom", "garden", "administration", "boutique", "hairSalon"] },
+    administration: { id: "administration", label: "Administration Building", x: 60.5, y: 37.1, links: ["castleRoom", "temple", "boutique", "tailorStudio"] },
+    market: { id: "market", label: "Market Square", x: 40.4, y: 59.2, links: ["garden", "schoolClassroom", "tailorStudio", "shoeShop", "harbor", "port"] },
+    boutique: { id: "boutique", label: "Dress Boutique", x: 68.4, y: 59.2, links: ["tailorStudio", "shoeShop", "accessoryShop", "administration", "temple", "hairSalon"] },
+    hairSalon: { id: "hairSalon", label: "Hair Salon", x: 80.7, y: 54.7, links: ["boutique", "accessoryShop", "temple"] },
+    tailorStudio: { id: "tailorStudio", label: "Tailor Studio", x: 59.2, y: 67.7, links: ["market", "boutique", "shoeShop", "administration"] },
+    shoeShop: { id: "shoeShop", label: "Shoe Shop", x: 73.6, y: 70.3, links: ["market", "harbor", "boutique", "tailorStudio"] },
+    accessoryShop: { id: "accessoryShop", label: "Accessory Atelier", x: 84.0, y: 65.1, links: ["boutique", "hairSalon", "ruralGate"] },
+    ruralGate: { id: "ruralGate", label: "Rural Road", x: 88.5, y: 29.9, links: ["castleRoom", "wildEdge", "accessoryShop", "boutique"] },
+    harbor: { id: "harbor", label: "Fish Shop", x: 39.7, y: 76.8, links: ["market", "shoeShop", "port"] },
+    port: { id: "port", label: "Harbor Port", x: 56.0, y: 84.6, links: ["market", "harbor", "lighthouse"] },
+    lighthouse: { id: "lighthouse", label: "Lighthouse", x: 89.8, y: 76.2, links: ["port"] }
   },
   // locations 控制地圖圖示進入後的場景、NPC、商店與提示文字。
   locations: [
-    { id: "luminaraCastle", area: "urban", node: "castleRoom", label: "Luminara Castle", icon: "🏰", npcClass: "npc-none", npc: "Gate Guard", kind: "gate", markerStyle: "portal", portalId: "castleStair", hint: "Climb the purple castle stairway back inside." },
-    { id: "wildEdge", area: "urban", node: "wildEdge", label: "Wild Path", icon: "🌲", npcClass: "npc-none", npc: "Wild Sign", kind: "gate", markerStyle: "portal", portalId: "wildEdge", hint: "A leafy path leads into the wild west of the mountains." },
-    { id: "ruralGate", area: "urban", node: "ruralGate", label: "Rural Road", icon: "🌾", npcClass: "npc-none", npc: "Rural Sign", kind: "gate", markerStyle: "portal", portalId: "ruralGate", hint: "The old farm road leads to the production rural." },
+    { id: "luminaraCastle", area: "urban", node: "castleRoom", label: "Luminara Castle", icon: "🏰", npcClass: "npc-none", npc: "Gate Guard", kind: "gate", markerStyle: "portal", portalId: "castleStair", hint: "Open the kingdom world map." },
+    { id: "wildEdge", area: "urban", node: "wildEdge", label: "Wild Path", icon: "🌲", npcClass: "npc-none", npc: "Wild Sign", kind: "gate", markerStyle: "portal", portalId: "wildEdge", hint: "Open the kingdom world map." },
+    { id: "ruralGate", area: "urban", node: "ruralGate", label: "Rural Road", icon: "🌾", npcClass: "npc-none", npc: "Rural Sign", kind: "gate", markerStyle: "portal", portalId: "ruralGate", hint: "Open the kingdom world map." },
     { id: "garden", area: "urban", node: "garden", label: "Castle Garden", icon: "🌷", npc: "Mira", scene: "scene-garden", npcImage: npcImage("mira"), hint: "The garden is quiet. A small cat may be hiding near the roses." },
     { id: "schoolClassroom", area: "urban", node: "schoolClassroom", label: "School Classroom", icon: "🏫", npc: "Teacher Bell", scene: "scene-urban-school", npcImage: npcImage("teacher-bell"), hint: "Teacher Bell has a short classroom sentence." },
     { id: "library", area: "urban", node: "library", label: "Library", icon: "📚", npc: "Librarian Nola", scene: "scene-urban-library", npcImage: npcImage("librarian-nola"), hint: "The library is quiet and full of books." },
@@ -119,20 +111,7 @@ export const urbanArea = Object.freeze({
     { id: "lighthouse", area: "urban", node: "lighthouse", label: "Lighthouse", icon: "🗼", npc: "Captain Sol", scene: "scene-lighthouse", npcImage: npcImage("captain-sol"), hint: "The lighthouse watches the sea before ships sail." }
   ],
   // actors 是地圖上的動態環境效果，不是可點擊地點。
-  actors: [
-    { id: "river-flow", type: "water", src: "content-package/areas/urban/assets/map-layers/river-flow.webp", x: 14.6, y: 29.5, w: 11.5, h: 39.0, z: 2, phase: 0.3 },
-    { id: "harbor-flow", type: "water", src: "content-package/areas/urban/assets/map-layers/harbor-flow.webp", x: 41.5, y: 86.8, w: 33.5, h: 23.6, z: 2, phase: 1.1 },
-    { id: "ocean-flow", type: "water", src: "content-package/areas/urban/assets/map-layers/ocean-flow.webp", x: 91.2, y: 56.5, w: 19.0, h: 48.0, z: 2, phase: 1.8 },
-    { id: "harbor-ship-large", type: "ship", src: "content-package/areas/urban/assets/map-layers/harbor-ship-large.webp", x: 42.7, y: 89.0, w: 14.8, h: 14.0, z: 3, phase: 0.2 },
-    { id: "harbor-ship-small", type: "ship", src: "content-package/areas/urban/assets/map-layers/harbor-ship-small.webp", x: 31.2, y: 91.2, w: 4.6, h: 7.1, z: 3, phase: 1.4 },
-    { id: "lighthouse-boat", type: "ship", src: "content-package/areas/urban/assets/map-layers/lighthouse-boat.webp", x: 55.6, y: 92.7, w: 4.8, h: 7.1, z: 3, phase: 2.0 },
-    { id: "castle-flag", type: "flag", src: "content-package/areas/urban/assets/map-layers/castle-flag.webp", x: 49.7, y: 3.4, w: 3.4, h: 5.1, anchorX: 0.5, anchorY: 0.95, z: 6 },
-    { id: "farm-windmill", type: "windmill", src: "content-package/areas/urban/assets/map-layers/windmill-blades.webp", x: 89.5, y: 20.4, w: 4.8, h: 8.6, z: 4 },
-    { id: "wild-lantern", type: "glow", x: 16.8, y: 20.8, w: 10, h: 10, z: 1, phase: 0.8 },
-    { id: "lighthouse-glow", type: "glow", x: 78.7, y: 75.4, w: 12, h: 12, z: 1 },
-    { id: "sea-bird-a", type: "bird", x: 42.8, y: 86.5, w: 3.4, h: 1.5, z: 5, phase: 0.4 },
-    { id: "sea-bird-b", type: "bird", x: 65.0, y: 84.6, w: 3.0, h: 1.3, z: 5, phase: 1.6 }
-  ],
+  actors: [],
   defaultNode: "garden",
   enabled: true
 });
@@ -141,14 +120,14 @@ export const urbanArea = Object.freeze({
 //#region 對話場景設定
 // 每個屬性名稱對應地點或節點，控制對話畫面的背景、NPC 與按鈕文案。
 export const urbanSceneConfigs = Object.freeze({
-  luminaraCastle: { ...singleSceneArt("garden"), scene: "scene-garden", npcClass: "npc-garden", npc: "Gate Guard", travelAction: "Castle", travelLine: "Return to Lumi's room for dress-up time." },
-  wildEdge: { ...wildPathArt, scene: "scene-wild-path", npcClass: "npc-none", npc: "Wild Sign", travelAction: "Enter Wild", travelLine: "The leafy path leads into the wider wild map." },
-  ruralGate: { ...ruralFarmArt, scene: "scene-rural-farm", npcClass: "npc-none", npc: "Rural Sign", travelAction: "Enter Rural", travelLine: "The old farm road leads to mines, woods, fishers, farms, and homes." },
+  luminaraCastle: { ...singleSceneArt("garden"), scene: "scene-garden", npcClass: "npc-garden", npc: "Gate Guard", travelAction: "World Map", travelLine: "The castle stair opens the kingdom world map." },
+  wildEdge: { ...wildPathArt, scene: "scene-wild-path", npcClass: "npc-none", npc: "Wild Sign", travelAction: "World Map", travelLine: "The leafy path opens the kingdom world map." },
+  ruralGate: { ...ruralFarmArt, scene: "scene-rural-farm", npcClass: "npc-none", npc: "Rural Sign", travelAction: "World Map", travelLine: "The old farm road opens the kingdom world map." },
   garden: { ...singleSceneArt("garden"), scene: "scene-garden", npc: "Mira", npcImage: npcImage("mira"), npcNaturalHeightCm: 130, travelAction: "Visit", travelLine: "Mira is watching the roses and a shy garden cat." },
-  schoolClassroom: { ...civicAtlasArt("0% 50%"), scene: "scene-urban-school", npc: "Teacher Bell", npcImage: npcImage("teacher-bell"), npcNaturalHeightCm: 165, travelAction: "Visit", travelLine: "Teacher Bell has a short Starters sentence." },
-  library: { ...civicAtlasArt("33.333% 50%"), scene: "scene-urban-library", npc: "Librarian Nola", npcImage: npcImage("librarian-nola"), npcNaturalHeightCm: 162, travelAction: "Visit", travelLine: "Librarian Nola is ready for quiet reading." },
-  temple: { ...civicAtlasArt("66.666% 50%"), scene: "scene-urban-temple", npc: "Sister Luma", npcImage: npcImage("sister-luma"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Sister Luma keeps the temple flowers bright." },
-  administration: { ...civicAtlasArt("100% 50%"), scene: "scene-urban-administration", npc: "Clerk Otto", npcImage: npcImage("clerk-otto"), npcNaturalHeightCm: 172, travelAction: "Visit", travelLine: "Clerk Otto sorts the town notes." },
+  schoolClassroom: { ...civicSceneArt("school-classroom"), scene: "scene-urban-school", npc: "Teacher Bell", npcImage: npcImage("teacher-bell"), npcNaturalHeightCm: 165, travelAction: "Visit", travelLine: "Teacher Bell has a short Starters sentence." },
+  library: { ...civicSceneArt("library"), scene: "scene-urban-library", npc: "Librarian Nola", npcImage: npcImage("librarian-nola"), npcNaturalHeightCm: 162, travelAction: "Visit", travelLine: "Librarian Nola is ready for quiet reading." },
+  temple: { ...civicSceneArt("temple"), scene: "scene-urban-temple", npc: "Sister Luma", npcImage: npcImage("sister-luma"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Sister Luma keeps the temple flowers bright." },
+  administration: { ...civicSceneArt("administration"), scene: "scene-urban-administration", npc: "Clerk Otto", npcImage: npcImage("clerk-otto"), npcNaturalHeightCm: 172, travelAction: "Visit", travelLine: "Clerk Otto sorts the town notes." },
   market: { ...singleSceneArt("market"), scene: "scene-market", npc: "Auntie Pom", npcImage: npcImage("auntie-pom-market"), npcNaturalHeightCm: 155, travelAction: "Visit", travelLine: "Auntie Pom smiles beside warm bread and bright fruit." },
   harbor: { ...singleSceneArt("harbor"), scene: "scene-harbor", npc: "Nami", npcImage: npcImage("nami"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Nami is waiting by the bright harbor boats." },
   port: { ...singleSceneArt("harbor"), scene: "scene-harbor", npc: "Dock Guide", npcImage: npcImage("dock-guide"), npcNaturalHeightCm: 175, travelAction: "Visit", travelLine: "Boats arrive at the harbor port for sea trips and dock visits." },

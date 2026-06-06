@@ -31,7 +31,8 @@ import {
   questTemplates,
   routeForPortal,
   sceneConfigs,
-  shopItems
+  shopItems,
+  worldMap
 } from "./data/game-data.js";
 import { createAdvControls } from "./flow/adv-controls.js";
 import { firstLayerActionsFor, sceneActionLabel } from "./flow/scene-actions.js";
@@ -82,14 +83,17 @@ const mapZoomLimits = { min: 1, max: 2.2, mobileBaseScale: 1.06 };
 const areaMapViewports = {
   castle: { pan: { x: 0, y: 0 }, zoom: 1 },
   urban: { pan: { x: 0, y: 0 }, zoom: 1 },
-  wild: { pan: { x: 0, y: 0 }, zoom: 1 }
+  rural: { pan: { x: 0, y: 0 }, zoom: 1 },
+  wild: { pan: { x: 0, y: 0 }, zoom: 1 },
+  world: { pan: { x: 0, y: 0 }, zoom: 1 }
 };
-const centerMapOnNextRender = { castle: true, urban: true, wild: true };
+const centerMapOnNextRender = { castle: true, urban: true, rural: true, wild: true, world: true };
 let mapGesture = null;
 let pendingMapPositionFrame = 0;
 let pendingMapRefreshArea = "";
 let systemMenuPanel = "diary";
 let activeCastleHotspot = null;
+let activeWorldDestinationId = "castle";
 
 const elements = createElements();
 const paperDollRenderer = createPaperDollRenderer({
@@ -157,6 +161,22 @@ function ensureAreaPosition(areaId = state.area) {
   state.player = { x: node.x, y: node.y };
 }
 
+function worldDestinationById(destinationId) {
+  return worldMap.destinations.find((destination) => destination.id === destinationId) || null;
+}
+
+function worldDestinationForArea(areaId) {
+  return worldMap.destinations.find((destination) => destination.area === areaId) || null;
+}
+
+function enabledWorldDestinations() {
+  return worldMap.destinations.filter((destination) => destination.enabled);
+}
+
+function activeWorldDestination() {
+  return worldDestinationById(activeWorldDestinationId) || worldDestinationForArea(state.area) || enabledWorldDestinations()[0] || worldMap.destinations[0] || null;
+}
+
 function openArea(areaId) {
   const area = areaRegistry[areaId];
   if (!area?.enabled) {
@@ -171,6 +191,15 @@ function openArea(areaId) {
   renderAreaNav();
 }
 
+function openWorldMap() {
+  activeHotspot = null;
+  activeCastleHotspot = null;
+  activeWorldDestinationId = worldDestinationForArea(state.area)?.id || activeWorldDestinationId || "castle";
+  centerMapOnNextRender.world = true;
+  elements.statusMessage.textContent = "Choose a kingdom area.";
+  changeView("world");
+}
+
 function changeView(viewName) {
   if (["diary", "settings", "english", "save"].includes(viewName)) {
     openSystemMenu(viewName);
@@ -183,6 +212,9 @@ function changeView(viewName) {
   } else if (viewName === "map") {
     if (state.area === "castle" || !areaRegistry[state.area]?.enabled) state.area = "urban";
     ensureAreaPosition(state.area);
+  } else if (viewName === "world") {
+    activeWorldDestinationId = worldDestinationForArea(state.area)?.id || activeWorldDestinationId || "castle";
+    centerMapOnNextRender.world = true;
   }
   elements.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.view === viewName));
   elements.views.forEach((view) => view.classList.toggle("active", view.id === `${viewName}View`));
@@ -193,6 +225,11 @@ function changeView(viewName) {
     setTimeout(() => {
       renderMap();
       elements.mapStage.focus({ preventScroll: true });
+    }, 0);
+  } else if (viewName === "world") {
+    setTimeout(() => {
+      renderWorldMap();
+      elements.worldStage?.focus({ preventScroll: true });
     }, 0);
   } else if (viewName === "home") {
     setTimeout(() => {
@@ -288,6 +325,7 @@ function render() {
   renderPaperDolls();
   renderHome();
   renderCastleMap();
+  renderWorldMap();
   renderMap();
   renderDiary();
   renderSettings();
@@ -567,10 +605,12 @@ function toggleEquip(item) {
 }
 
 function areaMapStage(areaId) {
+  if (areaId === "world") return elements.worldStage;
   return areaId === "castle" ? elements.castleStage : elements.mapStage;
 }
 
 function areaMapImageSize(areaId) {
+  if (areaId === "world") return worldMap.imageSize;
   return areaRegistry[areaId]?.imageSize || mapImageSize;
 }
 
@@ -731,6 +771,10 @@ function positionCastleElement(element, x, y, metrics = castleCoverMetrics()) {
 }
 
 function currentPlayerPoint(areaId) {
+  if (areaId === "world") {
+    const destination = activeWorldDestination();
+    return destination ? { x: destination.x, y: destination.y } : null;
+  }
   const nodes = nodeMapForArea(areaId);
   const fallback = nodes[state.playerNode] || nodes[areaRegistry[areaId]?.defaultNode];
   if (
@@ -884,6 +928,118 @@ function moveOnCastleMap(dx, dy) {
   renderCastleMap();
 }
 
+function worldMapMetrics() {
+  return areaMapMetrics("world");
+}
+
+function positionWorldElement(element, x, y, metrics = worldMapMetrics()) {
+  element.style.left = `${metrics.offsetX + (x / 100) * metrics.displayWidth}px`;
+  element.style.top = `${metrics.offsetY + (y / 100) * metrics.displayHeight}px`;
+}
+
+function renderWorldMap() {
+  if (!elements.worldStage || !elements.worldMarkerLayer) return;
+  if (elements.worldStage.offsetParent === null && activeViewName() !== "world") return;
+  activeWorldDestinationId = activeWorldDestination()?.id || "castle";
+  centerAreaMapIfRequested("world");
+  const metrics = worldMapMetrics();
+  syncAreaMapStyles("world", metrics);
+  elements.worldStage.style.setProperty("--map-backdrop-image", `url("${worldMap.mapImage}")`);
+  if (elements.worldImage && worldMap.mapImage && !elements.worldImage.src.endsWith(worldMap.mapImage)) {
+    elements.worldImage.src = domAssetUrl(worldMap.mapImage);
+    elements.worldImage.alt = worldMap.label;
+  }
+  elements.worldMarkerLayer.innerHTML = "";
+  worldMap.destinations.forEach((destination) => {
+    const marker = document.createElement("button");
+    const active = destination.id === activeWorldDestinationId;
+    marker.type = "button";
+    marker.className = `map-marker hotspot world-marker portal${active ? " nearby" : ""}${destination.enabled ? "" : " disabled"}`;
+    marker.dataset.destinationId = destination.id;
+    marker.dataset.label = destination.label;
+    marker.disabled = !destination.enabled;
+    marker.setAttribute("aria-label", destination.enabled ? `${destination.label}. Enter area.` : `${destination.label}. Not open yet.`);
+    marker.setAttribute("aria-current", active ? "location" : "false");
+    marker.innerHTML = `<span class="hotspot-icon" aria-hidden="true">${destination.icon}</span>`;
+    positionWorldElement(marker, destination.x, destination.y, metrics);
+    marker.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      openWorldDestination(destination.id);
+    });
+    elements.worldMarkerLayer.appendChild(marker);
+    updateMarkerEdgeVisibility(marker, elements.worldStage);
+  });
+  renderWorldDestinationList();
+}
+
+function renderWorldDestinationList() {
+  if (!elements.worldDestinationList) return;
+  const active = activeWorldDestination();
+  elements.worldDestinationHint.textContent = active?.hint || "Choose an area.";
+  elements.worldDestinationList.innerHTML = "";
+  worldMap.destinations.forEach((destination) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `destination-card${destination.enabled ? "" : " disabled"}${destination.id === activeWorldDestinationId ? " active" : ""}`;
+    button.disabled = !destination.enabled;
+    button.dataset.destinationId = destination.id;
+    button.innerHTML = `
+      <span class="destination-icon" aria-hidden="true">${destination.icon}</span>
+      <span class="destination-copy">
+        <strong>${destination.label}</strong>
+        <small>${destination.hint}</small>
+      </span>
+      <span class="destination-badge">${destination.enabled ? "Enter" : "Soon"}</span>
+    `;
+    button.addEventListener("click", () => openWorldDestination(destination.id));
+    elements.worldDestinationList.appendChild(button);
+  });
+}
+
+function focusWorldDestination(destinationId, rerender = true) {
+  const destination = worldDestinationById(destinationId);
+  if (!destination) return;
+  activeWorldDestinationId = destination.id;
+  centerAreaMapOnPoint("world", destination.x, destination.y);
+  if (rerender) renderWorldMap();
+  elements.worldStage?.focus({ preventScroll: true });
+}
+
+function cycleWorldDestination(delta) {
+  const destinations = enabledWorldDestinations();
+  if (!destinations.length) return;
+  const currentIndex = Math.max(0, destinations.findIndex((destination) => destination.id === activeWorldDestinationId));
+  const next = destinations[(currentIndex + delta + destinations.length) % destinations.length];
+  focusWorldDestination(next.id);
+}
+
+function openWorldDestination(destinationId = activeWorldDestinationId) {
+  const destination = worldDestinationById(destinationId);
+  if (!destination) return;
+  if (!destination.enabled) {
+    elements.statusMessage.textContent = `${destination.label} is not open yet.`;
+    activeWorldDestinationId = destination.id;
+    renderWorldMap();
+    return;
+  }
+  const targetArea = areaRegistry[destination.area];
+  const targetNode = targetArea?.nodes?.[destination.entryNode] || targetArea?.nodes?.[targetArea.defaultNode] || Object.values(targetArea?.nodes || {})[0];
+  if (!targetArea?.enabled || !targetNode) {
+    elements.statusMessage.textContent = `${destination.label} is not open yet.`;
+    return;
+  }
+  state.area = targetArea.id;
+  state.playerNode = targetNode.id;
+  state.player = { x: targetNode.x, y: targetNode.y };
+  activeWorldDestinationId = destination.id;
+  activeHotspot = targetArea.id === "castle" ? null : locationsForArea(targetArea.id).find((item) => item.node === targetNode.id) || null;
+  activeCastleHotspot = targetArea.id === "castle" ? locationsForArea("castle").find((item) => item.node === targetNode.id) || null : null;
+  elements.statusMessage.textContent = `${destination.label} area opened.`;
+  persist();
+  openArea(targetArea.id);
+}
+
 function renderMap() {
   if (!elements.mapStage || (elements.mapStage.offsetParent === null && activeViewName() !== "map")) return;
   const areaId = activeTravelMapArea();
@@ -891,6 +1047,7 @@ function renderMap() {
   centerAreaMapIfRequested(areaId);
   if (elements.destinationHint) elements.destinationHint.textContent = "Choose any place to help.";
   const area = areaRegistry[areaId];
+  elements.mapStage.style.setProperty("--map-backdrop-image", `url("${area?.mapImage || ""}")`);
   if (elements.mapImage && area?.mapImage && !elements.mapImage.src.endsWith(area.mapImage)) {
     elements.mapImage.src = area.mapImage;
     elements.mapImage.alt = `${area.label} travel map`;
@@ -1098,8 +1255,7 @@ function travelActionLabel(hotspot) {
   if (!hotspot) return "Visit";
   if (hotspot.kind === "room") return "Enter";
   if (hotspot.kind === "gate") {
-    const route = routeForPortal(areaForHotspot(hotspot), hotspot.portalId);
-    return route?.label || sceneConfigFor(hotspot).travelAction || "Travel";
+    return sceneConfigFor(hotspot).travelAction || routeForPortal(areaForHotspot(hotspot), hotspot.portalId)?.label || "World Map";
   }
   if (hotspot.kind === "future") return "Soon";
   if (hasLessonsForPlace(hotspot.id)) return "Help";
@@ -1163,26 +1319,16 @@ function interactCurrentLocation() {
     interactCastleHotspot();
     return;
   }
+  if (activeViewName() === "world") {
+    openWorldDestination(activeWorldDestinationId);
+    return;
+  }
   interactNearby();
 }
 
 function enterTravelGate(hotspot) {
-  const route = routeForPortal(areaForHotspot(hotspot), hotspot?.portalId);
-  if (!route) return;
-  const targetArea = areaRegistry[route.to.area];
-  const targetNode = targetArea?.nodes?.[route.to.node] || targetArea?.nodes?.[targetArea.defaultNode];
-  if (!targetArea?.enabled || !targetNode) return;
-  state.area = targetArea.id;
-  state.playerNode = targetNode.id;
-  state.player = { x: targetNode.x, y: targetNode.y };
-  activeHotspot = null;
-  activeCastleHotspot = null;
-  if (targetArea.id === "castle") {
-    activeCastleHotspot = locationsForArea("castle").find((item) => item.node === targetNode.id) || null;
-  } else {
-    activeHotspot = locationsForArea(targetArea.id).find((item) => item.node === targetNode.id) || null;
-  }
-  openArea(targetArea.id);
+  activeWorldDestinationId = worldDestinationForArea(areaForHotspot(hotspot))?.id || activeWorldDestinationId;
+  openWorldMap();
 }
 
 function openAdvBase(hotspot, mode) {
@@ -1962,7 +2108,7 @@ function closeAdv() {
   setExpressions("normal", "normal");
   renderPaperDolls();
   persist();
-  const focusTarget = activeViewName() === "home" ? elements.castleStage : elements.mapStage;
+  const focusTarget = activeViewName() === "home" ? elements.castleStage : activeViewName() === "world" ? elements.worldStage : elements.mapStage;
   focusTarget?.focus({ preventScroll: true });
 }
 
@@ -2162,6 +2308,8 @@ function applyAreaMapViewport(areaId, viewport) {
 function refreshAreaMapPositions(areaId) {
   if (areaId === "castle") {
     refreshCastleMapPositions();
+  } else if (areaId === "world") {
+    renderWorldMap();
   } else {
     refreshMapPositions();
   }
@@ -2270,6 +2418,18 @@ function finishCastleMapDrag(event) {
   finishAreaMapGesture("castle", event);
 }
 
+function beginWorldMapDrag(event) {
+  beginAreaMapGesture("world", event);
+}
+
+function moveWorldMapDrag(event) {
+  moveAreaMapGesture("world", event);
+}
+
+function finishWorldMapDrag(event) {
+  finishAreaMapGesture("world", event);
+}
+
 function bindEvents() {
   elements.tabs.forEach((tab) => tab.addEventListener("click", () => changeView(tab.dataset.view)));
   window.addEventListener("hashchange", () => changeView(location.hash ? location.hash.slice(1) : "home"));
@@ -2279,7 +2439,7 @@ function bindEvents() {
     if (event.target.matches("[data-system-close]")) closeSystemMenu();
   });
   elements.systemMenuTabs.forEach((tab) => tab.addEventListener("click", () => changeSystemPanel(tab.dataset.menuPanel)));
-  elements.goMapButton?.addEventListener("click", () => openArea("urban"));
+  elements.goMapButton?.addEventListener("click", openWorldMap);
   elements.returnHomeButton?.addEventListener("click", () => openArea("castle"));
   elements.helpButton.addEventListener("click", showHelp);
   elements.speakPromptButton.addEventListener("click", () => speak(elements.advLine.textContent));
@@ -2330,6 +2490,7 @@ function bindEvents() {
   });
   window.addEventListener("resize", () => {
     if (elements.mapStage?.offsetParent !== null) renderMap();
+    if (elements.worldStage?.offsetParent !== null) renderWorldMap();
     if (elements.castleStage?.offsetParent !== null) renderCastleMap();
   });
   elements.castleStage?.addEventListener("keydown", (event) => {
@@ -2368,6 +2529,33 @@ function bindEvents() {
   elements.castleStage?.addEventListener("pointermove", moveCastleMapDrag);
   elements.castleStage?.addEventListener("pointerup", finishCastleMapDrag);
   elements.castleStage?.addEventListener("pointercancel", finishCastleMapDrag);
+  elements.worldStage?.addEventListener("keydown", (event) => {
+    if (event.key === "+" || event.key === "=") {
+      event.preventDefault();
+      event.stopPropagation();
+      zoomAreaMapFromKeyboard("world", 1);
+    } else if (event.key === "-" || event.key === "_") {
+      event.preventDefault();
+      event.stopPropagation();
+      zoomAreaMapFromKeyboard("world", -1);
+    } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      event.preventDefault();
+      event.stopPropagation();
+      cycleWorldDestination(-1);
+    } else if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      event.preventDefault();
+      event.stopPropagation();
+      cycleWorldDestination(1);
+    } else if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      event.stopPropagation();
+      openWorldDestination(activeWorldDestinationId);
+    }
+  });
+  elements.worldStage?.addEventListener("pointerdown", beginWorldMapDrag);
+  elements.worldStage?.addEventListener("pointermove", moveWorldMapDrag);
+  elements.worldStage?.addEventListener("pointerup", finishWorldMapDrag);
+  elements.worldStage?.addEventListener("pointercancel", finishWorldMapDrag);
   elements.mapStage.addEventListener("keydown", (event) => {
     const key = event.key.toLowerCase();
     const areaId = activeTravelMapArea();
@@ -2423,9 +2611,18 @@ function bindEvents() {
         interactNearby();
         return;
       }
+      if (
+        (event.key === "Enter" || event.key === " ") &&
+        elements.worldStage?.offsetParent !== null &&
+        activeWorldDestinationId
+      ) {
+        event.preventDefault();
+        openWorldDestination(activeWorldDestinationId);
+        return;
+      }
       if ((event.key === "g" || event.key === "G") && elements.homeView?.classList.contains("active")) {
         event.preventDefault();
-        openArea("urban");
+        openWorldMap();
       }
       return;
     }
@@ -2557,9 +2754,15 @@ installTestingHooks({
     openArea("wild");
     focusTravelHotspot(hotspot.id, "wild");
   },
+  focusWorld: (destination = activeWorldDestinationId) => {
+    const target = worldDestinationById(destination) || worldDestinationForArea(destination);
+    if (!target) throw new Error("Unknown world destination");
+    openWorldMap();
+    focusWorldDestination(target.id);
+  },
   freshState,
   getMapMetrics: (areaId = state.area) => {
-    if (!areaRegistry[areaId]) throw new Error("Unknown area");
+    if (areaId !== "world" && !areaRegistry[areaId]) throw new Error("Unknown area");
     return areaMapMetrics(areaId);
   },
   hotspotById,
@@ -2576,6 +2779,8 @@ installTestingHooks({
   moveOnMap,
   nodeMapForArea,
   openArea,
+  openWorldDestination,
+  openWorldMap,
   openHintAdv,
   openQuestAdv,
   openRefundDetail,
@@ -2586,14 +2791,16 @@ installTestingHooks({
   openWardrobeDetail,
   paperDollBaseLayer,
   persist,
+  renderWorldMap,
   render,
   renderAdvShop,
+  renderWardrobeDetail,
   renderRefundDetail,
   renderMap,
   refundItemInAdv,
   sceneConfigFor,
   setMapViewport: (areaId, viewport = {}) => {
-    if (!areaRegistry[areaId]) throw new Error("Unknown area");
+    if (areaId !== "world" && !areaRegistry[areaId]) throw new Error("Unknown area");
     applyAreaMapViewport(areaId, {
       pan: viewport.pan || { x: Number(viewport.x) || 0, y: Number(viewport.y) || 0 },
       zoom: Number(viewport.zoom) || 1
@@ -2602,5 +2809,6 @@ installTestingHooks({
   },
   shopItems,
   showHelp,
-  toggleEquip
+  toggleEquip,
+  worldMap
 });

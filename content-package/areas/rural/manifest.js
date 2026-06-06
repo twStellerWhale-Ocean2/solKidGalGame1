@@ -6,13 +6,11 @@ import { makeLessons, makeQuestTemplates } from "../_shared/lesson-helpers.js";
 //#region 素材路徑工具
 // 所有本地區圖片路徑集中在這裡；換素材或快取版本參數時優先改這段。
 const npcImage = (name) => `content-package/areas/rural/assets/characters/${name}.webp?v=20260606-character-scale-r1`;
+const sceneVersion = "20260606-issue66-adv-scenes-r1";
 const sceneArt = (src, options = {}) => ({ sceneArt: { src, tone: "rural", ...options } });
-const ruralAtlasArt = (position) => sceneArt("content-package/areas/rural/assets/scenes/scenes-atlas.webp?v=20260605-webp-assets", {
-  atlas: "rural-scenes",
-  position,
-  size: "700% 100%"
-});
-const ruralShopArt = (name) => sceneArt(`content-package/areas/rural/assets/scenes/${name}.webp?v=20260604-issues56-60`, { tone: "shop" });
+const ruralSceneArt = (name, options = {}) => sceneArt(`content-package/areas/rural/assets/scenes/${name}-1024.webp?v=${sceneVersion}`, options);
+const ruralProductionArt = (name) => ruralSceneArt(`rural-${name}`);
+const ruralShopArt = (name) => ruralSceneArt(name, { tone: "shop" });
 //#endregion 素材路徑工具
 
 //#region 英文等級與獎勵設定
@@ -60,25 +58,25 @@ export const ruralArea = Object.freeze({
   id: "rural",
   label: "Rural",
   view: "map",
-  mapImage: "content-package/areas/rural/assets/map.webp?v=20260605-webp-assets",
-  imageSize: { width: 1536, height: 1024 },
+  mapImage: "content-package/areas/rural/assets/map-1536.webp?v=20260606-issue66-map-contract-r1",
+  imageSize: { width: 1536, height: 1536 },
   vocabularyProfile: ruralVocabularyProfile,
   // nodes 控制地圖上的路網與圖示座標；x / y 是相對地圖寬高的百分比。
   nodes: {
-    ruralEntrance: { id: "ruralEntrance", label: "Urban Road", x: 19, y: 22, links: ["pasture", "farm"] },
-    mine: { id: "mine", label: "Mine", x: 77, y: 26, links: ["loggingCamp", "fishingShore", "ruralEntrance"] },
-    loggingCamp: { id: "loggingCamp", label: "Logging Camp", x: 76, y: 66, links: ["mine", "fishingShore", "mill", "fieldCobbler"] },
-    fishingShore: { id: "fishingShore", label: "Fishing Shore", x: 50, y: 86, links: ["loggingCamp", "farm", "mine", "fieldCobbler"] },
-    pasture: { id: "pasture", label: "Pasture", x: 22, y: 28, links: ["ruralEntrance", "farm", "mill", "workwearStall"] },
-    farm: { id: "farm", label: "Farm", x: 26, y: 62, links: ["pasture", "mill", "villageHome", "fishingShore", "workwearStall"] },
-    mill: { id: "mill", label: "Mill", x: 40, y: 57, links: ["farm", "pasture", "loggingCamp", "villageHome", "workwearStall"] },
-    workwearStall: { id: "workwearStall", label: "Workwear Stall", x: 33, y: 44, links: ["pasture", "farm", "mill"] },
-    fieldCobbler: { id: "fieldCobbler", label: "Field Cobbler", x: 62, y: 70, links: ["fishingShore", "loggingCamp", "mine"] },
-    villageHome: { id: "villageHome", label: "Village Home", x: 19, y: 82, links: ["farm", "mill"] }
+    ruralEntrance: { id: "ruralEntrance", label: "World Road", x: 9.1, y: 87.9, links: ["pasture", "farm"] },
+    mine: { id: "mine", label: "Mine", x: 78.8, y: 20.2, links: ["loggingCamp", "fishingShore", "ruralEntrance"] },
+    loggingCamp: { id: "loggingCamp", label: "Logging Camp", x: 83.6, y: 56.0, links: ["mine", "fishingShore", "mill", "fieldCobbler"] },
+    fishingShore: { id: "fishingShore", label: "Fishing Shore", x: 81.4, y: 85.9, links: ["loggingCamp", "farm", "mine", "fieldCobbler"] },
+    pasture: { id: "pasture", label: "Pasture", x: 65.8, y: 41.0, links: ["ruralEntrance", "farm", "mill", "workwearStall"] },
+    farm: { id: "farm", label: "Farm", x: 46.9, y: 69.7, links: ["pasture", "mill", "villageHome", "fishingShore", "workwearStall"] },
+    mill: { id: "mill", label: "Mill", x: 22.1, y: 67.7, links: ["farm", "pasture", "loggingCamp", "villageHome", "workwearStall"] },
+    workwearStall: { id: "workwearStall", label: "Workwear Stall", x: 37.1, y: 57.9, links: ["pasture", "farm", "mill"] },
+    fieldCobbler: { id: "fieldCobbler", label: "Field Cobbler", x: 65.1, y: 87.2, links: ["fishingShore", "loggingCamp", "mine"] },
+    villageHome: { id: "villageHome", label: "Village Home", x: 26.7, y: 87.9, links: ["farm", "mill"] }
   },
   // locations 控制地圖圖示進入後的場景、NPC、商店與提示文字。
   locations: [
-    { id: "ruralExit", area: "rural", node: "ruralEntrance", label: "Urban Road", icon: "↩", npcClass: "npc-none", npc: "Rural Sign", kind: "gate", markerStyle: "portal", portalId: "entrance", hint: "The road returns to the urban town." },
+    { id: "ruralExit", area: "rural", node: "ruralEntrance", label: "World Road", icon: "↩", npcClass: "npc-none", npc: "Rural Sign", kind: "gate", markerStyle: "portal", portalId: "entrance", hint: "The road returns to the kingdom world map." },
     { id: "mine", area: "rural", node: "mine", label: "Mine", icon: "⛏", npc: "Miner Gemma", scene: "scene-rural-mine", npcImage: npcImage("miner-gemma"), hint: "The mine has bright stones and cart tracks." },
     { id: "loggingCamp", area: "rural", node: "loggingCamp", label: "Logging Camp", icon: "🪵", npc: "Logger Rowan", scene: "scene-rural-logging", npcImage: npcImage("logger-rowan"), hint: "The logging camp stacks wood for safe building." },
     { id: "fishingShore", area: "rural", node: "fishingShore", label: "Fishing Shore", icon: "🎣", npc: "Fisher Nami", scene: "scene-rural-fishing", npcImage: npcImage("fisher-nami"), hint: "The shore has nets, boats, and small fish." },
@@ -90,10 +88,7 @@ export const ruralArea = Object.freeze({
     { id: "villageHome", area: "rural", node: "villageHome", label: "Village Home", icon: "🏡", npc: "Grandma Fina", scene: "scene-rural-home", npcImage: npcImage("grandma-fina"), hint: "The village home has a warm porch and garden." }
   ],
   // actors 是地圖上的動態環境效果，不是可點擊地點。
-  actors: [
-    { id: "rural-river-glow", type: "water", x: 50, y: 82, w: 22, h: 12, z: 1, phase: 0.5 },
-    { id: "rural-mill-glow", type: "glow", x: 40, y: 57, w: 8, h: 8, z: 2, phase: 1.2 }
-  ],
+  actors: [],
   defaultNode: "ruralEntrance",
   enabled: true
 });
@@ -102,16 +97,16 @@ export const ruralArea = Object.freeze({
 //#region 對話場景設定
 // 每個屬性名稱對應地點或節點，控制對話畫面的背景、NPC 與按鈕文案。
 export const ruralSceneConfigs = Object.freeze({
-  ruralExit: { ...ruralAtlasArt("66.666% 50%"), scene: "scene-rural-farm", npcClass: "npc-none", npc: "Rural Sign", travelAction: "Back to Urban", travelLine: "The road returns to the urban town." },
-  mine: { ...ruralAtlasArt("0% 50%"), scene: "scene-rural-mine", npc: "Miner Gemma", npcImage: npcImage("miner-gemma"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Miner Gemma is sorting shiny stones." },
-  loggingCamp: { ...ruralAtlasArt("16.666% 50%"), scene: "scene-rural-logging", npc: "Logger Rowan", npcImage: npcImage("logger-rowan"), npcNaturalHeightCm: 178, travelAction: "Visit", travelLine: "Logger Rowan stacks logs beside the cabin." },
-  fishingShore: { ...ruralAtlasArt("33.333% 50%"), scene: "scene-rural-fishing", npc: "Fisher Nami", npcImage: npcImage("fisher-nami"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Fisher Nami pulls a net near the bright shore." },
-  pasture: { ...ruralAtlasArt("50% 50%"), scene: "scene-rural-pasture", npc: "Farmer Theo", npcImage: npcImage("farmer-theo"), npcNaturalHeightCm: 175, travelAction: "Visit", travelLine: "Farmer Theo counts animals in the pasture." },
-  farm: { ...ruralAtlasArt("66.666% 50%"), scene: "scene-rural-farm", npc: "Auntie Pom", npcImage: npcImage("auntie-pom"), npcNaturalHeightCm: 155, travelAction: "Visit", travelLine: "Auntie Pom waters vegetables and wheat." },
-  mill: { ...ruralAtlasArt("83.333% 50%"), scene: "scene-rural-mill", npc: "Miller Bell", npcImage: npcImage("miller-bell"), npcNaturalHeightCm: 162, travelAction: "Visit", travelLine: "Miller Bell carries flour by the windmill." },
+  ruralExit: { ...ruralProductionArt("farm"), scene: "scene-rural-farm", npcClass: "npc-none", npc: "Rural Sign", travelAction: "World Map", travelLine: "The road returns to the kingdom world map." },
+  mine: { ...ruralProductionArt("mine"), scene: "scene-rural-mine", npc: "Miner Gemma", npcImage: npcImage("miner-gemma"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Miner Gemma is sorting shiny stones." },
+  loggingCamp: { ...ruralProductionArt("logging"), scene: "scene-rural-logging", npc: "Logger Rowan", npcImage: npcImage("logger-rowan"), npcNaturalHeightCm: 178, travelAction: "Visit", travelLine: "Logger Rowan stacks logs beside the cabin." },
+  fishingShore: { ...ruralProductionArt("fishing"), scene: "scene-rural-fishing", npc: "Fisher Nami", npcImage: npcImage("fisher-nami"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Fisher Nami pulls a net near the bright shore." },
+  pasture: { ...ruralProductionArt("pasture"), scene: "scene-rural-pasture", npc: "Farmer Theo", npcImage: npcImage("farmer-theo"), npcNaturalHeightCm: 175, travelAction: "Visit", travelLine: "Farmer Theo counts animals in the pasture." },
+  farm: { ...ruralProductionArt("farm"), scene: "scene-rural-farm", npc: "Auntie Pom", npcImage: npcImage("auntie-pom"), npcNaturalHeightCm: 155, travelAction: "Visit", travelLine: "Auntie Pom waters vegetables and wheat." },
+  mill: { ...ruralProductionArt("mill"), scene: "scene-rural-mill", npc: "Miller Bell", npcImage: npcImage("miller-bell"), npcNaturalHeightCm: 162, travelAction: "Visit", travelLine: "Miller Bell carries flour by the windmill." },
   workwearStall: { ...ruralShopArt("workwear-stall"), scene: "scene-rural-workwear-stall", npc: "Workwear Keeper", npcImage: npcImage("workwear-stall-keeper"), npcNaturalHeightCm: 168, travelAction: "Shop", travelLine: "The Workwear Keeper has sturdy tops and bottoms.", shopGreeting: "Welcome to the Workwear Stall. Pick tops or bottoms." },
   fieldCobbler: { ...ruralShopArt("field-cobbler"), scene: "scene-rural-field-cobbler", npc: "Field Cobbler", npcImage: npcImage("field-cobbler"), npcNaturalHeightCm: 165, travelAction: "Shop", travelLine: "The Field Cobbler has shoes and hats for country roads.", shopGreeting: "Welcome to the Field Cobbler. Pick shoes or hats." },
-  villageHome: { ...ruralAtlasArt("100% 50%"), scene: "scene-rural-home", npc: "Grandma Fina", npcImage: npcImage("grandma-fina"), npcNaturalHeightCm: 148, travelAction: "Visit", travelLine: "Grandma Fina tidies the warm village porch." }
+  villageHome: { ...ruralProductionArt("home"), scene: "scene-rural-home", npc: "Grandma Fina", npcImage: npcImage("grandma-fina"), npcNaturalHeightCm: 148, travelAction: "Visit", travelLine: "Grandma Fina tidies the warm village porch." }
 });
 //#endregion 對話場景設定
 

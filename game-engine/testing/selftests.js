@@ -35,7 +35,9 @@ export function installTestingHooks(api) {
     focusCastle: api.focusCastle,
     focusUrban: api.focusUrban,
     focusRural: api.focusRural,
-    focusWild: api.focusWild
+    focusWild: api.focusWild,
+    focusWorld: api.focusWorld,
+    openWorldMap: api.openWorldMap
   };
 
   runSaveLoadSelfTest(api);
@@ -56,6 +58,8 @@ async function runDataAudit(api) {
     api.shopItems.filter((item) => item.cost > 0 && api.itemMatchesCategory(item, category.id)).length
   ]));
   const errors = [];
+  const warnings = [];
+  const mapContracts = await collectMapContractAudit(api, errors);
 
   Object.entries(categoryCounts).forEach(([category, count]) => {
     if (count < 10) errors.push(`${category} has ${count} paid items`);
@@ -98,6 +102,8 @@ async function runDataAudit(api) {
       });
     });
   });
+  const sceneBackgroundContract = await collectSceneBackgroundContractAudit(api, errors);
+  warnings.push(...sceneBackgroundContract.warnings);
   const supportedActorMotions = new Set(api.mapActorMotionTypes || []);
   const mapActorSurfaces = [];
   Object.values(api.areaRegistry).forEach((area) => {
@@ -129,6 +135,8 @@ async function runDataAudit(api) {
     shopCount: shopLocations.length,
     sceneArtCount: sceneArtSurfaces.length,
     mapActorCount: mapActorSurfaces.length,
+    mapContracts,
+    sceneBackgroundContract,
     characterScale,
     supportedActorMotions: [...supportedActorMotions],
     shops: shopLocations.map((hotspot) => ({
@@ -139,6 +147,7 @@ async function runDataAudit(api) {
     })),
     sceneArtSurfaces,
     mapActorSurfaces,
+    warnings,
     errors
   });
   document.body.prepend(result);
@@ -188,6 +197,120 @@ function imageMetrics(src) {
     image.onerror = () => reject(new Error(`Could not load ${src}`));
     image.src = src;
   });
+}
+
+function imageNaturalSize(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      resolve({
+        src,
+        width: image.naturalWidth,
+        height: image.naturalHeight
+      });
+    };
+    image.onerror = () => reject(new Error(`Could not load ${src}`));
+    image.src = src;
+  });
+}
+
+async function collectMapContractAudit(api, errors) {
+  const contracts = [];
+  const mapEntries = [
+    {
+      scope: "world",
+      id: api.worldMap?.id || "world",
+      label: api.worldMap?.label || "World Map",
+      mapImage: api.worldMap?.mapImage,
+      declared: api.worldMap?.imageSize,
+      expected: { width: 1024, height: 1536 }
+    },
+    ...Object.values(api.areaRegistry)
+      .filter((area) => area.enabled && area.mapImage)
+      .map((area) => ({
+        scope: "area",
+        id: area.id,
+        label: area.label,
+        mapImage: area.mapImage,
+        declared: area.imageSize,
+        expected: { width: 1536, height: 1536 }
+      }))
+  ];
+
+  for (const entry of mapEntries) {
+    let actual = null;
+    if (!entry.mapImage) {
+      errors.push(`${entry.scope}/${entry.id} has no mapImage`);
+    }
+    if (entry.declared?.width !== entry.expected.width || entry.declared?.height !== entry.expected.height) {
+      errors.push(`${entry.scope}/${entry.id} declares ${entry.declared?.width || 0}x${entry.declared?.height || 0}, expected ${entry.expected.width}x${entry.expected.height}`);
+    }
+    if (entry.mapImage) {
+      try {
+        actual = await imageNaturalSize(entry.mapImage);
+        if (actual.width !== entry.expected.width || actual.height !== entry.expected.height) {
+          errors.push(`${entry.scope}/${entry.id} image is ${actual.width}x${actual.height}, expected ${entry.expected.width}x${entry.expected.height}`);
+        }
+      } catch (error) {
+        errors.push(error.message);
+      }
+    }
+    contracts.push({
+      ...entry,
+      actual,
+      passed: Boolean(actual) &&
+        entry.declared?.width === entry.expected.width &&
+        entry.declared?.height === entry.expected.height &&
+        actual.width === entry.expected.width &&
+        actual.height === entry.expected.height
+    });
+  }
+  return contracts;
+}
+
+async function collectSceneBackgroundContractAudit(api, errors = []) {
+  const target = { width: 1024, height: 1024 };
+  const warnings = [];
+  const refs = [];
+  Object.values(api.areaRegistry).forEach((area) => {
+    (area.locations || []).forEach((hotspot) => {
+      const config = api.sceneConfigFor(hotspot);
+      if (!config.sceneArt?.src) return;
+      refs.push({
+        area: area.id,
+        id: hotspot.id,
+        label: hotspot.label,
+        src: config.sceneArt.src,
+        atlas: config.sceneArt.atlas || ""
+      });
+    });
+  });
+  const pending = [];
+  const checked = [];
+  for (const ref of uniqueBy(refs, (item) => item.src)) {
+    try {
+      const metrics = await imageNaturalSize(ref.src);
+      const matchesTarget = metrics.width === target.width && metrics.height === target.height;
+      const record = { ...ref, ...metrics, target, status: matchesTarget ? "passed" : "failed" };
+      checked.push(record);
+      if (!matchesTarget) {
+        pending.push(record);
+        errors.push(`${ref.area}/${ref.id} scene background is ${metrics.width}x${metrics.height}, expected ${target.width}x${target.height}`);
+      }
+    } catch (error) {
+      const record = { ...ref, target, status: "failed", error: error.message };
+      pending.push(record);
+      errors.push(`${ref.area}/${ref.id} scene background failed to load: ${error.message}`);
+    }
+  }
+  return {
+    target,
+    status: pending.length ? "failed" : "passed",
+    checkedCount: checked.length,
+    pendingCount: pending.length,
+    pending,
+    warnings
+  };
 }
 
 function expectedBodyHeightPx(heightCm, contract) {
@@ -360,6 +483,13 @@ function runVisualQa(api) {
     });
   }
 
+  if (surface === "world-map") {
+    api.render();
+    api.openWorldMap();
+    if (params.get("destination")) api.focusWorld(params.get("destination"));
+    return;
+  }
+
   if (surface === "castle-map") {
     api.render();
     api.openArea("castle");
@@ -373,9 +503,15 @@ function runVisualQa(api) {
   }
 
   if (surface === "wardrobe-detail") {
+    const requestedItem = api.itemById(params.get("item"));
+    const category = params.get("category") || api.categoryForType(requestedItem?.type)?.id || "dresses";
     api.render();
     api.openRoomScene(api.hotspotById("princessRoom"));
-    api.openWardrobeDetail(params.get("category") || "dresses");
+    api.openWardrobeDetail(category);
+    if (requestedItem && api.state.owned.includes(requestedItem.id)) {
+      api.shopPreviewItemId = requestedItem.id;
+      api.renderWardrobeDetail(true);
+    }
     return;
   }
 
@@ -560,9 +696,14 @@ function scheduleVisualQaMetricsReport() {
         dpr: window.devicePixelRatio
       },
       mode: document.querySelector("#advScene")?.dataset.mode || "",
+      activeView: document.querySelector(".view.active")?.id || "",
       title: document.querySelector("#advTitle")?.textContent || "",
       speaker: document.querySelector("#advSpeaker")?.textContent || "",
       scene: rectFor("#advScene"),
+      castleStage: rectFor("#castleStage"),
+      worldStage: rectFor("#worldStage"),
+      mapStage: rectFor("#mapStage"),
+      mapMarkers: buttonInfo("#castleMarkerLayer .hotspot, #worldMarkerLayer .hotspot, #hotspotLayer .hotspot"),
       portraits,
       box,
       stagePanelRatio: portraits && box ? Number((portraits.height / box.height).toFixed(2)) : null,

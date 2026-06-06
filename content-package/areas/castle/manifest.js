@@ -6,15 +6,12 @@ import { makeLessons, makeQuestTemplates } from "../_shared/lesson-helpers.js";
 //#region 素材路徑工具
 // 所有本地區圖片路徑集中在這裡；換素材或快取版本參數時優先改這段。
 const npcImage = (name) => `content-package/areas/castle/assets/characters/${name}.webp?v=20260606-character-scale-r1`;
+const sceneVersion = "20260606-issue66-adv-scenes-r1";
 const sceneArt = (src, options = {}) => ({ sceneArt: { src, tone: "castle", ...options } });
-const castleRoomAtlasArt = (position) => sceneArt("content-package/areas/castle/assets/scenes/rooms-atlas.webp?v=20260605-webp-assets", {
-  atlas: "castle-rooms",
-  position,
-  size: "500% 100%"
-});
-const castleShopArt = (name) => sceneArt(`content-package/areas/castle/assets/scenes/${name}.webp?v=20260604-issues56-60`, { tone: "shop" });
-const gardenArt = sceneArt("content-package/areas/urban/assets/scenes/garden.webp?v=20260601-optimized-assets", { tone: "urban" });
-const princessRoomArt = sceneArt("content-package/areas/castle/assets/scenes/bedroom.webp?v=20260601-optimized-assets", { tone: "room" });
+const castleSceneArt = (name, options = {}) => sceneArt(`content-package/areas/castle/assets/scenes/${name}-1024.webp?v=${sceneVersion}`, options);
+const castleShopArt = (name) => castleSceneArt(name, { tone: "shop" });
+const gardenArt = sceneArt(`content-package/areas/urban/assets/scenes/garden-1024.webp?v=${sceneVersion}`, { tone: "urban" });
+const princessRoomArt = castleSceneArt("bedroom", { tone: "room" });
 //#endregion 素材路徑工具
 
 //#region 英文等級與獎勵設定
@@ -116,20 +113,20 @@ export const castleArea = Object.freeze({
   id: "castle",
   label: "Castle",
   view: "home",
-  mapImage: "content-package/areas/castle/assets/map.webp?v=20260601-optimized-assets",
-  imageSize: { width: 1312, height: 1199 },
+  mapImage: "content-package/areas/castle/assets/map-1536.webp?v=20260606-issue66-map-contract-r1",
+  imageSize: { width: 1536, height: 1536 },
   vocabularyProfile: castleVocabularyProfile,
   // nodes 控制地圖上的路網與圖示座標；x / y 是相對地圖寬高的百分比。
   nodes: {
-    princessRoom: { id: "princessRoom", label: "Princess Room", x: 40.7, y: 56.5, links: ["kingHall", "queenStudy", "castleKitchen", "knightsRoom", "maidsRoom", "royalCloakRoom", "castleSeamstress", "castleGate"] },
-    kingHall: { id: "kingHall", label: "King's Hall", x: 50.2, y: 31.5, links: ["princessRoom", "queenStudy", "knightsRoom", "royalCloakRoom"] },
-    queenStudy: { id: "queenStudy", label: "Queen's Study", x: 30.2, y: 52.8, links: ["princessRoom", "kingHall", "maidsRoom", "castleSeamstress"] },
-    castleKitchen: { id: "castleKitchen", label: "Kitchen", x: 62.0, y: 57.0, links: ["princessRoom", "maidsRoom", "royalCloakRoom"] },
-    knightsRoom: { id: "knightsRoom", label: "Knights' Room", x: 62.5, y: 42.5, links: ["kingHall", "princessRoom", "royalCloakRoom"] },
-    maidsRoom: { id: "maidsRoom", label: "Maid's Room", x: 27.0, y: 67.0, links: ["queenStudy", "castleKitchen", "princessRoom", "castleSeamstress"] },
-    royalCloakRoom: { id: "royalCloakRoom", label: "Royal Cloak Room", x: 70.5, y: 68.5, links: ["princessRoom", "kingHall", "knightsRoom", "castleKitchen"] },
-    castleSeamstress: { id: "castleSeamstress", label: "Castle Seamstress", x: 20.8, y: 76.5, links: ["princessRoom", "queenStudy", "maidsRoom"] },
-    castleGate: { id: "castleGate", label: "Castle Gate", x: 40.7, y: 79.8, links: ["princessRoom"] }
+    princessRoom: { id: "princessRoom", label: "Princess Room", x: 50.8, y: 56.0, links: ["kingHall", "queenStudy", "castleKitchen", "knightsRoom", "maidsRoom", "royalCloakRoom", "castleSeamstress", "castleGate"] },
+    kingHall: { id: "kingHall", label: "King's Hall", x: 50.8, y: 35.8, links: ["princessRoom", "queenStudy", "knightsRoom", "royalCloakRoom"] },
+    queenStudy: { id: "queenStudy", label: "Queen's Study", x: 35.8, y: 50.8, links: ["princessRoom", "kingHall", "maidsRoom", "castleSeamstress"] },
+    castleKitchen: { id: "castleKitchen", label: "Kitchen", x: 68.4, y: 59.2, links: ["princessRoom", "maidsRoom", "royalCloakRoom"] },
+    knightsRoom: { id: "knightsRoom", label: "Knights' Room", x: 72.3, y: 43.6, links: ["kingHall", "princessRoom", "royalCloakRoom"] },
+    maidsRoom: { id: "maidsRoom", label: "Maid's Room", x: 35.2, y: 67.7, links: ["queenStudy", "castleKitchen", "princessRoom", "castleSeamstress"] },
+    royalCloakRoom: { id: "royalCloakRoom", label: "Royal Cloak Room", x: 76.2, y: 71.0, links: ["princessRoom", "kingHall", "knightsRoom", "castleKitchen"] },
+    castleSeamstress: { id: "castleSeamstress", label: "Castle Seamstress", x: 28.0, y: 81.4, links: ["princessRoom", "queenStudy", "maidsRoom"] },
+    castleGate: { id: "castleGate", label: "Castle Gate", x: 50.5, y: 85.3, links: ["princessRoom"] }
   },
   // locations 控制地圖圖示進入後的場景、NPC、商店與提示文字。
   locations: [
@@ -141,7 +138,7 @@ export const castleArea = Object.freeze({
     { id: "maidsRoom", area: "castle", node: "maidsRoom", label: "Maid's Room", icon: "🧺", npc: "Maid Lala", scene: "scene-castle-maids-room", npcImage: npcImage("maid-lala"), hint: "Maid Lala keeps the linens clean and tidy." },
     { id: "royalCloakRoom", area: "castle", node: "royalCloakRoom", label: "Royal Cloak Room", icon: "🧥", npc: "Cloak Keeper", scene: "scene-castle-royal-cloak-room", npcImage: npcImage("royal-cloak-keeper"), kind: "shop", shopCategories: ["outerwear", "hats"], defaultCategory: "outerwear", hint: "The Royal Cloak Room sells outerwear and hats for castle rewards." },
     { id: "castleSeamstress", area: "castle", node: "castleSeamstress", label: "Castle Seamstress", icon: "👚", npc: "Seamstress Bea", scene: "scene-castle-seamstress", npcImage: npcImage("castle-seamstress"), kind: "shop", shopCategories: ["tops", "bottoms"], defaultCategory: "tops", hint: "The Castle Seamstress sells tops and bottoms only." },
-    { id: "castleGate", area: "castle", node: "castleGate", label: "Castle Gate", icon: "🏰", npcClass: "npc-garden", npc: "Gate Guard", scene: "scene-garden", kind: "gate", markerStyle: "portal", portalId: "castleGate", hint: "Go out to the urban travel map." }
+    { id: "castleGate", area: "castle", node: "castleGate", label: "Castle Gate", icon: "🏰", npcClass: "npc-garden", npc: "Gate Guard", scene: "scene-garden", kind: "gate", markerStyle: "portal", portalId: "castleGate", hint: "Go out to the kingdom world map." }
   ],
   defaultNode: "princessRoom",
   enabled: true
@@ -152,14 +149,14 @@ export const castleArea = Object.freeze({
 // 每個屬性名稱對應地點或節點，控制對話畫面的背景、NPC 與按鈕文案。
 export const castleSceneConfigs = Object.freeze({
   princessRoom: { ...princessRoomArt, scene: "scene-princess-room", npcClass: "npc-none", npc: "Lumi", travelAction: "Enter", travelLine: "Lumi's room is ready for hair, clothes, outerwear, shoes, and accessories." },
-  kingHall: { ...castleRoomAtlasArt("0% 50%"), scene: "scene-castle-king-hall", npc: "King Rowan", npcImage: npcImage("king-rowan"), npcNaturalHeightCm: 178, travelAction: "Visit", travelLine: "King Rowan is waiting in the bright royal hall." },
-  queenStudy: { ...castleRoomAtlasArt("25% 50%"), scene: "scene-castle-queen-study", npc: "Queen Mira", npcImage: npcImage("queen-mira"), npcNaturalHeightCm: 165, travelAction: "Visit", travelLine: "Queen Mira has opened her study book." },
-  castleKitchen: { ...castleRoomAtlasArt("50% 50%"), scene: "scene-castle-kitchen", npc: "Cook Panna", npcImage: npcImage("cook-panna"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Cook Panna stirs warm soup for the castle." },
-  knightsRoom: { ...castleRoomAtlasArt("75% 50%"), scene: "scene-castle-knights-room", npc: "Knight Theo", npcImage: npcImage("knight-theo"), npcNaturalHeightCm: 182, travelAction: "Visit", travelLine: "Knight Theo is checking the shields." },
-  maidsRoom: { ...castleRoomAtlasArt("100% 50%"), scene: "scene-castle-maids-room", npc: "Maid Lala", npcImage: npcImage("maid-lala"), npcNaturalHeightCm: 158, travelAction: "Visit", travelLine: "Maid Lala is folding soft white cloth." },
+  kingHall: { ...castleSceneArt("king-hall"), scene: "scene-castle-king-hall", npc: "King Rowan", npcImage: npcImage("king-rowan"), npcNaturalHeightCm: 178, travelAction: "Visit", travelLine: "King Rowan is waiting in the bright royal hall." },
+  queenStudy: { ...castleSceneArt("queen-study"), scene: "scene-castle-queen-study", npc: "Queen Mira", npcImage: npcImage("queen-mira"), npcNaturalHeightCm: 165, travelAction: "Visit", travelLine: "Queen Mira has opened her study book." },
+  castleKitchen: { ...castleSceneArt("castle-kitchen"), scene: "scene-castle-kitchen", npc: "Cook Panna", npcImage: npcImage("cook-panna"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Cook Panna stirs warm soup for the castle." },
+  knightsRoom: { ...castleSceneArt("knights-room"), scene: "scene-castle-knights-room", npc: "Knight Theo", npcImage: npcImage("knight-theo"), npcNaturalHeightCm: 182, travelAction: "Visit", travelLine: "Knight Theo is checking the shields." },
+  maidsRoom: { ...castleSceneArt("maids-room"), scene: "scene-castle-maids-room", npc: "Maid Lala", npcImage: npcImage("maid-lala"), npcNaturalHeightCm: 158, travelAction: "Visit", travelLine: "Maid Lala is folding soft white cloth." },
   royalCloakRoom: { ...castleShopArt("royal-cloak-room"), scene: "scene-castle-royal-cloak-room", npc: "Cloak Keeper", npcImage: npcImage("royal-cloak-keeper"), npcNaturalHeightCm: 170, travelAction: "Shop", travelLine: "The Cloak Keeper has royal outerwear and hats.", shopGreeting: "Welcome to the Royal Cloak Room. Pick outerwear or hats." },
   castleSeamstress: { ...castleShopArt("castle-seamstress"), scene: "scene-castle-seamstress", npc: "Seamstress Bea", npcImage: npcImage("castle-seamstress"), npcNaturalHeightCm: 158, travelAction: "Shop", travelLine: "Seamstress Bea has castle tops and bottoms ready.", shopGreeting: "Welcome to the Castle Seamstress. Pick tops or bottoms." },
-  castleGate: { ...gardenArt, scene: "scene-garden", npcClass: "npc-garden", npc: "Gate Guard", travelAction: "Travel", travelLine: "The castle gate leads back to the urban map." }
+  castleGate: { ...gardenArt, scene: "scene-garden", npcClass: "npc-garden", npc: "Gate Guard", travelAction: "World Map", travelLine: "The castle gate opens the kingdom world map." }
 });
 //#endregion 對話場景設定
 
