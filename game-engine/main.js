@@ -29,7 +29,6 @@ import {
   paperDollBaseLayer,
   paperDollLayerOrder,
   questTemplates,
-  routeForPortal,
   sceneConfigs,
   shopItems,
   worldMap
@@ -944,7 +943,7 @@ function renderWorldMap() {
   centerAreaMapIfRequested("world");
   const metrics = worldMapMetrics();
   syncAreaMapStyles("world", metrics);
-  elements.worldStage.style.setProperty("--map-backdrop-image", `url("${worldMap.mapImage}")`);
+  elements.worldStage.style.setProperty("--map-backdrop-image", `url("${cssAssetUrl(worldMap.mapImage)}")`);
   if (elements.worldImage && worldMap.mapImage && !elements.worldImage.src.endsWith(worldMap.mapImage)) {
     elements.worldImage.src = domAssetUrl(worldMap.mapImage);
     elements.worldImage.alt = worldMap.label;
@@ -978,23 +977,7 @@ function renderWorldDestinationList() {
   const active = activeWorldDestination();
   elements.worldDestinationHint.textContent = active?.hint || "Choose an area.";
   elements.worldDestinationList.innerHTML = "";
-  worldMap.destinations.forEach((destination) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `destination-card${destination.enabled ? "" : " disabled"}${destination.id === activeWorldDestinationId ? " active" : ""}`;
-    button.disabled = !destination.enabled;
-    button.dataset.destinationId = destination.id;
-    button.innerHTML = `
-      <span class="destination-icon" aria-hidden="true">${destination.icon}</span>
-      <span class="destination-copy">
-        <strong>${destination.label}</strong>
-        <small>${destination.hint}</small>
-      </span>
-      <span class="destination-badge">${destination.enabled ? "Enter" : "Soon"}</span>
-    `;
-    button.addEventListener("click", () => openWorldDestination(destination.id));
-    elements.worldDestinationList.appendChild(button);
-  });
+  elements.worldDestinationList.hidden = true;
 }
 
 function focusWorldDestination(destinationId, rerender = true) {
@@ -1047,7 +1030,7 @@ function renderMap() {
   centerAreaMapIfRequested(areaId);
   if (elements.destinationHint) elements.destinationHint.textContent = "Choose any place to help.";
   const area = areaRegistry[areaId];
-  elements.mapStage.style.setProperty("--map-backdrop-image", `url("${area?.mapImage || ""}")`);
+  elements.mapStage.style.setProperty("--map-backdrop-image", `url("${cssAssetUrl(area?.mapImage || "")}")`);
   if (elements.mapImage && area?.mapImage && !elements.mapImage.src.endsWith(area.mapImage)) {
     elements.mapImage.src = area.mapImage;
     elements.mapImage.alt = `${area.label} travel map`;
@@ -1255,7 +1238,7 @@ function travelActionLabel(hotspot) {
   if (!hotspot) return "Visit";
   if (hotspot.kind === "room") return "Enter";
   if (hotspot.kind === "gate") {
-    return sceneConfigFor(hotspot).travelAction || routeForPortal(areaForHotspot(hotspot), hotspot.portalId)?.label || "World Map";
+    return sceneConfigFor(hotspot).travelAction || "World Map";
   }
   if (hotspot.kind === "future") return "Soon";
   if (hasLessonsForPlace(hotspot.id)) return "Help";

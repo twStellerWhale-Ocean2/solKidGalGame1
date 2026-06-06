@@ -62,39 +62,3 @@ export const worldMap = Object.freeze({
   ]
 });
 
-export const worldRoutes = Object.freeze([
-  {
-    from: { area: "castle", portal: "castleGate" },
-    to: { area: "urban", node: "castleRoom", portal: "castleStair" },
-    label: "World Map"
-  },
-  {
-    from: { area: "urban", portal: "castleStair" },
-    to: { area: "castle", node: "castleGate", portal: "castleGate" },
-    label: "World Map"
-  },
-  {
-    from: { area: "urban", portal: "wildEdge" },
-    to: { area: "wild", node: "wildEntrance", portal: "entrance" },
-    label: "World Map"
-  },
-  {
-    from: { area: "urban", portal: "ruralGate" },
-    to: { area: "rural", node: "ruralEntrance", portal: "entrance" },
-    label: "World Map"
-  },
-  {
-    from: { area: "wild", portal: "entrance" },
-    to: { area: "urban", node: "wildEdge", portal: "wildEdge" },
-    label: "World Map"
-  },
-  {
-    from: { area: "rural", portal: "entrance" },
-    to: { area: "urban", node: "ruralGate", portal: "ruralGate" },
-    label: "World Map"
-  }
-]);
-
-export function routeForPortal(areaId, portalId) {
-  return worldRoutes.find((route) => route.from.area === areaId && route.from.portal === portalId) || null;
-}
