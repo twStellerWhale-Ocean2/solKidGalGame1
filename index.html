@@ -33,7 +33,7 @@
           <section class="view active" id="homeView" aria-labelledby="homeTitle">
             <h2 class="visually-hidden" id="homeTitle">Castle Map</h2>
             <div class="castle-stage" id="castleStage" tabindex="0" aria-label="Castle area map. Tap a room marker or the castle gate.">
-              <img src="content-package/areas/castle/assets/map.webp?v=20260601-optimized-assets" alt="Luminara castle grounds map" />
+              <img src="content-package/areas/castle/assets/map-1536.webp?v=20260606-issue66-map-contract-r1" alt="Luminara castle grounds map" />
               <div class="map-marker player castle-player" id="castlePlayerToken" aria-label="Princess Lumi in the castle">
                 <div class="paper-doll map-doll" data-doll="castle-map"></div>
               </div>
@@ -41,10 +41,25 @@
             </div>
           </section>
 
+          <section class="view" id="worldView" aria-labelledby="worldTitle">
+            <h2 class="visually-hidden" id="worldTitle">Kingdom World Map</h2>
+            <div class="map-stage world-stage" id="worldStage" tabindex="0" aria-label="Kingdom world map. Drag to look around or choose an area.">
+              <img id="worldImage" src="content-base/world/assets/world-map.webp?v=20260606-issue66-map-contract-r1" alt="Luminara kingdom world map" />
+              <div id="worldMarkerLayer"></div>
+              <div class="destination-panel world-destination-panel" id="worldDestinationPanel" aria-label="World destinations">
+                <div class="destination-heading">
+                  <strong>Kingdom Travel</strong>
+                  <span id="worldDestinationHint">Choose an area.</span>
+                </div>
+                <div class="destination-list" id="worldDestinationList"></div>
+              </div>
+            </div>
+          </section>
+
           <section class="view" id="mapView" aria-labelledby="mapTitle">
             <h2 class="visually-hidden" id="mapTitle">Urban Map</h2>
             <div class="map-stage" id="mapStage" tabindex="0" aria-label="Urban travel map. Drag to look around, tap a place, or use keyboard arrows.">
-              <img id="mapImage" src="content-package/areas/urban/assets/map.webp?v=20260601-optimized-assets" alt="Luminara urban map" />
+              <img id="mapImage" src="content-package/areas/urban/assets/map-1536.webp?v=20260606-issue66-map-contract-r1" alt="Luminara urban map" />
               <div class="map-life-layer" id="mapLifeLayer" aria-hidden="true"></div>
               <svg class="route-layer" id="routeLayer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
               <div id="nodeLayer"></div>

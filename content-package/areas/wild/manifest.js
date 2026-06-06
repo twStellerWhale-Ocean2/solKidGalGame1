@@ -62,25 +62,25 @@ export const wildArea = Object.freeze({
   id: "wild",
   label: "Wild",
   view: "map",
-  mapImage: "content-package/areas/wild/assets/map.webp?v=20260605-wild-map-r2",
-  imageSize: { width: 1448, height: 1086 },
+  mapImage: "content-package/areas/wild/assets/map-1536.webp?v=20260606-issue66-map-contract-r1",
+  imageSize: { width: 1536, height: 1536 },
   vocabularyProfile: wildVocabularyProfile,
   // nodes 控制地圖上的路網與圖示座標；x / y 是相對地圖寬高的百分比。
   nodes: {
-    wildEntrance: { id: "wildEntrance", label: "Urban Path", x: 87, y: 82, links: ["treeSpiritGrove", "wizardHut", "threePigsCottage"] },
-    elfGlade: { id: "elfGlade", label: "Elf Glade", x: 31, y: 28, links: ["dwarfCottage", "fairyAtelier", "halflingVillage"] },
-    fairyAtelier: { id: "fairyAtelier", label: "Fairy Atelier", x: 38, y: 38, links: ["elfGlade", "halflingVillage", "wizardHut"] },
-    dwarfCottage: { id: "dwarfCottage", label: "Dwarf Cottage", x: 18, y: 48, links: ["elfGlade", "stoneGolemPass", "halflingVillage"] },
-    stoneGolemPass: { id: "stoneGolemPass", label: "Stone Golem Pass", x: 44, y: 18, links: ["dwarfCottage", "wizardHut", "elfGlade"] },
-    halflingVillage: { id: "halflingVillage", label: "Halfling Village", x: 50, y: 58, links: ["elfGlade", "dwarfCottage", "fairyAtelier", "redHoodPath", "threePigsCottage"] },
-    wizardHut: { id: "wizardHut", label: "Wizard Hut", x: 63, y: 44, links: ["stoneGolemPass", "treeSpiritGrove", "threePigsCottage", "fairyAtelier"] },
-    redHoodPath: { id: "redHoodPath", label: "Red Riding Hood Path", x: 14, y: 84, links: ["halflingVillage", "threePigsCottage"] },
-    threePigsCottage: { id: "threePigsCottage", label: "Three Pigs Cottage", x: 57, y: 78, links: ["redHoodPath", "halflingVillage", "wizardHut", "treeSpiritGrove", "wildEntrance"] },
-    treeSpiritGrove: { id: "treeSpiritGrove", label: "Tree Spirit Grove", x: 78, y: 43, links: ["wizardHut", "threePigsCottage", "wildEntrance"] }
+    wildEntrance: { id: "wildEntrance", label: "World Path", x: 89.8, y: 89.8, links: ["treeSpiritGrove", "wizardHut", "threePigsCottage"] },
+    elfGlade: { id: "elfGlade", label: "Elf Glade", x: 21.5, y: 50.8, links: ["dwarfCottage", "fairyAtelier", "halflingVillage"] },
+    fairyAtelier: { id: "fairyAtelier", label: "Fairy Atelier", x: 34.5, y: 61.2, links: ["elfGlade", "halflingVillage", "wizardHut"] },
+    dwarfCottage: { id: "dwarfCottage", label: "Dwarf Cottage", x: 22.1, y: 72.3, links: ["elfGlade", "stoneGolemPass", "halflingVillage"] },
+    stoneGolemPass: { id: "stoneGolemPass", label: "Stone Golem Pass", x: 53.4, y: 40.4, links: ["dwarfCottage", "wizardHut", "elfGlade"] },
+    halflingVillage: { id: "halflingVillage", label: "Halfling Village", x: 45.6, y: 79.4, links: ["elfGlade", "dwarfCottage", "fairyAtelier", "redHoodPath", "threePigsCottage"] },
+    wizardHut: { id: "wizardHut", label: "Wizard Hut", x: 79.4, y: 43.0, links: ["stoneGolemPass", "treeSpiritGrove", "threePigsCottage", "fairyAtelier"] },
+    redHoodPath: { id: "redHoodPath", label: "Red Riding Hood Path", x: 13.0, y: 88.5, links: ["halflingVillage", "threePigsCottage"] },
+    threePigsCottage: { id: "threePigsCottage", label: "Three Pigs Cottage", x: 67.7, y: 84.6, links: ["redHoodPath", "halflingVillage", "wizardHut", "treeSpiritGrove", "wildEntrance"] },
+    treeSpiritGrove: { id: "treeSpiritGrove", label: "Tree Spirit Grove", x: 81.4, y: 61.8, links: ["wizardHut", "threePigsCottage", "wildEntrance"] }
   },
   // locations 控制地圖圖示進入後的場景、NPC、商店與提示文字。
   locations: [
-    { id: "wildExit", area: "wild", node: "wildEntrance", label: "Urban Path", icon: "↩", npcClass: "npc-none", npc: "Wild Sign", kind: "gate", markerStyle: "portal", portalId: "entrance", hint: "The path returns to the urban town." },
+    { id: "wildExit", area: "wild", node: "wildEntrance", label: "World Path", icon: "↩", npcClass: "npc-none", npc: "Wild Sign", kind: "gate", markerStyle: "portal", portalId: "entrance", hint: "The path returns to the kingdom world map." },
     { id: "elfGlade", area: "wild", node: "elfGlade", label: "Elf Glade", icon: "🧝", npc: "Elia", scene: "scene-wild-elf-glade", npcImage: npcImage("elia"), hint: "The elf glade glows with tiny flowers." },
     { id: "fairyAtelier", area: "wild", node: "fairyAtelier", label: "Fairy Atelier", icon: "👗", npc: "Faye", scene: "scene-wild-fairy-atelier", npcImage: npcImage("fairy-atelier"), kind: "shop", shopCategories: ["dresses", "accessories"], defaultCategory: "dresses", hint: "Faye sells fairy dresses and accessories in the glade." },
     { id: "dwarfCottage", area: "wild", node: "dwarfCottage", label: "Dwarf Cottage", icon: "🛖", npc: "Pip", scene: "scene-wild-dwarf-cottage", npcImage: npcImage("pip"), kind: "shop", shopCategories: ["outerwear", "shoes"], defaultCategory: "outerwear", hint: "Pip keeps handmade wild outerwear and shoes in a warm cottage." },
@@ -92,12 +92,7 @@ export const wildArea = Object.freeze({
     { id: "treeSpiritGrove", area: "wild", node: "treeSpiritGrove", label: "Tree Spirit Grove", icon: "✨", npc: "Sylvie", scene: "scene-wild-tree-spirit-grove", npcImage: npcImage("sylvie"), hint: "A gentle tree spirit listens to children practicing English." }
   ],
   // actors 是地圖上的動態環境效果，不是可點擊地點。
-  actors: [
-    { id: "wild-river-glow", type: "water", x: 70, y: 78, w: 28, h: 18, z: 1, phase: 1.1 },
-    { id: "wild-firefly-a", type: "glow", x: 31, y: 28, w: 8, h: 8, z: 3, phase: 0.2 },
-    { id: "wild-firefly-b", type: "glow", x: 78, y: 43, w: 7, h: 7, z: 3, phase: 1.1 },
-    { id: "wild-bird", type: "bird", x: 52, y: 19, w: 4, h: 2, z: 4, phase: 0.6 }
-  ],
+  actors: [],
   defaultNode: "wildEntrance",
   enabled: true
 });
@@ -106,7 +101,7 @@ export const wildArea = Object.freeze({
 //#region 對話場景設定
 // 每個屬性名稱對應地點或節點，控制對話畫面的背景、NPC 與按鈕文案。
 export const wildSceneConfigs = Object.freeze({
-  wildExit: { ...wildPathArt, scene: "scene-wild-path", npcClass: "npc-none", npc: "Wild Sign", travelAction: "Back to Urban", travelLine: "The path returns to the urban town." },
+  wildExit: { ...wildPathArt, scene: "scene-wild-path", npcClass: "npc-none", npc: "Wild Sign", travelAction: "World Map", travelLine: "The path returns to the kingdom world map." },
   elfGlade: { ...wildAtlasArt("0% 50%"), scene: "scene-wild-elf-glade", npc: "Elia", npcImage: npcImage("elia"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Elia the elf listens to the glowing flowers." },
   fairyAtelier: { ...wildShopArt("fairy-atelier"), scene: "scene-wild-fairy-atelier", npc: "Faye", npcImage: npcImage("fairy-atelier"), npcNaturalHeightCm: 150, travelAction: "Shop", travelLine: "Faye has fairy dresses and accessories in the glade.", shopGreeting: "Welcome to the Fairy Atelier. Pick dresses or accessories." },
   dwarfCottage: { ...wildAtlasArt("14.285% 50%"), scene: "scene-wild-dwarf-cottage", npc: "Pip", npcImage: npcImage("pip"), npcNaturalHeightCm: 125, travelAction: "Shop", travelLine: "Pip has handmade wild outerwear and shoes ready for Lumi.", shopGreeting: "Welcome to the Dwarf Cottage. Pick outerwear or shoes." },

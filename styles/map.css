@@ -60,7 +60,8 @@
 
 .route-layer,
 #nodeLayer,
-#hotspotLayer {
+#hotspotLayer,
+#worldMarkerLayer {
   position: absolute;
   inset: 0;
   z-index: 4;
@@ -200,6 +201,12 @@
   background: rgba(43, 82, 54, 0.84);
 }
 
+.hotspot.disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.35);
+  opacity: 0.68;
+}
+
 .nearby-card {
   display: none;
   position: absolute;
@@ -287,13 +294,19 @@
   box-shadow: 0 8px 16px rgba(80, 56, 70, 0.08);
 }
 
-.destination-card.target {
+.destination-card.target,
+.destination-card.active {
   border-color: rgba(216, 103, 140, 0.55);
   background: linear-gradient(135deg, #fff9dc, #fff1f7);
 }
 
 .destination-card.shop {
   border-color: rgba(110, 169, 200, 0.36);
+}
+
+.destination-card.disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
 }
 
 .destination-icon {

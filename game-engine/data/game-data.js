@@ -3,7 +3,7 @@ import { wildArea, wildLessons, wildQuestTemplates, wildSceneConfigs, wildVocabu
 import { urbanArea, urbanLessons, urbanQuestTemplates, urbanSceneConfigs, urbanVocabularyProfile } from "../../content-package/areas/urban/manifest.js";
 import { ruralArea, ruralLessons, ruralQuestTemplates, ruralSceneConfigs, ruralVocabularyProfile } from "../../content-package/areas/rural/manifest.js";
 export { characterScaleContract, bodyHeightPxForCm } from "./character-scale.js";
-export { routeForPortal, worldRoutes } from "../../content-package/areas/world.js";
+export { routeForPortal, worldMap, worldRoutes } from "../../content-package/areas/world.js";
 export {
   categories,
   outfitSlots,
