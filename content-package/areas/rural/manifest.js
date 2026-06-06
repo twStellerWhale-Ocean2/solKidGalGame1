@@ -5,7 +5,7 @@ import { makeLessons, makeQuestTemplates } from "../_shared/lesson-helpers.js";
 
 //#region 素材路徑工具
 // 所有本地區圖片路徑集中在這裡；換素材或快取版本參數時優先改這段。
-const npcImage = (name) => `content-package/areas/rural/assets/characters/${name}.webp?v=20260605-npc-r2`;
+const npcImage = (name) => `content-package/areas/rural/assets/characters/${name}.webp?v=20260606-character-scale-r1`;
 const sceneArt = (src, options = {}) => ({ sceneArt: { src, tone: "rural", ...options } });
 const ruralAtlasArt = (position) => sceneArt("content-package/areas/rural/assets/scenes/scenes-atlas.webp?v=20260605-webp-assets", {
   atlas: "rural-scenes",
@@ -103,15 +103,15 @@ export const ruralArea = Object.freeze({
 // 每個屬性名稱對應地點或節點，控制對話畫面的背景、NPC 與按鈕文案。
 export const ruralSceneConfigs = Object.freeze({
   ruralExit: { ...ruralAtlasArt("66.666% 50%"), scene: "scene-rural-farm", npcClass: "npc-none", npc: "Rural Sign", travelAction: "Back to Urban", travelLine: "The road returns to the urban town." },
-  mine: { ...ruralAtlasArt("0% 50%"), scene: "scene-rural-mine", npc: "Miner Gemma", npcImage: npcImage("miner-gemma"), travelAction: "Visit", travelLine: "Miner Gemma is sorting shiny stones." },
-  loggingCamp: { ...ruralAtlasArt("16.666% 50%"), scene: "scene-rural-logging", npc: "Logger Rowan", npcImage: npcImage("logger-rowan"), travelAction: "Visit", travelLine: "Logger Rowan stacks logs beside the cabin." },
-  fishingShore: { ...ruralAtlasArt("33.333% 50%"), scene: "scene-rural-fishing", npc: "Fisher Nami", npcImage: npcImage("fisher-nami"), travelAction: "Visit", travelLine: "Fisher Nami pulls a net near the bright shore." },
-  pasture: { ...ruralAtlasArt("50% 50%"), scene: "scene-rural-pasture", npc: "Farmer Theo", npcImage: npcImage("farmer-theo"), travelAction: "Visit", travelLine: "Farmer Theo counts animals in the pasture." },
-  farm: { ...ruralAtlasArt("66.666% 50%"), scene: "scene-rural-farm", npc: "Auntie Pom", npcImage: npcImage("auntie-pom"), travelAction: "Visit", travelLine: "Auntie Pom waters vegetables and wheat." },
-  mill: { ...ruralAtlasArt("83.333% 50%"), scene: "scene-rural-mill", npc: "Miller Bell", npcImage: npcImage("miller-bell"), travelAction: "Visit", travelLine: "Miller Bell carries flour by the windmill." },
-  workwearStall: { ...ruralShopArt("workwear-stall"), scene: "scene-rural-workwear-stall", npc: "Workwear Keeper", npcImage: npcImage("workwear-stall-keeper"), travelAction: "Shop", travelLine: "The Workwear Keeper has sturdy tops and bottoms.", shopGreeting: "Welcome to the Workwear Stall. Pick tops or bottoms." },
-  fieldCobbler: { ...ruralShopArt("field-cobbler"), scene: "scene-rural-field-cobbler", npc: "Field Cobbler", npcImage: npcImage("field-cobbler"), travelAction: "Shop", travelLine: "The Field Cobbler has shoes and hats for country roads.", shopGreeting: "Welcome to the Field Cobbler. Pick shoes or hats." },
-  villageHome: { ...ruralAtlasArt("100% 50%"), scene: "scene-rural-home", npc: "Grandma Fina", npcImage: npcImage("grandma-fina"), travelAction: "Visit", travelLine: "Grandma Fina tidies the warm village porch." }
+  mine: { ...ruralAtlasArt("0% 50%"), scene: "scene-rural-mine", npc: "Miner Gemma", npcImage: npcImage("miner-gemma"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Miner Gemma is sorting shiny stones." },
+  loggingCamp: { ...ruralAtlasArt("16.666% 50%"), scene: "scene-rural-logging", npc: "Logger Rowan", npcImage: npcImage("logger-rowan"), npcNaturalHeightCm: 178, travelAction: "Visit", travelLine: "Logger Rowan stacks logs beside the cabin." },
+  fishingShore: { ...ruralAtlasArt("33.333% 50%"), scene: "scene-rural-fishing", npc: "Fisher Nami", npcImage: npcImage("fisher-nami"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Fisher Nami pulls a net near the bright shore." },
+  pasture: { ...ruralAtlasArt("50% 50%"), scene: "scene-rural-pasture", npc: "Farmer Theo", npcImage: npcImage("farmer-theo"), npcNaturalHeightCm: 175, travelAction: "Visit", travelLine: "Farmer Theo counts animals in the pasture." },
+  farm: { ...ruralAtlasArt("66.666% 50%"), scene: "scene-rural-farm", npc: "Auntie Pom", npcImage: npcImage("auntie-pom"), npcNaturalHeightCm: 155, travelAction: "Visit", travelLine: "Auntie Pom waters vegetables and wheat." },
+  mill: { ...ruralAtlasArt("83.333% 50%"), scene: "scene-rural-mill", npc: "Miller Bell", npcImage: npcImage("miller-bell"), npcNaturalHeightCm: 162, travelAction: "Visit", travelLine: "Miller Bell carries flour by the windmill." },
+  workwearStall: { ...ruralShopArt("workwear-stall"), scene: "scene-rural-workwear-stall", npc: "Workwear Keeper", npcImage: npcImage("workwear-stall-keeper"), npcNaturalHeightCm: 168, travelAction: "Shop", travelLine: "The Workwear Keeper has sturdy tops and bottoms.", shopGreeting: "Welcome to the Workwear Stall. Pick tops or bottoms." },
+  fieldCobbler: { ...ruralShopArt("field-cobbler"), scene: "scene-rural-field-cobbler", npc: "Field Cobbler", npcImage: npcImage("field-cobbler"), npcNaturalHeightCm: 165, travelAction: "Shop", travelLine: "The Field Cobbler has shoes and hats for country roads.", shopGreeting: "Welcome to the Field Cobbler. Pick shoes or hats." },
+  villageHome: { ...ruralAtlasArt("100% 50%"), scene: "scene-rural-home", npc: "Grandma Fina", npcImage: npcImage("grandma-fina"), npcNaturalHeightCm: 148, travelAction: "Visit", travelLine: "Grandma Fina tidies the warm village porch." }
 });
 //#endregion 對話場景設定
 

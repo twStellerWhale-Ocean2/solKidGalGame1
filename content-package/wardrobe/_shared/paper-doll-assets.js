@@ -1,6 +1,6 @@
 //#region 紙娃娃角色素材
 // 角色本體集中在 content-package/characters；衣物 pack 只引用它作為預設縮圖與底圖。
-export const dollAssetVersion = "?v=20260605-wardrobe-packs";
+export const dollAssetVersion = "?v=20260606-character-scale-r1";
 export const activePaperDollCharacter = "lumi";
 
 export const characterAsset = (name) => (

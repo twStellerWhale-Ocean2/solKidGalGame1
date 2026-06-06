@@ -24,6 +24,9 @@
   top: 49%;
   width: min(980px, 70vw);
   height: min(620px, 70dvh);
+  --adv-character-stage-height: min(590px, 66vh);
+  --adv-character-stage-aspect: 0.6666667;
+  --lumi-stage-scale: 1.2;
   transform: translate(-50%, -50%);
   display: grid;
   grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
@@ -66,17 +69,21 @@
 .adv-npc {
   position: absolute;
   bottom: 0;
-  height: min(590px, 66vh);
+  width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
+  height: var(--adv-character-stage-height);
 }
 
 .adv-princess {
   left: 34px;
-  width: min(650px, 45vw);
+}
+
+.adv-princess .paper-doll {
+  transform: scale(var(--lumi-stage-scale));
+  transform-origin: center bottom;
 }
 
 .adv-npc {
   right: 34px;
-  width: min(420px, 29vw);
   background-size: contain;
   background-position: center bottom;
   background-color: transparent;
