@@ -622,6 +622,7 @@ GitHub Pages：
 - 使用 `Deploy from a branch`。
 - 靜態網站 root 選 repository root。
 - `index.html` 為入口。
+- repository root 必須保留 `.nojekyll`，避免 GitHub Pages 的 Jekyll 處理略過 `_shared` 等底線開頭資料夾，造成 production ES module import 404 並讓遊戲無法操作。
 - `server.mjs` 只用於本機 OpenAI Help proxy 測試，不是 GitHub Pages 必需項。
 
 本機 static-only：
