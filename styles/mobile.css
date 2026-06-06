@@ -2348,7 +2348,7 @@ body {
 }
 
 .scene-princess-room {
-  background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.18)), url("../content-package/areas/castle/assets/scenes/bedroom.webp?v=20260601-optimized-assets") center / cover no-repeat;
+  background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.18)), url("../content-package/areas/castle/assets/scenes/bedroom-1024.webp?v=20260606-issue66-adv-scenes-r1") center / cover no-repeat;
 }
 
 .adv-scene[data-mode="scene"] .shop-area {
