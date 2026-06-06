@@ -976,6 +976,7 @@ function renderWorldDestinationList() {
   if (!elements.worldDestinationList) return;
   const active = activeWorldDestination();
   elements.worldDestinationHint.textContent = active?.hint || "Choose an area.";
+  if (elements.worldDestinationPanel) elements.worldDestinationPanel.hidden = true;
   elements.worldDestinationList.innerHTML = "";
   elements.worldDestinationList.hidden = true;
 }
