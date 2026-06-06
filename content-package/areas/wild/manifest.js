@@ -6,14 +6,11 @@ import { makeLessons, makeQuestTemplates } from "../_shared/lesson-helpers.js";
 //#region 素材路徑工具
 // 所有本地區圖片路徑集中在這裡；換素材或快取版本參數時優先改這段。
 const npcImage = (name) => `content-package/areas/wild/assets/characters/${name}.webp?v=20260606-character-scale-r1`;
+const sceneVersion = "20260606-issue66-adv-scenes-r1";
 const sceneArt = (src, options = {}) => ({ sceneArt: { src, tone: "wild", ...options } });
-const wildAtlasArt = (position) => sceneArt("content-package/areas/wild/assets/scenes/scenes-atlas.webp?v=20260605-webp-assets", {
-  atlas: "wild-scenes",
-  position,
-  size: "800% 100%"
-});
-const wildShopArt = (name) => sceneArt(`content-package/areas/wild/assets/scenes/${name}.webp?v=20260604-issues56-60`, { tone: "shop" });
-const wildPathArt = sceneArt("content-package/areas/wild/assets/scenes/wild-path.webp?v=20260602-wild-art");
+const wildSceneArt = (name, options = {}) => sceneArt(`content-package/areas/wild/assets/scenes/${name}-1024.webp?v=${sceneVersion}`, options);
+const wildShopArt = (name) => wildSceneArt(name, { tone: "shop" });
+const wildPathArt = wildSceneArt("wild-path");
 //#endregion 素材路徑工具
 
 //#region 英文等級與獎勵設定
@@ -102,15 +99,15 @@ export const wildArea = Object.freeze({
 // 每個屬性名稱對應地點或節點，控制對話畫面的背景、NPC 與按鈕文案。
 export const wildSceneConfigs = Object.freeze({
   wildExit: { ...wildPathArt, scene: "scene-wild-path", npcClass: "npc-none", npc: "Wild Sign", travelAction: "World Map", travelLine: "The path returns to the kingdom world map." },
-  elfGlade: { ...wildAtlasArt("0% 50%"), scene: "scene-wild-elf-glade", npc: "Elia", npcImage: npcImage("elia"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Elia the elf listens to the glowing flowers." },
+  elfGlade: { ...wildSceneArt("elf-glade"), scene: "scene-wild-elf-glade", npc: "Elia", npcImage: npcImage("elia"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Elia the elf listens to the glowing flowers." },
   fairyAtelier: { ...wildShopArt("fairy-atelier"), scene: "scene-wild-fairy-atelier", npc: "Faye", npcImage: npcImage("fairy-atelier"), npcNaturalHeightCm: 150, travelAction: "Shop", travelLine: "Faye has fairy dresses and accessories in the glade.", shopGreeting: "Welcome to the Fairy Atelier. Pick dresses or accessories." },
-  dwarfCottage: { ...wildAtlasArt("14.285% 50%"), scene: "scene-wild-dwarf-cottage", npc: "Pip", npcImage: npcImage("pip"), npcNaturalHeightCm: 125, travelAction: "Shop", travelLine: "Pip has handmade wild outerwear and shoes ready for Lumi.", shopGreeting: "Welcome to the Dwarf Cottage. Pick outerwear or shoes." },
-  stoneGolemPass: { ...wildAtlasArt("28.571% 50%"), scene: "scene-wild-golem-pass", npc: "Goro", npcImage: npcImage("goro"), npcNaturalHeightCm: 200, travelAction: "Visit", travelLine: "Goro the stone golem blocks the old pass with a friendly smile." },
-  halflingVillage: { ...wildAtlasArt("42.857% 50%"), scene: "scene-wild-halfling-village", npc: "Penny", npcImage: npcImage("penny"), npcNaturalHeightCm: 100, travelAction: "Visit", travelLine: "Penny waves from a round green door." },
-  wizardHut: { ...wildAtlasArt("57.143% 50%"), scene: "scene-wild-wizard-hut", npc: "Wiz Beryl", npcImage: npcImage("wiz-beryl"), npcNaturalHeightCm: 170, travelAction: "Visit", travelLine: "Wiz Beryl is sorting jars under the purple roof." },
-  redHoodPath: { ...wildAtlasArt("71.429% 50%"), scene: "scene-wild-red-hood-path", npc: "Ruby", npcImage: npcImage("ruby"), npcNaturalHeightCm: 125, travelAction: "Visit", travelLine: "Ruby checks her basket on the wild path." },
-  threePigsCottage: { ...wildAtlasArt("85.714% 50%"), scene: "scene-wild-three-pigs", npc: "Pippo", npcImage: npcImage("pippo"), npcNaturalHeightCm: 90, travelAction: "Visit", travelLine: "Pippo looks at three tiny cottages." },
-  treeSpiritGrove: { ...wildAtlasArt("100% 50%"), scene: "scene-wild-tree-spirit-grove", npc: "Sylvie", npcImage: npcImage("sylvie"), npcNaturalHeightCm: 170, travelAction: "Visit", travelLine: "Sylvie the tree spirit smiles from the branches." }
+  dwarfCottage: { ...wildSceneArt("dwarf-cottage"), scene: "scene-wild-dwarf-cottage", npc: "Pip", npcImage: npcImage("pip"), npcNaturalHeightCm: 125, travelAction: "Shop", travelLine: "Pip has handmade wild outerwear and shoes ready for Lumi.", shopGreeting: "Welcome to the Dwarf Cottage. Pick outerwear or shoes." },
+  stoneGolemPass: { ...wildSceneArt("golem-pass"), scene: "scene-wild-golem-pass", npc: "Goro", npcImage: npcImage("goro"), npcNaturalHeightCm: 200, travelAction: "Visit", travelLine: "Goro the stone golem blocks the old pass with a friendly smile." },
+  halflingVillage: { ...wildSceneArt("halfling-village"), scene: "scene-wild-halfling-village", npc: "Penny", npcImage: npcImage("penny"), npcNaturalHeightCm: 100, travelAction: "Visit", travelLine: "Penny waves from a round green door." },
+  wizardHut: { ...wildSceneArt("wizard-hut"), scene: "scene-wild-wizard-hut", npc: "Wiz Beryl", npcImage: npcImage("wiz-beryl"), npcNaturalHeightCm: 170, travelAction: "Visit", travelLine: "Wiz Beryl is sorting jars under the purple roof." },
+  redHoodPath: { ...wildSceneArt("red-hood-path"), scene: "scene-wild-red-hood-path", npc: "Ruby", npcImage: npcImage("ruby"), npcNaturalHeightCm: 125, travelAction: "Visit", travelLine: "Ruby checks her basket on the wild path." },
+  threePigsCottage: { ...wildSceneArt("three-pigs"), scene: "scene-wild-three-pigs", npc: "Pippo", npcImage: npcImage("pippo"), npcNaturalHeightCm: 90, travelAction: "Visit", travelLine: "Pippo looks at three tiny cottages." },
+  treeSpiritGrove: { ...wildSceneArt("tree-spirit-grove"), scene: "scene-wild-tree-spirit-grove", npc: "Sylvie", npcImage: npcImage("sylvie"), npcNaturalHeightCm: 170, travelAction: "Visit", travelLine: "Sylvie the tree spirit smiles from the branches." }
 });
 //#endregion 對話場景設定
 

@@ -102,7 +102,7 @@ async function runDataAudit(api) {
       });
     });
   });
-  const sceneBackgroundContract = await collectSceneBackgroundContractAudit(api);
+  const sceneBackgroundContract = await collectSceneBackgroundContractAudit(api, errors);
   warnings.push(...sceneBackgroundContract.warnings);
   const supportedActorMotions = new Set(api.mapActorMotionTypes || []);
   const mapActorSurfaces = [];
@@ -268,7 +268,7 @@ async function collectMapContractAudit(api, errors) {
   return contracts;
 }
 
-async function collectSceneBackgroundContractAudit(api) {
+async function collectSceneBackgroundContractAudit(api, errors = []) {
   const target = { width: 1024, height: 1024 };
   const warnings = [];
   const refs = [];
@@ -291,17 +291,21 @@ async function collectSceneBackgroundContractAudit(api) {
     try {
       const metrics = await imageNaturalSize(ref.src);
       const matchesTarget = metrics.width === target.width && metrics.height === target.height;
-      const record = { ...ref, ...metrics, target, status: matchesTarget ? "passed" : "pending" };
+      const record = { ...ref, ...metrics, target, status: matchesTarget ? "passed" : "failed" };
       checked.push(record);
-      if (!matchesTarget) pending.push(record);
+      if (!matchesTarget) {
+        pending.push(record);
+        errors.push(`${ref.area}/${ref.id} scene background is ${metrics.width}x${metrics.height}, expected ${target.width}x${target.height}`);
+      }
     } catch (error) {
-      warnings.push(error.message);
-      pending.push({ ...ref, target, status: "pending", error: error.message });
+      const record = { ...ref, target, status: "failed", error: error.message };
+      pending.push(record);
+      errors.push(`${ref.area}/${ref.id} scene background failed to load: ${error.message}`);
     }
   }
   return {
     target,
-    status: pending.length ? "pending" : "passed",
+    status: pending.length ? "failed" : "passed",
     checkedCount: checked.length,
     pendingCount: pending.length,
     pending,

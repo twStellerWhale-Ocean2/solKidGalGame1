@@ -284,7 +284,8 @@ Fixed Prompt Area
 - 地圖、ADV 背景、NPC、角色、衣物 layer、商品縮圖都必須是正式 bitmap 美術資產。
 - World Map 正式契約：`content-base/world/assets/world-map.webp`，實際像素與 manifest 必須是 `1024x1536`。
 - Area Map 正式契約：每個 enabled area 使用 `content-package/areas/<area>/assets/map-1536.webp`，實際像素與 manifest 必須是 `1536x1536`；舊 `map.webp` 可保留為 baseline，但不得作為正式 runtime map。
-- Scene background 目標契約：每張 scene background 目標 `1024x1024`，角色與主要互動物件需落在手機安全構圖區內；在全部 scene 背景完成重製前，`data-audit` 以 pending / warning 記錄，不阻塞 map contract phase。
+- Scene background 正式契約：每個 runtime 使用的 ADV scene background 必須是單張 `1024x1024` WebP；舊 atlas 可保留為 baseline，但不得作為正式 runtime scene background。
+- ADV 舞台尺度：標準室內與一般商店約 5.5-6m 寬，小商店可為 4.5-5.5m，大廳與戶外可為 8-12m；角色站位、主要互動物件與可讀地標需落在手機安全構圖區內。
 - `content-package/areas/*/assets/characters/*.webp` 的 NPC portrait 必須保留 alpha 透明背景，不得把場景、紙張、純色或漸層矩形背景烘進角色圖。
 - CSS 只能處理 UI chrome、排版、陰影、選取狀態與安全的裝飾效果。
 - 不得用 CSS 幾何、SVG 拼貼、emoji fallback 或 placeholder 宣稱 gameplay complete。
@@ -430,7 +431,7 @@ Lumi ADV stageScale = 1.20
 
 - `?selftest=monkey`
 - `?selftest=save-load`
-- `?selftest=data-audit`，必須檢查 World Map 與 Area Map 的 manifest / 實際像素尺寸契約；scene background 統一尺寸仍列 pending / warning。
+- `?selftest=data-audit`，必須檢查 World Map、Area Map 與 ADV scene background 的 manifest / 實際像素尺寸契約；scene background 違規算 fail。
 - `?selftest=visual-qa&surface=<surface-id>`
 
 必測項目：
@@ -671,3 +672,4 @@ http://127.0.0.1:4174/
 - 2026-06-05：README 重整為第一章緣起與目的、第二章架構主軸、第三章測試與品質驗收、第十章結論與註記。
 - 2026-06-06：新增角色自然尺度規格：`512x768`、底線 `y=768`、`768px = 200cm`、Lumi ADV stageScale `1.20`。
 - 2026-06-06：新增 World Map 層與 map 尺寸契約：world `1024x1536`，enabled area maps `1536x1536`。
+- 2026-06-06：ADV scene background 轉為正式 `1024x1024` 契約，並補入 ADV 舞台尺度規格。

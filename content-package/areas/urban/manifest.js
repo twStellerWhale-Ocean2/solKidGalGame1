@@ -6,21 +6,13 @@ import { makeLessons, makeQuestTemplates } from "../_shared/lesson-helpers.js";
 //#region 素材路徑工具
 // 所有本地區圖片路徑集中在這裡；換素材或快取版本參數時優先改這段。
 const npcImage = (name) => `content-package/areas/urban/assets/characters/${name}.webp?v=20260606-character-scale-r1`;
+const sceneVersion = "20260606-issue66-adv-scenes-r1";
 const sceneArt = (src, options = {}) => ({ sceneArt: { src, tone: "urban", ...options } });
-const singleSceneArt = (name, options = {}) => sceneArt(`content-package/areas/urban/assets/scenes/${name}.webp?v=20260601-optimized-assets`, options);
-const urbanShopArt = (name) => sceneArt(`content-package/areas/urban/assets/scenes/${name}.webp?v=20260604-issues56-60`, { tone: "shop" });
-const civicAtlasArt = (position) => sceneArt("content-package/areas/urban/assets/scenes/civic-atlas.webp?v=20260605-webp-assets", {
-  atlas: "urban-civic",
-  position,
-  size: "400% 100%"
-});
-const ruralFarmArt = sceneArt("content-package/areas/rural/assets/scenes/scenes-atlas.webp?v=20260605-webp-assets", {
-  atlas: "rural-scenes",
-  position: "66.666% 50%",
-  size: "700% 100%",
-  tone: "rural"
-});
-const wildPathArt = sceneArt("content-package/areas/wild/assets/scenes/wild-path.webp?v=20260602-wild-art", { tone: "wild" });
+const singleSceneArt = (name, options = {}) => sceneArt(`content-package/areas/urban/assets/scenes/${name}-1024.webp?v=${sceneVersion}`, options);
+const urbanShopArt = (name) => singleSceneArt(name, { tone: "shop" });
+const civicSceneArt = (name) => singleSceneArt(name);
+const ruralFarmArt = sceneArt(`content-package/areas/rural/assets/scenes/rural-farm-1024.webp?v=${sceneVersion}`, { tone: "rural" });
+const wildPathArt = sceneArt(`content-package/areas/wild/assets/scenes/wild-path-1024.webp?v=${sceneVersion}`, { tone: "wild" });
 //#endregion 素材路徑工具
 
 //#region 英文等級與獎勵設定
@@ -132,10 +124,10 @@ export const urbanSceneConfigs = Object.freeze({
   wildEdge: { ...wildPathArt, scene: "scene-wild-path", npcClass: "npc-none", npc: "Wild Sign", travelAction: "World Map", travelLine: "The leafy path opens the kingdom world map." },
   ruralGate: { ...ruralFarmArt, scene: "scene-rural-farm", npcClass: "npc-none", npc: "Rural Sign", travelAction: "World Map", travelLine: "The old farm road opens the kingdom world map." },
   garden: { ...singleSceneArt("garden"), scene: "scene-garden", npc: "Mira", npcImage: npcImage("mira"), npcNaturalHeightCm: 130, travelAction: "Visit", travelLine: "Mira is watching the roses and a shy garden cat." },
-  schoolClassroom: { ...civicAtlasArt("0% 50%"), scene: "scene-urban-school", npc: "Teacher Bell", npcImage: npcImage("teacher-bell"), npcNaturalHeightCm: 165, travelAction: "Visit", travelLine: "Teacher Bell has a short Starters sentence." },
-  library: { ...civicAtlasArt("33.333% 50%"), scene: "scene-urban-library", npc: "Librarian Nola", npcImage: npcImage("librarian-nola"), npcNaturalHeightCm: 162, travelAction: "Visit", travelLine: "Librarian Nola is ready for quiet reading." },
-  temple: { ...civicAtlasArt("66.666% 50%"), scene: "scene-urban-temple", npc: "Sister Luma", npcImage: npcImage("sister-luma"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Sister Luma keeps the temple flowers bright." },
-  administration: { ...civicAtlasArt("100% 50%"), scene: "scene-urban-administration", npc: "Clerk Otto", npcImage: npcImage("clerk-otto"), npcNaturalHeightCm: 172, travelAction: "Visit", travelLine: "Clerk Otto sorts the town notes." },
+  schoolClassroom: { ...civicSceneArt("school-classroom"), scene: "scene-urban-school", npc: "Teacher Bell", npcImage: npcImage("teacher-bell"), npcNaturalHeightCm: 165, travelAction: "Visit", travelLine: "Teacher Bell has a short Starters sentence." },
+  library: { ...civicSceneArt("library"), scene: "scene-urban-library", npc: "Librarian Nola", npcImage: npcImage("librarian-nola"), npcNaturalHeightCm: 162, travelAction: "Visit", travelLine: "Librarian Nola is ready for quiet reading." },
+  temple: { ...civicSceneArt("temple"), scene: "scene-urban-temple", npc: "Sister Luma", npcImage: npcImage("sister-luma"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Sister Luma keeps the temple flowers bright." },
+  administration: { ...civicSceneArt("administration"), scene: "scene-urban-administration", npc: "Clerk Otto", npcImage: npcImage("clerk-otto"), npcNaturalHeightCm: 172, travelAction: "Visit", travelLine: "Clerk Otto sorts the town notes." },
   market: { ...singleSceneArt("market"), scene: "scene-market", npc: "Auntie Pom", npcImage: npcImage("auntie-pom-market"), npcNaturalHeightCm: 155, travelAction: "Visit", travelLine: "Auntie Pom smiles beside warm bread and bright fruit." },
   harbor: { ...singleSceneArt("harbor"), scene: "scene-harbor", npc: "Nami", npcImage: npcImage("nami"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Nami is waiting by the bright harbor boats." },
   port: { ...singleSceneArt("harbor"), scene: "scene-harbor", npc: "Dock Guide", npcImage: npcImage("dock-guide"), npcNaturalHeightCm: 175, travelAction: "Visit", travelLine: "Boats arrive at the harbor port for sea trips and dock visits." },
