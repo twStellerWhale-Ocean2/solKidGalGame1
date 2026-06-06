@@ -11,8 +11,6 @@ const sceneArt = (src, options = {}) => ({ sceneArt: { src, tone: "urban", ...op
 const singleSceneArt = (name, options = {}) => sceneArt(`content-package/areas/urban/assets/scenes/${name}-1024.webp?v=${sceneVersion}`, options);
 const urbanShopArt = (name) => singleSceneArt(name, { tone: "shop" });
 const civicSceneArt = (name) => singleSceneArt(name);
-const ruralFarmArt = sceneArt(`content-package/areas/rural/assets/scenes/rural-farm-1024.webp?v=${sceneVersion}`, { tone: "rural" });
-const wildPathArt = sceneArt(`content-package/areas/wild/assets/scenes/wild-path-1024.webp?v=${sceneVersion}`, { tone: "wild" });
 //#endregion 素材路徑工具
 
 //#region 英文等級與獎勵設定
@@ -72,8 +70,7 @@ export const urbanArea = Object.freeze({
   vocabularyProfile: urbanVocabularyProfile,
   // nodes 控制地圖上的路網與圖示座標；x / y 是相對地圖寬高的百分比。
   nodes: {
-    castleRoom: { id: "castleRoom", label: "Castle Stairway", x: 52.7, y: 15.0, links: ["garden", "schoolClassroom", "library", "temple", "administration", "market", "ruralGate", "wildEdge"] },
-    wildEdge: { id: "wildEdge", label: "Wild Path", x: 12.0, y: 33.2, links: ["castleRoom", "ruralGate"] },
+    castleRoom: { id: "castleRoom", label: "Castle Stairway", x: 52.7, y: 15.0, links: ["garden", "schoolClassroom", "library", "temple", "administration", "market"] },
     garden: { id: "garden", label: "Castle Garden", x: 52.7, y: 44.9, links: ["castleRoom", "market", "library", "temple"] },
     schoolClassroom: { id: "schoolClassroom", label: "School Classroom", x: 35.2, y: 47.5, links: ["castleRoom", "library", "market"] },
     library: { id: "library", label: "Library", x: 44.5, y: 44.3, links: ["schoolClassroom", "castleRoom", "garden"] },
@@ -84,8 +81,7 @@ export const urbanArea = Object.freeze({
     hairSalon: { id: "hairSalon", label: "Hair Salon", x: 80.7, y: 54.7, links: ["boutique", "accessoryShop", "temple"] },
     tailorStudio: { id: "tailorStudio", label: "Tailor Studio", x: 59.2, y: 67.7, links: ["market", "boutique", "shoeShop", "administration"] },
     shoeShop: { id: "shoeShop", label: "Shoe Shop", x: 73.6, y: 70.3, links: ["market", "harbor", "boutique", "tailorStudio"] },
-    accessoryShop: { id: "accessoryShop", label: "Accessory Atelier", x: 84.0, y: 65.1, links: ["boutique", "hairSalon", "ruralGate"] },
-    ruralGate: { id: "ruralGate", label: "Rural Road", x: 88.5, y: 29.9, links: ["castleRoom", "wildEdge", "accessoryShop", "boutique"] },
+    accessoryShop: { id: "accessoryShop", label: "Accessory Atelier", x: 84.0, y: 65.1, links: ["boutique", "hairSalon"] },
     harbor: { id: "harbor", label: "Fish Shop", x: 39.7, y: 76.8, links: ["market", "shoeShop", "port"] },
     port: { id: "port", label: "Harbor Port", x: 56.0, y: 84.6, links: ["market", "harbor", "lighthouse"] },
     lighthouse: { id: "lighthouse", label: "Lighthouse", x: 89.8, y: 76.2, links: ["port"] }
@@ -93,8 +89,6 @@ export const urbanArea = Object.freeze({
   // locations 控制地圖圖示進入後的場景、NPC、商店與提示文字。
   locations: [
     { id: "luminaraCastle", area: "urban", node: "castleRoom", label: "Luminara Castle", icon: "🏰", npcClass: "npc-none", npc: "Gate Guard", kind: "gate", markerStyle: "portal", portalId: "castleStair", hint: "Open the kingdom world map." },
-    { id: "wildEdge", area: "urban", node: "wildEdge", label: "Wild Path", icon: "🌲", npcClass: "npc-none", npc: "Wild Sign", kind: "gate", markerStyle: "portal", portalId: "wildEdge", hint: "Open the kingdom world map." },
-    { id: "ruralGate", area: "urban", node: "ruralGate", label: "Rural Road", icon: "🌾", npcClass: "npc-none", npc: "Rural Sign", kind: "gate", markerStyle: "portal", portalId: "ruralGate", hint: "Open the kingdom world map." },
     { id: "garden", area: "urban", node: "garden", label: "Castle Garden", icon: "🌷", npc: "Mira", scene: "scene-garden", npcImage: npcImage("mira"), hint: "The garden is quiet. A small cat may be hiding near the roses." },
     { id: "schoolClassroom", area: "urban", node: "schoolClassroom", label: "School Classroom", icon: "🏫", npc: "Teacher Bell", scene: "scene-urban-school", npcImage: npcImage("teacher-bell"), hint: "Teacher Bell has a short classroom sentence." },
     { id: "library", area: "urban", node: "library", label: "Library", icon: "📚", npc: "Librarian Nola", scene: "scene-urban-library", npcImage: npcImage("librarian-nola"), hint: "The library is quiet and full of books." },
@@ -121,8 +115,6 @@ export const urbanArea = Object.freeze({
 // 每個屬性名稱對應地點或節點，控制對話畫面的背景、NPC 與按鈕文案。
 export const urbanSceneConfigs = Object.freeze({
   luminaraCastle: { ...singleSceneArt("garden"), scene: "scene-garden", npcClass: "npc-garden", npc: "Gate Guard", travelAction: "World Map", travelLine: "The castle stair opens the kingdom world map." },
-  wildEdge: { ...wildPathArt, scene: "scene-wild-path", npcClass: "npc-none", npc: "Wild Sign", travelAction: "World Map", travelLine: "The leafy path opens the kingdom world map." },
-  ruralGate: { ...ruralFarmArt, scene: "scene-rural-farm", npcClass: "npc-none", npc: "Rural Sign", travelAction: "World Map", travelLine: "The old farm road opens the kingdom world map." },
   garden: { ...singleSceneArt("garden"), scene: "scene-garden", npc: "Mira", npcImage: npcImage("mira"), npcNaturalHeightCm: 130, travelAction: "Visit", travelLine: "Mira is watching the roses and a shy garden cat." },
   schoolClassroom: { ...civicSceneArt("school-classroom"), scene: "scene-urban-school", npc: "Teacher Bell", npcImage: npcImage("teacher-bell"), npcNaturalHeightCm: 165, travelAction: "Visit", travelLine: "Teacher Bell has a short Starters sentence." },
   library: { ...civicSceneArt("library"), scene: "scene-urban-library", npc: "Librarian Nola", npcImage: npcImage("librarian-nola"), npcNaturalHeightCm: 162, travelAction: "Visit", travelLine: "Librarian Nola is ready for quiet reading." },

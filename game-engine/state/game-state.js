@@ -16,8 +16,8 @@ const legacyAreaIds = Object.freeze({
 });
 
 const legacyNodeIds = Object.freeze({
-  forestEdge: "wildEdge",
-  suburbGate: "ruralGate",
+  forestEdge: "castleRoom",
+  suburbGate: "castleRoom",
   forestEntrance: "wildEntrance",
   forestExit: "wildExit",
   suburbEntrance: "ruralEntrance",

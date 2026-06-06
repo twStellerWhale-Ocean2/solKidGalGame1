@@ -64,7 +64,7 @@ export const wildArea = Object.freeze({
   vocabularyProfile: wildVocabularyProfile,
   // nodes 控制地圖上的路網與圖示座標；x / y 是相對地圖寬高的百分比。
   nodes: {
-    wildEntrance: { id: "wildEntrance", label: "World Path", x: 89.8, y: 89.8, links: ["treeSpiritGrove", "wizardHut", "threePigsCottage"] },
+    wildEntrance: { id: "wildEntrance", label: "World Path", x: 82.0, y: 82.0, links: ["treeSpiritGrove", "wizardHut", "threePigsCottage"] },
     elfGlade: { id: "elfGlade", label: "Elf Glade", x: 21.5, y: 50.8, links: ["dwarfCottage", "fairyAtelier", "halflingVillage"] },
     fairyAtelier: { id: "fairyAtelier", label: "Fairy Atelier", x: 34.5, y: 61.2, links: ["elfGlade", "halflingVillage", "wizardHut"] },
     dwarfCottage: { id: "dwarfCottage", label: "Dwarf Cottage", x: 22.1, y: 72.3, links: ["elfGlade", "stoneGolemPass", "halflingVillage"] },
