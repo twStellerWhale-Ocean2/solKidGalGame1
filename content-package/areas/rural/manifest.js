@@ -63,7 +63,7 @@ export const ruralArea = Object.freeze({
   vocabularyProfile: ruralVocabularyProfile,
   // nodes 控制地圖上的路網與圖示座標；x / y 是相對地圖寬高的百分比。
   nodes: {
-    ruralEntrance: { id: "ruralEntrance", label: "World Road", x: 9.1, y: 87.9, links: ["pasture", "farm"] },
+    ruralEntrance: { id: "ruralEntrance", label: "World Road", x: 9.1, y: 81.8, links: ["pasture", "farm"] },
     mine: { id: "mine", label: "Mine", x: 78.8, y: 20.2, links: ["loggingCamp", "fishingShore", "ruralEntrance"] },
     loggingCamp: { id: "loggingCamp", label: "Logging Camp", x: 83.6, y: 56.0, links: ["mine", "fishingShore", "mill", "fieldCobbler"] },
     fishingShore: { id: "fishingShore", label: "Fishing Shore", x: 81.4, y: 85.9, links: ["loggingCamp", "farm", "mine", "fieldCobbler"] },
