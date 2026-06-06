@@ -493,18 +493,18 @@ body {
 .adv-npc {
   top: auto;
   bottom: 0;
-  height: calc(100% - 18px);
+  --adv-character-stage-height: min(calc(100% - 18px), 300px);
+  width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
+  height: var(--adv-character-stage-height);
   max-height: 300px;
 }
 
 .adv-princess {
   left: 42px;
-  width: min(620px, 48vw);
 }
 
 .adv-npc {
   right: 42px;
-  width: min(380px, 28vw);
 }
 
 .adv-box {
@@ -583,7 +583,9 @@ body {
 
   .adv-princess,
   .adv-npc {
-    height: calc(100% - 12px);
+    --adv-character-stage-height: calc(100% - 12px);
+    height: var(--adv-character-stage-height);
+    width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
   }
 
   .choice-button {
@@ -1251,7 +1253,7 @@ body {
 
   .adv-princess,
   .adv-npc {
-    width: min(320px, 28vw);
+    width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
   }
 }
 
@@ -1672,7 +1674,9 @@ body {
 .adv-princess,
 .adv-npc {
   max-height: none;
-  height: calc(100% + 26px);
+  --adv-character-stage-height: calc(100% + 26px);
+  height: var(--adv-character-stage-height);
+  width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
   bottom: -18px;
 }
 
@@ -1784,16 +1788,18 @@ body {
   }
 
   .adv-princess {
-    width: 78%;
     left: -44px;
-    height: calc(100% + 18px);
+    --adv-character-stage-height: calc(100% + 18px);
+    width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
+    height: var(--adv-character-stage-height);
     bottom: -10px;
   }
 
   .adv-npc {
-    width: 50%;
     right: 6px;
-    height: calc(100% + 18px);
+    --adv-character-stage-height: calc(100% + 18px);
+    width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
+    height: var(--adv-character-stage-height);
     bottom: -10px;
   }
 
@@ -2506,18 +2512,18 @@ body {
 
   .adv-scene[data-mode="scene"] .adv-princess,
   .adv-scene[data-mode="scene"] .adv-npc {
-    height: calc(100% + 12px);
+    --adv-character-stage-height: calc(100% + 12px);
+    width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
+    height: var(--adv-character-stage-height);
     bottom: -8px;
   }
 
 .adv-scene[data-mode="scene"] .adv-princess {
-  width: 80%;
   left: -48px;
 }
 
 .adv-scene[data-mode="scene"] .adv-npc {
-    width: 52%;
-  right: -14px;
+  right: 0;
 }
 
 .adv-scene[data-mode="scene"] .adv-location {
@@ -3184,8 +3190,9 @@ body {
     [data-mode="wardrobe"],
     [data-mode="refund"]
   ) .adv-princess {
-    width: 82%;
-    height: calc(100% + 10px);
+    --adv-character-stage-height: calc(100% + 10px);
+    width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
+    height: var(--adv-character-stage-height);
     max-height: none;
     bottom: -6px;
     left: -52px;
@@ -3213,11 +3220,12 @@ body {
     [data-mode="wardrobe"],
     [data-mode="refund"]
   ) .adv-npc {
-    width: 52%;
-    height: calc(100% + 10px);
+    --adv-character-stage-height: calc(100% + 10px);
+    width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
+    height: var(--adv-character-stage-height);
     max-height: none;
     bottom: -6px;
-    right: -14px;
+    right: 0;
   }
 
   .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) {

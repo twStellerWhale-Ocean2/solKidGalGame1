@@ -2,6 +2,7 @@ import { castleArea, castleLessons, castleQuestTemplates, castleSceneConfigs, ca
 import { wildArea, wildLessons, wildQuestTemplates, wildSceneConfigs, wildVocabularyProfile } from "../../content-package/areas/wild/manifest.js";
 import { urbanArea, urbanLessons, urbanQuestTemplates, urbanSceneConfigs, urbanVocabularyProfile } from "../../content-package/areas/urban/manifest.js";
 import { ruralArea, ruralLessons, ruralQuestTemplates, ruralSceneConfigs, ruralVocabularyProfile } from "../../content-package/areas/rural/manifest.js";
+export { characterScaleContract, bodyHeightPxForCm } from "./character-scale.js";
 export { routeForPortal, worldRoutes } from "../../content-package/areas/world.js";
 export {
   categories,

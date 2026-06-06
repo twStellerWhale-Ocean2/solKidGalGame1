@@ -21,6 +21,7 @@ import {
   castleMapImageSize,
   castleMapNodes,
   categories,
+  characterScaleContract,
   difficultyConfig,
   lessons,
   mapImageSize,
@@ -1203,6 +1204,7 @@ function openAdvBase(hotspot, mode) {
   elements.advModal.classList.add("show");
   elements.advModal.setAttribute("aria-hidden", "false");
   elements.advScene.className = `adv-scene ${scene.scene || ""}`;
+  elements.advScene.style.setProperty("--lumi-stage-scale", String(characterScaleContract.lumiStageScale));
   applyAdvSceneArt(elements.advScene, scene.sceneArt, { assetUrl: domAssetUrl });
   elements.advTitle.textContent = hotspot.label;
   const npcClass = scene.npcClass || (scene.npcImage ? "npc-image" : "npc-none");
@@ -2522,6 +2524,7 @@ installTestingHooks({
   buildSaveMarkdown,
   buyItemInAdv,
   castleMapNodes,
+  characterScaleContract,
   changeView,
   closeAdv,
   closeSystemMenu,
@@ -2581,6 +2584,7 @@ installTestingHooks({
   openShopDetail,
   openSystemMenu,
   openWardrobeDetail,
+  paperDollBaseLayer,
   persist,
   render,
   renderAdvShop,

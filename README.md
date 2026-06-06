@@ -276,10 +276,38 @@ Fixed Prompt Area
 
 - 正式 runtime 素材統一使用 WebP。
 - 地圖、ADV 背景、NPC、角色、衣物 layer、商品縮圖都必須是正式 bitmap 美術資產。
+- `content-package/areas/*/assets/characters/*.webp` 的 NPC portrait 必須保留 alpha 透明背景，不得把場景、紙張、純色或漸層矩形背景烘進角色圖。
 - CSS 只能處理 UI chrome、排版、陰影、選取狀態與安全的裝飾效果。
 - 不得用 CSS 幾何、SVG 拼貼、emoji fallback 或 placeholder 宣稱 gameplay complete。
 - 商品縮圖與穿戴後上身效果必須分別驗收。
 - 若美術尚未完成，應在測試或 issue 中標為未完成，不得把臨時素材寫成完成。
+
+### 2.7.1 角色自然尺度規格
+
+所有 ADV 場景人物必須遵守同一個自然尺度契約，避免 desktop 看似正常、mobile 因圖檔比例或 CSS 寬度換算而出現身高不一致。
+
+角色尺度契約：
+
+```text
+canvas = 512x768
+groundBaselineY = 768
+fullCanvasHeightCm = 200
+1cm = 3.84px
+bodyHeightPx = naturalHeightCm / 200 * 768
+NPC stageScale = 1.0
+Lumi naturalHeightCm = 125
+Lumi ADV stageScale = 1.20
+```
+
+維護規則：
+
+- `content-package/areas/*/assets/characters/*.webp` 的 NPC 圖必須是 `512x768` 透明 WebP。
+- NPC 腳底必須貼近 canvas 最底端；底部透明留白不得用來調整人物站位。
+- NPC 可視人物高度必須由 `npcNaturalHeightCm` 換算，不得由 WebP canvas 比例、mobile CSS 個別縮放或透明留白意外造成。
+- `npcNaturalHeightCm` 寫在各 area 的 scene config，作為 runtime 與 QA 共用的機器可讀尺度來源。
+- Lumi 與 wardrobe layer 共用同一個 `512x768` paper-doll rig；衣物 layer 必須和 Lumi base 做同一幾何對位，不得各自縮放。
+- Lumi 的主角感只由 ADV 舞台倍率 `1.20` 表達，不得把 Lumi base 或衣物 layer 做成不同自然尺度。
+- 特殊矮小或大型角色可以有不同 `naturalHeightCm`，但仍必須落在同一 `768px = 200cm` 尺度內；若超過 200cm，必須拆成明確的特殊規格，不可偷偷改 canvas 或 CSS。
 
 # 第三章 測試與品質驗收
 
@@ -482,6 +510,24 @@ Fixed Prompt Area
 - 任一必測 row 為 `未完成`、缺檔、未檢查或仍有 `Must Fix` 時，本 stage 未完成。
 - 不得以 contact sheet、工程測試通過、「比上一版好」或非正式素材替代美術通過。
 
+### 3.7.5 角色尺度 QA
+
+角色尺度變更必須同時做自動檢查與截圖檢查。
+
+自動檢查至少包含：
+
+- 每個有 `npcImage` 的 scene config 都有 `npcNaturalHeightCm`。
+- 每張 NPC WebP 都是 `512x768`，有 alpha，且腳底 alpha bbox 貼近 `groundBaselineY = 768`。
+- NPC alpha bbox 高度必須符合 `naturalHeightCm / 200 * 768`，容許誤差只能用於抗鋸齒、鞋底或少量髮絲。
+- Lumi `base.webp` 是 `512x768`，可視高度符合 `125cm` 的自然尺度，腳底貼近底線。
+- 所有 wardrobe layer 都是 `512x768`，並和 Lumi base 維持同一 paper-doll rig 對位。
+
+截圖檢查至少包含：
+
+- mobile 與 desktop 各截一次 King Hall 與 Farm，確認 King Rowan / Auntie Pom 的差異只來自 `naturalHeightCm`，不是 canvas 比例。
+- 截 Princess Room 與每個 wardrobe category，確認 Lumi 縮放後衣物、鞋子、帽子、髮型與配件沒有漂移、裁切、浮空或穿幫。
+- 若使用者提供實機截圖，必須用相同 flow node 與等效 viewport 重測，不得用理想 viewport 取代。
+
 ## 3.8 好玩性測試
 
 目的：確認遊戲具備兒童願意繼續玩的目標、節奏、回饋與獎勵。
@@ -611,3 +657,4 @@ http://127.0.0.1:4174/
 - 2026-06-05：可玩角色素材集中到 `content-package/characters/<character-id>/assets/`。
 - 2026-06-05：正式 runtime 素材統一使用 WebP。
 - 2026-06-05：README 重整為第一章緣起與目的、第二章架構主軸、第三章測試與品質驗收、第十章結論與註記。
+- 2026-06-06：新增角色自然尺度規格：`512x768`、底線 `y=768`、`768px = 200cm`、Lumi ADV stageScale `1.20`。

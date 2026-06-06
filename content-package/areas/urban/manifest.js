@@ -5,7 +5,7 @@ import { makeLessons, makeQuestTemplates } from "../_shared/lesson-helpers.js";
 
 //#region 素材路徑工具
 // 所有本地區圖片路徑集中在這裡；換素材或快取版本參數時優先改這段。
-const npcImage = (name) => `content-package/areas/urban/assets/characters/${name}.webp?v=20260605-npc-r2`;
+const npcImage = (name) => `content-package/areas/urban/assets/characters/${name}.webp?v=20260606-character-scale-r1`;
 const sceneArt = (src, options = {}) => ({ sceneArt: { src, tone: "urban", ...options } });
 const singleSceneArt = (name, options = {}) => sceneArt(`content-package/areas/urban/assets/scenes/${name}.webp?v=20260601-optimized-assets`, options);
 const urbanShopArt = (name) => sceneArt(`content-package/areas/urban/assets/scenes/${name}.webp?v=20260604-issues56-60`, { tone: "shop" });
@@ -144,20 +144,20 @@ export const urbanSceneConfigs = Object.freeze({
   luminaraCastle: { ...singleSceneArt("garden"), scene: "scene-garden", npcClass: "npc-garden", npc: "Gate Guard", travelAction: "Castle", travelLine: "Return to Lumi's room for dress-up time." },
   wildEdge: { ...wildPathArt, scene: "scene-wild-path", npcClass: "npc-none", npc: "Wild Sign", travelAction: "Enter Wild", travelLine: "The leafy path leads into the wider wild map." },
   ruralGate: { ...ruralFarmArt, scene: "scene-rural-farm", npcClass: "npc-none", npc: "Rural Sign", travelAction: "Enter Rural", travelLine: "The old farm road leads to mines, woods, fishers, farms, and homes." },
-  garden: { ...singleSceneArt("garden"), scene: "scene-garden", npc: "Mira", npcImage: npcImage("mira"), travelAction: "Visit", travelLine: "Mira is watching the roses and a shy garden cat." },
-  schoolClassroom: { ...civicAtlasArt("0% 50%"), scene: "scene-urban-school", npc: "Teacher Bell", npcImage: npcImage("teacher-bell"), travelAction: "Visit", travelLine: "Teacher Bell has a short Starters sentence." },
-  library: { ...civicAtlasArt("33.333% 50%"), scene: "scene-urban-library", npc: "Librarian Nola", npcImage: npcImage("librarian-nola"), travelAction: "Visit", travelLine: "Librarian Nola is ready for quiet reading." },
-  temple: { ...civicAtlasArt("66.666% 50%"), scene: "scene-urban-temple", npc: "Sister Luma", npcImage: npcImage("sister-luma"), travelAction: "Visit", travelLine: "Sister Luma keeps the temple flowers bright." },
-  administration: { ...civicAtlasArt("100% 50%"), scene: "scene-urban-administration", npc: "Clerk Otto", npcImage: npcImage("clerk-otto"), travelAction: "Visit", travelLine: "Clerk Otto sorts the town notes." },
-  market: { ...singleSceneArt("market"), scene: "scene-market", npc: "Auntie Pom", npcImage: npcImage("auntie-pom-market"), travelAction: "Visit", travelLine: "Auntie Pom smiles beside warm bread and bright fruit." },
-  harbor: { ...singleSceneArt("harbor"), scene: "scene-harbor", npc: "Nami", npcImage: npcImage("nami"), travelAction: "Visit", travelLine: "Nami is waiting by the bright harbor boats." },
-  port: { ...singleSceneArt("harbor"), scene: "scene-harbor", npc: "Dock Guide", npcImage: npcImage("dock-guide"), travelAction: "Visit", travelLine: "Boats arrive at the harbor port for sea trips and dock visits." },
-  boutique: { ...urbanShopArt("dress-boutique"), scene: "scene-urban-dress-boutique", npc: "Rena", npcImage: npcImage("rena"), travelAction: "Shop", travelLine: "Rena has dresses and complete outfit sets ready for a bright day.", shopGreeting: "Welcome to the Dress Boutique. Dresses and outfit sets are ready." },
-  hairSalon: { ...urbanShopArt("hair-salon"), scene: "scene-urban-hair-salon", npc: "Stylist Lina", npcImage: npcImage("stylist-lina"), travelAction: "Shop", travelLine: "Stylist Lina has soft story hairstyles for Lumi.", shopGreeting: "Welcome to the Hair Salon. Pick a hairstyle for Lumi." },
-  tailorStudio: { ...urbanShopArt("tailor-studio"), scene: "scene-urban-tailor-studio", npc: "Tailor Tess", npcImage: npcImage("tailor-tess"), travelAction: "Shop", travelLine: "Tailor Tess keeps tops and bottoms neatly folded.", shopGreeting: "Welcome to the Tailor Studio. Pick tops or bottoms." },
-  shoeShop: { ...singleSceneArt("shoes", { tone: "shop" }), scene: "scene-shoes", npc: "Mina", npcImage: npcImage("mina"), travelAction: "Shop", travelLine: "Mina has walking shoes for Lumi's next trip.", shopGreeting: "Hello, Princess. Try shoes for the road." },
-  accessoryShop: { ...urbanShopArt("accessory-atelier"), scene: "scene-urban-accessory-atelier", npc: "Lili", npcImage: npcImage("lili"), travelAction: "Shop", travelLine: "Lili has hats and accessories in separate trays.", shopGreeting: "Good day, Princess. Pick a hat or accessory." },
-  lighthouse: { ...singleSceneArt("lighthouse"), scene: "scene-lighthouse", npc: "Captain Sol", npcImage: npcImage("captain-sol"), travelAction: "Visit", travelLine: "Captain Sol checks the sea from the lighthouse." }
+  garden: { ...singleSceneArt("garden"), scene: "scene-garden", npc: "Mira", npcImage: npcImage("mira"), npcNaturalHeightCm: 130, travelAction: "Visit", travelLine: "Mira is watching the roses and a shy garden cat." },
+  schoolClassroom: { ...civicAtlasArt("0% 50%"), scene: "scene-urban-school", npc: "Teacher Bell", npcImage: npcImage("teacher-bell"), npcNaturalHeightCm: 165, travelAction: "Visit", travelLine: "Teacher Bell has a short Starters sentence." },
+  library: { ...civicAtlasArt("33.333% 50%"), scene: "scene-urban-library", npc: "Librarian Nola", npcImage: npcImage("librarian-nola"), npcNaturalHeightCm: 162, travelAction: "Visit", travelLine: "Librarian Nola is ready for quiet reading." },
+  temple: { ...civicAtlasArt("66.666% 50%"), scene: "scene-urban-temple", npc: "Sister Luma", npcImage: npcImage("sister-luma"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Sister Luma keeps the temple flowers bright." },
+  administration: { ...civicAtlasArt("100% 50%"), scene: "scene-urban-administration", npc: "Clerk Otto", npcImage: npcImage("clerk-otto"), npcNaturalHeightCm: 172, travelAction: "Visit", travelLine: "Clerk Otto sorts the town notes." },
+  market: { ...singleSceneArt("market"), scene: "scene-market", npc: "Auntie Pom", npcImage: npcImage("auntie-pom-market"), npcNaturalHeightCm: 155, travelAction: "Visit", travelLine: "Auntie Pom smiles beside warm bread and bright fruit." },
+  harbor: { ...singleSceneArt("harbor"), scene: "scene-harbor", npc: "Nami", npcImage: npcImage("nami"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Nami is waiting by the bright harbor boats." },
+  port: { ...singleSceneArt("harbor"), scene: "scene-harbor", npc: "Dock Guide", npcImage: npcImage("dock-guide"), npcNaturalHeightCm: 175, travelAction: "Visit", travelLine: "Boats arrive at the harbor port for sea trips and dock visits." },
+  boutique: { ...urbanShopArt("dress-boutique"), scene: "scene-urban-dress-boutique", npc: "Rena", npcImage: npcImage("rena"), npcNaturalHeightCm: 165, travelAction: "Shop", travelLine: "Rena has dresses and complete outfit sets ready for a bright day.", shopGreeting: "Welcome to the Dress Boutique. Dresses and outfit sets are ready." },
+  hairSalon: { ...urbanShopArt("hair-salon"), scene: "scene-urban-hair-salon", npc: "Stylist Lina", npcImage: npcImage("stylist-lina"), npcNaturalHeightCm: 162, travelAction: "Shop", travelLine: "Stylist Lina has soft story hairstyles for Lumi.", shopGreeting: "Welcome to the Hair Salon. Pick a hairstyle for Lumi." },
+  tailorStudio: { ...urbanShopArt("tailor-studio"), scene: "scene-urban-tailor-studio", npc: "Tailor Tess", npcImage: npcImage("tailor-tess"), npcNaturalHeightCm: 160, travelAction: "Shop", travelLine: "Tailor Tess keeps tops and bottoms neatly folded.", shopGreeting: "Welcome to the Tailor Studio. Pick tops or bottoms." },
+  shoeShop: { ...singleSceneArt("shoes", { tone: "shop" }), scene: "scene-shoes", npc: "Mina", npcImage: npcImage("mina"), npcNaturalHeightCm: 158, travelAction: "Shop", travelLine: "Mina has walking shoes for Lumi's next trip.", shopGreeting: "Hello, Princess. Try shoes for the road." },
+  accessoryShop: { ...urbanShopArt("accessory-atelier"), scene: "scene-urban-accessory-atelier", npc: "Lili", npcImage: npcImage("lili"), npcNaturalHeightCm: 156, travelAction: "Shop", travelLine: "Lili has hats and accessories in separate trays.", shopGreeting: "Good day, Princess. Pick a hat or accessory." },
+  lighthouse: { ...singleSceneArt("lighthouse"), scene: "scene-lighthouse", npc: "Captain Sol", npcImage: npcImage("captain-sol"), npcNaturalHeightCm: 178, travelAction: "Visit", travelLine: "Captain Sol checks the sea from the lighthouse." }
 });
 //#endregion 對話場景設定
 

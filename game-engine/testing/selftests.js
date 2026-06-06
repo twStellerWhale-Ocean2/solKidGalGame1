@@ -44,7 +44,7 @@ export function installTestingHooks(api) {
   runMonkeyTest(api);
 }
 
-function runDataAudit(api) {
+async function runDataAudit(api) {
   const params = new URLSearchParams(location.search);
   if (params.get("selftest") !== "data-audit") return;
   const shopLocations = Object.values(api.areaRegistry)
@@ -76,6 +76,9 @@ function runDataAudit(api) {
       const config = api.sceneConfigFor(hotspot);
       if (config.npcClass === "npc-none" && !config.npcImage) {
         errors.push(`${area.id}/${hotspot.id} has no NPC portrait`);
+      }
+      if (config.npcImage && !Number.isFinite(config.npcNaturalHeightCm)) {
+        errors.push(`${area.id}/${hotspot.id} has npcImage but no npcNaturalHeightCm`);
       }
     });
   });
@@ -115,6 +118,7 @@ function runDataAudit(api) {
       });
     });
   });
+  const characterScale = await collectCharacterScaleAudit(api, errors);
 
   const result = document.createElement("pre");
   result.id = "dataAuditResult";
@@ -125,6 +129,7 @@ function runDataAudit(api) {
     shopCount: shopLocations.length,
     sceneArtCount: sceneArtSurfaces.length,
     mapActorCount: mapActorSurfaces.length,
+    characterScale,
     supportedActorMotions: [...supportedActorMotions],
     shops: shopLocations.map((hotspot) => ({
       area: api.areaForHotspot(hotspot),
@@ -137,6 +142,157 @@ function runDataAudit(api) {
     errors
   });
   document.body.prepend(result);
+}
+
+function uniqueBy(items, keyFn) {
+  const seen = new Set();
+  return items.filter((item) => {
+    const key = keyFn(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function imageMetrics(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const context = canvas.getContext("2d");
+      context.drawImage(image, 0, 0);
+      const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      let left = canvas.width;
+      let top = canvas.height;
+      let right = 0;
+      let bottom = 0;
+      for (let y = 0; y < canvas.height; y += 1) {
+        for (let x = 0; x < canvas.width; x += 1) {
+          const alpha = pixels[((y * canvas.width + x) * 4) + 3];
+          if (alpha <= 8) continue;
+          if (x < left) left = x;
+          if (y < top) top = y;
+          if (x + 1 > right) right = x + 1;
+          if (y + 1 > bottom) bottom = y + 1;
+        }
+      }
+      resolve({
+        src,
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+        alphaBBox: right > left && bottom > top ? { left, top, right, bottom, width: right - left, height: bottom - top } : null
+      });
+    };
+    image.onerror = () => reject(new Error(`Could not load ${src}`));
+    image.src = src;
+  });
+}
+
+function expectedBodyHeightPx(heightCm, contract) {
+  return Math.round((heightCm / contract.fullCanvasHeightCm) * contract.canvasHeight);
+}
+
+async function collectCharacterScaleAudit(api, errors) {
+  const contract = api.characterScaleContract || {
+    canvasWidth: 512,
+    canvasHeight: 768,
+    groundBaselineY: 768,
+    fullCanvasHeightCm: 200,
+    assetHeightTolerancePx: 18,
+    baselineTolerancePx: 6
+  };
+  const npcRefs = [];
+  Object.values(api.areaRegistry).forEach((area) => {
+    (area.locations || []).forEach((hotspot) => {
+      const config = api.sceneConfigFor(hotspot);
+      if (!config.npcImage) return;
+      npcRefs.push({
+        area: area.id,
+        id: hotspot.id,
+        npc: config.npc,
+        src: config.npcImage,
+        naturalHeightCm: config.npcNaturalHeightCm
+      });
+    });
+  });
+
+  const npcAssets = [];
+  for (const ref of uniqueBy(npcRefs, (item) => item.src)) {
+    try {
+      const metrics = await imageMetrics(ref.src);
+      const expectedHeight = Number.isFinite(ref.naturalHeightCm)
+        ? expectedBodyHeightPx(ref.naturalHeightCm, contract)
+        : null;
+      if (metrics.width !== contract.canvasWidth || metrics.height !== contract.canvasHeight) {
+        errors.push(`${ref.area}/${ref.id} NPC asset is ${metrics.width}x${metrics.height}, expected ${contract.canvasWidth}x${contract.canvasHeight}`);
+      }
+      if (!metrics.alphaBBox) {
+        errors.push(`${ref.area}/${ref.id} NPC asset has no alpha content`);
+      } else {
+        const baselineGap = contract.groundBaselineY - metrics.alphaBBox.bottom;
+        if (Math.abs(baselineGap) > contract.baselineTolerancePx) {
+          errors.push(`${ref.area}/${ref.id} NPC baseline gap ${baselineGap}px exceeds ${contract.baselineTolerancePx}px`);
+        }
+        if (expectedHeight !== null && Math.abs(metrics.alphaBBox.height - expectedHeight) > contract.assetHeightTolerancePx) {
+          errors.push(`${ref.area}/${ref.id} NPC alpha height ${metrics.alphaBBox.height}px differs from ${expectedHeight}px for ${ref.naturalHeightCm}cm`);
+        }
+      }
+      npcAssets.push({ ...ref, expectedHeight, ...metrics });
+    } catch (error) {
+      errors.push(error.message);
+    }
+  }
+
+  const paperDoll = [];
+  if (api.paperDollBaseLayer) {
+    try {
+      const metrics = await imageMetrics(api.paperDollBaseLayer);
+      const expectedHeight = expectedBodyHeightPx(contract.lumiNaturalHeightCm || 125, contract);
+      if (metrics.width !== contract.canvasWidth || metrics.height !== contract.canvasHeight) {
+        errors.push(`Lumi base asset is ${metrics.width}x${metrics.height}, expected ${contract.canvasWidth}x${contract.canvasHeight}`);
+      }
+      if (!metrics.alphaBBox) {
+        errors.push("Lumi base asset has no alpha content");
+      } else {
+        const baselineGap = contract.groundBaselineY - metrics.alphaBBox.bottom;
+        if (Math.abs(baselineGap) > contract.baselineTolerancePx) {
+          errors.push(`Lumi base baseline gap ${baselineGap}px exceeds ${contract.baselineTolerancePx}px`);
+        }
+        if (Math.abs(metrics.alphaBBox.height - expectedHeight) > contract.assetHeightTolerancePx) {
+          errors.push(`Lumi base alpha height ${metrics.alphaBBox.height}px differs from ${expectedHeight}px`);
+        }
+      }
+      paperDoll.push({ id: "lumi-base", expectedHeight, ...metrics });
+    } catch (error) {
+      errors.push(error.message);
+    }
+  }
+
+  const layerRefs = uniqueBy(api.shopItems.flatMap((item) => item.layers || []), (layer) => layer.src);
+  const wardrobeLayers = [];
+  for (const layer of layerRefs) {
+    try {
+      const metrics = await imageMetrics(layer.src);
+      if (metrics.width !== contract.canvasWidth || metrics.height !== contract.canvasHeight) {
+        errors.push(`${layer.slot || "wardrobe"} layer ${layer.src} is ${metrics.width}x${metrics.height}, expected ${contract.canvasWidth}x${contract.canvasHeight}`);
+      }
+      wardrobeLayers.push({ slot: layer.slot, ...metrics });
+    } catch (error) {
+      errors.push(error.message);
+    }
+  }
+
+  return {
+    contract,
+    npcAssetCount: npcAssets.length,
+    paperDollAssetCount: paperDoll.length,
+    wardrobeLayerCount: wardrobeLayers.length,
+    npcAssets,
+    paperDoll,
+    wardrobeLayers
+  };
 }
 
 function runSaveLoadSelfTest(api) {
