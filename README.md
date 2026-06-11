@@ -305,6 +305,9 @@ Fixed Prompt Area
 - World Map 正式契約：`content-base/world/assets/world-map.webp`，實際像素與 manifest 必須是 `1024x1536`。
 - Area Map 正式契約：每個 enabled area 使用 `content-package/areas/<area>/assets/map-1536.webp`，實際像素與 manifest 必須是 `1536x1536`；舊 `map.webp` 可保留為 baseline，但不得作為正式 runtime map。
 - Scene background 正式契約：每個 runtime 使用的 ADV scene background 必須是單張 `1024x1024` WebP；舊 atlas 可保留為 baseline，但不得作為正式 runtime scene background。
+- ADV scene background 必須由 `sceneArt` renderer 統一載入；場景專屬 CSS class 不得硬編碼背景 URL、不得建立 CSS fallback 背景圖，也不得用模糊 cover 冒充手機裁切。
+- 手機直向寬度不足時，ADV scene background 應以正式 `1024x1024` 圖中央構圖裁切左右；不得因 viewport 較窄而在上方或兩側疊加 blur / frosted cover。
+- ADV 對話 UI 必須使用低飽和深色高不透明底，文字、按鈕與 focus 狀態需保持高對比；UI 可遮罩文字區，但不得用白色霧面洗掉人物、衣物或背景細節。
 - ADV 舞台尺度：標準室內與一般商店約 5.5-6m 寬，小商店可為 4.5-5.5m，大廳與戶外可為 8-12m；角色站位、主要互動物件與可讀地標需落在手機安全構圖區內。
 - `content-package/areas/*/assets/characters/*.webp` 的 NPC portrait 必須保留 alpha 透明背景，不得把場景、紙張、純色或漸層矩形背景烘進角色圖。
 - CSS 只能處理 UI chrome、排版、陰影、選取狀態與安全的裝飾效果。
@@ -491,7 +494,9 @@ Lumi ADV stageScale = 1.20
 - 可點擊目標是否太小、太貼邊或被遮擋。
 - 背景、角色、NPC、道具與 UI 是否像同一個空間與同一套視覺語言。
 - 角色比例、站位、裁切、腳底接地、陰影 / 底座與背景透視是否自然。
-- 對話框、Shop / Wardrobe panel、設定 panel 是否壓壞舞台構圖。
+- 對話框、Shop / Wardrobe panel、設定 panel 是否壓壞舞台構圖；手機 scene entry 至少需看得到人物頭部與上半身。
+- Princess Room 必須讓 Lumi 與目前穿搭清楚可見，不得只露出腳或被對話 UI / 白霧覆蓋。
+- ADV 背景截圖不得出現非正式 blur cover；手機寬度不足時應裁切正式背景左右，而不是新增模糊補圖。
 - Scene entry 是否只顯示場景、角色與 action choices，不提前塞商品列表或換裝列表。
 - `World Map -> Area Map -> Scene -> Action Choices -> Detail Panel` 層級是否能從截圖辨識。
 - 使用者曾指出的具體畫面是否有同名 row、同名問題、實際截圖證據與結論。
@@ -537,6 +542,7 @@ Lumi ADV stageScale = 1.20
 - 所有必測 manifest row 都已截圖、可開啟、已檢查。
 - Scene entry、action choices、detail panel、feedback、返回路徑各自有截圖與結論。
 - 每個修訂項目都有修改前圖、修改後圖或明確缺圖原因。
+- 涉及 ADV 背景、人物可視性或對話 UI 的改動，必須產出 PDF QA 報告；報告至少包含 Issue / branch / commit、URL、viewport metrics、截圖、console / page error 狀態與結論。
 - 任一必測 row 為 `未完成`、缺檔、未檢查或仍有 `Must Fix` 時，本 stage 未完成。
 - 不得以 contact sheet、工程測試通過、「比上一版好」或非正式素材替代美術通過。
 
@@ -696,3 +702,4 @@ http://127.0.0.1:4174/
 - 2026-06-06：ADV scene background 轉為正式 `1024x1024` 契約，並補入 ADV 舞台尺度規格。
 - 2026-06-11：Issue 76 refactor track phase 0/1：新增 QA baseline 紀錄、抽出 map viewport controller、加入 JSDoc typedef 與 `jsconfig.json` 開發期契約檢查。
 - 2026-06-11：Issue 77 multi-character foundation：新增 character registry、`activeCharacterId` state/save 正規化與角色驅動 paper-doll base layer。
+- 2026-06-12：Issue 82 ADV scene cleanup：補明 sceneArt 單一背景入口、手機裁切不得使用 blur cover、深色高對比對話 UI 與 PDF 美術 QA 報告要求。

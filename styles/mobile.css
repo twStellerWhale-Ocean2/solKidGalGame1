@@ -2347,10 +2347,6 @@ body {
   background: linear-gradient(145deg, var(--rose-dark), var(--rose));
 }
 
-.scene-princess-room {
-  background: linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.18)), url("../content-package/areas/castle/assets/scenes/bedroom-1024.webp?v=20260606-issue66-adv-scenes-r1") center / cover no-repeat;
-}
-
 .adv-scene[data-mode="scene"] .shop-area {
   display: none;
 }
@@ -3451,9 +3447,18 @@ body {
   [data-mode="wardrobe"],
   [data-mode="refund"]
 ) {
-  --adv-dialog-height: clamp(280px, 42%, 390px);
+  --adv-dialog-height: clamp(230px, 34%, 330px);
+  --adv-dialog-bg: rgba(47, 38, 52, 0.93);
+  --adv-dialog-bg-soft: rgba(65, 51, 70, 0.9);
+  --adv-dialog-line: rgba(255, 225, 240, 0.32);
+  --adv-dialog-text: #fff7fb;
+  --adv-dialog-muted: #ead6e2;
+  --adv-dialog-accent: #f19ac1;
+  --adv-dialog-accent-strong: #ffd3e7;
   display: block;
   isolation: isolate;
+  background-position: center;
+  background-size: cover;
 }
 
 .adv-scene:is(
@@ -3539,38 +3544,101 @@ body {
   height: var(--adv-dialog-height);
   max-height: calc(100% - 82px);
   margin: 0;
+  color: var(--adv-dialog-text);
   background:
-    linear-gradient(180deg, rgba(255, 252, 248, 0.62), rgba(255, 250, 246, 0.48));
-  border-color: rgba(255, 255, 255, 0.42);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(0, 0, 0, 0.08)),
+    var(--adv-dialog-bg);
+  border-color: var(--adv-dialog-line);
   box-shadow:
-    0 0 0 1px rgba(102, 64, 76, 0.06) inset,
-    0 18px 38px rgba(40, 24, 34, 0.22);
-  backdrop-filter: blur(3px) saturate(1.02);
+    0 0 0 1px rgba(255, 225, 240, 0.08) inset,
+    0 18px 38px rgba(18, 12, 22, 0.38);
+  backdrop-filter: none;
 }
 
 .adv-location {
   z-index: 7;
-  background: rgba(69, 43, 51, 0.58);
-  border: 1px solid rgba(255, 255, 255, 0.42);
+  color: var(--adv-dialog-text);
+  background: rgba(47, 38, 52, 0.9);
+  border: 1px solid var(--adv-dialog-line);
   box-shadow: 0 8px 18px rgba(40, 24, 34, 0.18);
-  backdrop-filter: blur(8px) saturate(1.08);
+  backdrop-filter: none;
 }
 
 .adv-scene .dialog-title {
   min-height: 36px;
   margin: -4px -4px 8px;
   padding: 7px 10px;
-  color: #6e2747;
-  background: rgba(255, 255, 255, 0.34);
-  border: 1px solid rgba(255, 255, 255, 0.36);
+  color: var(--adv-dialog-text);
+  background: var(--adv-dialog-bg-soft);
+  border: 1px solid var(--adv-dialog-line);
   border-radius: 7px;
-  backdrop-filter: blur(2px);
+  backdrop-filter: none;
 }
 
 .adv-scene .english-line {
+  color: var(--adv-dialog-text);
   text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.48),
-    0 0 12px rgba(255, 250, 246, 0.46);
+    0 1px 0 rgba(0, 0, 0, 0.28),
+    0 0 12px rgba(0, 0, 0, 0.26);
+}
+
+.adv-scene .task-line,
+.adv-scene .lesson-feedback {
+  color: var(--adv-dialog-muted);
+}
+
+.adv-scene .choice-button {
+  color: var(--adv-dialog-text);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(0, 0, 0, 0.045)),
+    rgba(58, 46, 64, 0.94);
+  border-color: rgba(255, 211, 231, 0.28);
+  box-shadow: 0 8px 16px rgba(18, 12, 22, 0.22);
+}
+
+.adv-scene .choice-button:focus,
+.adv-scene .choice-button.adv-focus {
+  color: #fff;
+  background:
+    linear-gradient(180deg, rgba(241, 154, 193, 0.2), rgba(0, 0, 0, 0.02)),
+    rgba(70, 52, 76, 0.96);
+  border-color: var(--adv-dialog-accent);
+  box-shadow:
+    0 0 0 4px rgba(241, 154, 193, 0.24),
+    0 10px 18px rgba(18, 12, 22, 0.28);
+}
+
+.adv-scene .choice-button.leave-choice,
+.adv-scene[data-mode="scene"] .choice-button.leave-choice {
+  color: var(--adv-dialog-muted);
+  background: rgba(54, 44, 60, 0.92);
+  border-color: rgba(255, 211, 231, 0.22);
+}
+
+.adv-scene .choice-button.correct {
+  color: #ecfff4;
+  background: rgba(45, 114, 89, 0.9);
+  border-color: rgba(178, 247, 204, 0.72);
+}
+
+.adv-scene .choice-button.wrong {
+  color: #fff2f2;
+  background: rgba(132, 61, 72, 0.92);
+  border-color: rgba(255, 182, 192, 0.72);
+}
+
+.adv-scene .speaker-button,
+.adv-scene .help-button {
+  color: var(--adv-dialog-text);
+  background: rgba(65, 51, 70, 0.94);
+  border-color: rgba(255, 211, 231, 0.35);
+  box-shadow: 0 8px 16px rgba(18, 12, 22, 0.22);
+}
+
+.adv-scene .speaker-button:focus,
+.adv-scene .help-button:focus {
+  outline: 3px solid rgba(241, 154, 193, 0.38);
+  outline-offset: 2px;
 }
 
 @media (min-width: 821px) {
@@ -3589,7 +3657,7 @@ body {
     [data-mode="wardrobe"],
     [data-mode="refund"]
   ) {
-    --adv-dialog-height: min(372px, 48%);
+    --adv-dialog-height: min(316px, 42%);
   }
 
   .adv-scene:is(
@@ -3614,6 +3682,28 @@ body {
     [data-mode="refund"]
   ) .adv-npc {
     right: -14px;
+  }
+
+  .adv-scene:is(
+    [data-mode="scene"],
+    [data-mode="hint"],
+    [data-mode="quest"],
+    [data-mode="complete"],
+    [data-mode="shop"],
+    [data-mode="wardrobe"],
+    [data-mode="refund"]
+  ) .adv-princess,
+  .adv-scene:is(
+    [data-mode="scene"],
+    [data-mode="hint"],
+    [data-mode="quest"],
+    [data-mode="complete"],
+    [data-mode="shop"],
+    [data-mode="wardrobe"],
+    [data-mode="refund"]
+  ) .adv-npc {
+    --adv-character-stage-height: min(74%, 540px);
+    bottom: calc(var(--adv-dialog-height) - 76px);
   }
 
   .adv-scene:is(
