@@ -41,6 +41,7 @@ import { firstLayerActionsFor, sceneActionLabel } from "./flow/scene-actions.js"
 import { FLOW_STAGE_LABELS } from "./flow/stages.js";
 import { createMapActorRuntime, mapActorMotionTypes } from "./map/actors.js";
 import { updateMarkerEdgeVisibility } from "./map/marker-visibility.js";
+import { createAreaMapViewportController } from "./map/viewport.js";
 import { renderItemDetailPanel } from "./render/item-panel.js";
 import { createPaperDollRenderer } from "./render/paper-doll.js";
 import { renderBuildInfo } from "./render/settings.js";
@@ -82,14 +83,7 @@ let advFocusIndex = 0;
 let advFocusTimer = 0;
 let shopPreviewItemId = "";
 const mapZoomLimits = { min: 1, max: 2.2, mobileBaseScale: 1.06 };
-const areaMapViewports = {
-  castle: { pan: { x: 0, y: 0 }, zoom: 1 },
-  urban: { pan: { x: 0, y: 0 }, zoom: 1 },
-  rural: { pan: { x: 0, y: 0 }, zoom: 1 },
-  wild: { pan: { x: 0, y: 0 }, zoom: 1 },
-  world: { pan: { x: 0, y: 0 }, zoom: 1 }
-};
-const centerMapOnNextRender = { castle: true, urban: true, rural: true, wild: true, world: true };
+const areaMapIds = ["castle", "urban", "rural", "wild", "world"];
 let mapGesture = null;
 let pendingMapPositionFrame = 0;
 let pendingMapRefreshArea = "";
@@ -98,6 +92,14 @@ let activeCastleHotspot = null;
 let activeWorldDestinationId = "castle";
 
 const elements = createElements();
+const areaMapViewportController = createAreaMapViewportController({
+  areaIds: areaMapIds,
+  clamp,
+  getImageSize: areaMapImageSize,
+  getStage: areaMapStage,
+  isMobile: isMobileTravelMap,
+  zoomLimits: mapZoomLimits
+});
 const paperDollRenderer = createPaperDollRenderer({
   baseLayer: paperDollBaseLayer,
   getCharacter: activePaperDollCharacter,
@@ -188,7 +190,7 @@ function openArea(areaId) {
   }
   state.area = areaId;
   ensureAreaPosition(areaId);
-  centerMapOnNextRender[areaId] = true;
+  areaMapViewportController.requestCenter(areaId);
   persist();
   changeView(area.view);
   renderAreaNav();
@@ -198,7 +200,7 @@ function openWorldMap() {
   activeHotspot = null;
   activeCastleHotspot = null;
   activeWorldDestinationId = worldDestinationForArea(state.area)?.id || activeWorldDestinationId || "castle";
-  centerMapOnNextRender.world = true;
+  areaMapViewportController.requestCenter("world");
   elements.statusMessage.textContent = "Choose a kingdom area.";
   changeView("world");
 }
@@ -217,7 +219,7 @@ function changeView(viewName) {
     ensureAreaPosition(state.area);
   } else if (viewName === "world") {
     activeWorldDestinationId = worldDestinationForArea(state.area)?.id || activeWorldDestinationId || "castle";
-    centerMapOnNextRender.world = true;
+    areaMapViewportController.requestCenter("world");
   }
   elements.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.view === viewName));
   elements.views.forEach((view) => view.classList.toggle("active", view.id === `${viewName}View`));
@@ -622,10 +624,7 @@ function areaMapImageSize(areaId) {
 }
 
 function areaMapViewport(areaId) {
-  if (!areaMapViewports[areaId]) {
-    areaMapViewports[areaId] = { pan: { x: 0, y: 0 }, zoom: 1 };
-  }
-  return areaMapViewports[areaId];
+  return areaMapViewportController.viewport(areaId);
 }
 
 function activeTravelMapArea() {
@@ -633,119 +632,33 @@ function activeTravelMapArea() {
 }
 
 function baseAreaMapDisplay(areaId, rect) {
-  const imageSize = areaMapImageSize(areaId);
-  const imageRatio = imageSize.width / imageSize.height;
-  const stageRatio = rect.width / rect.height;
-  const useCover = isMobileTravelMap();
-  const width = useCover
-    ? stageRatio > imageRatio ? rect.width : rect.height * imageRatio
-    : stageRatio > imageRatio ? rect.height * imageRatio : rect.width;
-  const height = useCover
-    ? stageRatio > imageRatio ? rect.width / imageRatio : rect.height
-    : stageRatio > imageRatio ? rect.height : rect.width / imageRatio;
-  const scale = useCover ? mapZoomLimits.mobileBaseScale : 1;
-  return { width: width * scale, height: height * scale };
+  return areaMapViewportController.baseDisplay(areaId, rect);
 }
 
 function clampAreaMapViewport(areaId, viewport, rect = null) {
-  const stage = areaMapStage(areaId);
-  const stageRect = rect || stage.getBoundingClientRect();
-  if (!isMobileTravelMap()) return { pan: { x: 0, y: 0 }, zoom: 1 };
-  const zoom = clamp(viewport.zoom || 1, mapZoomLimits.min, mapZoomLimits.max);
-  const baseDisplay = baseAreaMapDisplay(areaId, stageRect);
-  const displayWidth = baseDisplay.width * zoom;
-  const displayHeight = baseDisplay.height * zoom;
-  const maxX = Math.max(0, (displayWidth - stageRect.width) / 2);
-  const maxY = Math.max(0, (displayHeight - stageRect.height) / 2);
-  return {
-    pan: {
-      x: clamp(viewport.pan?.x || 0, -maxX, maxX),
-      y: clamp(viewport.pan?.y || 0, -maxY, maxY)
-    },
-    zoom
-  };
+  return areaMapViewportController.clampViewport(areaId, viewport, rect);
 }
 
 function areaMapMetrics(areaId, viewportOverride = null) {
-  const stage = areaMapStage(areaId);
-  const rect = stage.getBoundingClientRect();
-  const viewport = viewportOverride || areaMapViewport(areaId);
-  const constrained = clampAreaMapViewport(areaId, viewport, rect);
-  if (!viewportOverride) {
-    areaMapViewports[areaId] = constrained;
-  }
-  const baseDisplay = baseAreaMapDisplay(areaId, rect);
-  const displayWidth = baseDisplay.width * constrained.zoom;
-  const displayHeight = baseDisplay.height * constrained.zoom;
-  return {
-    width: rect.width,
-    height: rect.height,
-    displayWidth,
-    displayHeight,
-    panX: constrained.pan.x,
-    panY: constrained.pan.y,
-    zoom: constrained.zoom,
-    offsetX: (rect.width - displayWidth) / 2 + constrained.pan.x,
-    offsetY: (rect.height - displayHeight) / 2 + constrained.pan.y
-  };
+  return areaMapViewportController.metrics(areaId, viewportOverride);
 }
 
 function syncAreaMapStyles(areaId, metrics = areaMapMetrics(areaId)) {
-  const stage = areaMapStage(areaId);
-  if (!stage) return;
-  stage.style.setProperty("--map-display-width", `${metrics.displayWidth}px`);
-  stage.style.setProperty("--map-display-height", `${metrics.displayHeight}px`);
-  stage.style.setProperty("--map-offset-x", `${metrics.offsetX}px`);
-  stage.style.setProperty("--map-offset-y", `${metrics.offsetY}px`);
+  areaMapViewportController.syncStyles(areaId, metrics);
 }
 
 function centerAreaMapOnPoint(areaId, x, y) {
-  const stage = areaMapStage(areaId);
-  if (!stage) return;
-  const rect = stage.getBoundingClientRect();
-  if (!rect.width || !rect.height) return;
-  const viewport = areaMapViewport(areaId);
-  const baseDisplay = baseAreaMapDisplay(areaId, rect);
-  const zoom = clamp(viewport.zoom || 1, mapZoomLimits.min, mapZoomLimits.max);
-  const displayWidth = baseDisplay.width * zoom;
-  const displayHeight = baseDisplay.height * zoom;
-  applyAreaMapViewport(areaId, {
-    zoom,
-    pan: {
-      x: rect.width / 2 - (x / 100) * displayWidth - (rect.width - displayWidth) / 2,
-      y: rect.height / 2 - (y / 100) * displayHeight - (rect.height - displayHeight) / 2
-    }
-  });
+  areaMapViewportController.centerOnPoint(areaId, x, y);
 }
 
 function zoomAreaMapAtStagePoint(areaId, stageX, stageY, zoomFactor) {
-  const stage = areaMapStage(areaId);
-  if (!stage) return;
-  const metrics = areaMapMetrics(areaId);
-  const zoom = clamp(metrics.zoom * zoomFactor, mapZoomLimits.min, mapZoomLimits.max);
-  const focus = {
-    x: clamp((stageX - metrics.offsetX) / metrics.displayWidth, 0, 1),
-    y: clamp((stageY - metrics.offsetY) / metrics.displayHeight, 0, 1)
-  };
-  const rect = stage.getBoundingClientRect();
-  const baseDisplay = baseAreaMapDisplay(areaId, rect);
-  const displayWidth = baseDisplay.width * zoom;
-  const displayHeight = baseDisplay.height * zoom;
-  applyAreaMapViewport(areaId, {
-    zoom,
-    pan: {
-      x: stageX - focus.x * displayWidth - (rect.width - displayWidth) / 2,
-      y: stageY - focus.y * displayHeight - (rect.height - displayHeight) / 2
-    }
-  });
+  areaMapViewportController.zoomAtStagePoint(areaId, stageX, stageY, zoomFactor);
   refreshAreaMapPositions(areaId);
 }
 
 function zoomAreaMapFromKeyboard(areaId, direction) {
-  const stage = areaMapStage(areaId);
-  if (!stage) return;
-  const rect = stage.getBoundingClientRect();
-  zoomAreaMapAtStagePoint(areaId, rect.width / 2, rect.height / 2, direction > 0 ? 1.18 : 1 / 1.18);
+  areaMapViewportController.zoomFromKeyboard(areaId, direction);
+  refreshAreaMapPositions(areaId);
 }
 
 function centerAreaMapOnCurrentPlayer(areaId) {
@@ -755,9 +668,7 @@ function centerAreaMapOnCurrentPlayer(areaId) {
 }
 
 function centerAreaMapIfRequested(areaId) {
-  if (!centerMapOnNextRender[areaId]) return;
-  centerMapOnNextRender[areaId] = false;
-  centerAreaMapOnCurrentPlayer(areaId);
+  areaMapViewportController.centerIfRequested(areaId, currentPlayerPoint(areaId));
 }
 
 function castleCoverMetrics() {
@@ -765,16 +676,11 @@ function castleCoverMetrics() {
 }
 
 function castlePointToStage(x, y, metrics = castleCoverMetrics()) {
-  return {
-    x: metrics.offsetX + (x / 100) * metrics.displayWidth,
-    y: metrics.offsetY + (y / 100) * metrics.displayHeight
-  };
+  return areaMapViewportController.pointToStage(x, y, metrics);
 }
 
 function positionCastleElement(element, x, y, metrics = castleCoverMetrics()) {
-  const point = castlePointToStage(x, y, metrics);
-  element.style.left = `${point.x}px`;
-  element.style.top = `${point.y}px`;
+  areaMapViewportController.positionElement(element, x, y, metrics);
 }
 
 function currentPlayerPoint(areaId) {
@@ -915,24 +821,37 @@ function nearbyCastleHotspot() {
   return nearbyAreaHotspot("castle", 5.8);
 }
 
-function moveOnCastleMap(dx, dy) {
-  const speed = 1.35;
-  const current = currentPlayerPoint("castle") || castleMapNodes[areaRegistry.castle.defaultNode];
+function moveOnAreaMap(areaId, dx, dy, options = {}) {
+  const speed = options.speed || 1.45;
+  const token = options.token || elements.playerToken;
+  const current = currentPlayerPoint(areaId) || nodeMapForArea(areaId)[areaRegistry[areaId]?.defaultNode];
+  if (!current) return;
   const next = {
     x: clamp(current.x + dx * speed, 0, 100),
     y: clamp(current.y + dy * speed, 0, 100)
   };
-  state.area = "castle";
+  state.area = areaId;
   state.player = next;
-  state.playerNode = closestNodeFromLegacy(state.player, "castle");
-  activeCastleHotspot = nearbyCastleHotspot();
-  if (activeCastleHotspot) {
-    elements.statusMessage.textContent = `${activeCastleHotspot.label}: ${travelActionLabel(activeCastleHotspot)}.`;
+  state.playerNode = closestNodeFromLegacy(state.player, areaId);
+  const nearby = nearbyAreaHotspot(areaId, options.nearbyRadius || 6.8);
+  if (nearby) {
+    elements.statusMessage.textContent = `${nearby.label}: ${travelActionLabel(nearby)}.`;
   }
-  elements.castlePlayerToken?.classList.add("walking");
-  window.setTimeout(() => elements.castlePlayerToken?.classList.remove("walking"), 180);
+  options.onNearby?.(nearby);
+  token?.classList.add("walking");
+  window.setTimeout(() => token?.classList.remove("walking"), 180);
   persist();
-  renderCastleMap();
+  options.render?.();
+}
+
+function moveOnCastleMap(dx, dy) {
+  moveOnAreaMap("castle", dx, dy, {
+    speed: 1.35,
+    nearbyRadius: 5.8,
+    token: elements.castlePlayerToken,
+    onNearby: (hotspot) => { activeCastleHotspot = hotspot; },
+    render: renderCastleMap
+  });
 }
 
 function worldMapMetrics() {
@@ -940,8 +859,7 @@ function worldMapMetrics() {
 }
 
 function positionWorldElement(element, x, y, metrics = worldMapMetrics()) {
-  element.style.left = `${metrics.offsetX + (x / 100) * metrics.displayWidth}px`;
-  element.style.top = `${metrics.offsetY + (y / 100) * metrics.displayHeight}px`;
+  areaMapViewportController.positionElement(element, x, y, metrics);
 }
 
 function renderWorldMap() {
@@ -1147,16 +1065,11 @@ function mapCoverMetrics(areaId = activeTravelMapArea()) {
 }
 
 function mapPointToStage(x, y, metrics = mapCoverMetrics()) {
-  return {
-    x: metrics.offsetX + (x / 100) * metrics.displayWidth,
-    y: metrics.offsetY + (y / 100) * metrics.displayHeight
-  };
+  return areaMapViewportController.pointToStage(x, y, metrics);
 }
 
 function positionMapElement(element, x, y, metrics = mapCoverMetrics()) {
-  const point = mapPointToStage(x, y, metrics);
-  element.style.left = `${point.x}px`;
-  element.style.top = `${point.y}px`;
+  areaMapViewportController.positionElement(element, x, y, metrics);
 }
 
 function renderMapActors(metrics = mapCoverMetrics(), areaId = activeTravelMapArea()) {
@@ -1272,23 +1185,11 @@ function nearbyHotspot() {
 
 function moveOnMap(dx, dy) {
   const areaId = activeTravelMapArea();
-  const speed = 1.45;
-  const current = currentPlayerPoint(areaId) || nodeMapForArea(areaId)[areaRegistry[areaId]?.defaultNode];
-  const next = {
-    x: clamp(current.x + dx * speed, 0, 100),
-    y: clamp(current.y + dy * speed, 0, 100)
-  };
-  state.area = areaId;
-  state.player = next;
-  state.playerNode = closestNodeFromLegacy(state.player, areaId);
-  activeHotspot = nearbyHotspot();
-  if (activeHotspot) {
-    elements.statusMessage.textContent = `${activeHotspot.label}: ${travelActionLabel(activeHotspot)}.`;
-  }
-  elements.playerToken.classList.add("walking");
-  window.setTimeout(() => elements.playerToken.classList.remove("walking"), 180);
-  persist();
-  renderMap();
+  moveOnAreaMap(areaId, dx, dy, {
+    token: elements.playerToken,
+    onNearby: (hotspot) => { activeHotspot = hotspot; },
+    render: renderMap
+  });
 }
 
 function isWalkable(x, y) {
@@ -2294,7 +2195,7 @@ function resetMapGestureStart() {
 }
 
 function applyAreaMapViewport(areaId, viewport) {
-  areaMapViewports[areaId] = clampAreaMapViewport(areaId, viewport);
+  areaMapViewportController.applyViewport(areaId, viewport);
 }
 
 function refreshAreaMapPositions(areaId) {
@@ -2348,7 +2249,11 @@ function moveAreaMapGesture(areaId, event) {
     const center = pointerCenter(pointers[0], pointers[1]);
     const centerStage = relativeStagePoint(mapGesture.stage, center);
     const distance = Math.max(1, pointerDistance(pointers[0], pointers[1]));
-    const zoom = clamp(mapGesture.startZoom * (distance / mapGesture.startDistance), mapZoomLimits.min, mapZoomLimits.max);
+    const zoom = clamp(
+      mapGesture.startZoom * (distance / mapGesture.startDistance),
+      areaMapViewportController.zoomLimits.min,
+      areaMapViewportController.zoomLimits.max
+    );
     const stageRect = mapGesture.stage.getBoundingClientRect();
     const baseDisplay = baseAreaMapDisplay(areaId, stageRect);
     const displayWidth = baseDisplay.width * zoom;
