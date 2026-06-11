@@ -3440,3 +3440,191 @@ body {
     min-width: 0;
   }
 }
+
+/* Issue #70: ADV scenes use visual-novel layering: background, characters, translucent UI. */
+.adv-scene:is(
+  [data-mode="scene"],
+  [data-mode="hint"],
+  [data-mode="quest"],
+  [data-mode="complete"],
+  [data-mode="shop"],
+  [data-mode="wardrobe"],
+  [data-mode="refund"]
+) {
+  --adv-dialog-height: clamp(280px, 42%, 390px);
+  display: block;
+  isolation: isolate;
+}
+
+.adv-scene:is(
+  [data-mode="scene"],
+  [data-mode="hint"],
+  [data-mode="quest"],
+  [data-mode="complete"],
+  [data-mode="shop"],
+  [data-mode="wardrobe"],
+  [data-mode="refund"]
+) .adv-portraits {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.adv-scene:is(
+  [data-mode="scene"],
+  [data-mode="hint"],
+  [data-mode="quest"],
+  [data-mode="complete"],
+  [data-mode="shop"],
+  [data-mode="wardrobe"],
+  [data-mode="refund"]
+) .adv-princess,
+.adv-scene:is(
+  [data-mode="scene"],
+  [data-mode="hint"],
+  [data-mode="quest"],
+  [data-mode="complete"],
+  [data-mode="shop"],
+  [data-mode="wardrobe"],
+  [data-mode="refund"]
+) .adv-npc {
+  z-index: 2;
+  bottom: 0;
+  --adv-character-stage-height: min(86%, 690px);
+  width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
+  height: var(--adv-character-stage-height);
+  max-height: none;
+}
+
+.adv-scene:is(
+  [data-mode="scene"],
+  [data-mode="hint"],
+  [data-mode="quest"],
+  [data-mode="complete"],
+  [data-mode="shop"],
+  [data-mode="wardrobe"],
+  [data-mode="refund"]
+) .adv-princess {
+  left: clamp(22px, 8%, 96px);
+}
+
+.adv-scene:is(
+  [data-mode="scene"],
+  [data-mode="hint"],
+  [data-mode="quest"],
+  [data-mode="complete"],
+  [data-mode="shop"],
+  [data-mode="wardrobe"],
+  [data-mode="refund"]
+) .adv-npc {
+  right: clamp(22px, 8%, 96px);
+}
+
+.adv-scene:is(
+  [data-mode="scene"],
+  [data-mode="hint"],
+  [data-mode="quest"],
+  [data-mode="complete"],
+  [data-mode="shop"],
+  [data-mode="wardrobe"],
+  [data-mode="refund"]
+) .adv-box {
+  position: absolute;
+  left: clamp(14px, 3%, 34px);
+  right: clamp(14px, 3%, 34px);
+  bottom: clamp(14px, 3%, 28px);
+  z-index: 5;
+  height: var(--adv-dialog-height);
+  max-height: calc(100% - 82px);
+  margin: 0;
+  background: rgba(255, 250, 246, 0.76);
+  border-color: rgba(255, 255, 255, 0.62);
+  box-shadow:
+    0 0 0 1px rgba(102, 64, 76, 0.08) inset,
+    0 18px 42px rgba(40, 24, 34, 0.28);
+  backdrop-filter: blur(10px) saturate(1.08);
+}
+
+.adv-location {
+  z-index: 7;
+  background: rgba(69, 43, 51, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  box-shadow: 0 8px 18px rgba(40, 24, 34, 0.18);
+  backdrop-filter: blur(8px) saturate(1.08);
+}
+
+.adv-scene .dialog-title {
+  min-height: 36px;
+  margin: -4px -4px 8px;
+  padding: 7px 10px;
+  color: #6e2747;
+  background: rgba(255, 255, 255, 0.46);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 7px;
+  backdrop-filter: blur(6px);
+}
+
+.adv-scene .english-line {
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.54);
+}
+
+@media (min-width: 821px) {
+  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) {
+    --adv-dialog-height: clamp(360px, 48%, 470px);
+  }
+}
+
+@media (max-width: 820px) {
+  .adv-scene:is(
+    [data-mode="scene"],
+    [data-mode="hint"],
+    [data-mode="quest"],
+    [data-mode="complete"],
+    [data-mode="shop"],
+    [data-mode="wardrobe"],
+    [data-mode="refund"]
+  ) {
+    --adv-dialog-height: min(372px, 48%);
+  }
+
+  .adv-scene:is(
+    [data-mode="scene"],
+    [data-mode="hint"],
+    [data-mode="quest"],
+    [data-mode="complete"],
+    [data-mode="shop"],
+    [data-mode="wardrobe"],
+    [data-mode="refund"]
+  ) .adv-princess {
+    left: -48px;
+  }
+
+  .adv-scene:is(
+    [data-mode="scene"],
+    [data-mode="hint"],
+    [data-mode="quest"],
+    [data-mode="complete"],
+    [data-mode="shop"],
+    [data-mode="wardrobe"],
+    [data-mode="refund"]
+  ) .adv-npc {
+    right: -14px;
+  }
+
+  .adv-scene:is(
+    [data-mode="scene"],
+    [data-mode="hint"],
+    [data-mode="quest"],
+    [data-mode="complete"],
+    [data-mode="shop"],
+    [data-mode="wardrobe"],
+    [data-mode="refund"]
+  ) .adv-box {
+    left: 10px;
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    max-height: calc(100% - 70px);
+  }
+}
