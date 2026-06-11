@@ -124,6 +124,7 @@ async function runDataAudit(api) {
       });
     });
   });
+  const characterRegistry = await collectPaperDollCharacterAudit(api, errors);
   const characterScale = await collectCharacterScaleAudit(api, errors);
 
   const result = document.createElement("pre");
@@ -137,6 +138,7 @@ async function runDataAudit(api) {
     mapActorCount: mapActorSurfaces.length,
     mapContracts,
     sceneBackgroundContract,
+    characterRegistry,
     characterScale,
     supportedActorMotions: [...supportedActorMotions],
     shops: shopLocations.map((hotspot) => ({
@@ -151,6 +153,63 @@ async function runDataAudit(api) {
     errors
   });
   document.body.prepend(result);
+}
+
+async function collectPaperDollCharacterAudit(api, errors) {
+  const registry = api.characterRegistry || {};
+  const characters = [];
+  if (!Object.keys(registry).length) {
+    errors.push("characterRegistry is empty");
+  }
+  const defaultCharacter = api.playableCharacterById(api.defaultActiveCharacterId);
+  if (!defaultCharacter?.id) {
+    errors.push("default active character is missing");
+  }
+  if (api.normalizeState) {
+    const missing = api.normalizeState({});
+    const invalid = api.normalizeState({ activeCharacterId: "__missing_character__" });
+    if (missing.activeCharacterId !== defaultCharacter?.id) {
+      errors.push(`missing activeCharacterId normalizes to ${missing.activeCharacterId}, expected ${defaultCharacter?.id}`);
+    }
+    if (invalid.activeCharacterId !== defaultCharacter?.id) {
+      errors.push(`invalid activeCharacterId normalizes to ${invalid.activeCharacterId}, expected ${defaultCharacter?.id}`);
+    }
+  }
+  for (const character of Object.values(registry)) {
+    if (!character.id) errors.push("character without id");
+    if (!character.baseLayer) errors.push(`${character.id || "character"} has no baseLayer`);
+    if (!character.thumbImage) errors.push(`${character.id || "character"} has no thumbImage`);
+    if (!character.rig?.compatibleWardrobeRig) errors.push(`${character.id || "character"} is not marked wardrobe-compatible`);
+    const assets = {};
+    for (const [assetName, src] of Object.entries({ baseLayer: character.baseLayer, thumbImage: character.thumbImage })) {
+      if (!src) continue;
+      try {
+        const metrics = await imageMetrics(src);
+        if (assetName === "baseLayer" && (metrics.width !== 512 || metrics.height !== 768)) {
+          errors.push(`${character.id}/${assetName} is ${metrics.width}x${metrics.height}, expected 512x768`);
+        }
+        if (assetName === "baseLayer" && !metrics.alphaBBox) {
+          errors.push(`${character.id}/baseLayer has no alpha content`);
+        }
+        assets[assetName] = metrics;
+      } catch (error) {
+        errors.push(error.message);
+      }
+    }
+    characters.push({
+      id: character.id,
+      label: character.label,
+      naturalHeightCm: character.naturalHeightCm,
+      stageScale: character.stageScale,
+      rig: character.rig,
+      assets
+    });
+  }
+  return {
+    defaultActiveCharacterId: api.defaultActiveCharacterId,
+    count: characters.length,
+    characters
+  };
 }
 
 function uniqueBy(items, keyFn) {
@@ -369,25 +428,39 @@ async function collectCharacterScaleAudit(api, errors) {
   }
 
   const paperDoll = [];
-  if (api.paperDollBaseLayer) {
+  const paperDollRefs = Object.values(api.characterRegistry || {}).map((character) => ({
+    id: character.id,
+    label: character.label,
+    src: character.baseLayer,
+    naturalHeightCm: character.naturalHeightCm || contract.lumiNaturalHeightCm || 125
+  }));
+  if (!paperDollRefs.length && api.paperDollBaseLayer) {
+    paperDollRefs.push({
+      id: "lumi",
+      label: "Princess Lumi",
+      src: api.paperDollBaseLayer,
+      naturalHeightCm: contract.lumiNaturalHeightCm || 125
+    });
+  }
+  for (const ref of paperDollRefs) {
     try {
-      const metrics = await imageMetrics(api.paperDollBaseLayer);
-      const expectedHeight = expectedBodyHeightPx(contract.lumiNaturalHeightCm || 125, contract);
+      const metrics = await imageMetrics(ref.src);
+      const expectedHeight = expectedBodyHeightPx(ref.naturalHeightCm, contract);
       if (metrics.width !== contract.canvasWidth || metrics.height !== contract.canvasHeight) {
-        errors.push(`Lumi base asset is ${metrics.width}x${metrics.height}, expected ${contract.canvasWidth}x${contract.canvasHeight}`);
+        errors.push(`${ref.id} base asset is ${metrics.width}x${metrics.height}, expected ${contract.canvasWidth}x${contract.canvasHeight}`);
       }
       if (!metrics.alphaBBox) {
-        errors.push("Lumi base asset has no alpha content");
+        errors.push(`${ref.id} base asset has no alpha content`);
       } else {
         const baselineGap = contract.groundBaselineY - metrics.alphaBBox.bottom;
         if (Math.abs(baselineGap) > contract.baselineTolerancePx) {
-          errors.push(`Lumi base baseline gap ${baselineGap}px exceeds ${contract.baselineTolerancePx}px`);
+          errors.push(`${ref.id} base baseline gap ${baselineGap}px exceeds ${contract.baselineTolerancePx}px`);
         }
         if (Math.abs(metrics.alphaBBox.height - expectedHeight) > contract.assetHeightTolerancePx) {
-          errors.push(`Lumi base alpha height ${metrics.alphaBBox.height}px differs from ${expectedHeight}px`);
+          errors.push(`${ref.id} base alpha height ${metrics.alphaBBox.height}px differs from ${expectedHeight}px`);
         }
       }
-      paperDoll.push({ id: "lumi-base", expectedHeight, ...metrics });
+      paperDoll.push({ id: `${ref.id}-base`, expectedHeight, ...metrics });
     } catch (error) {
       errors.push(error.message);
     }
@@ -430,6 +503,7 @@ function runSaveLoadSelfTest(api) {
     markdown.includes("## Diary") &&
     markdown.includes("LUMINARA_SAVE_JSON") &&
     !markdown.includes("OPENAI_API_KEY") &&
+    after.activeCharacterId === before.activeCharacterId &&
     after.coins === before.coins &&
     Math.abs(after.player.x - before.player.x) < 0.01 &&
     Math.abs(after.player.y - before.player.y) < 0.01;
@@ -439,6 +513,7 @@ function runSaveLoadSelfTest(api) {
     test: "save-load",
     passed,
     markdownLength: markdown.length,
+    activeCharacterId: after.activeCharacterId,
     beforeCoins: before.coins,
     afterCoins: after.coins
   });

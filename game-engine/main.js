@@ -22,7 +22,10 @@ import {
   castleMapNodes,
   categories,
   characterScaleContract,
+  characterRegistry,
+  defaultActiveCharacterId,
   difficultyConfig,
+  playableCharacterById,
   lessons,
   mapImageSize,
   mapNodes,
@@ -99,6 +102,7 @@ const areaMapViewportController = createAreaMapViewportController({
 });
 const paperDollRenderer = createPaperDollRenderer({
   baseLayer: paperDollBaseLayer,
+  getCharacter: activePaperDollCharacter,
   itemById,
   layerOrder: paperDollLayerOrder
 });
@@ -346,12 +350,16 @@ function outfitSummary() {
 }
 
 function renderPaperDolls() {
-  paperDollRenderer.renderPaperDolls(state.outfit, princessExpression);
+  paperDollRenderer.renderPaperDolls(state.outfit, princessExpression, activePaperDollCharacter());
   renderActiveTryOnDoll();
 }
 
 function avatarMarkup(surface, outfitState = state.outfit) {
-  return paperDollRenderer.avatarMarkup(surface, outfitState);
+  return paperDollRenderer.avatarMarkup(surface, outfitState, activePaperDollCharacter());
+}
+
+function activePaperDollCharacter() {
+  return playableCharacterById(state.activeCharacterId);
 }
 
 function tryOnOutfitFor(item) {
@@ -1235,7 +1243,7 @@ function openAdvBase(hotspot, mode) {
   elements.advModal.classList.add("show");
   elements.advModal.setAttribute("aria-hidden", "false");
   elements.advScene.className = `adv-scene ${scene.scene || ""}`;
-  elements.advScene.style.setProperty("--lumi-stage-scale", String(characterScaleContract.lumiStageScale));
+  elements.advScene.style.setProperty("--lumi-stage-scale", String(activePaperDollCharacter().stageScale || characterScaleContract.lumiStageScale));
   applyAdvSceneArt(elements.advScene, scene.sceneArt, { assetUrl: domAssetUrl });
   elements.advTitle.textContent = hotspot.label;
   const npcClass = scene.npcClass || (scene.npcImage ? "npc-image" : "npc-none");
@@ -2555,6 +2563,7 @@ Object.defineProperty(window, "__luminaraTest", {
   value: {
     saveRoundtrip() {
       const before = {
+        activeCharacterId: state.activeCharacterId,
         coins: state.coins,
         energy: state.energy,
         vocab: state.vocab,
@@ -2570,6 +2579,7 @@ Object.defineProperty(window, "__luminaraTest", {
       const hasNoOpenAIKey = !markdown.includes(openAISettings.apiKey || "___NO_KEY___");
       loadMarkdownText(markdown);
       const after = {
+        activeCharacterId: state.activeCharacterId,
         coins: state.coins,
         energy: state.energy,
         vocab: state.vocab,
@@ -2611,6 +2621,8 @@ installTestingHooks({
   buyItemInAdv,
   castleMapNodes,
   characterScaleContract,
+  characterRegistry,
+  defaultActiveCharacterId,
   changeView,
   closeAdv,
   closeSystemMenu,
@@ -2667,6 +2679,7 @@ installTestingHooks({
   mapNodes,
   moveOnMap,
   nodeMapForArea,
+  normalizeState,
   openArea,
   openWorldDestination,
   openWorldMap,
@@ -2678,6 +2691,7 @@ installTestingHooks({
   openShopDetail,
   openSystemMenu,
   openWardrobeDetail,
+  playableCharacterById,
   paperDollBaseLayer,
   persist,
   renderWorldMap,

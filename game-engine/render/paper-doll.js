@@ -1,6 +1,6 @@
-export function createPaperDollRenderer({ baseLayer, itemById, layerOrder }) {
-  function avatarMarkup(surface, outfitState) {
-    const layers = activePaperDollLayers(outfitState);
+export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, layerOrder }) {
+  function avatarMarkup(surface, outfitState, character = getCharacter?.()) {
+    const layers = activePaperDollLayers(outfitState, character);
     return `
       <div class="avatar-shadow"></div>
       ${layers.map((layer) => `
@@ -13,9 +13,10 @@ export function createPaperDollRenderer({ baseLayer, itemById, layerOrder }) {
     `;
   }
 
-  function renderPaperDolls(outfit, expression) {
+  function renderPaperDolls(outfit, expression, character = getCharacter?.()) {
     document.querySelectorAll("[data-doll]").forEach((doll) => {
-      doll.innerHTML = avatarMarkup(doll.dataset.doll || "side", outfit);
+      doll.innerHTML = avatarMarkup(doll.dataset.doll || "side", outfit, character);
+      doll.dataset.characterId = character?.id || "";
       doll.dataset.hairstyle = outfit.hairstyle || "none";
       doll.dataset.top = outfit.top || "none";
       doll.dataset.bottom = outfit.bottom || "none";
@@ -32,9 +33,9 @@ export function createPaperDollRenderer({ baseLayer, itemById, layerOrder }) {
     });
   }
 
-  function activePaperDollLayers(outfitState = {}) {
+  function activePaperDollLayers(outfitState = {}, character = getCharacter?.()) {
     const layersBySlot = new Map(layerOrder.map((slot) => [slot, []]));
-    layersBySlot.get("base").push({ slot: "base", src: baseLayer });
+    layersBySlot.get("base").push({ slot: "base", src: character?.baseLayer || baseLayer });
     const slots = [
       "hairstyle",
       outfitState.dress && outfitState.dress !== "none" ? "dress" : "bottom",

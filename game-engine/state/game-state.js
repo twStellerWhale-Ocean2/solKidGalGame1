@@ -1,4 +1,12 @@
-import { areaRegistry, difficultyConfig, outfitSlots, questTemplates, shopItems } from "../data/game-data.js";
+import {
+  areaRegistry,
+  defaultActiveCharacterId,
+  difficultyConfig,
+  outfitSlots,
+  playableCharacterById,
+  questTemplates,
+  shopItems
+} from "../data/game-data.js";
 import { defaultState } from "./default-state.js";
 import { openAISettingsKey, saveMarkerEnd, saveMarkerStart, storageKey } from "./storage.js";
 import {
@@ -72,6 +80,7 @@ export function freshState() {
 export function normalizeState(candidate = {}) {
   const base = freshState();
   const merged = { ...base, ...candidate };
+  merged.activeCharacterId = playableCharacterById(candidate.activeCharacterId)?.id || defaultActiveCharacterId;
   merged.owned = Array.isArray(candidate.owned)
     ? [...new Set([...base.owned, ...candidate.owned.map(migrateLegacyItemId)])]
     : base.owned;
@@ -300,6 +309,7 @@ export function buildSaveMarkdown(state) {
 - Expression: ${state.expression}
 - Kindness: ${state.kindness}
 - Mood: ${moodLabel(state.mood)}
+- Character: ${state.activeCharacterId}
 - Quests completed: ${questRows.length}
 - Outfit: ${outfitSummary(state)}
 - Learned words: ${state.learnedWords.join(", ") || "-"}
