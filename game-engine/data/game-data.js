@@ -6,9 +6,12 @@ export { characterScaleContract, bodyHeightPxForCm } from "./character-scale.js"
 export { worldMap } from "../../content-package/areas/world.js";
 export {
   categories,
+  characterRegistry,
+  defaultActiveCharacterId,
   outfitSlots,
   paperDollBaseLayer,
   paperDollLayerOrder,
+  playableCharacterById,
   shopItems
 } from "../../content-package/wardrobe/manifest.js";
 

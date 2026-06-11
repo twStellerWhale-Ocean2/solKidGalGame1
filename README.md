@@ -186,6 +186,18 @@ area icon 或 marker 在地圖中的位置主要改 `nodes.<node>.x` / `nodes.<n
 
 角色資料夾只放角色本體，例如膚色、臉型與預設外觀；衣服、鞋子、髮型與配件放在 wardrobe packages，不歸屬於單一角色。
 
+`content-package/characters/manifest.js` 是可玩紙娃娃角色 registry。runtime 透過 `state.activeCharacterId` 查詢角色，並由 registry 提供：
+
+- `id`
+- `label`
+- `baseLayer`
+- `thumbImage`
+- `naturalHeightCm`
+- `stageScale`
+- `rig`
+
+`activeCharacterId` 會存入 localStorage 與 Markdown save；讀檔或舊存檔缺少角色 id 時，會正規化回預設角色 `lumi`。新增角色時必須先進 registry，並標明是否相容共用 `shared-512x768-v1` wardrobe rig。
+
 目前 Lumi 放在 `content-package/characters/lumi/assets/`。未來新增角色時，只新增：
 
 - `content-package/characters/<character-id>/assets/base.webp`
@@ -674,3 +686,4 @@ http://127.0.0.1:4174/
 - 2026-06-06：新增角色自然尺度規格：`512x768`、底線 `y=768`、`768px = 200cm`、Lumi ADV stageScale `1.20`。
 - 2026-06-06：新增 World Map 層與 map 尺寸契約：world `1024x1536`，enabled area maps `1536x1536`。
 - 2026-06-06：ADV scene background 轉為正式 `1024x1024` 契約，並補入 ADV 舞台尺度規格。
+- 2026-06-11：Issue 77 multi-character foundation：新增 character registry、`activeCharacterId` state/save 正規化與角色驅動 paper-doll base layer。

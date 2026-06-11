@@ -1,5 +1,11 @@
 import { categories } from "./_shared/categories.js";
-import { paperDollBaseLayer, paperDollCharacterThumb } from "./_shared/paper-doll-assets.js";
+import {
+  characterRegistry,
+  defaultActiveCharacterId,
+  paperDollBaseLayer,
+  paperDollCharacterThumb,
+  playableCharacterById
+} from "./_shared/paper-doll-assets.js";
 import { outfitSlots, paperDollLayerOrder } from "./_shared/rules.js";
 import { castleRoyalCloakRoomItems } from "./castle-royal-cloak-room/manifest.js";
 import { castleSeamstressItems } from "./castle-seamstress/manifest.js";
@@ -16,7 +22,16 @@ import { wildFairyAtelierItems } from "./wild-fairy-atelier/manifest.js";
 
 //#region 匯出共用規則
 // Runtime 只從這裡拿衣櫃分類、slot 規則與紙娃娃底圖。
-export { categories, outfitSlots, paperDollBaseLayer, paperDollCharacterThumb, paperDollLayerOrder };
+export {
+  categories,
+  characterRegistry,
+  defaultActiveCharacterId,
+  outfitSlots,
+  paperDollBaseLayer,
+  paperDollCharacterThumb,
+  paperDollLayerOrder,
+  playableCharacterById
+};
 //#endregion 匯出共用規則
 
 //#region 衣物包匯總

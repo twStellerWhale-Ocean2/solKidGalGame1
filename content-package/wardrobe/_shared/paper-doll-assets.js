@@ -1,14 +1,19 @@
 //#region 紙娃娃角色素材
 // 角色本體集中在 content-package/characters；衣物 pack 只引用它作為預設縮圖與底圖。
-export const dollAssetVersion = "?v=20260606-character-scale-r1";
-export const activePaperDollCharacter = "lumi";
+import {
+  characterAsset as registryCharacterAsset,
+  characterAssetVersion,
+  characterRegistry,
+  defaultActiveCharacterId,
+  playableCharacterById
+} from "../../characters/manifest.js";
 
-export const characterAsset = (name) => (
-  `content-package/characters/${activePaperDollCharacter}/assets/${name}.webp${dollAssetVersion}`
-);
+export const dollAssetVersion = characterAssetVersion;
+export { characterRegistry, defaultActiveCharacterId, playableCharacterById };
 
-export const paperDollBaseLayer = characterAsset("base");
-export const paperDollCharacterThumb = characterAsset("thumb");
+export const characterAsset = (name, characterId = defaultActiveCharacterId) => registryCharacterAsset(characterId, name);
+export const paperDollBaseLayer = playableCharacterById(defaultActiveCharacterId).baseLayer;
+export const paperDollCharacterThumb = playableCharacterById(defaultActiveCharacterId).thumbImage;
 //#endregion 紙娃娃角色素材
 
 //#region 衣物資源包素材
