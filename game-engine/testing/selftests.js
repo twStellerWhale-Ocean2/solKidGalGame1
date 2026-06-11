@@ -760,6 +760,19 @@ function scheduleVisualQaMetricsReport() {
     const visualHeight = window.visualViewport?.height || window.innerHeight;
     const portraits = rectFor(".adv-portraits");
     const box = rectFor(".adv-box");
+    const princess = rectFor(".adv-princess");
+    const npc = rectFor(".adv-npc");
+    const boxStyle = document.querySelector(".adv-box")
+      ? getComputedStyle(document.querySelector(".adv-box"))
+      : null;
+    const overlapRatio = (target, cover) => {
+      if (!target || !cover) return null;
+      const overlapWidth = Math.max(0, Math.min(target.x + target.width, cover.x + cover.width) - Math.max(target.x, cover.x));
+      const overlapHeight = Math.max(0, Math.min(target.y + target.height, cover.y + cover.height) - Math.max(target.y, cover.y));
+      const targetArea = target.width * target.height;
+      if (!targetArea) return null;
+      return Number(((overlapWidth * overlapHeight) / targetArea).toFixed(3));
+    };
     const footerButtons = buttonInfo("#advActionFooter .choice-button");
     const metrics = {
       viewport: {
@@ -780,7 +793,17 @@ function scheduleVisualQaMetricsReport() {
       mapStage: rectFor("#mapStage"),
       mapMarkers: buttonInfo("#castleMarkerLayer .hotspot, #worldMarkerLayer .hotspot, #hotspotLayer .hotspot"),
       portraits,
+      princess,
+      npc,
       box,
+      dialogVisual: boxStyle ? {
+        background: boxStyle.background,
+        backgroundColor: boxStyle.backgroundColor,
+        backdropFilter: boxStyle.backdropFilter || boxStyle.webkitBackdropFilter || "",
+        boxShadow: boxStyle.boxShadow,
+        princessOverlapRatio: overlapRatio(princess, box),
+        npcOverlapRatio: overlapRatio(npc, box)
+      } : null,
       stagePanelRatio: portraits && box ? Number((portraits.height / box.height).toFixed(2)) : null,
       choices: buttonInfo("#choiceList .choice-button"),
       footerButtons,

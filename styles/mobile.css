@@ -3539,12 +3539,13 @@ body {
   height: var(--adv-dialog-height);
   max-height: calc(100% - 82px);
   margin: 0;
-  background: rgba(255, 250, 246, 0.76);
-  border-color: rgba(255, 255, 255, 0.62);
+  background:
+    linear-gradient(180deg, rgba(255, 252, 248, 0.62), rgba(255, 250, 246, 0.48));
+  border-color: rgba(255, 255, 255, 0.42);
   box-shadow:
-    0 0 0 1px rgba(102, 64, 76, 0.08) inset,
-    0 18px 42px rgba(40, 24, 34, 0.28);
-  backdrop-filter: blur(10px) saturate(1.08);
+    0 0 0 1px rgba(102, 64, 76, 0.06) inset,
+    0 18px 38px rgba(40, 24, 34, 0.22);
+  backdrop-filter: blur(3px) saturate(1.02);
 }
 
 .adv-location {
@@ -3560,14 +3561,16 @@ body {
   margin: -4px -4px 8px;
   padding: 7px 10px;
   color: #6e2747;
-  background: rgba(255, 255, 255, 0.46);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.36);
   border-radius: 7px;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(2px);
 }
 
 .adv-scene .english-line {
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.54);
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.48),
+    0 0 12px rgba(255, 250, 246, 0.46);
 }
 
 @media (min-width: 821px) {
