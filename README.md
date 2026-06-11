@@ -68,11 +68,18 @@ Princess Room
 - `game-engine/`：遊戲核心原始碼。只放 bootstrap、state、flow、render、map、scene、system、testing 等程式模組，不放地區或衣物素材。
 - `styles/`：CSS 樣式檔。只處理呈現，不承載內容資料。
 
+開發期契約檢查使用 JSDoc typedef 與 `jsconfig.json`；它只供本機 `tsc --noEmit` 驗證，不改變 GitHub Pages 靜態部署，也不引入 runtime build step。建議指令：
+
+```powershell
+npx --yes -p typescript tsc --noEmit --project jsconfig.json
+```
+
 ## 2.2 目前資料夾結構
 
 ```text
 solKidGalGame/
 ├─ index.html                 # GitHub Pages 與瀏覽器遊戲入口
+├─ jsconfig.json              # JSDoc / ts-check 開發期契約檢查設定
 ├─ server.mjs                 # 本機 static server 與本機 OpenAI Help proxy
 ├─ README.md                  # 專案長期 source of truth
 ├─ AGENTS.md                  # Codex / agent 操作規則
@@ -103,12 +110,13 @@ solKidGalGame/
 │  ├─ core/                   # lookup 與純函式
 │  ├─ data/                   # registry aggregation
 │  ├─ flow/                   # ADV / action flow
-│  ├─ map/                    # map actor 與 marker runtime
+│  ├─ map/                    # map actor、marker visibility、viewport/pan/zoom runtime
 │  ├─ render/                 # reusable renderer
 │  ├─ scene/                  # scene art descriptor renderer
 │  ├─ state/                  # state、storage、save data shape
 │  ├─ system/                 # Save / Load 等系統工具
 │  ├─ testing/                # selftest hooks
+│  ├─ types.js                # JSDoc typedef contracts
 │  └─ main.js                 # bootstrap / composition root
 └─ styles/                    # CSS 樣式檔
    ├─ main.css
@@ -674,3 +682,4 @@ http://127.0.0.1:4174/
 - 2026-06-06：新增角色自然尺度規格：`512x768`、底線 `y=768`、`768px = 200cm`、Lumi ADV stageScale `1.20`。
 - 2026-06-06：新增 World Map 層與 map 尺寸契約：world `1024x1536`，enabled area maps `1536x1536`。
 - 2026-06-06：ADV scene background 轉為正式 `1024x1024` 契約，並補入 ADV 舞台尺度規格。
+- 2026-06-11：Issue 76 refactor track phase 0/1：新增 QA baseline 紀錄、抽出 map viewport controller、加入 JSDoc typedef 與 `jsconfig.json` 開發期契約檢查。
