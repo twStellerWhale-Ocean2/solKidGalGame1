@@ -3587,7 +3587,14 @@ body {
   color: var(--adv-dialog-muted);
 }
 
-.adv-scene .choice-button {
+.adv-scene:is(
+  [data-mode="scene"],
+  [data-mode="hint"],
+  [data-mode="quest"],
+  [data-mode="complete"]
+) .choice-button {
+  min-height: 44px;
+  padding: 8px 12px;
   color: var(--adv-dialog-text);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(0, 0, 0, 0.045)),
@@ -3669,7 +3676,7 @@ body {
     [data-mode="wardrobe"],
     [data-mode="refund"]
   ) .adv-princess {
-    left: -48px;
+    left: clamp(-54px, -12vw, -36px);
   }
 
   .adv-scene:is(
@@ -3681,7 +3688,7 @@ body {
     [data-mode="wardrobe"],
     [data-mode="refund"]
   ) .adv-npc {
-    right: -14px;
+    right: clamp(-36px, -6vw, -18px);
   }
 
   .adv-scene:is(
@@ -3702,8 +3709,19 @@ body {
     [data-mode="wardrobe"],
     [data-mode="refund"]
   ) .adv-npc {
-    --adv-character-stage-height: min(74%, 540px);
-    bottom: calc(var(--adv-dialog-height) - 76px);
+    --adv-character-stage-height: min(82%, 620px);
+    bottom: calc(var(--adv-dialog-height) - 116px);
+  }
+
+  .adv-scene:is(
+    [data-mode="scene"],
+    [data-mode="hint"],
+    [data-mode="quest"],
+    [data-mode="complete"]
+  ) .choice-button,
+  .adv-action-footer .choice-button {
+    min-height: 40px;
+    padding: 7px 10px;
   }
 
   .adv-scene:is(
