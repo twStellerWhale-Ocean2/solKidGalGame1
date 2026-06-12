@@ -1,10 +1,10 @@
 const TONE_OVERLAYS = Object.freeze({
-  castle: "linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14))",
-  wild: "linear-gradient(180deg, rgba(232, 255, 238, 0.04), rgba(255, 250, 246, 0.16))",
-  urban: "linear-gradient(180deg, rgba(255, 245, 232, 0.02), rgba(255, 250, 246, 0.14))",
-  room: "linear-gradient(180deg, rgba(255, 245, 251, 0.04), rgba(255, 250, 246, 0.18))",
-  shop: "linear-gradient(180deg, rgba(255, 245, 251, 0.02), rgba(255, 250, 246, 0.14))",
-  rural: "linear-gradient(180deg, rgba(255, 245, 232, 0.02), rgba(255, 250, 246, 0.14))"
+  castle: "linear-gradient(180deg, rgba(255, 245, 251, 0.015), rgba(42, 31, 42, 0.04))",
+  wild: "linear-gradient(180deg, rgba(232, 255, 238, 0.018), rgba(34, 46, 38, 0.04))",
+  urban: "linear-gradient(180deg, rgba(255, 245, 232, 0.015), rgba(42, 36, 31, 0.04))",
+  room: "linear-gradient(180deg, rgba(255, 245, 251, 0.018), rgba(42, 31, 42, 0.035))",
+  shop: "linear-gradient(180deg, rgba(255, 245, 251, 0.015), rgba(42, 31, 42, 0.04))",
+  rural: "linear-gradient(180deg, rgba(255, 245, 232, 0.015), rgba(38, 42, 31, 0.04))"
 });
 
 const DEFAULT_OVERLAY = TONE_OVERLAYS.urban;
