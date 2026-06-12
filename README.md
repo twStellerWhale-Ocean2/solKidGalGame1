@@ -310,6 +310,7 @@ Fixed Prompt Area
 - ADV 對話 UI 必須使用低飽和深色高不透明底，文字、按鈕與 focus 狀態需保持高對比；UI 可遮罩文字區，但不得用白色霧面洗掉人物、衣物或背景細節。
 - ADV 舞台尺度：標準室內與一般商店約 5.5-6m 寬，小商店可為 4.5-5.5m，大廳與戶外可為 8-12m；角色站位、主要互動物件與可讀地標需落在手機安全構圖區內。
 - `content-package/areas/*/assets/characters/*.webp` 的 NPC portrait 必須保留 alpha 透明背景，不得把場景、紙張、純色或漸層矩形背景烘進角色圖。
+- NPC portrait 的人物視覺中心必須在共用 canvas 的水平中心附近；若人物在圖內偏左或偏右，應修正原始 WebP / 透明留白，不得用場景專屬 CSS、角色專屬 offset 或單一變數補償。
 - CSS 只能處理 UI chrome、排版、陰影、選取狀態與安全的裝飾效果。
 - 不得用 CSS 幾何、SVG 拼貼、emoji fallback 或 placeholder 宣稱 gameplay complete。
 - 商品縮圖與穿戴後上身效果必須分別驗收。
@@ -335,6 +336,7 @@ Lumi ADV stageScale = 1.20
 維護規則：
 
 - `content-package/areas/*/assets/characters/*.webp` 的 NPC 圖必須是 `512x768` 透明 WebP。
+- NPC 圖的水平構圖必須遵守模組化中心線：人物身體視覺中心應對齊 `x=256` 附近；偏移問題屬於素材錯誤，必須改圖，不得在 runtime 為個別 NPC 加水平 nudge。
 - NPC 腳底必須貼近 canvas 最底端；底部透明留白不得用來調整人物站位。
 - NPC 可視人物高度必須由 `npcNaturalHeightCm` 換算，不得由 WebP canvas 比例、mobile CSS 個別縮放或透明留白意外造成。
 - `npcNaturalHeightCm` 寫在各 area 的 scene config，作為 runtime 與 QA 共用的機器可讀尺度來源。
