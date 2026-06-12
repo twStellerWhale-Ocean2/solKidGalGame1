@@ -148,6 +148,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
 }
 
 .dialog-title {
@@ -169,6 +170,18 @@
   color: var(--ink);
   font-size: 1.28rem;
   font-weight: 900;
+}
+
+.dialog-title .english-line {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: clamp(1rem, 1.25vw, 1.18rem);
+  line-height: 1.18;
+}
+
+.dialog-title .speaker-button {
+  flex: 0 0 auto;
 }
 
 .task-line {

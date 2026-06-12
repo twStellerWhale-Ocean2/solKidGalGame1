@@ -3034,7 +3034,7 @@ body {
   [data-mode="refund"]
 ) .adv-box {
   display: grid;
-  grid-template-rows: auto auto auto auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
   min-height: 0;
   overflow: hidden;
   box-sizing: border-box;
@@ -3061,7 +3061,7 @@ body {
   [data-mode="wardrobe"],
   [data-mode="refund"]
 ) .english-line {
-  grid-row: 2;
+  grid-row: auto;
 }
 
 .adv-scene:is(
@@ -3073,7 +3073,7 @@ body {
   [data-mode="wardrobe"],
   [data-mode="refund"]
 ) .task-line {
-  grid-row: 3;
+  grid-row: 2;
 }
 
 .adv-scene:is(
@@ -3085,7 +3085,7 @@ body {
   [data-mode="wardrobe"],
   [data-mode="refund"]
 ) .lesson-feedback {
-  grid-row: 4;
+  grid-row: 3;
 }
 
 .adv-scene:is(
@@ -3095,7 +3095,7 @@ body {
   [data-mode="complete"]
 ) .choice-list,
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .shop-area.show {
-  grid-row: 5;
+  grid-row: 4;
   flex: 1 1 0;
   min-height: 0;
 }
@@ -3109,7 +3109,7 @@ body {
   [data-mode="wardrobe"],
   [data-mode="refund"]
 ) .adv-action-footer {
-  grid-row: 6;
+  grid-row: 5;
   align-self: end;
 }
 
@@ -3497,7 +3497,7 @@ body {
 ) .adv-npc {
   bottom: 0;
   transform: none;
-  --adv-character-stage-height: 640px;
+  --adv-character-stage-height: clamp(640px, 84dvh, 690px);
   width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
   height: var(--adv-character-stage-height);
   max-height: none;
@@ -3570,13 +3570,26 @@ body {
 
 .adv-scene .dialog-title {
   min-height: 36px;
-  margin: -4px -4px 8px;
-  padding: 7px 10px;
+  margin: 0 0 8px;
+  padding: 0 2px;
   color: var(--adv-dialog-text);
-  background: var(--adv-dialog-bg-soft);
-  border: 1px solid var(--adv-dialog-line);
-  border-radius: 7px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
   backdrop-filter: none;
+}
+
+.adv-scene .dialog-title .english-line {
+  margin: 0;
+  font-size: clamp(0.96rem, 1.15vw, 1.12rem);
+  line-height: 1.18;
+  color: var(--adv-dialog-text);
+}
+
+.adv-scene .dialog-title .speaker-button {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .adv-scene .english-line {
@@ -3600,11 +3613,19 @@ body {
   min-height: 44px;
   padding: 8px 12px;
   color: var(--adv-dialog-text);
+  font-size: 0.9rem;
+  line-height: 1.14;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(0, 0, 0, 0.045)),
-    rgba(58, 46, 64, 0.94);
+    rgba(58, 46, 64, 0.74);
   border-color: rgba(255, 211, 231, 0.28);
   box-shadow: 0 8px 16px rgba(18, 12, 22, 0.22);
+}
+
+.adv-scene .adv-action-footer .choice-button {
+  font-size: 0.9rem;
+  line-height: 1.14;
+  background: rgba(54, 44, 60, 0.72);
 }
 
 .adv-scene .choice-button:focus,
@@ -3612,7 +3633,7 @@ body {
   color: #fff;
   background:
     linear-gradient(180deg, rgba(241, 154, 193, 0.2), rgba(0, 0, 0, 0.02)),
-    rgba(70, 52, 76, 0.96);
+    rgba(70, 52, 76, 0.88);
   border-color: var(--adv-dialog-accent);
   box-shadow:
     0 0 0 4px rgba(241, 154, 193, 0.24),
@@ -3622,7 +3643,7 @@ body {
 .adv-scene .choice-button.leave-choice,
 .adv-scene[data-mode="scene"] .choice-button.leave-choice {
   color: var(--adv-dialog-muted);
-  background: rgba(54, 44, 60, 0.92);
+  background: rgba(54, 44, 60, 0.66);
   border-color: rgba(255, 211, 231, 0.22);
 }
 
@@ -3680,6 +3701,7 @@ body {
   .adv-action-footer .choice-button {
     min-height: 40px;
     padding: 7px 10px;
+    font-size: 0.86rem;
   }
 
   .adv-scene:is(
