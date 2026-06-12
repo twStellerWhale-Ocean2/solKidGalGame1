@@ -3497,6 +3497,7 @@ body {
 ) .adv-npc {
   z-index: 2;
   bottom: 0;
+  transform: none;
   --adv-character-stage-height: min(86%, 690px);
   width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
   height: var(--adv-character-stage-height);
@@ -3512,7 +3513,8 @@ body {
   [data-mode="wardrobe"],
   [data-mode="refund"]
 ) .adv-princess {
-  left: clamp(22px, 8%, 96px);
+  left: calc(25% - (var(--adv-character-stage-height) * var(--adv-character-stage-aspect) / 2));
+  right: auto;
 }
 
 .adv-scene:is(
@@ -3524,7 +3526,8 @@ body {
   [data-mode="wardrobe"],
   [data-mode="refund"]
 ) .adv-npc {
-  right: clamp(22px, 8%, 96px);
+  left: calc(75% - (var(--adv-character-stage-height) * var(--adv-character-stage-aspect) / 2));
+  right: auto;
 }
 
 .adv-scene:is(
@@ -3665,30 +3668,6 @@ body {
     [data-mode="refund"]
   ) {
     --adv-dialog-height: min(316px, 42%);
-  }
-
-  .adv-scene:is(
-    [data-mode="scene"],
-    [data-mode="hint"],
-    [data-mode="quest"],
-    [data-mode="complete"],
-    [data-mode="shop"],
-    [data-mode="wardrobe"],
-    [data-mode="refund"]
-  ) .adv-princess {
-    left: clamp(-44px, -9.5vw, -26px);
-  }
-
-  .adv-scene:is(
-    [data-mode="scene"],
-    [data-mode="hint"],
-    [data-mode="quest"],
-    [data-mode="complete"],
-    [data-mode="shop"],
-    [data-mode="wardrobe"],
-    [data-mode="refund"]
-  ) .adv-npc {
-    right: clamp(-26px, -3.5vw, -8px);
   }
 
   .adv-scene:is(
