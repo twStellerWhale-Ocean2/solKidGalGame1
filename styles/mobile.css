@@ -3448,8 +3448,8 @@ body {
   [data-mode="refund"]
 ) {
   --adv-dialog-height: clamp(230px, 34%, 330px);
-  --adv-dialog-bg: rgba(47, 38, 52, 0.93);
-  --adv-dialog-bg-soft: rgba(65, 51, 70, 0.9);
+  --adv-dialog-bg: rgba(47, 38, 52, 0.46);
+  --adv-dialog-bg-soft: rgba(65, 51, 70, 0.62);
   --adv-dialog-line: rgba(255, 225, 240, 0.32);
   --adv-dialog-text: #fff7fb;
   --adv-dialog-muted: #ead6e2;
