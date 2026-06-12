@@ -236,7 +236,7 @@ Princess Room -> Castle Area Map -> World Map -> Area Map -> Scene -> Action Cho
 
 - `World Map`：area 之上的主選單層，只負責選擇 Castle、Urban、Rural、Wild 等目的地；它不是 area package，也不承載 lesson、shop 或 scene。
 - `Area Map`：只負責單一地區、地標、marker focus、gate，不直接塞商品清單或系統設定。
-- `Scene`：進入某個地點後的 ADV 場景，顯示背景、Princess Lumi、NPC、地點名稱與 action choices。
+- `Scene`：進入某個地點後的 ADV 場景，顯示背景、Princess Lumi、NPC、地點名稱、場景句與 action choices；可見對話列直接顯示場景句，行尾放播音按鈕，不另顯示 NPC 人名標題。
 - `Action Choices`：第一層 scene action 由 `game-engine/flow/scene-actions.js` 產生，handler type 包含 `wardrobe`、`help`、`shop`、`refund` 與 navigation `leave`。
 - `Detail Panel`：玩家選擇具體動作後才顯示，例如答題、購物、換裝、退款、設定、存讀檔。
 - `Feedback / Return`：顯示結果並提供清楚返回路徑，不讓玩家卡在大型 panel。
@@ -259,6 +259,8 @@ Fixed Prompt Area
 ```
 
 `Leave` 只屬於 scene-level；進入 Shop、Wardrobe、Refund、Quest 或 Hint detail 後，底部 navigation footer 只使用 `Back` 回到上一層 action choices。
+
+ADV 場景的 NPC 人名仍保留在 scene config、DOM metadata、QA metrics 與 accessibility 用途；它不是可見對話標題。場景句與播音 icon 直接放在對話方塊上，不額外加內框；第一層 action choices 可以使用較輕、較透明的按鈕視覺，但手機觸控高度不得因縮小字級而低於安全可點範圍。
 
 ## 2.6 地區與英文難度
 
@@ -309,6 +311,7 @@ Fixed Prompt Area
 - 手機直向寬度不足時，ADV scene background 應以正式 `1024x1024` 圖中央構圖裁切左右；不得因 viewport 較窄而在上方或兩側疊加 blur / frosted cover。
 - ADV 對話 UI 必須使用低飽和深色高不透明底，文字、按鈕與 focus 狀態需保持高對比；UI 可遮罩文字區，但不得用白色霧面洗掉人物、衣物或背景細節。
 - ADV 舞台尺度：標準室內與一般商店約 5.5-6m 寬，小商店可為 4.5-5.5m，大廳與戶外可為 8-12m；角色站位、主要互動物件與可讀地標需落在手機安全構圖區內。
+- ADV 場景人物若需拉高或放大，必須調整共用 scene stage scale / stage height；不得為單一 NPC、單一場景或單一圖片建立 runtime nudge。若個別圖檔腳底、中心線或透明留白不符合契約，應修正素材本身。
 - `content-package/areas/*/assets/characters/*.webp` 的 NPC portrait 必須保留 alpha 透明背景，不得把場景、紙張、純色或漸層矩形背景烘進角色圖。
 - NPC portrait 的人物視覺中心必須在共用 canvas 的水平中心附近；若人物在圖內偏左或偏右，應修正原始 WebP / 透明留白，不得用場景專屬 CSS、角色專屬 offset 或單一變數補償。
 - CSS 只能處理 UI chrome、排版、陰影、選取狀態與安全的裝飾效果。
@@ -441,7 +444,8 @@ Lumi ADV stageScale = 1.20
 - Shop / Wardrobe / Refund 共用 item detail contract。
 - 長商品名、price、Owned、Equipped、Need、Refund、inline action 在手機直向可讀可點。
 - Quest / Hint / Shop / Wardrobe / Refund detail 只用 `Back` 回 scene action choices，回到 scene action choices 後才用 `Leave` 回 Map；沒有 lesson 的一般 scene 不應硬顯示 Help。
-- 文字大小、行高、按鈕區域適合兒童。
+- 可見對話列應是「場景句 + 播音按鈕」，不得再把 NPC 人名作為可見第一行標題。
+- 文字大小、行高、按鈕區域適合兒童；action choices 可比主台詞小，但 Help / Leave / Back 的可點高度必須維持手機安全範圍。
 
 完成條件：
 
@@ -496,6 +500,7 @@ Lumi ADV stageScale = 1.20
 - 可點擊目標是否太小、太貼邊或被遮擋。
 - 背景、角色、NPC、道具與 UI 是否像同一個空間與同一套視覺語言。
 - 角色比例、站位、裁切、腳底接地、陰影 / 底座與背景透視是否自然。
+- 人物整體縮放需維持全場景一致；若放大角色，必須檢查 Princess Lumi 與 NPC 的頭部裁切、腳底接地、對話框遮擋與左右重疊是否仍可接受。
 - 對話框、Shop / Wardrobe panel、設定 panel 是否壓壞舞台構圖；手機 scene entry 至少需看得到人物頭部與上半身。
 - Princess Room 必須讓 Lumi 與目前穿搭清楚可見，不得只露出腳或被對話 UI / 白霧覆蓋。
 - ADV 背景截圖不得出現非正式 blur cover；手機寬度不足時應裁切正式背景左右，而不是新增模糊補圖。
