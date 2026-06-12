@@ -3676,7 +3676,7 @@ body {
     [data-mode="wardrobe"],
     [data-mode="refund"]
   ) .adv-princess {
-    left: clamp(-54px, -12vw, -36px);
+    left: clamp(-44px, -9.5vw, -26px);
   }
 
   .adv-scene:is(
@@ -3688,7 +3688,7 @@ body {
     [data-mode="wardrobe"],
     [data-mode="refund"]
   ) .adv-npc {
-    right: clamp(-36px, -6vw, -18px);
+    right: clamp(-26px, -3.5vw, -8px);
   }
 
   .adv-scene:is(
