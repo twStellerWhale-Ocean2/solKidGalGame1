@@ -3498,7 +3498,7 @@ body {
   z-index: 2;
   bottom: 0;
   transform: none;
-  --adv-character-stage-height: min(86%, 690px);
+  --adv-character-stage-height: 640px;
   width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
   height: var(--adv-character-stage-height);
   max-height: none;
@@ -3688,7 +3688,6 @@ body {
     [data-mode="wardrobe"],
     [data-mode="refund"]
   ) .adv-npc {
-    --adv-character-stage-height: min(82%, 620px);
     bottom: calc(var(--adv-dialog-height) - 116px);
   }
 
