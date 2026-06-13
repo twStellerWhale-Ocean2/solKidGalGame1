@@ -24,6 +24,24 @@ export const characterRegistry = Object.freeze({
     naturalHeightCm: 125,
     stageScale: 1.2,
     rig: sharedPaperDollRig
+  }),
+  yumi: Object.freeze({
+    id: "yumi",
+    label: "Princess Yumi",
+    baseLayer: characterAsset("yumi", "base"),
+    thumbImage: characterAsset("yumi", "thumb"),
+    naturalHeightCm: 125,
+    stageScale: 1.2,
+    rig: sharedPaperDollRig
+  }),
+  sol: Object.freeze({
+    id: "sol",
+    label: "Princess Sol",
+    baseLayer: characterAsset("sol", "base"),
+    thumbImage: characterAsset("sol", "thumb"),
+    naturalHeightCm: 125,
+    stageScale: 1.2,
+    rig: sharedPaperDollRig
   })
 });
 
