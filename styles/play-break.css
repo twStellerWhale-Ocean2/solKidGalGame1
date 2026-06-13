@@ -60,11 +60,11 @@
   font-size: 1em;
 }
 
-/* 時間到結算＋強制休息 overlay（鎖定遊玩，置於帳號選擇之上） */
+/* 時間到結算＋強制休息 overlay（護眼鎖定，須蓋過一切：ADV 場景 z80、行動版 z90/100 等） */
 .play-break-overlay {
   position: fixed;
   inset: 0;
-  z-index: 70;
+  z-index: 200;
   display: none;
   align-items: center;
   justify-content: center;

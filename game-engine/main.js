@@ -237,13 +237,17 @@ function showPlayBreak(settlement, restRemainingMs, restDone) {
       ? "Eyes rested! You can play again."
       : `Resting… ${formatClock(restRemainingMs)} left`;
   }
+  const resumeWasDisabled = elements.playBreakResume?.disabled !== false;
   if (elements.playBreakResume) elements.playBreakResume.disabled = !restDone;
   if (!playBreakShown) {
     elements.playBreak?.classList.add("show");
     elements.playBreak?.setAttribute("aria-hidden", "false");
     document.body.classList.add("play-break-open");
     playBreakShown = true;
+    elements.playBreak?.querySelector(".play-break-card")?.focus({ preventScroll: true });
   }
+  // 休息屆滿、續玩鈕由禁用轉為可用時，移焦點到續玩鈕（鍵盤可直接續玩、不卡關）。
+  if (restDone && resumeWasDisabled) elements.playBreakResume?.focus({ preventScroll: true });
 }
 
 function hidePlayBreak() {
