@@ -1,5 +1,5 @@
 ---
-name: apiIntf標準HTTP網站網頁服務
+name: apiIntf標準HTTP網站服務
 date: 2026-04-24
 description: 業界標準的HTTP網頁檔案服務，供使用者指定URL後，下載相關網頁檔案內容的API介面規範。
 ---

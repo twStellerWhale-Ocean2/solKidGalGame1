@@ -48,8 +48,8 @@ $env:OPENAI_ORG_ID="org_..."   # 選配
 node server.mjs
 ```
 
-預設本機網址：`http://127.0.0.1:4174/`。
-Help 提示需上述本機 OpenAI proxy；未設定金鑰時遊戲仍可玩，Help 會顯示降級訊息。
+本機網址依所用指令：`python -m http.server 4173` → `http://127.0.0.1:4173/`；`node server.mjs` →（預設）`http://127.0.0.1:4174/`。
+Help 提示需 `node server.mjs` 本機 OpenAI proxy；純靜態方式或未設定金鑰時遊戲仍可玩，Help 會顯示降級訊息。
 
 ## 存檔與還原
 
