@@ -1,0 +1,148 @@
+/* 遊玩時間限制與護眼休息（issue #6 / spec#9）：HUD 遊玩時間條、設定表單、時間到結算＋強制休息 overlay。沿用既有視覺語彙。 */
+
+/* HUD：遊玩時間預算條（energy 即剩餘遊玩時間 %） */
+.energy-meter {
+  height: 8px;
+  margin: 8px 0 2px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.energy-meter-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--rose);
+  transition: width 0.4s ease;
+}
+
+/* 設定：每次遊玩／休息時長（各帳號各自） */
+.play-limit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.play-limit-form h3 {
+  margin: 0;
+  color: var(--rose-dark);
+}
+
+.play-limit-form > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+.play-limit-fields {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.play-limit-fields label {
+  flex: 1 1 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.play-limit-fields input {
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  border: 2px solid var(--line);
+  background: #fff;
+  font-size: 1em;
+}
+
+/* 時間到結算＋強制休息 overlay（鎖定遊玩，置於帳號選擇之上） */
+.play-break-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.play-break-overlay.show {
+  display: flex;
+}
+
+.play-break-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(80, 56, 70, 0.66);
+}
+
+.play-break-card {
+  position: relative;
+  width: min(420px, 100%);
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.play-break-header h2 {
+  margin: 0 0 4px;
+  color: var(--rose-dark);
+}
+
+.play-break-header p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.play-break-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.play-break-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.play-break-stat span {
+  color: var(--muted);
+}
+
+.play-break-stat strong {
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.play-break-countdown {
+  margin: 0;
+  font-weight: 800;
+  color: var(--rose-dark);
+}
+
+.play-break-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.play-break-actions button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

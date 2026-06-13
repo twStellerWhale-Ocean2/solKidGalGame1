@@ -16,6 +16,8 @@ export function createElements() {
     systemMenuTabs: $$(".system-menu-tab"),
     systemPanels: $$(".system-panel"),
     coinValue: $("#coinValue"),
+    energyValue: $("#energyValue"),
+    energyMeterFill: $("#energyMeterFill"),
     outfitSummary: $("#outfitSummary"),
     statusMessage: $("#statusMessage"),
     princessNameTitle: $("#princessNameTitle"),
@@ -90,6 +92,13 @@ export function createElements() {
     versionValue: $("#versionValue"),
     buildDateValue: $("#buildDateValue"),
     roomPropDesk: $("#roomPropDesk"),
-    roomPropLamp: $("#roomPropLamp")
+    roomPropLamp: $("#roomPropLamp"),
+    playMinutesInput: $("#playMinutesInput"),
+    restMinutesInput: $("#restMinutesInput"),
+    playLimitForm: $("#playLimitForm"),
+    playBreak: $("#playBreak"),
+    playBreakStats: $("#playBreakStats"),
+    playBreakCountdown: $("#playBreakCountdown"),
+    playBreakResume: $("#playBreakResume")
   };
 }

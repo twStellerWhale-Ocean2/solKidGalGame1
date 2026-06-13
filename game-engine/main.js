@@ -78,6 +78,14 @@ import {
 } from "./state/accounts.js";
 import { installTestingHooks } from "./testing/selftests.js";
 import { createSaveLoadController } from "./system/save-load.js";
+import {
+  MAX_LIMIT_MINUTES,
+  MIN_LIMIT_MINUTES,
+  playStatus,
+  recordAnswer as recordCycleAnswer,
+  resumeFromRest,
+  tick as tickPlayLimit
+} from "./system/play-clock.js";
 
 let state = loadLocalState();
 let openAISettings = loadOpenAISettings();
@@ -102,6 +110,9 @@ let activeCastleHotspot = null;
 let activeWorldDestinationId = "castle";
 let pendingCharacterId = state.activeCharacterId;
 let playerNameEdited = false;
+let testClockOffset = 0;   // 測試用合成時鐘偏移（ms）；正式遊玩恆為 0，由 selftest hook 注入。
+let playClockTimer = 0;     // setInterval id（0 = 未啟動）
+let playBreakShown = false; // 結算／休息 overlay 是否顯示中
 
 const elements = createElements();
 const areaMapViewportController = createAreaMapViewportController({
@@ -144,6 +155,124 @@ function persistOpenAISettings() {
 
 function persist() {
   persistState(state);
+}
+
+// ---- 遊玩時間限制與護眼休息（issue #6 / spec#9）：ticker、HUD 與結算／休息 overlay ----
+
+function clockNow() {
+  return Date.now() + testClockOffset;
+}
+
+// 僅在已選定帳號且帳號／選角 overlay 未開啟時計時（共用裝置以各帳號各自計算）。
+function playClockActive() {
+  return Boolean(getActiveAccountId())
+    && !elements.accountSelect?.classList.contains("show")
+    && !elements.characterSelect?.classList.contains("show");
+}
+
+function formatClock(ms) {
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+}
+
+function updateEnergyHud(percent) {
+  state.energy = percent;
+  if (elements.energyValue) elements.energyValue.textContent = `${percent}%`;
+  if (elements.energyMeterFill) elements.energyMeterFill.style.width = `${percent}%`;
+}
+
+// 更新 HUD 的遊玩時間預算顯示（energy %），不套用狀態轉換；供 render() 呼叫。
+function renderPlayClock() {
+  const status = playStatus(state, clockNow());
+  updateEnergyHud(status.phase === "rest" ? 0 : status.energyPercent);
+}
+
+// 每秒一拍：依真實時間推進，時間到顯示結算並進入休息，休息屆滿開放續玩。
+function tickPlayClock() {
+  if (!playClockActive()) return;
+  const ev = tickPlayLimit(state, clockNow());
+  updateEnergyHud(ev.energyPercent);
+  if (ev.justExpired) {
+    showPlayBreak(ev.settlement, ev.restRemainingMs, false);
+    persist();
+  } else if (ev.phase === "rest") {
+    showPlayBreak(null, ev.restRemainingMs, Boolean(ev.restDone));
+  } else {
+    if (ev.justStarted) persist();
+    hidePlayBreak();
+  }
+}
+
+function startPlayClock() {
+  if (playClockTimer) return;
+  tickPlayClock();
+  playClockTimer = window.setInterval(tickPlayClock, 1000);
+}
+
+function renderPlayBreakStats(settlement) {
+  if (!settlement || !elements.playBreakStats) return;
+  const rows = [
+    ["Coins this round", `+${settlement.coinsGained}`],
+    ["Questions", String(settlement.answered)],
+    ["Correct", String(settlement.correct)],
+    ["Accuracy", `${settlement.accuracy}%`]
+  ];
+  elements.playBreakStats.replaceChildren(...rows.map(([label, value]) => {
+    const row = document.createElement("div");
+    row.className = "play-break-stat";
+    const labelEl = document.createElement("span");
+    labelEl.textContent = label;
+    const valueEl = document.createElement("strong");
+    valueEl.textContent = value;
+    row.append(labelEl, valueEl);
+    return row;
+  }));
+}
+
+// 顯示結算＋休息 overlay：settlement 僅於時間到當下提供，其後休息拍只更新倒數與續玩鈕狀態。
+function showPlayBreak(settlement, restRemainingMs, restDone) {
+  renderPlayBreakStats(settlement);
+  if (elements.playBreakCountdown) {
+    elements.playBreakCountdown.textContent = restDone
+      ? "Eyes rested! You can play again."
+      : `Resting… ${formatClock(restRemainingMs)} left`;
+  }
+  if (elements.playBreakResume) elements.playBreakResume.disabled = !restDone;
+  if (!playBreakShown) {
+    elements.playBreak?.classList.add("show");
+    elements.playBreak?.setAttribute("aria-hidden", "false");
+    document.body.classList.add("play-break-open");
+    playBreakShown = true;
+  }
+}
+
+function hidePlayBreak() {
+  if (!playBreakShown) return;
+  elements.playBreak?.classList.remove("show");
+  elements.playBreak?.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("play-break-open");
+  playBreakShown = false;
+}
+
+// 休息屆滿後按「Play again」續玩；休息未滿則不動作（不可繞過休息）。
+function resumePlayFromBreak() {
+  if (!resumeFromRest(state, clockNow())) return;
+  persist();
+  hidePlayBreak();
+  tickPlayClock();
+}
+
+function applyPlayLimitSettings() {
+  const toMinutes = (value) => {
+    const n = Math.round(Number(value));
+    if (!Number.isFinite(n)) return MIN_LIMIT_MINUTES;
+    return Math.min(MAX_LIMIT_MINUTES, Math.max(MIN_LIMIT_MINUTES, n));
+  };
+  state.playLimit.playMinutes = toMinutes(elements.playMinutesInput?.value);
+  state.playLimit.restMinutes = toMinutes(elements.restMinutesInput?.value);
+  persist();
+  renderSettings();
+  elements.statusMessage.textContent = `Play ${state.playLimit.playMinutes} min, rest ${state.playLimit.restMinutes} min.`;
 }
 
 function ensureUrbanPosition() {
@@ -347,6 +476,7 @@ function render() {
   renderMap();
   renderDiary();
   renderSettings();
+  renderPlayClock();
 }
 
 function renderStatus() {
@@ -2119,6 +2249,7 @@ function hasLessonsForPlace(place) {
 function answerLesson(button, choice) {
   if (!activeLesson || advMode !== "quest") return;
   const correct = choice === activeLesson.answer;
+  recordCycleAnswer(state, correct); // 本回合答題統計（spec#9 結算用）：每次嘗試計入，答對另計。
   if (!correct) {
     button.classList.add("wrong");
     setExpressions("thinking", "surprised");
@@ -2289,6 +2420,8 @@ function renderCollectionSummary() {
 
 function renderSettings() {
   elements.speakToggleButton.textContent = `Voice: ${state.speechEnabled ? "On" : "Off"}`;
+  if (elements.playMinutesInput) elements.playMinutesInput.value = String(state.playLimit.playMinutes);
+  if (elements.restMinutesInput) elements.restMinutesInput.value = String(state.playLimit.restMinutes);
   elements.openaiOrgInput.value = openAISettings.orgId;
   elements.openaiKeyInput.value = openAISettings.apiKey ? "••••••••" : "";
   elements.aiStatus.textContent = openAISettings.apiKey
@@ -2575,6 +2708,11 @@ function bindEvents() {
     persist();
     renderSettings();
   });
+  elements.playBreakResume?.addEventListener("click", resumePlayFromBreak);
+  elements.playLimitForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    applyPlayLimitSettings();
+  });
   elements.clearDiaryButton.addEventListener("click", () => {
     if (!window.confirm(`Clear ${princessName()}'s diary pages?`)) return;
     state.diary = [];
@@ -2833,6 +2971,7 @@ render();
 changeView(location.hash ? location.hash.slice(1) : "home");
 // 本機多帳號 gate（issue #63 / spec#8）：每次進入都先選帳號，即使已有使用中帳號亦不自動沿用（共用裝置須每次選玩家）。
 if (!hasSelftest) openAccountSelect({ mustChoose: true });
+if (!hasSelftest) startPlayClock(); // selftest 模式由測試以注入時鐘自行驅動，不啟動真實 ticker。
 
 installTestingHooks({
   get state() { return state; },
@@ -2859,6 +2998,21 @@ installTestingHooks({
       return listAccounts().length;
     },
     loadState: (accountId) => loadAccountState(accountId)
+  },
+  // 遊玩時間限制與護眼休息（issue #6 / spec#9）測試介面：以注入時鐘驅動，不需真實等待。
+  playClock: {
+    now: () => clockNow(),
+    setOffset: (ms) => { testClockOffset = Number(ms) || 0; },
+    advance: (ms) => { testClockOffset += Number(ms) || 0; return clockNow(); },
+    tick: () => tickPlayLimit(state, clockNow()),
+    status: () => playStatus(state, clockNow()),
+    resume: () => resumeFromRest(state, clockNow()),
+    recordAnswer: (correct) => recordCycleAnswer(state, correct),
+    get limit() { return state.playLimit; },
+    setDurations: (playMinutes, restMinutes) => {
+      state.playLimit.playMinutes = playMinutes;
+      state.playLimit.restMinutes = restMinutes;
+    }
   },
   get shopPreviewItemId() { return shopPreviewItemId; },
   set shopPreviewItemId(nextItemId) { shopPreviewItemId = nextItemId; },

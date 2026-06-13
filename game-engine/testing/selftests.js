@@ -4,6 +4,7 @@ export function installTestingHooks(api) {
     importMarkdown: api.loadMarkdownText,
     getState: () => JSON.parse(JSON.stringify(api.state)),
     accounts: api.accounts,
+    playClock: api.playClock,
     setDifficulty: () => {
       api.persist();
       api.render();
@@ -46,6 +47,84 @@ export function installTestingHooks(api) {
   runVisualQa(api);
   runMonkeyTest(api);
   runAccountSelfTest(api);
+  runPlayTimerSelfTest(api);
+}
+
+// 遊玩時間限制與護眼休息（issue #6 / spec#9）：以注入時鐘驗證計時遞減、時間到結算、休息鎖定與屆滿續玩。
+function runPlayTimerSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "playtimer") return;
+  const errors = [];
+  const clock = api.playClock;
+  const accounts = api.accounts;
+  let createdId = null;
+  try {
+    if (!clock) throw new Error("playClock testing hook missing");
+    const baseline = accounts.list().length;
+    createdId = accounts.create().id;
+    clock.setOffset(0);
+    clock.setDurations(2, 1); // 2 分鐘遊玩、1 分鐘休息（以注入時鐘加速，不需真實等待）
+    api.state.coins = 100;
+
+    // 1) 從 idle 起拍：開始遊玩回合，energy ~100%。
+    let ev = clock.tick();
+    if (ev.phase !== "play" || !ev.justStarted) errors.push(`first tick phase=${ev.phase} justStarted=${ev.justStarted}, expected play/started`);
+    if (ev.energyPercent < 99) errors.push(`energy at start = ${ev.energyPercent}, expected ~100`);
+
+    // 2) 遊玩中模擬答題（4 題 3 對）與獲得金錢（+40）。
+    clock.recordAnswer(true);
+    clock.recordAnswer(true);
+    clock.recordAnswer(true);
+    clock.recordAnswer(false);
+    api.state.coins = 140;
+
+    // 3) 過一半遊玩時間：energy 應約 50%。
+    clock.advance(60000);
+    let status = clock.status();
+    if (status.phase !== "play") errors.push(`mid phase=${status.phase}, expected play`);
+    if (Math.abs(status.energyPercent - 50) > 5) errors.push(`mid energy = ${status.energyPercent}, expected ~50`);
+
+    // 4) 時間到：結算本回合成果並進入休息（遊玩入口鎖定）。
+    clock.advance(61000);
+    ev = clock.tick();
+    if (ev.phase !== "rest" || !ev.justExpired) errors.push(`expiry phase=${ev.phase} justExpired=${ev.justExpired}, expected rest/expired`);
+    const s = ev.settlement || {};
+    if (s.coinsGained !== 40) errors.push(`settlement coinsGained=${s.coinsGained}, expected 40`);
+    if (s.answered !== 4) errors.push(`settlement answered=${s.answered}, expected 4`);
+    if (s.correct !== 3) errors.push(`settlement correct=${s.correct}, expected 3`);
+    if (s.accuracy !== 75) errors.push(`settlement accuracy=${s.accuracy}, expected 75`);
+    if (ev.energyPercent !== 0) errors.push(`energy during rest = ${ev.energyPercent}, expected 0`);
+
+    // 5) 休息未滿不可續玩（護眼不可繞過）。
+    if (clock.resume() !== false) errors.push("resume succeeded before rest finished (eye-rest bypassed)");
+
+    // 6) 休息屆滿可續玩，且開始全新回合（cycle 歸零）。
+    clock.advance(61000);
+    status = clock.status();
+    if (!status.restDone) errors.push("rest not marked done after rest duration elapsed");
+    if (clock.resume() !== true) errors.push("resume failed after rest finished");
+    status = clock.status();
+    if (status.phase !== "play") errors.push(`after resume phase=${status.phase}, expected play`);
+    if (clock.limit.cycle.answered !== 0) errors.push(`new cycle answered=${clock.limit.cycle.answered}, expected 0`);
+
+    // 清理：移除測試帳號，回到 baseline。
+    accounts.remove(createdId);
+    createdId = null;
+    if (accounts.list().length !== baseline) errors.push(`account count after cleanup = ${accounts.list().length}, expected ${baseline}`);
+  } catch (error) {
+    errors.push(error.message);
+  } finally {
+    if (createdId) accounts.remove(createdId);
+    clock?.setOffset(0);
+  }
+  const result = document.createElement("pre");
+  result.id = "playTimerTestResult";
+  result.textContent = JSON.stringify({
+    test: "playtimer",
+    passed: errors.length === 0,
+    errors: errors.slice(0, 10)
+  });
+  document.body.prepend(result);
 }
 
 // 本機多帳號（issue #63）：驗證新增、隔離、切換與刪除（含刪除使用中帳號回到帳號選擇）。
