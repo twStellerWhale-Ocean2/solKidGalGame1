@@ -383,7 +383,9 @@ function renderIdentity() {
 
 function openCharacterSelect({ forced = false } = {}) {
   pendingCharacterId = state.activeCharacterId;
-  playerNameEdited = false;
+  // 既有的自訂名字（與目前角色預設名不同）視為玩家已輸入，切換外觀時不覆蓋。
+  const activeDefaultName = playableCharacterById(state.activeCharacterId)?.defaultName;
+  playerNameEdited = Boolean(state.playerName) && state.playerName !== activeDefaultName;
   buildCharacterCards();
   elements.playerNameInput.value = state.playerName || playableCharacterById(pendingCharacterId)?.defaultName || "";
   elements.characterSelect.classList.toggle("first-run", forced);
@@ -2716,7 +2718,7 @@ Object.defineProperty(window, "__luminaraTest", {
   }
 });
 
-const isFirstRun = !localStorage.getItem(storageKey);
+const isFirstRun = !localStorage.getItem(storageKey) && !new URLSearchParams(location.search).has("selftest");
 bindEvents();
 render();
 changeView(location.hash ? location.hash.slice(1) : "home");
