@@ -68,18 +68,20 @@
   <table>
     <tr><th>步驟</th><th>預期</th><th>實測</th></tr>
     <tr><td>首次進入（無帳號）</td><td>顯示 Account Select 空狀態，Back 隱藏</td><td class="pass">符合</td></tr>
+    <tr><td>每次進入（已有使用中帳號）</td><td>仍先顯示帳號選擇，不自動沿用上一位</td><td class="pass">gate 顯示、Back 隱藏</td></tr>
+    <tr><td>啟動 gate 不可略過</td><td>點背景/無 Back，必須選擇才進入</td><td class="pass">backdrop 點擊後仍開啟</td></tr>
     <tr><td>Add player → 命名 Mia</td><td>強制選角→確認→進入遊戲</td><td class="pass">標題 Princess Mia</td></tr>
-    <tr><td>Settings → Switch player</td><td>列出帳號、Back 出現</td><td class="pass">符合</td></tr>
+    <tr><td>Settings → Switch player</td><td>列出帳號、Back 出現可取消</td><td class="pass">Back 可見、可關閉</td></tr>
     <tr><td>新增第二位 Zoe</td><td>兩帳號並存、Zoe 成使用中</td><td class="pass">index=["Mia","Zoe"]</td></tr>
     <tr><td>切換回 Mia</td><td>載入 Mia、overlay 關閉</td><td class="pass">標題 Princess Mia</td></tr>
   </table>
 
   <h2>4. 資料安全：既有單一存檔遷移</h2>
-  <p>植入舊版單一存檔 <code>{playerName:"OldPlayer", coins:777}</code> 後重新載入：</p>
-  <pre>{"accountCount":1,"migratedName":"OldPlayer","activeMatchesFirst":true,
- "loadedCoins":777,"legacyKeyRemoved":true,"accountSelectShown":false,
- "title":"Princess OldPlayer"}</pre>
-  <p class="pass">既有玩家進度完整保留、自動成為首個使用中帳號、舊鍵移除（冪等）、不被強制看到帳號選擇畫面。</p>
+  <p>植入舊版單一存檔 <code>{playerName:"OldPlayer", coins:777}</code> 後重新載入，並於帳號選擇點選該玩家：</p>
+  <pre>{"accountCount":1,"migratedName":"OldPlayer","activeIdExistsFromMigration":true,
+ "gateShownOnLaunchWithActiveAccount":true,"listed":["OldPlayer"],
+ "coinsAfterPick":777,"legacyKeyRemoved":true,"title":"Princess OldPlayer"}</pre>
+  <p class="pass">既有玩家進度完整保留、遷移為首個帳號、舊鍵移除（冪等）；每次進入仍先顯示帳號選擇（<code>spec#8</code>），選定後載入該帳號進度。</p>
 
   <h2>5. 變更範圍</h2>
   <ul>

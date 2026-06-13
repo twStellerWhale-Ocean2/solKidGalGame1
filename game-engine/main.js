@@ -449,7 +449,10 @@ function confirmCharacterSelect() {
 }
 
 // ---- 本機多帳號（issue #63）：每次進入先選玩家帳號，可新增與刪除，各帳號進度互不混用 ----
-function openAccountSelect() {
+// mustChoose=true：啟動 gate，必須選擇或新增帳號才能進入（不可關閉、不顯示 Back）。
+let accountSelectMustChoose = false;
+function openAccountSelect({ mustChoose = false } = {}) {
+  accountSelectMustChoose = mustChoose;
   buildAccountList();
   elements.accountSelect.classList.add("show");
   elements.accountSelect.setAttribute("aria-hidden", "false");
@@ -458,8 +461,8 @@ function openAccountSelect() {
 }
 
 function closeAccountSelect() {
-  // 無使用中帳號時不可關閉（必須先選或新增帳號）。
-  if (!getActiveAccountId()) return;
+  // 啟動 gate 或尚無使用中帳號時不可關閉（必須先選或新增帳號）。
+  if (accountSelectMustChoose || !getActiveAccountId()) return;
   elements.accountSelect.classList.remove("show");
   elements.accountSelect.setAttribute("aria-hidden", "true");
   document.body.classList.remove("account-select-open");
@@ -470,7 +473,7 @@ function buildAccountList() {
   const activeId = getActiveAccountId();
   elements.accountList.innerHTML = "";
   if (elements.accountEmpty) elements.accountEmpty.hidden = accounts.length > 0;
-  if (elements.accountBack) elements.accountBack.hidden = !activeId;
+  if (elements.accountBack) elements.accountBack.hidden = accountSelectMustChoose || !activeId;
   accounts.forEach((account) => {
     const label = account.name || playableCharacterById(account.characterId)?.defaultName || "Princess";
     const characterLabel = playableCharacterById(account.characterId)?.label || "Princess";
@@ -505,6 +508,7 @@ function buildAccountList() {
 function selectAccount(accountId) {
   setActiveAccountId(accountId);
   state = loadAccountState(accountId);
+  accountSelectMustChoose = false; // 已完成本次進入的帳號選擇
   closeAccountSelect();
   render();
   changeView("home");
@@ -518,6 +522,7 @@ function selectAccount(accountId) {
 function createNewAccount() {
   const account = createFreshAccount();
   state = loadAccountState(account.id);
+  accountSelectMustChoose = false;
   closeAccountSelect();
   render();
   changeView("home");
@@ -2541,7 +2546,7 @@ function bindEvents() {
   });
   elements.switchAccountButton?.addEventListener("click", () => {
     closeSystemMenu();
-    openAccountSelect();
+    openAccountSelect({ mustChoose: false });
   });
   elements.systemMenuClose.addEventListener("click", closeSystemMenu);
   elements.systemMenu.addEventListener("click", (event) => {
@@ -2826,11 +2831,8 @@ const hasSelftest = new URLSearchParams(location.search).has("selftest");
 bindEvents();
 render();
 changeView(location.hash ? location.hash.slice(1) : "home");
-if (!hasSelftest) {
-  // 本機多帳號 gate（issue #63）：無使用中帳號先選帳號（空清單顯示新增）；有帳號但未命名（新帳號）則強制選角。
-  if (!getActiveAccountId()) openAccountSelect();
-  else if (!state.playerName) openCharacterSelect({ forced: true });
-}
+// 本機多帳號 gate（issue #63 / spec#8）：每次進入都先選帳號，即使已有使用中帳號亦不自動沿用（共用裝置須每次選玩家）。
+if (!hasSelftest) openAccountSelect({ mustChoose: true });
 
 installTestingHooks({
   get state() { return state; },

@@ -8,7 +8,7 @@
 
 | 來源 | story/case | 系統類型 | 產品能力 | 設計責任鏈 | 實際責任鏈 | 實作入口 | 測試檔案 | 狀態 | 證據 | 缺口 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| spec#8 | solCase#10.1／sysCase#6.1 | 本機 WUI | 進入先選帳號、選定載入該帳號進度 | modShell 入口＋modState 載入 | `main.js#selectAccount`／`openAccountSelect`＋`accounts.js`＋`game-state.js#loadAccountState` | `main.js`、`state/accounts.js` | `selftests.js#runAccountSelfTest`、e2e UI | 已測通過 | accounts selftest passed；e2e 選 Mia→`Princess Mia`、overlay 關閉 | 無 |
+| spec#8 | solCase#10.1／sysCase#6.1 | 本機 WUI | 每次進入先選帳號、選定載入該帳號進度 | modShell 入口＋modState 載入 | `main.js#openAccountSelect`（`mustChoose`）／`selectAccount`＋`accounts.js`＋`game-state.js#loadAccountState` | `main.js`、`state/accounts.js` | `selftests.js#runAccountSelfTest`、e2e UI | 已測通過 | 每次啟動顯示帳號選擇（含已有/遷移帳號）、不可略過；e2e 選 Mia→`Princess Mia`、overlay 關閉 | 無 |
 | spec#8 | solCase#10.2／sysCase#6.2 | 本機 WUI | 新增帳號（乾淨初始、成使用中） | modState 建立資料 | `main.js#createNewAccount`＋`game-state.js#createFreshAccount`＋`accounts.js#createAccount` | 同上 | accounts selftest（隔離）、e2e | 已測通過 | 新帳號 coins=100 非繼承；e2e 建立 Mia/Zoe，index=["Mia","Zoe"] | 無 |
 | spec#8 | solCase#10.3／sysCase#6.3 | 本機 WUI | 刪除帳號（刪 active→回選擇；刪最後→空狀態） | modState 移除資料 | `main.js#handleDeleteAccount`＋`accounts.js#deleteAccount` | 同上 | accounts selftest | 已測通過 | 刪非 active 不動 active；刪 active→activeId 清空；清單回 baseline | 刪除 UI 採 window.confirm（見發現#6） |
 | spec#5（修訂） | solStory#5／sysStory#4 | 本機 WUI | 每個帳號各自保存／還原進度 | modState 以 active 帳號鍵存取 | `game-state.js#loadLocalState`／`persistState`（active 帳號鍵） | `state/game-state.js`、`state/storage.js` | accounts selftest（隔離）、save-load selftest | 已測通過 | 切換帳號 coins 各自還原；save-load roundtrip 一致 | 無 |
@@ -44,3 +44,4 @@
 13. **[低風險/未處理] 遷移中途崩潰殘留舊鍵**：若 `removeItem` 前崩潰，下次因已有帳號略過遷移，殘留鍵被忽略、無害。
 14. **[次要/未處理] 帳號清單依建立順序**：無「最近遊玩」排序，屬 UX 增強。
 15. **[測試機制] 單元覆蓋率未插樁**：本 repo 無單元測試框架/覆蓋率工具，沿用瀏覽器 selftest（accounts/save-load/monkey/data-audit）作為可重跑證據；與既有專案一致，非本議題引入之缺口。
+16. **[已修復／Codex PR #92 P2] 啟動 gate 原僅在「無使用中帳號」時顯示**：已有使用中帳號（含遷移後）會略過帳號選擇直接載入，違反 `spec#8`／README「每次進入先選帳號」（共用裝置不應自動沿用上一位玩家）。已修正為**每次啟動都顯示帳號選擇**（`mustChoose` 模式：不可關閉、無 Back、背景點擊不關閉），既有/遷移帳號亦須每次選擇；mid-game「Switch player」維持可 Back 取消。e2e 實測：`gateShownOnLaunchWithActiveAccount=true`、`stillOpenAfterBackdropClick=true`、選定後 `coinsAfterPick=777`。
