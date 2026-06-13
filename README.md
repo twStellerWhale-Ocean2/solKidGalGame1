@@ -1,732 +1,92 @@
-# solKidGalGame
+# solKidGalGame — Princess English Adventure
 
-本 README 是本專案的長期 source of truth。後續修改不採「每次新增都往後堆」的流水帳方式；若設計、流程、資料夾或測試規則改變，應更新對應章節，只在第十章保留短版變更紀錄。
+> 本 README 是本專案的**產品手冊（productReadme）**，從玩家與家長／維護者「實際怎麼用」的角度撰寫。
+> 內部設計與架構的單一事實來源改為 [docs/design.md](docs/design.md)（formatVersion 2.0）；本檔為 2plan 初稿，待 dev／opr 依實作校準。
 
-# 第一章 緣起與目的
+陪 Princess Lumi 到不同地點和角色用一句短英文對話，答對拿 coins、日記與學到的單字，再把 coins 換成看得見的髮型、衣服、鞋帽、配件與整套穿搭。**學英文與換裝獎勵是同一個正向循環。**
 
-## 1.1 專案緣起
+## 這是什麼
 
-本專案是給年幼英文學習者玩的靜態網頁遊戲。核心需求不是做一個題庫、網站或後台，而是做一個兒童能理解、願意反覆玩的日式 ADV 風格英文練習遊戲。
+- 一個給**年幼英文學習者**玩的靜態網頁、日式 ADV 風格英文練習遊戲。
+- 主要在**手機瀏覽器直向**遊玩，桌機也可用。
+- 以 **GitHub Pages 純靜態**部署，無需後端、無 build step。
 
-孩子陪 Princess Lumi 到不同地點和角色對話，練習一個短英文句子；答對後取得 coins、diary record 或 learned words，再把 coins 轉成看得見的髮型、衣服、鞋子、帽子、配件或 outfit set。學英文與換裝獎勵必須形成同一個正向循環。
+不做的事：不做 landing page、不做大型課程平台、不做密集 phonics 課程、不做後台商品管理、不做網路登入／雲端帳號（選角僅切換本機外觀）。
 
-## 1.2 產品目的
+## 怎麼玩
 
-本案目的如下：
-
-- 讓小朋友用短回合、低挫折的方式接觸英文。
-- 用角色陪伴、場景探索與立即獎勵提高持續遊玩意願。
-- 用換裝與視覺變化讓學習成果可見，而不是只顯示分數。
-- 讓家長或維護者能用簡單的靜態網站方式部署與調整內容。
-- 讓 area、角色與衣物能被模組化擴充，不因新增內容而讓核心程式失控。
-
-## 1.3 目標玩家與使用情境
-
-- 核心玩家：年幼英文學習者。
-- 主要裝置：手機瀏覽器直向。
-- 次要裝置：桌機瀏覽器，可保留可用性，但不以寬螢幕完成度取代手機完成度。
-- 發布目標：GitHub Pages，repository root 即靜態網站根目錄。
-- 本地測試：`server.mjs`，預設 URL 為 `http://127.0.0.1:4174/`。
-
-## 1.4 核心體驗
-
-孩子每次遊玩只需要理解一件事：選地方、聽一句、選一句英文、拿獎勵、幫自己的公主變得更可愛。
-
-首次進入遊戲（無存檔）時，會先進入選角與命名畫面，選定公主外觀並輸入名字後才開始。
+核心每一輪只需理解一件事：**選地方 → 聽一句 → 選一句英文 → 拿獎勵 → 幫公主變可愛**。
 
 ```text
-Character Select + Naming (首次強制)
-  -> Princess Room
-  -> Castle Area Map
-  -> World Map
-  -> Area Map
-  -> marker focus
-  -> Scene entry
-  -> Action Choices
-  -> Detail Panel
-  -> Feedback / Return
-  -> coins / diary / learned words / item / outfit change
-  -> repeat
+選角＋命名（首次強制）
+  → Princess Room → Castle Map → World Map → Area Map
+  → 進入地點 Scene → 選動作 → 答題 / 購物 / 換裝
+  → 回饋（coins / 日記 / 學到的字 / 換裝）→ 再來一輪
 ```
 
-## 1.5 本案不做的事
+- **選角與命名**：首次進入會先選公主外觀並輸入名字；之後可再叫出此畫面重選外觀或改名（不影響既有進度）。
+- **地圖導覽**：World Map 選地區（Castle / Urban / Rural / Wild），各地區地圖再選地點；地區間移動一律先回 World Map 再進入。
+- **答英文題**：在有 lesson 的地點聽情境句、從選項選出正確英文，答對得 coins 與學習紀錄；遇困難可按 **Help** 取得提示。
+- **商店與換裝**：用 coins 在各地商店購買外觀，於衣櫃試穿與穿戴；不需要的可退款換回 coins。
+- **操作**：支援觸控、滑鼠、方向鍵 / W·S、Enter、Space、數字鍵；場景內第一層用 `Leave` 回地圖，進入細項面板後用 `Back` 回上一層。
 
-- 不做 landing page。
-- 不做大型課程平台。
-- 不做密集 phonics / spelling 課程序列。
-- 不做後台式商品清單或管理介面。
-- 不做需要 build step、後端服務或大型框架才能遊玩的核心流程。
-- 不讓臨時幾何素材、emoji fallback、CSS 色塊或 placeholder 冒充正式美術。
-- 不做網路登入／密碼／雲端帳號；選角僅切換本機外觀（多人帳號為 #63 範圍）。
-- 本輪角色差異僅膚色，不做五官差異美術；換外觀不影響同一份存檔的進度。
+## 快速開始
 
-# 第二章 架構主軸
+線上：開啟你部署的 GitHub Pages 網址即可遊玩。
 
-## 2.1 技術邊界
-
-本專案維持 GitHub Pages 可直接部署的靜態網站形態，不導入 React、npm、Vite 或其他 build step。核心程式以 `index.html` 載入 `game-engine/main.js`，再由原生 ES Modules 組裝資料、流程、狀態、渲染與測試入口。
-
-程式與內容的基本邊界：
-
-- `content-package/`：可擴充內容包。新增或移除 area、角色、衣物時，優先只動這裡的單一 package 與少量 registry 設定。
-- `content-base/`：固定基礎素材。放不隸屬單一可擴充包、但 runtime 會共用的素材。
-- `game-engine/`：遊戲核心原始碼。只放 bootstrap、state、flow、render、map、scene、system、testing 等程式模組，不放地區或衣物素材。
-- `styles/`：CSS 樣式檔。只處理呈現，不承載內容資料。
-
-開發期契約檢查使用 JSDoc typedef 與 `jsconfig.json`；它只供本機 `tsc --noEmit` 驗證，不改變 GitHub Pages 靜態部署，也不引入 runtime build step。建議指令：
-
-```powershell
-npx --yes -p typescript tsc --noEmit --project jsconfig.json
-```
-
-## 2.2 目前資料夾結構
-
-```text
-solKidGalGame/
-├─ index.html                 # GitHub Pages 與瀏覽器遊戲入口
-├─ jsconfig.json              # JSDoc / ts-check 開發期契約檢查設定
-├─ server.mjs                 # 本機 static server 與本機 OpenAI Help proxy
-├─ README.md                  # 專案長期 source of truth
-├─ AGENTS.md                  # Codex / agent 操作規則
-├─ content-package/           # 可擴充內容包
-│  ├─ areas/                  # 地區資源包
-│  │  ├─ world.js             # World Map destination contract；不是 area package
-│  │  ├─ _shared/             # area 共用 helper
-│  │  ├─ castle/              # Castle area package
-│  │  ├─ urban/               # Urban area package
-│  │  ├─ rural/               # Rural area package
-│  │  └─ wild/                # Wild area package
-│  ├─ characters/             # 可玩角色包
-│  │  └─ lumi/
-│  │     └─ assets/
-│  │        ├─ base.webp      # Lumi 紙娃娃角色基底
-│  │        └─ thumb.webp     # Lumi 角色縮圖
-│  └─ wardrobe/               # 衣物資源包
-│     ├─ manifest.js          # 衣物 runtime 總入口
-│     ├─ _shared/             # 分類、slot、helper、素材路徑
-│     ├─ starter/             # 初始髮型與睡衣狀態
-│     └─ ...                  # 各商店 / 地區衣物 pack
-├─ content-base/              # 固定基礎素材
-│  ├─ world/                  # Kingdom World Map 等跨地區素材
-│  └─ ui/                     # 共用 UI 圖像
-├─ game-engine/               # 遊戲核心 ES Modules
-│  ├─ app/                    # DOM element registry
-│  ├─ build/                  # 版本資訊
-│  ├─ core/                   # lookup 與純函式
-│  ├─ data/                   # registry aggregation
-│  ├─ flow/                   # ADV / action flow
-│  ├─ map/                    # map actor、marker visibility、viewport/pan/zoom runtime
-│  ├─ render/                 # reusable renderer
-│  ├─ scene/                  # scene art descriptor renderer
-│  ├─ state/                  # state、storage、save data shape
-│  ├─ system/                 # Save / Load 等系統工具
-│  ├─ testing/                # selftest hooks
-│  ├─ types.js                # JSDoc typedef contracts
-│  └─ main.js                 # bootstrap / composition root
-└─ styles/                    # CSS 樣式檔
-   ├─ main.css
-   ├─ base.css
-   ├─ map.css
-   ├─ mobile.css
-   ├─ adv.css
-   ├─ shop.css
-   ├─ wardrobe.css
-   ├─ paper-doll.css
-   └─ system.css
-```
-
-## 2.3 Content Package 設計
-
-### Area Packages
-
-每個地區以 `content-package/areas/<area>/manifest.js` 作為唯一 runtime 資料來源。地區專屬地圖、NPC、scene art、場景 atlas、map layers、英文題庫與商店設定，都應留在該 area package 內。
-
-`content-package/areas/world.js` 是 area 之上的 World Map destination contract，不是 area package，也不得放進 `areaRegistry`。它只描述王國總圖、目的地座標、entry node 與暫未開放 destination。
-
-新增或移除 area 的預期工作面：
-
-1. 新增或刪除 `content-package/areas/<area>/manifest.js` 與 `content-package/areas/<area>/assets/`。
-2. 在 `game-engine/data/game-data.js` 匯入或移除該 area 的 registry export。
-3. 必要時更新 `content-package/areas/world.js` 的 World Map destination。
-4. 只有共享 runtime 行為變更時才修改 `game-engine/`、`styles/` 或 `index.html`。
-
-每個 area manifest 的章節順序：
-
-1. `匯入共用工具`
-2. `素材路徑工具`
-3. `英文等級與獎勵設定`
-4. `題庫資料`
-5. `地圖與地點設定`
-6. `對話場景設定`
-7. `衍生匯出`
-
-area icon 或 marker 在地圖中的位置主要改 `nodes.<node>.x` / `nodes.<node>.y`。
-
-### Wardrobe Packages
-
-衣物資料採 resource pack 模式，避免所有衣物集中在單一大清單。
-
-- `content-package/wardrobe/manifest.js` 是衣物 runtime 總入口。
-- `content-package/wardrobe/_shared/` 放跨 pack 共用規則：分類、slot、互斥、layer order、item helper、素材路徑 helper。
-- `content-package/wardrobe/<pack>/manifest.js` 只寫該 pack 的商品資料。
-- `content-package/wardrobe/<pack>/assets/layers/` 放上身透明 WebP layer。
-- `content-package/wardrobe/<pack>/assets/thumbs/` 放商店 / 衣櫃 WebP 縮圖。
-
-新增或移除 wardrobe pack 的預期工作面：
-
-1. 新增或刪除 `content-package/wardrobe/<pack>/manifest.js` 與 `content-package/wardrobe/<pack>/assets/`。
-2. 在 `content-package/wardrobe/manifest.js` 匯入或移除該 pack 的 items export。
-3. 必要時在對應 area manifest 的店家設定中調整 `shopCategories` 或 `defaultCategory`。
-4. 只有新增 slot、分類或裝備規則時才修改 `_shared/`、`game-engine/`、`styles/` 或 `index.html`。
-
-目前 wardrobe runtime 匯總 92 件 items，其中 90 件是付費商品；`starter` store 保留初始髮型與初始睡衣狀態。
-
-| Category | Item type | Items / Paid |
-|---|---|---:|
-| Hair | `hairstyle` | 11 / 10 |
-| Tops | `top` | 10 / 10 |
-| Bottoms | `bottom` | 10 / 10 |
-| Dresses | `dress` | 11 / 10 |
-| Outerwear | `outer` | 10 / 10 |
-| Shoes | `shoes` | 10 / 10 |
-| Hats | `headTop` | 10 / 10 |
-| Accessories | `headSide`、`faceEyes`、`faceMask`、`neck`、`hand` | 10 / 10 |
-| Outfit Sets | `outfitSet` | 10 / 10 |
-
-### Character Packages
-
-紙娃娃採共用 rig 概念：所有可玩娃娃共用同一身型、同一畫布尺寸、同一 slot 對位與同一套衣物 layer。
-
-角色資料夾只放角色本體，例如膚色、臉型與預設外觀；衣服、鞋子、髮型與配件放在 wardrobe packages，不歸屬於單一角色。
-
-`content-package/characters/manifest.js` 是可玩紙娃娃角色 registry。runtime 透過 `state.activeCharacterId` 查詢角色，並由 registry 提供：
-
-- `id`
-- `label`
-- `defaultName`（玩家命名的預設值；名字本身為使用者設定，不屬角色資料）
-- `baseLayer`
-- `thumbImage`
-- `naturalHeightCm`
-- `stageScale`
-- `rig`
-
-`activeCharacterId` 會存入 localStorage 與 Markdown save；讀檔或舊存檔缺少角色 id 時，會正規化回預設角色 `lumi`。新增角色時必須先進 registry，並標明是否相容共用 `shared-512x768-v1` wardrobe rig。
-
-目前 registry 收錄三位外觀：`lumi`、`yumi`、`sol`，各放在 `content-package/characters/<id>/assets/`。本輪三者共用同一張臉與肢體，差異僅膚色（五官差異待後續正式美術）。未來新增角色時，只新增：
-
-- `content-package/characters/<character-id>/assets/base.webp`
-- `content-package/characters/<character-id>/assets/thumb.webp`
-
-只要新角色遵守同一個 `512x768` rig，既有 wardrobe layer 與 thumbs 都能共用。
-
-## 2.4 Manifest 格式
-
-runtime manifest 使用原生 ES Modules，不使用 YAML 作為 runtime source。理由是 browser 可以直接 import `.js`，且 manifest 內需要 helper、derived export 與 asset descriptor。
-
-維護慣例：
-
-- imports 在最上方。
-- 使用 named exports。
-- helper 先於資料。
-- 資料本身不產生 side effect。
-- 使用 `//#region ...` / `//#endregion ...` 固定章節，方便 VS Code Outline 摺疊與定位。
-- region 標題使用繁體中文，region 內適度保留中文註解。
-
-## 2.5 遊戲流程架構
-
-所有主要玩法統一遵循：
-
-```text
-Character Select + Naming -> Princess Room -> Castle Area Map -> World Map -> Area Map -> Scene -> Action Choices -> Detail Panel -> Feedback / Return
-```
-
-- `Character Select + Naming`：獨立的選角＋命名畫面。首次進入（無存檔）強制先完成；之後可再叫出此畫面重選外觀或改名。
-- `World Map`：area 之上的主選單層，只負責選擇 Castle、Urban、Rural、Wild 等目的地；它不是 area package，也不承載 lesson、shop 或 scene。
-- `Area Map`：只負責單一地區、地標、marker focus、gate，不直接塞商品清單或系統設定。
-- `Scene`：進入某個地點後的 ADV 場景，顯示背景、Princess Lumi、NPC、地點名稱、場景句與 action choices；可見對話列直接顯示場景句，行尾放播音按鈕，不另顯示 NPC 人名標題。
-- `Action Choices`：第一層 scene action 由 `game-engine/flow/scene-actions.js` 產生，handler type 包含 `wardrobe`、`help`、`shop`、`refund` 與 navigation `leave`。
-- `Detail Panel`：玩家選擇具體動作後才顯示，例如答題、購物、換裝、退款、設定、存讀檔。
-- `Feedback / Return`：顯示結果並提供清楚返回路徑，不讓玩家卡在大型 panel。
-
-目前 runtime 實際支援的第一層 action：
-
-| 場景類型 | 第一層 action |
-|---|---|
-| Princess Room | Hair、Tops、Bottoms、Dresses、Outerwear、Shoes、Hats、Accessories、Outfit Sets、Leave |
-| Shop scene | 若該地點有 lesson 則顯示 Help，並顯示 Shop、Refund、Leave |
-| 一般 NPC scene | 若該地點有 lesson 則顯示 Help，並顯示 Leave |
-| 無 lesson 的一般 scene / portal | 顯示 Leave；hint 類 detail 由測試或特定 flow 進入 |
-
-ADV 介面採三段式 layout：
-
-```text
-Fixed Prompt Area
-  -> Scrollable Content Area
-  -> Fixed Navigation Footer
-```
-
-`Leave` 只屬於 scene-level；進入 Shop、Wardrobe、Refund、Quest 或 Hint detail 後，底部 navigation footer 只使用 `Back` 回到上一層 action choices。
-
-選角與命名的存檔與稱呼規則：
-
-- 玩家名字存於使用者設定 `playerName`，預設取自所選角色的 `defaultName`，可自取。
-- 遊戲內對玩家公主的稱呼一律使用 `playerName`（動態）；世界觀／品牌名「Luminara」（王國、城堡等）維持固定，不隨玩家名字改變。
-- `playerName` 與 `activeCharacterId` 一併存入 localStorage 與 Markdown save；缺漏時 `activeCharacterId` 回退預設 `lumi`、`playerName` 回退該角色 `defaultName`。
-- `playerName` 輸入須限制長度並過濾 `|`、換行與 Markdown 符號，避免破壞存檔格式。
-
-ADV 場景的 NPC 人名仍保留在 scene config、DOM metadata、QA metrics 與 accessibility 用途；它不是可見對話標題。場景句與播音 icon 直接放在對話方塊上，不額外加內框；第一層 action choices 可以使用較輕、較透明的按鈕視覺，但手機觸控高度不得因縮小字級而低於安全可點範圍。
-
-## 2.6 地區與英文難度
-
-目前 `game-engine/data/game-data.js` 匯總的 area registry：
-
-| Area | 狀態 | View | Default node | Nodes / Locations | 英文等級 | Reward |
-|---|---:|---|---|---:|---|---:|
-| Castle | enabled | `home` | `princessRoom` | 9 / 9 | Dolch Sight Words 220 | 20 coins |
-| Urban | enabled | `map` | `garden` | 17 / 17 | Cambridge Starters | 100 coins |
-| Rural | enabled | `map` | `ruralEntrance` | 10 / 10 | Cambridge Movers | 500 coins |
-| Wild | enabled | `map` | `wildEntrance` | 10 / 10 | Cambridge Flyers | 2000 coins |
-| Ocean | disabled placeholder | - | - | 0 / 0 | - | - |
-
-目前 shop 設定：
-
-| Area | Shop | Categories |
-|---|---|---|
-| Castle | Royal Cloak Room | Outerwear、Hats |
-| Castle | Castle Seamstress | Tops、Bottoms |
-| Urban | Dress Boutique | Dresses、Outfit Sets |
-| Urban | Hair Salon | Hair |
-| Urban | Tailor Studio | Tops、Bottoms |
-| Urban | Shoe Shop | Shoes |
-| Urban | Accessory Atelier | Hats、Accessories |
-| Rural | Workwear Stall | Tops、Bottoms |
-| Rural | Field Cobbler | Shoes、Hats |
-| Wild | Fairy Atelier | Dresses、Accessories |
-| Wild | Dwarf Cottage | Outerwear、Shoes |
-
-地區間移動由 `content-package/areas/world.js` 的 World Map destination 管理，不讓地區包彼此直接相依。正式遊玩 UI 不使用底部快速地區切換按鈕；Castle、Urban、Rural、Wild 之間必須先走地圖上的 gate，再由 World Map 進入目標 area 的 entry node。
-
-目前 World Map destinations：
-
-- Castle -> Castle `castleGate`
-- Urban -> Urban `castleRoom`
-- Rural -> Rural `ruralEntrance`
-- Wild -> Wild `wildEntrance`
-- Ocean -> disabled placeholder
-
-## 2.7 素材與畫風規格
-
-- 正式 runtime 素材統一使用 WebP。
-- 地圖、ADV 背景、NPC、角色、衣物 layer、商品縮圖都必須是正式 bitmap 美術資產。
-- World Map 正式契約：`content-base/world/assets/world-map.webp`，實際像素與 manifest 必須是 `1024x1536`。
-- Area Map 正式契約：每個 enabled area 使用 `content-package/areas/<area>/assets/map-1536.webp`，實際像素與 manifest 必須是 `1536x1536`；舊 `map.webp` 可保留為 baseline，但不得作為正式 runtime map。
-- Scene background 正式契約：每個 runtime 使用的 ADV scene background 必須是單張 `1024x1024` WebP；舊 atlas 可保留為 baseline，但不得作為正式 runtime scene background。
-- ADV scene background 必須由 `sceneArt` renderer 統一載入；場景專屬 CSS class 不得硬編碼背景 URL、不得建立 CSS fallback 背景圖，也不得用模糊 cover 冒充手機裁切。
-- 手機直向寬度不足時，ADV scene background 應以正式 `1024x1024` 圖中央構圖裁切左右；不得因 viewport 較窄而在上方或兩側疊加 blur / frosted cover。
-- ADV 對話 UI 必須使用低飽和深色高不透明底，文字、按鈕與 focus 狀態需保持高對比；UI 可遮罩文字區，但不得用白色霧面洗掉人物、衣物或背景細節。
-- ADV 舞台尺度：標準室內與一般商店約 5.5-6m 寬，小商店可為 4.5-5.5m，大廳與戶外可為 8-12m；角色站位、主要互動物件與可讀地標需落在手機安全構圖區內。
-- ADV 場景人物若需拉高或放大，必須調整共用 scene stage scale / stage height；不得為單一 NPC、單一場景或單一圖片建立 runtime nudge。若個別圖檔腳底、中心線或透明留白不符合契約，應修正素材本身。
-- `content-package/areas/*/assets/characters/*.webp` 的 NPC portrait 必須保留 alpha 透明背景，不得把場景、紙張、純色或漸層矩形背景烘進角色圖。
-- NPC portrait 的人物視覺中心必須在共用 canvas 的水平中心附近；若人物在圖內偏左或偏右，應修正原始 WebP / 透明留白，不得用場景專屬 CSS、角色專屬 offset 或單一變數補償。
-- CSS 只能處理 UI chrome、排版、陰影、選取狀態與安全的裝飾效果。
-- 不得用 CSS 幾何、SVG 拼貼、emoji fallback 或 placeholder 宣稱 gameplay complete。
-- 商品縮圖與穿戴後上身效果必須分別驗收。
-- 若美術尚未完成，應在測試或 issue 中標為未完成，不得把臨時素材寫成完成。
-
-### 2.7.1 角色自然尺度規格
-
-所有 ADV 場景人物必須遵守同一個自然尺度契約，避免 desktop 看似正常、mobile 因圖檔比例或 CSS 寬度換算而出現身高不一致。
-
-角色尺度契約：
-
-```text
-canvas = 512x768
-groundBaselineY = 768
-fullCanvasHeightCm = 200
-1cm = 3.84px
-bodyHeightPx = naturalHeightCm / 200 * 768
-NPC stageScale = 1.0
-Lumi naturalHeightCm = 125
-Lumi ADV stageScale = 1.20
-```
-
-維護規則：
-
-- `content-package/areas/*/assets/characters/*.webp` 的 NPC 圖必須是 `512x768` 透明 WebP。
-- NPC 圖的水平構圖必須遵守模組化中心線：人物身體視覺中心應對齊 `x=256` 附近；偏移問題屬於素材錯誤，必須改圖，不得在 runtime 為個別 NPC 加水平 nudge。
-- NPC 腳底必須貼近 canvas 最底端；底部透明留白不得用來調整人物站位。
-- NPC 可視人物高度必須由 `npcNaturalHeightCm` 換算，不得由 WebP canvas 比例、mobile CSS 個別縮放或透明留白意外造成。
-- `npcNaturalHeightCm` 寫在各 area 的 scene config，作為 runtime 與 QA 共用的機器可讀尺度來源。
-- Lumi 與 wardrobe layer 共用同一個 `512x768` paper-doll rig；衣物 layer 必須和 Lumi base 做同一幾何對位，不得各自縮放。
-- Lumi 的主角感只由 ADV 舞台倍率 `1.20` 表達，不得把 Lumi base 或衣物 layer 做成不同自然尺度。
-- 特殊矮小或大型角色可以有不同 `naturalHeightCm`，但仍必須落在同一 `768px = 200cm` 尺度內；若超過 200cm，必須拆成明確的特殊規格，不可偷偷改 canvas 或 CSS。
-
-# 第三章 測試與品質驗收
-
-## 3.1 測試總原則
-
-本案是 ADV game，不是一般網站。因此測試不能只看「頁面有載入」或「console clean」。必須用玩家視角驗證每個 flow node：地圖、scene entry、action choices、detail panel、feedback、return path，以及 Lumi 身上的視覺變化。
-
-基本規則：
-
-- 測試必須先定義 surface inventory 與 screenshot manifest。
-- 每張測試截圖都要能回到 manifest row。
-- contact sheet 只能當索引，不能替代全尺寸截圖審查。
-- `node --check`、console clean、DOM exists、monkey pass 不能替代美術測試。
-- 涉及手機 UI 時，必須記錄實際 viewport 條件：`innerWidth`、`innerHeight`、`documentElement.clientHeight`、`visualViewport.width`、`visualViewport.height`、`devicePixelRatio`。
-- 第一層 `Leave` 與第二層 `Back` 必須量測 bounding box，確認在有效 viewport 內可見且可點。
-- Browser / localhost / rendered UI QA 優先使用 Codex in-app Browser；若無法使用，才記錄原因並使用同一 URL 的 fallback 工具。
-- 測試報告與截圖放在 `.codex/log/`，不把 QA 截圖或暫存 JSON 放回 `doc/` 當常駐 source。
-
-## 3.2 測試紀錄格式
-
-建議紀錄：
-
-```text
-.codex/log/<yyyyMMdd-hhmmss-功能性測試.md>
-.codex/log/<yyyyMMdd-hhmmss-系統性測試.md>
-.codex/log/<yyyyMMdd-hhmmss-介面性測試.md>
-.codex/log/<yyyyMMdd-hhmmss-猴子性測試.md>
-.codex/log/<yyyyMMdd-hhmmss-美術性測試.md>
-.codex/log/<yyyyMMdd-hhmmss-好玩性測試.md>
-.codex/log/<yyyyMMdd-hhmmss>-qa/
-```
-
-每份測試報告至少包含：
-
-- URL 與 viewport。
-- 測試 surface / flow node。
-- 操作步驟。
-- 預期結果。
-- 實際結果。
-- console / page error 狀態。
-- 截圖或無法截圖的具體原因。
-- 結論：`通過`、`未完成`、`Must Fix`、`Should Fix`、`Accept`、`阻塞`。
-
-## 3.3 功能性測試
-
-目的：驗證 Room、Map、ADV、Shop、Wardrobe、Diary 的核心流程可玩。
-
-必測項目：
-
-- Room 透過 `Leave` 回到 Castle Map。
-- Castle / World / Urban / Rural / Wild Map 可移動或選取、可進入 marker，所有 gate 先回 World Map，再進入目標 area entry node。
-- ADV 測試答錯、答對、上下鍵、數字鍵、speaker / help button。
-- Shop 測試進入、試穿、購買、owned 狀態、equipped 狀態、離開。
-- Wardrobe 測試 Hair、Tops、Bottoms、Dresses、Outerwear、Shoes、Hats、Accessories、Outfit Sets。
-- 空分類顯示 empty state，不得 fallback 到其他分類。
-- Diary 檢查任務、購買、學習事件是否記錄。
-- Save MD / Load MD 可保存並還原進度。
-- 首次進入顯示選角＋命名畫面，選定並命名後才進遊戲。
-- 可重新叫出選角畫面切換外觀、修改名字；遊戲內稱呼隨 `playerName` 更新，Luminara 等品牌名不變。
-- `playerName` 與所選外觀經 Save / Load 與 localStorage 正確還原。
-
-完成條件：
-
-- 主循環完整可用。
-- 所有核心 surface 已實際操作。
-- 沒有用語法檢查取代遊玩驗證。
-
-## 3.4 系統性測試
-
-目的：驗證 Save、Load、Settings、資料保存、狀態不變量與 console health。
-
-必測項目：
-
-- 不同 coins、裝備、任務、位置、menu 狀態下都可保存與還原。
-- localStorage 重新整理後能恢復或乾淨重開。
-- coins 不為負。
-- 裝備不指向未擁有物。
-- active scene 唯一。
-- modal 可離開。
-- console error / warning 需記錄並判斷是否相關。
-
-完成條件：
-
-- Save / Load / Settings / Diary 可用且不破壞沉浸感。
-- 狀態不變量成立。
-- 無相關 console error / warning。
-
-## 3.5 介面性測試
-
-目的：驗證操作一致、可理解，且符合日式 MAP ADV 操作感。
-
-必測項目：
-
-- 滑鼠、觸控、方向鍵、W/S、Enter、Space、數字鍵可用。
-- 任務、地點、商店、換裝選單操作一致。
-- focus 高亮或 `▶` 清楚。
-- 第一層 `Leave`、第二層 `Back`、game menu overlay 返回一致。
-- ADV 三段式 layout 成立：上方台詞固定、中段內容可捲動、底部 navigation footer 固定可見。
-- Shop / Wardrobe / Refund 共用 item detail contract。
-- 長商品名、price、Owned、Equipped、Need、Refund、inline action 在手機直向可讀可點。
-- Quest / Hint / Shop / Wardrobe / Refund detail 只用 `Back` 回 scene action choices，回到 scene action choices 後才用 `Leave` 回 Map；沒有 lesson 的一般 scene 不應硬顯示 Help。
-- 可見對話列應是「場景句 + 播音按鈕」，不得再把 NPC 人名作為可見第一行標題。
-- 文字大小、行高、按鈕區域適合兒童；action choices 可比主台詞小，但 Help / Leave / Back 的可點高度必須維持手機安全範圍。
-
-完成條件：
-
-- 玩家不需理解網站操作即可完成流程。
-- 不再有明顯表單、後台、landing page 或 dashboard card 感。
-
-## 3.6 猴子性測試與回歸測試
-
-目的：驗證隨機與極端操作不會破壞狀態或卡死。
-
-優先入口：
-
-- `?selftest=monkey`
-- `?selftest=save-load`
-- `?selftest=data-audit`，必須檢查 World Map、Area Map 與 ADV scene background 的 manifest / 實際像素尺寸契約；scene background 違規算 fail。
-- `?selftest=visual-qa&surface=<surface-id>`
-
-必測項目：
-
-- 隨機移動、進出地點、答題、商店、換裝、Save / Load、menu。
-- 快速切換 Room、Map、ADV、Shop、Wardrobe。
-- 快速連按 Enter、Space、方向鍵、數字鍵、Back / Leave。
-- 在讀檔、開選單、換裝、購買、答題時切換場景。
-- 檢查 focus 不卡死，Leave / Back 仍可返回。
-
-完成條件：
-
-- 隨機操作不造成崩潰、卡死或無法離開狀態。
-- 若目標是盤點，必須分 surface 記錄，不只回報全域 pass/fail。
-
-## 3.7 美術性測試
-
-目的：用玩家視角檢查畫面是否真像兒童日式 MAP ADV，而不是網站或半成品。
-
-美術測試是本案最重要的 QA 類型之一。工程測試通過不代表美術通過。
-
-### 3.7.1 準備
-
-- 先定義 screenshot manifest，列出 Room、Map、各地點、任務 ADV、Shop、Refund、Wardrobe、Diary、Settings、Save / Load。
-- 全尺寸打開每張截圖；contact sheet 只作索引。
-- 先審查正式美術來源。程式幾何圖、CSS 色塊、SVG 拼貼、模糊截圖、placeholder 必列 `Must Fix`。
-- 若使用者提供實機截圖，必須把該截圖條件納入驗證，不得用理想 viewport 反駁。
-- 修改前保存 baseline，修改後重截同一 flow node / viewport。
-
-### 3.7.2 每張遊戲畫面的固定檢查清單
-
-每個 surface 至少檢查：
-
-- HUD / stat / header 是否完全在 viewport 內。
-- 是否有水平捲動、安全區裁切、地址列遮擋。
-- 文字是否裁切、擠壓、溢出、互相覆蓋。
-- 可點擊目標是否太小、太貼邊或被遮擋。
-- 背景、角色、NPC、道具與 UI 是否像同一個空間與同一套視覺語言。
-- 角色比例、站位、裁切、腳底接地、陰影 / 底座與背景透視是否自然。
-- 人物整體縮放需維持全場景一致；若放大角色，必須檢查 Princess Lumi 與 NPC 的頭部裁切、腳底接地、對話框遮擋與左右重疊是否仍可接受。
-- 對話框、Shop / Wardrobe panel、設定 panel 是否壓壞舞台構圖；手機 scene entry 至少需看得到人物頭部與上半身。
-- Princess Room 必須讓 Lumi 與目前穿搭清楚可見，不得只露出腳或被對話 UI / 白霧覆蓋。
-- ADV 背景截圖不得出現非正式 blur cover；手機寬度不足時應裁切正式背景左右，而不是新增模糊補圖。
-- Scene entry 是否只顯示場景、角色與 action choices，不提前塞商品列表或換裝列表。
-- `World Map -> Area Map -> Scene -> Action Choices -> Detail Panel` 層級是否能從截圖辨識。
-- 使用者曾指出的具體畫面是否有同名 row、同名問題、實際截圖證據與結論。
-
-### 3.7.3 批評點與修訂循環
-
-每個遊戲畫面要產生具體批評點，依下列分類：
-
-- `Must Fix`：會讓畫面看起來壞掉、不可玩、不像正式遊戲或違反需求。
-- `Should Fix`：不一定阻塞，但會降低完成度、可讀性或美感。
-- `Accept`：可以接受，保留作為通過點或不改原因。
-
-非 Accept 問題進入修訂循環：
-
-```text
-解決規劃
-  -> 最小可驗證改動
-  -> 重截同一 flow node / viewport
-  -> 重跑固定檢查清單
-  -> 誠實結案
-```
-
-報告每個非 Accept 問題使用固定欄位：
-
-- `分類`
-- `影響尺寸`
-- `解決規劃`
-- `前後比較`
-- `修訂結論`
-
-修訂結論只能是：
-
-- `修訂完成`
-- `找不到更好方案`
-- `修訂失敗`
-- `未修訂`
-- `拆成後續工程項`
-
-`Must Fix` 修正循環最多 3 輪；第 3 輪仍有 `Must Fix` 時，不得宣稱美術性測試完成。
-
-### 3.7.4 美術測試完成條件
-
-- 所有必測 manifest row 都已截圖、可開啟、已檢查。
-- Scene entry、action choices、detail panel、feedback、返回路徑各自有截圖與結論。
-- 每個修訂項目都有修改前圖、修改後圖或明確缺圖原因。
-- 涉及 ADV 背景、人物可視性或對話 UI 的改動，必須產出 PDF QA 報告；報告至少包含 Issue / branch / commit、URL、viewport metrics、截圖、console / page error 狀態與結論。
-- 任一必測 row 為 `未完成`、缺檔、未檢查或仍有 `Must Fix` 時，本 stage 未完成。
-- 不得以 contact sheet、工程測試通過、「比上一版好」或非正式素材替代美術通過。
-
-### 3.7.5 角色尺度 QA
-
-角色尺度變更必須同時做自動檢查與截圖檢查。
-
-自動檢查至少包含：
-
-- 每個有 `npcImage` 的 scene config 都有 `npcNaturalHeightCm`。
-- 每張 NPC WebP 都是 `512x768`，有 alpha，且腳底 alpha bbox 貼近 `groundBaselineY = 768`。
-- NPC alpha bbox 高度必須符合 `naturalHeightCm / 200 * 768`，容許誤差只能用於抗鋸齒、鞋底或少量髮絲。
-- Lumi `base.webp` 是 `512x768`，可視高度符合 `125cm` 的自然尺度，腳底貼近底線。
-- 所有 wardrobe layer 都是 `512x768`，並和 Lumi base 維持同一 paper-doll rig 對位。
-
-截圖檢查至少包含：
-
-- mobile 與 desktop 各截一次 King Hall 與 Farm，確認 King Rowan / Auntie Pom 的差異只來自 `naturalHeightCm`，不是 canvas 比例。
-- 截 Princess Room 與每個 wardrobe category，確認 Lumi 縮放後衣物、鞋子、帽子、髮型與配件沒有漂移、裁切、浮空或穿幫。
-- 若使用者提供實機截圖，必須用相同 flow node 與等效 viewport 重測，不得用理想 viewport 取代。
-- 露膚衣物層（短袖、涼鞋／赤腳、手部配件邊界）需逐一在各膚色角色上檢查接縫，不得殘留為單一膚色繪製的色塊。
-- selftest 角色 registry 斷言改為 registry 驅動，不寫死單一 `Princess Lumi` 標籤。
-
-## 3.8 好玩性測試
-
-目的：確認遊戲具備兒童願意繼續玩的目標、節奏、回饋與獎勵。
-
-必測項目：
-
-- 主循環是否清楚：Room -> Castle Area Map -> World Map -> Area Map -> ADV -> coins -> Shop -> Room。
-- 小朋友是否知道下一步要做什麼。
-- 答對、購買、換裝、徽章、存檔是否有明確回饋。
-- 商店商品是否想買。
-- 英文選項是否短、清楚、低挫折。
-- 對話是否太長、節奏是否拖、地圖是否容易迷路。
-
-完成條件：
-
-- 遊戲有清楚目標、正向回饋與持續誘因。
-- 小朋友能理解、願意探索，不覺得只是問答網站或管理介面。
-
-## 3.9 常用 QA URL
-
-```text
-http://127.0.0.1:4174/#home
-http://127.0.0.1:4174/#world
-http://127.0.0.1:4174/#map
-http://127.0.0.1:4174/?selftest=data-audit
-http://127.0.0.1:4174/?selftest=save-load
-http://127.0.0.1:4174/?selftest=monkey
-http://127.0.0.1:4174/?selftest=visual-qa&surface=wardrobe-detail&category=accessories&owned=all#home
-http://127.0.0.1:4174/?selftest=visual-qa&surface=wardrobe-detail&category=outfitSets&owned=all#home
-```
-
-`visual-qa` 目前由 `game-engine/testing/selftests.js` 支援下列 surface：
-
-- `castle-map`
-- `world-map`
-- `princess-room-scene`
-- `wardrobe-detail`
-- `urban-map`
-- `wild-map`
-- `rural-map`
-- `map-near`
-- `quest`
-- `shop-scene`
-- `shop` / `shop-detail`
-- `refund-detail`
-- `shop-sold-out`
-- `shop-not-enough`
-- `hint`
-- `shop-feedback`
-- `diary`
-- `settings`
-- `english`
-- `save`
-
-`visual-qa` 可使用：
-
-- `fresh=1`：從乾淨狀態開始。
-- `place=<hotspot-id>`：指定地點；未指定時預設 `garden`。
-- `destination=<world-destination-id>`：指定 World Map 測試要聚焦的 destination。
-- `category=<wardrobe-category>`：指定 wardrobe detail category。
-- `item=<item-id>`：指定 shop / refund / feedback surface 要聚焦的 item。
-- `coins=<number>`：指定測試 coins。
-- `owned=all`：注入全部已擁有物品。
-- `owned=itemId,itemId`：指定已擁有物品。
-- `equip=itemId,itemId`：指定穿搭。
-- `report=1`：產生頁面端 visual QA metrics report。
-
-這些 query 只供測試，不是正式遊戲入口。
-
-# 第十章 結論、註記與維護紀錄
-
-## 10.1 結論
-
-本專案的核心價值是「短英文 ADV 對話 -> coins / diary -> 立即換裝回饋」的閉環。未來所有功能都應服務這個閉環，不應把專案推回普通網站、題庫、後台商品清單或沒有視覺獎勵的學習工具。
-
-架構上，`content-package/`、`content-base/`、`game-engine/`、`styles/` 是目前固定的第一層分類。新增內容時優先新增 package；只有 shared runtime 行為真的改變時才修改 core engine。
-
-## 10.2 部署作法
-
-GitHub Pages：
-
-- 使用 `Deploy from a branch`。
-- 靜態網站 root 選 repository root。
-- `index.html` 為入口。
-- repository root 必須保留 `.nojekyll`，避免 GitHub Pages 的 Jekyll 處理略過 `_shared` 等底線開頭資料夾，造成 production ES module import 404 並讓遊戲無法操作。
-- `server.mjs` 只用於本機 OpenAI Help proxy 測試，不是 GitHub Pages 必需項。
-
-本機 static-only：
+本機（純靜態）：
 
 ```powershell
 python -m http.server 4173
 ```
 
-本機 optional help proxy：
+本機（含英文 Help 提示，選配）：
 
 ```powershell
 $env:OPENAI_API_KEY="sk-..."
-$env:OPENAI_ORG_ID="org_..."
+$env:OPENAI_ORG_ID="org_..."   # 選配
 node server.mjs
 ```
 
-預設本機 server URL：
+預設本機網址：`http://127.0.0.1:4174/`。
+Help 提示需上述本機 OpenAI proxy；未設定金鑰時遊戲仍可玩，Help 會顯示降級訊息。
 
-```text
-http://127.0.0.1:4174/
-```
+## 存檔與還原
 
-## 10.3 維護規則
+- 進度（coins、穿搭、日記、位置、所選角色與名字）會自動存入瀏覽器本機儲存，重整後還原。
+- 可於 Save / Load 介面**匯出 Markdown 存檔**並再次**匯入還原**；缺漏或舊格式存檔會自動正規化回安全預設。
 
-- README 不再保留完整歷史流水帳。
-- 若設計改變，更新對應章節。
-- 若資料夾改變，更新第二章。
-- 若測試規則改變，更新第三章。
-- 若只是短期 bug、QA 截圖、selftest JSON、臨時 audit artifact，不提交為專案常駐文件。
-- 舊討論、舊截圖、舊報告若需要追蹤，放在 `.codex/log/` 或 issue，不放回 README 主體。
+## 部署（GitHub Pages）
 
-## 10.4 參考資料
+- 使用 `Deploy from a branch`，靜態網站 root 選 **repository root**，入口為 `index.html`。
+- repository root 必須保留 `.nojekyll`（否則 `_shared` 等底線開頭資料夾會被 Jekyll 略過，造成 ES module 404）。
+- `server.mjs` 只用於本機 Help proxy，不是 GitHub Pages 必需項。
 
-| 參考案例 | 本案借用方向 |
+## 擴充內容（給維護者）
+
+area、角色與衣物都是 `content-package/` 下的**模組化內容包**，新增／調整內容時優先只動單一包與少量 registry 設定，不必改核心引擎。資料夾慣例、manifest 章節、角色 `512×768` rig 與美術尺度等細部規則，見：
+
+- 內部設計 SSOT：[docs/design.md](docs/design.md)
+- 角色尺度與美術契約：[contract-local/hmiIntf自訂角色尺度與美術規範.md](contract-local/hmiIntf自訂角色尺度與美術規範.md)
+- 技術選型與契約：[contract-common/](contract-common/)、[contract-local/contract-index.md](contract-local/contract-index.md)
+- agent 操作規則：[AGENTS.md](AGENTS.md)
+
+## 成功判定
+
+- 兒童能在短回合、低挫折下完成英文練習並獲得即時回饋。
+- 「答題 → 獲獎勵 → 換裝」可在單次遊玩內成環，外觀有看得見的改變。
+- 進度可保存並還原；首次選角與命名順暢，遊戲內稱呼隨名字更新（品牌名 Luminara 不變）。
+- 維護者能以純靜態方式部署，並可模組化擴充內容而不影響既有功能。
+
+## 參考案例
+
+| 參考 | 借用方向 |
 |---|---|
 | [Khan Academy Kids](https://en.khanacademy.org/kids) | 角色陪伴、短任務、學習足跡 |
 | [Duolingo ABC](https://abc.duolingo.com/) | 短回合、低挫折、即時回饋 |
 | [Lingokids](https://help.lingokids.com/hc/en-us/articles/23532720590610-Playlearning-Sections) | Playlearning 與兒童可自行操作的導覽 |
 | [Toca Boca World](https://www.tocaboca.com/app/world/) | Dress-up、自我表達、角色扮演 |
 
-## 10.5 變更紀錄
+## 變更紀錄
 
-- 2026-06-05：整理 repo 第一層為 `content-package/`、`content-base/`、`game-engine/`、`styles/`。
-- 2026-06-05：Area 改為 `castle`、`urban`、`rural`、`wild`。
-- 2026-06-05：衣物資源包集中到 `content-package/wardrobe/<pack>/`。
-- 2026-06-05：可玩角色素材集中到 `content-package/characters/<character-id>/assets/`。
-- 2026-06-05：正式 runtime 素材統一使用 WebP。
-- 2026-06-05：README 重整為第一章緣起與目的、第二章架構主軸、第三章測試與品質驗收、第十章結論與註記。
-- 2026-06-06：新增角色自然尺度規格：`512x768`、底線 `y=768`、`768px = 200cm`、Lumi ADV stageScale `1.20`。
-- 2026-06-06：新增 World Map 層與 map 尺寸契約：world `1024x1536`，enabled area maps `1536x1536`。
-- 2026-06-06：ADV scene background 轉為正式 `1024x1024` 契約，並補入 ADV 舞台尺度規格。
-- 2026-06-11：Issue 76 refactor track phase 0/1：新增 QA baseline 紀錄、抽出 map viewport controller、加入 JSDoc typedef 與 `jsconfig.json` 開發期契約檢查。
-- 2026-06-11：Issue 77 multi-character foundation：新增 character registry、`activeCharacterId` state/save 正規化與角色驅動 paper-doll base layer。
-- 2026-06-12：Issue 82 ADV scene cleanup：補明 sceneArt 單一背景入口、手機裁切不得使用 blur cover、深色高對比對話 UI 與 PDF 美術 QA 報告要求。
-- 2026-06-13：依 issue #87 加入面向玩家的選角＋命名功能（角色＝外觀、本輪只差膚色；名字＝使用者設定 playerName，預設取自角色 defaultName），並將遊戲內玩家稱呼動態化；方法論導入（方案級 design.md + docLint）分流至 #88。
+- 2026-06-13（issue #88）：導入 2tech 設計方法論。新增內部設計 SSOT [docs/design.md](docs/design.md) 與 [scripts/docLint.ps1](scripts/docLint.ps1)；README 改寫為產品手冊；角色尺度與美術規則拆入 contract-local 契約。先前的詳細開發／架構／QA 內容見本次變更前的 README（git 歷史）與待補契約清單。
