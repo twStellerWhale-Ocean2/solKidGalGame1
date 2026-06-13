@@ -1,5 +1,6 @@
 export const defaultState = {
   activeCharacterId: "lumi",
+  playerName: "Lumi",
   coins: 100,
   energy: 84,
   vocab: 0,

@@ -46,7 +46,7 @@ import { renderItemDetailPanel } from "./render/item-panel.js";
 import { createPaperDollRenderer } from "./render/paper-doll.js";
 import { renderBuildInfo } from "./render/settings.js";
 import { applyAdvSceneArt } from "./scene/scene-art.js";
-import { openAISettingsKey, saveMarkerEnd, saveMarkerStart } from "./state/storage.js";
+import { openAISettingsKey, saveMarkerEnd, saveMarkerStart, storageKey } from "./state/storage.js";
 import {
   addDiary as addStateDiary,
   addUnique as addStateUnique,
@@ -64,6 +64,7 @@ import {
   outfitSummary as stateOutfitSummary,
   persistOpenAISettings as saveOpenAISettings,
   persistState,
+  sanitizePlayerName,
   updateProgressBadges as updateStateProgressBadges
 } from "./state/game-state.js";
 import { installTestingHooks } from "./testing/selftests.js";
@@ -90,6 +91,8 @@ let pendingMapRefreshArea = "";
 let systemMenuPanel = "diary";
 let activeCastleHotspot = null;
 let activeWorldDestinationId = "castle";
+let pendingCharacterId = state.activeCharacterId;
+let playerNameEdited = false;
 
 const elements = createElements();
 const areaMapViewportController = createAreaMapViewportController({
@@ -326,6 +329,7 @@ function setExpressions(princess = "normal", npc = "normal") {
 
 function render() {
   renderStatus();
+  renderIdentity();
   renderAreaNav();
   renderPaperDolls();
   renderHome();
@@ -339,6 +343,98 @@ function render() {
 function renderStatus() {
   elements.coinValue.textContent = state.coins;
   elements.outfitSummary.textContent = outfitSummary();
+}
+
+// 玩家公主的名字為使用者設定；遊戲內稱呼一律取此值（世界觀／品牌名 Luminara 不在此列）。
+function princessName() {
+  return state.playerName || playableCharacterById(state.activeCharacterId)?.defaultName || "Lumi";
+}
+
+// 課程題目原文以 "Lumi" 撰寫；顯示前統一替換為玩家名字。
+// prompt／answer／choices／words 一致替換，確保 answerLesson 的 choice === answer 比對仍成立。
+function withPlayerName(text) {
+  return typeof text === "string" ? text.replaceAll("Lumi", princessName()) : text;
+}
+
+function localizeLesson(lesson) {
+  if (!lesson) return lesson;
+  return {
+    ...lesson,
+    prompt: withPlayerName(lesson.prompt),
+    answer: withPlayerName(lesson.answer),
+    choices: Array.isArray(lesson.choices) ? lesson.choices.map(withPlayerName) : lesson.choices,
+    words: Array.isArray(lesson.words) ? lesson.words.map(withPlayerName) : lesson.words
+  };
+}
+
+function renderIdentity() {
+  const name = princessName();
+  if (elements.princessNameTitle) elements.princessNameTitle.textContent = `Princess ${name}`;
+  const sideDollLabel = `Princess ${name}`;
+  document.querySelector(".adv-princess")?.setAttribute("aria-label", sideDollLabel);
+  elements.castlePlayerToken?.setAttribute("aria-label", `Princess ${name} in the castle`);
+  elements.playerToken?.setAttribute("aria-label", `Princess ${name}`);
+  const diaryTitle = `${name} Diary`;
+  const systemMenuTitleEl = document.getElementById("systemMenuTitle");
+  if (systemMenuTitleEl) systemMenuTitleEl.textContent = diaryTitle;
+  elements.systemMenuButton?.setAttribute("aria-label", `Open ${diaryTitle} and Settings`);
+  elements.systemMenuClose?.setAttribute("aria-label", `Close ${diaryTitle}`);
+}
+
+function openCharacterSelect({ forced = false } = {}) {
+  pendingCharacterId = state.activeCharacterId;
+  // 既有的自訂名字（與目前角色預設名不同）視為玩家已輸入，切換外觀時不覆蓋。
+  const activeDefaultName = playableCharacterById(state.activeCharacterId)?.defaultName;
+  playerNameEdited = Boolean(state.playerName) && state.playerName !== activeDefaultName;
+  buildCharacterCards();
+  elements.playerNameInput.value = state.playerName || playableCharacterById(pendingCharacterId)?.defaultName || "";
+  elements.characterSelect.classList.toggle("first-run", forced);
+  elements.characterSelect.classList.add("show");
+  elements.characterSelect.setAttribute("aria-hidden", "false");
+  document.body.classList.add("character-select-open");
+  setTimeout(() => elements.characterSelectCard?.focus({ preventScroll: true }), 0);
+}
+
+function closeCharacterSelect() {
+  elements.characterSelect.classList.remove("show");
+  elements.characterSelect.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("character-select-open");
+}
+
+function buildCharacterCards() {
+  elements.characterGrid.innerHTML = "";
+  Object.values(characterRegistry).forEach((character) => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "character-card";
+    card.dataset.characterId = character.id;
+    card.setAttribute("role", "radio");
+    card.setAttribute("aria-checked", String(character.id === pendingCharacterId));
+    card.innerHTML = `<img src="${domAssetUrl(character.thumbImage)}" alt="" /><span>${character.label}</span>`;
+    card.addEventListener("click", () => selectPendingCharacter(character.id));
+    elements.characterGrid.appendChild(card);
+  });
+}
+
+function selectPendingCharacter(characterId) {
+  if (!characterRegistry[characterId]) return;
+  pendingCharacterId = characterId;
+  [...elements.characterGrid.querySelectorAll(".character-card")].forEach((card) => {
+    card.setAttribute("aria-checked", String(card.dataset.characterId === characterId));
+  });
+  if (!playerNameEdited) {
+    elements.playerNameInput.value = playableCharacterById(characterId)?.defaultName || "";
+  }
+}
+
+function confirmCharacterSelect() {
+  const character = playableCharacterById(pendingCharacterId);
+  state.activeCharacterId = character.id;
+  state.playerName = sanitizePlayerName(elements.playerNameInput.value) || character.defaultName;
+  persist();
+  closeCharacterSelect();
+  render();
+  elements.statusMessage.textContent = `${princessName()} is ready. Choose a place to start.`;
 }
 
 function moodLabel(mood) {
@@ -597,7 +693,7 @@ function normalizeVisibleOutfit(outfit = state.outfit) {
 function toggleEquip(item) {
   if (item.type === "room") {
     state.outfit.room = item.id;
-    elements.statusMessage.textContent = `${item.name} is placed in Lumi's room.`;
+    elements.statusMessage.textContent = `${item.name} is placed in ${princessName()}'s room.`;
     persist();
     render();
     return;
@@ -1280,8 +1376,7 @@ function openSceneAdv(hotspot) {
 
 function openRoomScene(hotspot = hotspotById("princessRoom")) {
   openAdvBase(hotspot, "scene");
-  addUnique("metNpcs", ["Lumi"]);
-  elements.advLine.textContent = "Lumi is in her room. What should we change today?";
+  elements.advLine.textContent = `${princessName()} is in her room. What should we change today?`;
   elements.advPrompt.textContent = "Choose a room action.";
   renderFirstLayerSceneActions(hotspot);
   scheduleAdvFocus(0);
@@ -1369,10 +1464,10 @@ function openQuestAdv(hotspot) {
   state.activeQuest = quest;
   openAdvBase(hotspot, "quest");
   addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
-  activeLesson = lesson;
+  activeLesson = localizeLesson(lesson);
   elements.advLine.textContent = quest.opening;
-  elements.advPrompt.textContent = `${quest.title}: ${lesson.prompt}`;
-  shuffled(lesson.choices).forEach((choice, index) => {
+  elements.advPrompt.textContent = `${quest.title}: ${activeLesson.prompt}`;
+  shuffled(activeLesson.choices).forEach((choice, index) => {
     let button;
     button = addAdvOption(choice, () => answerLesson(button, choice), { number: index + 1, choice });
   });
@@ -1435,7 +1530,7 @@ function openWardrobeDetail(category = "dresses") {
   shopCategory = category;
   clearTryOnPreview({ renderDoll: false });
   elements.advScene.dataset.mode = "wardrobe";
-  elements.advLine.textContent = `Choose ${categoryLabel(category).toLowerCase()} for Lumi.`;
+  elements.advLine.textContent = `Choose ${categoryLabel(category).toLowerCase()} for ${princessName()}.`;
   elements.advPrompt.textContent = "Tap to preview, then equip.";
   elements.shopArea.classList.remove("refund-detail");
   elements.shopArea.classList.add("show", "wardrobe-detail");
@@ -1516,7 +1611,7 @@ function equipWardrobePreview(item) {
   if (!item) return;
   if (item.type === "room") {
     state.outfit.room = item.id;
-    elements.advFeedback.textContent = `${item.name} is placed in Lumi's room.`;
+    elements.advFeedback.textContent = `${item.name} is placed in ${princessName()}'s room.`;
   } else {
     equipOutfitItem(item);
     elements.advFeedback.textContent = `${item.name} equipped.`;
@@ -1663,7 +1758,7 @@ function backToRoomScene() {
 function shopActionLabel(item) {
   if (!item) return "Pick a treasure";
   if (state.owned.includes(item.id)) {
-    return item.type === "room" ? "Already in Lumi's room" : "Already in wardrobe";
+    return item.type === "room" ? `Already in ${princessName()}'s room` : "Already in wardrobe";
   }
   if (state.coins < item.cost) return `Need ${item.cost - state.coins} more coins`;
   return `BUY ${item.cost} coins`;
@@ -1676,8 +1771,8 @@ function tryOnFeedbackText(item, source) {
   const status = owned ? equipped ? "Equipped now" : "Owned treasure" : affordable ? "Ready to buy" : `Need ${item.cost - state.coins} more coins`;
   if (item.type === "room") return `${item.name}: ${status}.`;
   const action = item.type === "outfitSet"
-    ? source === "wardrobe" ? "Trying the full set on Lumi" : "Trying the full set before buying"
-    : source === "wardrobe" ? "Trying it on Lumi" : "Trying it on Lumi before buying";
+    ? source === "wardrobe" ? `Trying the full set on ${princessName()}` : "Trying the full set before buying"
+    : source === "wardrobe" ? `Trying it on ${princessName()}` : `Trying it on ${princessName()} before buying`;
   return `${item.name}: ${action}. ${status}.`;
 }
 
@@ -1686,14 +1781,14 @@ function renderShopSoldOut() {
   renderPaperDolls();
   elements.advLine.textContent = "You found every treasure in this shop.";
   elements.advPrompt.textContent = "Visit the wardrobe to wear owned treasures.";
-  elements.advFeedback.textContent = `${sceneConfigFor(activeShopHotspot).npc} smiles. Lumi can wear owned treasures from the wardrobe.`;
+  elements.advFeedback.textContent = `${sceneConfigFor(activeShopHotspot).npc} smiles. ${princessName()} can wear owned treasures from the wardrobe.`;
 }
 
 function buyItemInAdv(item) {
   if (!item) return;
   if (state.owned.includes(item.id)) {
     elements.advFeedback.textContent = item.type === "room"
-      ? `${item.name} is already in Lumi's room.`
+      ? `${item.name} is already in ${princessName()}'s room.`
       : `${item.name} is already in the wardrobe.`;
     shopPreviewItemId = "";
     renderAdvShop(true);
@@ -1722,7 +1817,7 @@ function buyItemInAdv(item) {
   awardBadge("First Shopping");
   updateProgressBadges();
   addDiary({ type: "shop", title: activeShopHotspot?.label || "Shop", body: `Bought ${item.name}.`, result: `-${item.cost} coins` });
-  const feedbackText = item.type === "room" ? `${item.name} is in Lumi's room now.` : `${item.name} is on Lumi now.`;
+  const feedbackText = item.type === "room" ? `${item.name} is in ${princessName()}'s room now.` : `${item.name} is on ${princessName()} now.`;
   elements.advLine.textContent = `${item.name} is yours now. It looks wonderful.`;
   elements.advFeedback.textContent = feedbackText;
   elements.statusMessage.textContent = feedbackText;
@@ -1965,7 +2060,7 @@ function answerLesson(button, choice) {
     vocabProfile: activeLesson.vocabProfile
   });
   elements.advLine.textContent = quest.ending;
-  elements.advPrompt.textContent = "Help complete. Try a reward now, or go back to Lumi's room.";
+  elements.advPrompt.textContent = `Help complete. Try a reward now, or go back to ${princessName()}'s room.`;
   elements.advFeedback.textContent = `${effectText(reward)}.`;
   state.activeQuest = null;
   activeLesson = null;
@@ -2331,6 +2426,19 @@ function bindEvents() {
   elements.tabs.forEach((tab) => tab.addEventListener("click", () => changeView(tab.dataset.view)));
   window.addEventListener("hashchange", () => changeView(location.hash ? location.hash.slice(1) : "home"));
   elements.systemMenuButton.addEventListener("click", () => openSystemMenu(systemMenuPanel || "diary"));
+  elements.changeCharacterButton?.addEventListener("click", () => openCharacterSelect({ forced: false }));
+  elements.characterConfirm?.addEventListener("click", confirmCharacterSelect);
+  elements.characterCancel?.addEventListener("click", closeCharacterSelect);
+  elements.characterSelect?.addEventListener("click", (event) => {
+    if (event.target.matches("[data-character-cancel]") && !elements.characterSelect.classList.contains("first-run")) {
+      closeCharacterSelect();
+    }
+  });
+  elements.playerNameInput?.addEventListener("input", () => { playerNameEdited = true; });
+  elements.characterNameForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    confirmCharacterSelect();
+  });
   elements.systemMenuClose.addEventListener("click", closeSystemMenu);
   elements.systemMenu.addEventListener("click", (event) => {
     if (event.target.matches("[data-system-close]")) closeSystemMenu();
@@ -2359,13 +2467,13 @@ function bindEvents() {
     renderSettings();
   });
   elements.clearDiaryButton.addEventListener("click", () => {
-    if (!window.confirm("Clear Lumi's diary pages?")) return;
+    if (!window.confirm(`Clear ${princessName()}'s diary pages?`)) return;
     state.diary = [];
     persist();
     render();
   });
   elements.resetButton.addEventListener("click", () => {
-    if (!window.confirm("Reset Lumi's coins, clothes, quests, and diary?")) return;
+    if (!window.confirm(`Reset ${princessName()}'s coins, clothes, quests, and diary?`)) return;
     resetProgress();
   });
   elements.openaiSettingsForm.addEventListener("submit", (event) => {
@@ -2491,6 +2599,13 @@ function bindEvents() {
   elements.mapStage.addEventListener("pointerup", finishMapDrag);
   elements.mapStage.addEventListener("pointercancel", finishMapDrag);
   window.addEventListener("keydown", (event) => {
+    if (elements.characterSelect?.classList.contains("show")) {
+      if (event.key === "Escape" && !elements.characterSelect.classList.contains("first-run")) {
+        event.preventDefault();
+        closeCharacterSelect();
+      }
+      return;
+    }
     if (isSystemMenuOpen()) {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -2564,6 +2679,7 @@ Object.defineProperty(window, "__luminaraTest", {
     saveRoundtrip() {
       const before = {
         activeCharacterId: state.activeCharacterId,
+        playerName: state.playerName,
         coins: state.coins,
         energy: state.energy,
         vocab: state.vocab,
@@ -2580,6 +2696,7 @@ Object.defineProperty(window, "__luminaraTest", {
       loadMarkdownText(markdown);
       const after = {
         activeCharacterId: state.activeCharacterId,
+        playerName: state.playerName,
         coins: state.coins,
         energy: state.energy,
         vocab: state.vocab,
@@ -2601,9 +2718,11 @@ Object.defineProperty(window, "__luminaraTest", {
   }
 });
 
+const isFirstRun = !localStorage.getItem(storageKey) && !new URLSearchParams(location.search).has("selftest");
 bindEvents();
 render();
 changeView(location.hash ? location.hash.slice(1) : "home");
+if (isFirstRun) openCharacterSelect({ forced: true });
 
 installTestingHooks({
   get state() { return state; },

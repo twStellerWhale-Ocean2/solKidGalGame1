@@ -435,11 +435,12 @@ async function collectCharacterScaleAudit(api, errors) {
     naturalHeightCm: character.naturalHeightCm || contract.lumiNaturalHeightCm || 125
   }));
   if (!paperDollRefs.length && api.paperDollBaseLayer) {
+    const fallbackCharacter = api.playableCharacterById?.(api.defaultActiveCharacterId);
     paperDollRefs.push({
-      id: "lumi",
-      label: "Princess Lumi",
+      id: fallbackCharacter?.id || api.defaultActiveCharacterId || "lumi",
+      label: fallbackCharacter?.label || "Princess",
       src: api.paperDollBaseLayer,
-      naturalHeightCm: contract.lumiNaturalHeightCm || 125
+      naturalHeightCm: fallbackCharacter?.naturalHeightCm || contract.lumiNaturalHeightCm || 125
     });
   }
   for (const ref of paperDollRefs) {

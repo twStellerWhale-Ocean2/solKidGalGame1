@@ -77,10 +77,29 @@ export function freshState() {
   return stateCopy;
 }
 
+export const playerNameMaxLength = 16;
+
+// 名字為玩家可自取的使用者設定，可能來自 UI 輸入或匯入的存檔。
+// 去除會破壞 Markdown save 或排版的字元（表格分隔線、換行、Markdown 標記），並限制長度。
+export function sanitizePlayerName(value) {
+  if (typeof value !== "string") return "";
+  return value
+    .replace(/[\r\n]+/g, " ")
+    .replace(/[|#*`_~\[\]<>]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, playerNameMaxLength)
+    .trim();
+}
+
 export function normalizeState(candidate = {}) {
   const base = freshState();
   const merged = { ...base, ...candidate };
-  merged.activeCharacterId = playableCharacterById(candidate.activeCharacterId)?.id || defaultActiveCharacterId;
+  const activeCharacter = playableCharacterById(candidate.activeCharacterId);
+  merged.activeCharacterId = activeCharacter?.id || defaultActiveCharacterId;
+  merged.playerName = sanitizePlayerName(candidate.playerName)
+    || activeCharacter?.defaultName
+    || base.playerName;
   merged.owned = Array.isArray(candidate.owned)
     ? [...new Set([...base.owned, ...candidate.owned.map(migrateLegacyItemId)])]
     : base.owned;
@@ -309,7 +328,8 @@ export function buildSaveMarkdown(state) {
 - Expression: ${state.expression}
 - Kindness: ${state.kindness}
 - Mood: ${moodLabel(state.mood)}
-- Character: ${state.activeCharacterId}
+- Name: ${state.playerName}
+- Character: ${playableCharacterById(state.activeCharacterId)?.label || state.activeCharacterId}
 - Quests completed: ${questRows.length}
 - Outfit: ${outfitSummary(state)}
 - Learned words: ${state.learnedWords.join(", ") || "-"}

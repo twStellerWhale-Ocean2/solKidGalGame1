@@ -15,8 +15,9 @@
           <div class="mini-doll-frame">
             <div class="paper-doll side-doll" data-doll="side"></div>
           </div>
-          <h1>Princess Lumi</h1>
+          <h1 id="princessNameTitle">Princess Lumi</h1>
             <p class="subtitle">A little princess who learns English, earns coins, and dresses up.</p>
+            <button class="soft-button change-character-button" id="changeCharacterButton" type="button">Change princess</button>
           <div class="status-grid">
             <div class="stat"><span>Coins</span><strong id="coinValue">0</strong></div>
           </div>
@@ -25,7 +26,7 @@
             <p id="outfitSummary">Pink academy dress</p>
           </div>
           <div class="notice-box" id="statusMessage" aria-live="polite">
-                Choose a place, help someone, then dress Lumi with the reward.
+                Choose a place, help someone, then dress your princess with the reward.
           </div>
         </aside>
 
@@ -90,7 +91,7 @@
           </div>
           <button class="soft-button system-menu-close" id="systemMenuClose" type="button" aria-label="Close Lumi Diary">Back</button>
         </div>
-        <div class="system-menu-tabs" role="tablist" aria-label="Lumi Diary pages">
+        <div class="system-menu-tabs" role="tablist" aria-label="Diary pages">
           <button class="system-menu-tab active" data-menu-panel="diary" type="button" role="tab" aria-selected="true" aria-controls="diaryView">Diary</button>
           <button class="system-menu-tab" data-menu-panel="settings" type="button" role="tab" aria-selected="false" aria-controls="settingsView">Settings</button>
           <button class="system-menu-tab" data-menu-panel="english" type="button" role="tab" aria-selected="false" aria-controls="englishView">English</button>
@@ -142,7 +143,7 @@
           <section class="system-panel" id="englishView" data-menu-panel="english" role="tabpanel" aria-labelledby="englishTitle" hidden>
             <div class="simple-panel settings-card english-guide">
               <h2 id="englishTitle">English Map</h2>
-              <p>Each area has its own English word set. Lumi does not choose a level in Settings.</p>
+              <p>Each area has its own English word set. The princess does not choose a level in Settings.</p>
               <div class="english-guide-grid">
                 <div><strong>Castle</strong><span>Dolch Sight Words 220</span><small>20 coins for each Help question.</small></div>
                 <div><strong>Urban</strong><span>Cambridge Pre-A1 Starters</span><small>100 coins for each Help question.</small></div>
@@ -150,7 +151,7 @@
                 <div><strong>Wild</strong><span>Cambridge A2 Flyers</span><small>2000 coins for each Help question.</small></div>
               </div>
               <p>Every Help place keeps five local questions in its own area pack. Questions do not move between places.</p>
-              <p>Princess Room has no Help questions because Lumi cannot reward herself.</p>
+              <p>Princess Room has no Help questions because the princess cannot reward herself.</p>
             </div>
           </section>
 
@@ -159,7 +160,7 @@
               <div class="section-heading">
                 <div>
                   <h2 id="saveTitle">Save / Load MD</h2>
-                  <p>Keep Lumi's diary and progress in a Markdown save file.</p>
+                  <p>Keep the diary and progress in a Markdown save file.</p>
                 </div>
               </div>
               <div class="save-book-actions">
@@ -173,6 +174,25 @@
               </div>
             </div>
           </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="character-select-overlay" id="characterSelect" aria-hidden="true" aria-labelledby="characterSelectTitle">
+      <div class="character-select-backdrop" data-character-cancel></div>
+      <div class="character-select-card" role="dialog" aria-modal="true" tabindex="-1">
+        <div class="character-select-header">
+          <h2 id="characterSelectTitle">Choose your princess</h2>
+          <p>Pick how she looks, then give her a name.</p>
+        </div>
+        <div class="character-grid" id="characterGrid" role="radiogroup" aria-label="Princess appearance"></div>
+        <form class="character-name-form" id="characterNameForm" autocomplete="off">
+          <label for="playerNameInput">Princess name</label>
+          <input id="playerNameInput" type="text" maxlength="16" autocomplete="off" placeholder="Lumi" />
+        </form>
+        <div class="character-select-actions">
+          <button class="soft-button character-select-cancel" id="characterCancel" type="button">Back</button>
+          <button class="primary-button" id="characterConfirm" type="button">Start</button>
         </div>
       </div>
     </section>
