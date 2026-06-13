@@ -2597,6 +2597,13 @@ function bindEvents() {
   elements.mapStage.addEventListener("pointerup", finishMapDrag);
   elements.mapStage.addEventListener("pointercancel", finishMapDrag);
   window.addEventListener("keydown", (event) => {
+    if (elements.characterSelect?.classList.contains("show")) {
+      if (event.key === "Escape" && !elements.characterSelect.classList.contains("first-run")) {
+        event.preventDefault();
+        closeCharacterSelect();
+      }
+      return;
+    }
     if (isSystemMenuOpen()) {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -2670,6 +2677,7 @@ Object.defineProperty(window, "__luminaraTest", {
     saveRoundtrip() {
       const before = {
         activeCharacterId: state.activeCharacterId,
+        playerName: state.playerName,
         coins: state.coins,
         energy: state.energy,
         vocab: state.vocab,
@@ -2686,6 +2694,7 @@ Object.defineProperty(window, "__luminaraTest", {
       loadMarkdownText(markdown);
       const after = {
         activeCharacterId: state.activeCharacterId,
+        playerName: state.playerName,
         coins: state.coins,
         energy: state.energy,
         vocab: state.vocab,
