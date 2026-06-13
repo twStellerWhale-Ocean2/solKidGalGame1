@@ -46,7 +46,7 @@ import { renderItemDetailPanel } from "./render/item-panel.js";
 import { createPaperDollRenderer } from "./render/paper-doll.js";
 import { renderBuildInfo } from "./render/settings.js";
 import { applyAdvSceneArt } from "./scene/scene-art.js";
-import { openAISettingsKey, saveMarkerEnd, saveMarkerStart, storageKey } from "./state/storage.js";
+import { openAISettingsKey, saveMarkerEnd, saveMarkerStart } from "./state/storage.js";
 import {
   addDiary as addStateDiary,
   addUnique as addStateUnique,
@@ -56,7 +56,9 @@ import {
   createQuestForPlace,
   createRandomQuest,
   effectText,
+  createFreshAccount,
   freshState,
+  loadAccountState,
   loadLocalState,
   loadOpenAISettings,
   moodLabel as stateMoodLabel,
@@ -67,6 +69,13 @@ import {
   sanitizePlayerName,
   updateProgressBadges as updateStateProgressBadges
 } from "./state/game-state.js";
+import {
+  deleteAccount,
+  getActiveAccountId,
+  listAccounts,
+  setActiveAccountId,
+  updateAccountMeta
+} from "./state/accounts.js";
 import { installTestingHooks } from "./testing/selftests.js";
 import { createSaveLoadController } from "./system/save-load.js";
 
@@ -432,9 +441,100 @@ function confirmCharacterSelect() {
   state.activeCharacterId = character.id;
   state.playerName = sanitizePlayerName(elements.playerNameInput.value) || character.defaultName;
   persist();
+  const activeAccountId = getActiveAccountId();
+  if (activeAccountId) updateAccountMeta(activeAccountId, { name: state.playerName, characterId: state.activeCharacterId });
   closeCharacterSelect();
   render();
   elements.statusMessage.textContent = `${princessName()} is ready. Choose a place to start.`;
+}
+
+// ---- 本機多帳號（issue #63）：每次進入先選玩家帳號，可新增與刪除，各帳號進度互不混用 ----
+// mustChoose=true：啟動 gate，必須選擇或新增帳號才能進入（不可關閉、不顯示 Back）。
+let accountSelectMustChoose = false;
+function openAccountSelect({ mustChoose = false } = {}) {
+  accountSelectMustChoose = mustChoose;
+  buildAccountList();
+  elements.accountSelect.classList.add("show");
+  elements.accountSelect.setAttribute("aria-hidden", "false");
+  document.body.classList.add("account-select-open");
+  setTimeout(() => elements.accountSelectCard?.focus({ preventScroll: true }), 0);
+}
+
+function closeAccountSelect() {
+  // 啟動 gate 或尚無使用中帳號時不可關閉（必須先選或新增帳號）。
+  if (accountSelectMustChoose || !getActiveAccountId()) return;
+  elements.accountSelect.classList.remove("show");
+  elements.accountSelect.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("account-select-open");
+}
+
+function buildAccountList() {
+  const accounts = listAccounts();
+  const activeId = getActiveAccountId();
+  elements.accountList.innerHTML = "";
+  if (elements.accountEmpty) elements.accountEmpty.hidden = accounts.length > 0;
+  if (elements.accountBack) elements.accountBack.hidden = accountSelectMustChoose || !activeId;
+  accounts.forEach((account) => {
+    const label = account.name || playableCharacterById(account.characterId)?.defaultName || "Princess";
+    const characterLabel = playableCharacterById(account.characterId)?.label || "Princess";
+    const row = document.createElement("div");
+    row.className = `account-row${account.id === activeId ? " active" : ""}`;
+    row.setAttribute("role", "listitem");
+    const pick = document.createElement("button");
+    pick.type = "button";
+    pick.className = "account-pick";
+    pick.dataset.accountId = account.id;
+    const nameEl = document.createElement("strong");
+    nameEl.textContent = label;
+    const charEl = document.createElement("small");
+    charEl.textContent = characterLabel;
+    pick.append(nameEl, charEl);
+    pick.addEventListener("click", () => selectAccount(account.id));
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "account-delete";
+    remove.dataset.accountId = account.id;
+    remove.setAttribute("aria-label", `Delete ${label}`);
+    remove.textContent = "🗑";
+    remove.addEventListener("click", (event) => {
+      event.stopPropagation();
+      handleDeleteAccount(account.id, label);
+    });
+    row.append(pick, remove);
+    elements.accountList.appendChild(row);
+  });
+}
+
+function selectAccount(accountId) {
+  setActiveAccountId(accountId);
+  state = loadAccountState(accountId);
+  accountSelectMustChoose = false; // 已完成本次進入的帳號選擇
+  closeAccountSelect();
+  render();
+  changeView("home");
+  if (!state.playerName) {
+    openCharacterSelect({ forced: true });
+    return;
+  }
+  elements.statusMessage.textContent = `Welcome back, ${princessName()}. Choose a place to start.`;
+}
+
+function createNewAccount() {
+  const account = createFreshAccount();
+  state = loadAccountState(account.id);
+  accountSelectMustChoose = false;
+  closeAccountSelect();
+  render();
+  changeView("home");
+  openCharacterSelect({ forced: true });
+}
+
+function handleDeleteAccount(accountId, label) {
+  if (!window.confirm(`Delete player "${label}"? This removes that player's progress on this device.`)) return;
+  const wasActive = getActiveAccountId() === accountId;
+  deleteAccount(accountId);
+  if (wasActive) state = freshState(); // 刪到使用中帳號：清掉當前狀態，交回帳號選擇。
+  buildAccountList();
 }
 
 function moodLabel(mood) {
@@ -2439,6 +2539,15 @@ function bindEvents() {
     event.preventDefault();
     confirmCharacterSelect();
   });
+  elements.accountNewButton?.addEventListener("click", createNewAccount);
+  elements.accountBack?.addEventListener("click", closeAccountSelect);
+  elements.accountSelect?.addEventListener("click", (event) => {
+    if (event.target.matches("[data-account-cancel]")) closeAccountSelect();
+  });
+  elements.switchAccountButton?.addEventListener("click", () => {
+    closeSystemMenu();
+    openAccountSelect({ mustChoose: false });
+  });
   elements.systemMenuClose.addEventListener("click", closeSystemMenu);
   elements.systemMenu.addEventListener("click", (event) => {
     if (event.target.matches("[data-system-close]")) closeSystemMenu();
@@ -2718,15 +2827,39 @@ Object.defineProperty(window, "__luminaraTest", {
   }
 });
 
-const isFirstRun = !localStorage.getItem(storageKey) && !new URLSearchParams(location.search).has("selftest");
+const hasSelftest = new URLSearchParams(location.search).has("selftest");
 bindEvents();
 render();
 changeView(location.hash ? location.hash.slice(1) : "home");
-if (isFirstRun) openCharacterSelect({ forced: true });
+// 本機多帳號 gate（issue #63 / spec#8）：每次進入都先選帳號，即使已有使用中帳號亦不自動沿用（共用裝置須每次選玩家）。
+if (!hasSelftest) openAccountSelect({ mustChoose: true });
 
 installTestingHooks({
   get state() { return state; },
   set state(nextState) { state = nextState; },
+  accounts: {
+    list: listAccounts,
+    activeId: getActiveAccountId,
+    create: () => {
+      const account = createFreshAccount();
+      state = loadAccountState(account.id);
+      return account;
+    },
+    select: (accountId) => {
+      setActiveAccountId(accountId);
+      state = loadAccountState(accountId);
+      persist();
+      render();
+      return accountId;
+    },
+    remove: (accountId) => {
+      const wasActive = getActiveAccountId() === accountId;
+      deleteAccount(accountId);
+      if (wasActive) state = freshState();
+      return listAccounts().length;
+    },
+    loadState: (accountId) => loadAccountState(accountId)
+  },
   get shopPreviewItemId() { return shopPreviewItemId; },
   set shopPreviewItemId(nextItemId) { shopPreviewItemId = nextItemId; },
   get shopCategory() { return shopCategory; },

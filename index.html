@@ -117,6 +117,7 @@
               <h2 id="settingsTitle">Settings</h2>
               <div class="settings-actions">
                 <button class="soft-button" id="speakToggleButton" type="button">Voice: On</button>
+                <button class="soft-button" id="switchAccountButton" type="button">Switch player</button>
                 <button class="danger-button" id="resetButton" type="button">Reset Progress</button>
               </div>
               <div class="version-card" aria-label="Software version">
@@ -174,6 +175,22 @@
               </div>
             </div>
           </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="account-select-overlay" id="accountSelect" aria-hidden="true" aria-labelledby="accountSelectTitle">
+      <div class="account-select-backdrop" data-account-cancel></div>
+      <div class="account-select-card" role="dialog" aria-modal="true" tabindex="-1">
+        <div class="account-select-header">
+          <h2 id="accountSelectTitle">Choose a player</h2>
+          <p>Each player keeps their own coins, diary, learned words, and dress-up on this device.</p>
+        </div>
+        <div class="account-list" id="accountList" role="list"></div>
+        <p class="account-empty" id="accountEmpty" hidden>No players yet. Add one to start playing.</p>
+        <div class="account-select-actions">
+          <button class="soft-button account-back" id="accountBack" type="button" data-account-cancel hidden>Back</button>
+          <button class="primary-button" id="accountNewButton" type="button">Add player</button>
         </div>
       </div>
     </section>

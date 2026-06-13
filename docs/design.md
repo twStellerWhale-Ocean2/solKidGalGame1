@@ -18,9 +18,10 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 * **spec#2-可用角色陪伴與場景探索維持遊玩意願**：方案須以公主角色陪伴、王國地圖與多地區場景探索及地點互動，提高兒童反覆遊玩意願。
 * **spec#3-可把學習成果轉為看得見的外觀獎勵**：方案須讓答對所得 coins 能兌換為角色外觀（髮型、衣物、鞋帽、配件、outfit set）等可見變化，使成就可見而非僅顯示分數。
 * **spec#4-可形成練英文獲獎勵換裝的正向閉環**：方案須使英文練習、獎勵取得與換裝回饋構成同一個可重複的正向循環。
-* **spec#5-可保存並還原玩家進度**：方案須讓玩家的 coins、學習紀錄、擁有與穿搭、所在位置與所選角色及名字可被保存並於再次遊玩時還原。
+* **spec#5-可保存並還原玩家進度**：方案須讓每個帳號各自的 coins、學習紀錄、擁有與穿搭、所在位置與所選角色及名字可被保存並於再次遊玩時還原。
 * **spec#6-可選擇與命名自己的公主**：方案須讓玩家首次進入時選定公主外觀並命名，之後可重選外觀或改名，且不影響既有存檔進度。
 * **spec#7-可用純靜態網站方式部署並模組化擴充內容**：方案須能以 GitHub Pages 等純靜態方式部署遊玩，且 area、角色與衣物等內容可模組化新增與調整。
+* **spec#8-可用本機多帳號分離不同玩家進度**：方案須讓同一裝置上多位玩家各自擁有獨立帳號，每次進入遊戲先選擇要使用的帳號，並可新增與刪除帳號，使不同玩家的進度與換裝成果互不混用；多帳號僅限同一瀏覽器本機，不含網路登入、密碼或雲端同步。
 
 # II. 設計分析
 
@@ -94,6 +95,10 @@ OPENAI -->|"🎚️paramHelpModel=`gpt-4o-mini`"| SYS
 * **solStory#9-輔助提示與外部服務**：
   * **solCase#9.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家取得Help提示]，於答題遇困難時向 OpenAI 輔助取得一則簡短提示。
   * **solCase#9.2**：[etyCfg通用家長維護者]執行[setAct自訂維護者設定OpenAI輔助]，設定本機 OpenAI proxy 與金鑰以啟用提示。
+* **solStory#10-多帳號選擇與管理**：
+  * **solCase#10.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家選擇帳號]，每次進入遊戲時於帳號選擇畫面選擇要使用的帳號。
+  * **solCase#10.2**：[etyCfg通用兒童玩家]執行[runAct自訂玩家新增帳號]，建立一個新帳號並成為使用中帳號。
+  * **solCase#10.3**：[etyCfg通用兒童玩家]執行[runAct自訂玩家刪除帳號]，刪除一個帳號，並於刪除使用中帳號後回到帳號選擇。
 
 ### (D) 重點組態
 
@@ -135,6 +140,7 @@ USR ==>|"🔗comIntf通用HTTPS連線"| SHELL
 SHELL ==>|"🔗comIntf自訂瀏覽器內模組呼叫"| MAP
 SHELL ==>|"🔗comIntf自訂瀏覽器內模組呼叫"| SCENE
 SHELL ==>|"🔗comIntf自訂瀏覽器內模組呼叫"| WARDROBE
+SHELL ==>|"🔗comIntf自訂瀏覽器內模組呼叫"| STATE
 MAP ==>|"🔗comIntf自訂瀏覽器內模組呼叫"| CONTENT
 SCENE ==>|"🔗comIntf自訂瀏覽器內模組呼叫"| CONTENT
 WARDROBE ==>|"🔗comIntf自訂瀏覽器內模組呼叫"| STATE
@@ -161,6 +167,7 @@ end
 
 ADM -.->|"🔧setAct自訂維護者擴充內容"| CONTENT
 STATE -->|"🎚️paramStorageKey=`luminara-princess-english-adv`"| SYS
+STATE -->|"🎚️paramAccountIndexKey=`luminara-princess-english-accounts`"| SYS
 SCENE -->|"🎚️paramHelpModel=`gpt-4o-mini`"| SYS
 CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
 ```
@@ -183,6 +190,10 @@ CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
 * **sysStory#5-承接選角與內容擴充**：
   * **sysCase#5.1**：[modShell模組]承接[runAct自訂玩家選角命名]，更新 activeCharacterId 與 playerName。
   * **sysCase#5.2**：[modContent模組]承接[setAct自訂維護者擴充內容]，匯入新內容包至 registry。
+* **sysStory#6-承接多帳號選擇與管理**：
+  * **sysCase#6.1**：[modShell模組]承接[runAct自訂玩家選擇帳號]，啟動時先進入帳號選擇，讀取帳號清單，玩家選定後透過 modState 載入該帳號進度再進入遊戲。
+  * **sysCase#6.2**：[modState模組]承接[runAct自訂玩家新增帳號]，建立新帳號的初始進度並設為使用中帳號。
+  * **sysCase#6.3**：[modState模組]承接[runAct自訂玩家刪除帳號]，移除指定帳號，刪除使用中帳號後清除使用中指向並交回帳號選擇。
 
 ### (D) 重點組態
 
@@ -194,6 +205,7 @@ CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
   * [etyCfg自訂modState組態]
     * paramStorageKey=`luminara-princess-english-adv`
     * paramSaveMarker=`LUMINARA_SAVE_JSON`
+    * paramAccountIndexKey=`luminara-princess-english-accounts`
   * [etyCfg自訂modContent組態]
     * paramDefaultArea=`castle`
     * paramDefaultCharacter=`lumi`
@@ -373,6 +385,35 @@ CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
 * 預期結果：
   1. 缺漏欄位回退預設值，狀態不變量（coins 非負、裝備指向已擁有物）成立。
 
+#### intTest#15-驗證 [runAct自訂玩家選擇帳號]
+
+* 既有基底：intTest#01。
+* 新增項目：[sysGame系統]之進入時帳號選擇行為。
+* 步驟：
+  1. 在已有至少一個帳號的狀態下啟動遊戲，於帳號選擇畫面選定一個帳號。
+* 預期結果：
+  1. 載入該帳號進度並進入遊戲，coins、穿搭與所在位置與該帳號一致。
+
+#### intTest#16-驗證 [runAct自訂玩家新增帳號]
+
+* 既有基底：intTest#01。
+* 新增項目：[sysGame系統]之新增帳號行為。
+* 步驟：
+  1. 於帳號選擇畫面新增一個帳號並進入。
+* 預期結果：
+  1. 建立乾淨初始進度（coins 為預設、無 owned、無穿搭）並成為使用中帳號，且不影響其他帳號。
+
+#### intTest#17-驗證 [runAct自訂玩家刪除帳號]
+
+* 既有基底：intTest#16。
+* 新增項目：[sysGame系統]之刪除帳號行為。
+* 步驟：
+  1. 刪除一個非使用中帳號。
+  2. 刪除目前使用中帳號。
+* 預期結果：
+  1. 被刪帳號自清單移除，其餘帳號進度不受影響。
+  2. 刪除使用中帳號後回到帳號選擇；刪除最後一個帳號後僅顯示新增帳號的空狀態。
+
 ## E. 方案層級：文件程式化測試
 
 #### docProgTest#01-productReadme 承接 [solStory#1-短回合英文練習]
@@ -438,6 +479,13 @@ CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
 * 通過判定：
   1. 維護者可依 productReadme 設定並驗證 Help 提示。
 
+#### docProgTest#10-productReadme 承接 [solStory#10-多帳號選擇與管理]
+
+* productReadme 要求：
+  1. 說明進入遊戲時如何選擇帳號，以及如何新增與刪除帳號，與刪除使用中／最後帳號後的表現。
+* 通過判定：
+  1. 讀者可依 productReadme 新增、選擇與刪除帳號，且不同帳號進度互不混用。
+
 ## F. 方案層級：文件端對端測試
 
 #### e2eTest#01-依 productReadme 驗測主循環
@@ -475,6 +523,18 @@ CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
 * 預期結果：
   1. 顯示降級提示而非崩潰，答題流程仍可繼續。
 
+#### e2eTest#05-依 productReadme 驗測多帳號隔離與刪除
+
+* 依據：docProgTest#10、[solCase#10.1]、[solCase#10.2]、[solCase#10.3]。
+* 步驟：
+  1. 依 productReadme 新增兩個帳號，分別遊玩產生不同 coins 與穿搭。
+  2. 依 productReadme 在帳號選擇切換到另一帳號。
+  3. 依 productReadme 刪除目前使用中帳號。
+* 預期結果：
+  1. 兩帳號進度互不混用，各自顯示自己的 coins、穿搭與位置。
+  2. 切換後顯示對應帳號進度。
+  3. 刪除使用中帳號後回到帳號選擇；刪除最後一個帳號顯示僅可新增的空狀態。
+
 # IV. 部署成效
 
 ## A. 部署組態
@@ -510,3 +570,6 @@ CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
 * **spec#7-可用純靜態網站方式部署並模組化擴充內容**
   * 評估方式：以全新環境依 productReadme 完成部署與內容擴充。
   * 觀察項目：部署成功率、新增內容包後既有功能未回歸。
+* **spec#8-可用本機多帳號分離不同玩家進度**
+  * 評估方式：以多個帳號分別遊玩後比對各自進度是否互不混用。
+  * 觀察項目：帳號間進度隔離正確率、刪除帳號後狀態一致性。

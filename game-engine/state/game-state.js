@@ -8,7 +8,8 @@ import {
   shopItems
 } from "../data/game-data.js";
 import { defaultState } from "./default-state.js";
-import { openAISettingsKey, saveMarkerEnd, saveMarkerStart, storageKey } from "./storage.js";
+import { accountStateKey, openAISettingsKey, saveMarkerEnd, saveMarkerStart } from "./storage.js";
+import { createAccount, getActiveAccountId, migrateLegacyAccount } from "./accounts.js";
 import {
   clamp,
   hotspotById,
@@ -41,13 +42,26 @@ const legacyItemIds = Object.freeze({
 });
 
 export function loadLocalState() {
+  migrateLegacyAccount(); // 一次性將舊單一存檔遷移為首個帳號，保留既有玩家進度。
+  const activeId = getActiveAccountId();
+  if (!activeId) return freshState(); // 尚無使用中帳號：回傳乾淨佔位狀態，由 Account Select 把關後再載入。
+  return loadAccountState(activeId);
+}
+
+// 載入指定帳號的進度（供切換帳號使用）；無存檔或解析失敗時回退乾淨初始狀態。
+export function loadAccountState(accountId) {
   try {
-    const saved = localStorage.getItem(storageKey);
+    const saved = localStorage.getItem(accountStateKey(accountId));
     if (!saved) return freshState();
     return normalizeState(JSON.parse(saved));
   } catch {
     return freshState();
   }
+}
+
+// 建立新帳號並寫入一份乾淨初始進度，回傳帳號資料（已設為使用中）。
+export function createFreshAccount() {
+  return createAccount({ initialStateJson: JSON.stringify(freshState()) });
 }
 
 export function loadOpenAISettings() {
@@ -69,7 +83,14 @@ export function persistOpenAISettings(openAISettings) {
 }
 
 export function persistState(state) {
-  localStorage.setItem(storageKey, JSON.stringify(state));
+  const activeId = getActiveAccountId();
+  if (!activeId) return; // 無使用中帳號時不寫入（遊戲尚未真正開始）。
+  try {
+    localStorage.setItem(accountStateKey(activeId), JSON.stringify(state));
+  } catch (error) {
+    // 寫入失敗（例如多帳號使 localStorage 配額已滿）：不讓存檔錯誤中斷遊戲，記錄警告供診斷。
+    console.warn("persistState failed", error);
+  }
 }
 
 export function freshState() {

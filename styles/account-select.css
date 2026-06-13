@@ -1,0 +1,119 @@
+/* 本機多帳號選擇（issue #63）：每次進入先選玩家帳號，可新增與刪除；沿用選角畫面的視覺語彙 */
+.account-select-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.account-select-overlay.show {
+  display: flex;
+}
+
+.account-select-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(80, 56, 70, 0.55);
+}
+
+.account-select-card {
+  position: relative;
+  width: min(480px, 100%);
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.account-select-header h2 {
+  margin: 0 0 4px;
+  color: var(--rose-dark);
+}
+
+.account-select-header p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.account-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.account-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.account-pick {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 2px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.account-pick:hover {
+  border-color: var(--rose);
+}
+
+.account-row.active .account-pick {
+  border-color: var(--rose-dark);
+  box-shadow: 0 0 0 3px rgba(216, 103, 140, 0.22);
+}
+
+.account-pick strong {
+  font-weight: 900;
+}
+
+.account-pick small {
+  color: var(--muted);
+}
+
+.account-delete {
+  flex: 0 0 auto;
+  width: 44px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--rose-dark);
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.account-delete:hover {
+  border-color: var(--rose-dark);
+  background: #fff1f5;
+}
+
+.account-empty {
+  margin: 0;
+  padding: 18px;
+  text-align: center;
+  color: var(--muted);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+}
+
+.account-select-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
