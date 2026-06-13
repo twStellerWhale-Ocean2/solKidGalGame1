@@ -350,6 +350,23 @@ function princessName() {
   return state.playerName || playableCharacterById(state.activeCharacterId)?.defaultName || "Lumi";
 }
 
+// 課程題目原文以 "Lumi" 撰寫；顯示前統一替換為玩家名字。
+// prompt／answer／choices／words 一致替換，確保 answerLesson 的 choice === answer 比對仍成立。
+function withPlayerName(text) {
+  return typeof text === "string" ? text.replaceAll("Lumi", princessName()) : text;
+}
+
+function localizeLesson(lesson) {
+  if (!lesson) return lesson;
+  return {
+    ...lesson,
+    prompt: withPlayerName(lesson.prompt),
+    answer: withPlayerName(lesson.answer),
+    choices: Array.isArray(lesson.choices) ? lesson.choices.map(withPlayerName) : lesson.choices,
+    words: Array.isArray(lesson.words) ? lesson.words.map(withPlayerName) : lesson.words
+  };
+}
+
 function renderIdentity() {
   const name = princessName();
   if (elements.princessNameTitle) elements.princessNameTitle.textContent = `Princess ${name}`;
@@ -1445,10 +1462,10 @@ function openQuestAdv(hotspot) {
   state.activeQuest = quest;
   openAdvBase(hotspot, "quest");
   addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
-  activeLesson = lesson;
+  activeLesson = localizeLesson(lesson);
   elements.advLine.textContent = quest.opening;
-  elements.advPrompt.textContent = `${quest.title}: ${lesson.prompt}`;
-  shuffled(lesson.choices).forEach((choice, index) => {
+  elements.advPrompt.textContent = `${quest.title}: ${activeLesson.prompt}`;
+  shuffled(activeLesson.choices).forEach((choice, index) => {
     let button;
     button = addAdvOption(choice, () => answerLesson(button, choice), { number: index + 1, choice });
   });
