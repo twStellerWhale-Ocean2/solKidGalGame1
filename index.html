@@ -20,7 +20,9 @@
             <button class="soft-button change-character-button" id="changeCharacterButton" type="button">Change princess</button>
           <div class="status-grid">
             <div class="stat"><span>Coins</span><strong id="coinValue">0</strong></div>
+            <div class="stat play-time-stat"><span>Play time</span><strong id="energyValue">100%</strong></div>
           </div>
+          <div class="energy-meter" aria-hidden="true"><div class="energy-meter-fill" id="energyMeterFill" style="width:100%"></div></div>
           <div class="equipped-box">
             <h2>Equipped</h2>
             <p id="outfitSummary">Pink academy dress</p>
@@ -120,6 +122,21 @@
                 <button class="soft-button" id="switchAccountButton" type="button">Switch player</button>
                 <button class="danger-button" id="resetButton" type="button">Reset Progress</button>
               </div>
+              <form class="play-limit-form" id="playLimitForm" autocomplete="off">
+                <h3>Play time &amp; eye rest</h3>
+                <p>Each player has their own limit. When play time runs out, the game shows this round's score and rests the eyes before playing again.</p>
+                <div class="play-limit-fields">
+                  <label for="playMinutesInput">Play minutes
+                    <input id="playMinutesInput" type="number" min="1" max="120" inputmode="numeric" value="10" />
+                  </label>
+                  <label for="restMinutesInput">Rest minutes
+                    <input id="restMinutesInput" type="number" min="1" max="120" inputmode="numeric" value="10" />
+                  </label>
+                </div>
+                <div class="settings-actions">
+                  <button class="soft-button" id="savePlayLimitButton" type="submit">Save limits</button>
+                </div>
+              </form>
               <div class="version-card" aria-label="Software version">
                 <strong>Version</strong>
                 <span id="versionValue">2026.06.02-area-packs-wild</span>
@@ -210,6 +227,21 @@
         <div class="character-select-actions">
           <button class="soft-button character-select-cancel" id="characterCancel" type="button">Back</button>
           <button class="primary-button" id="characterConfirm" type="button">Start</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="play-break-overlay" id="playBreak" aria-hidden="true" aria-labelledby="playBreakTitle" role="dialog" aria-modal="true">
+      <div class="play-break-backdrop"></div>
+      <div class="play-break-card" tabindex="-1">
+        <div class="play-break-header">
+          <h2 id="playBreakTitle">Time for an eye break!</h2>
+          <p>Great playing! Let's rest our eyes, then play again.</p>
+        </div>
+        <div class="play-break-stats" id="playBreakStats" aria-label="This round's score"></div>
+        <p class="play-break-countdown" id="playBreakCountdown" aria-live="polite">Resting…</p>
+        <div class="play-break-actions">
+          <button class="primary-button" id="playBreakResume" type="button" disabled>Play again</button>
         </div>
       </div>
     </section>

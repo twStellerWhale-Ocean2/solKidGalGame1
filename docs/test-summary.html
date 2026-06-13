@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>solKidGalGame — issue #63 本機多帳號 測試結果摘要</title>
+<title>solKidGalGame — issue #6 遊玩時間限制與護眼休息 測試結果摘要</title>
 <style>
   :root { --rose:#d8678c; --rose-dark:#a84368; --ink:#3a2630; --muted:#7a6670; --line:#e7d3dc; --ok:#1f8a55; --warn:#b8860b; --bg:#fff8fb; --panel:#ffffff; }
   * { box-sizing: border-box; }
@@ -34,10 +34,10 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>測試結果摘要 — issue #63 本機多帳號（Account Select）</h1>
-  <p class="sub">3dev 開發研改 · 對應 <code>spec#8</code> / <code>solStory#10</code> / <code>sysStory#6</code> · 技術選型 techStackStaticWeb</p>
+  <h1>測試結果摘要 — issue #6 遊玩時間限制與護眼休息</h1>
+  <p class="sub">3dev 開發研改 · 對應 <code>spec#9</code> / <code>solStory#11</code> / <code>sysStory#7</code> · 技術選型 techStackStaticWeb</p>
   <p><span class="verdict">完成判斷 Gate：可宣稱完成（5/5 已測通過，0 未實作，0 責任邊界不符）</span></p>
-  <p class="meta">產出日期 2026-06-13 · 分支 <code>feat/issue63-multi-account</code> · 機器判定與測試於本機 runtime 實跑</p>
+  <p class="meta">產出日期 2026-06-13 · 分支 <code>feat/issue6-play-time-limit</code> · 機器判定與測試於本機 runtime 實跑</p>
 
   <h2>1. 機器判定（GATE §1）</h2>
   <table>
@@ -46,54 +46,46 @@
     <tr><td>結構合規（repo）</td><td><span class="mono">pwsh scripts/repoLint.ps1 -Path .</span></td><td class="pass">PASS（0 違規）</td></tr>
     <tr><td>結構合規（設計）</td><td><span class="mono">pwsh scripts/docLint.ps1 -Path docs/design.md -Level sol</span></td><td class="pass">PASS（0 違規）</td></tr>
     <tr><td>依賴安全</td><td><span class="mono">npm audit</span></td><td class="note">N/A — 純靜態無 package.json、0 依賴</td></tr>
-    <tr><td>單元覆蓋 ≥80%</td><td>—</td><td class="note">本 repo 無覆蓋率工具；以下瀏覽器 selftest 為可重跑測試證據（見專家評價#15）</td></tr>
+    <tr><td>單元覆蓋 ≥80%</td><td>—</td><td class="note">本 repo 無覆蓋率工具；以下瀏覽器 selftest 為可重跑測試證據（見專家評價#13）</td></tr>
   </table>
 
   <h2>2. 整合／端對端：瀏覽器 selftest</h2>
-  <p class="meta">於 <span class="mono">node server.mjs</span> 服務的 runtime 實跑，結果由頁面 <code>&lt;pre id="…Result"&gt;</code> 取得。</p>
+  <p class="meta">於 <span class="mono">node server.mjs</span> 服務的 runtime 實跑，結果由頁面 <code>&lt;pre id="…Result"&gt;</code> 取得。新增 <code>?selftest=playtimer</code> 驗證本議題；既有四項確認無回歸。</p>
   <table>
     <tr><th>selftest</th><th>啟動 URL</th><th>結果</th></tr>
-    <tr><td>多帳號（新增/隔離/切換/刪除）</td><td><span class="mono">?selftest=accounts</span></td><td class="pass">passed</td></tr>
-    <tr><td>存檔匯出匯入還原</td><td><span class="mono">?selftest=save-load</span></td><td class="pass">passed</td></tr>
-    <tr><td>隨機操作 300 步</td><td><span class="mono">?selftest=monkey</span></td><td class="pass">passed（0 errors）</td></tr>
+    <tr><td><b>遊玩時間限制與護眼休息（本議題）</b></td><td><span class="mono">?selftest=playtimer</span></td><td class="pass">passed（0 errors）</td></tr>
+    <tr><td>存檔匯出匯入還原（含新 playLimit 欄位）</td><td><span class="mono">?selftest=save-load</span></td><td class="pass">passed</td></tr>
     <tr><td>內容資料稽核</td><td><span class="mono">?selftest=data-audit</span></td><td class="pass">passed（0 errors）</td></tr>
+    <tr><td>隨機操作 300 步</td><td><span class="mono">?selftest=monkey</span></td><td class="pass">passed（0 errors）</td></tr>
+    <tr><td>多帳號（新增/隔離/切換/刪除）</td><td><span class="mono">?selftest=accounts</span></td><td class="pass">passed</td></tr>
   </table>
-  <pre>{"test":"accounts","passed":true,"errors":[]}
-{"test":"save-load","passed":true,"markdownLength":1255,"activeCharacterId":"lumi","beforeCoins":100,"afterCoins":100}
-{"test":"monkey","passed":true,"steps":300,"errors":[],"coins":10,"activeViews":1}
-{"test":"data-audit","passed":true,"errors":[]}</pre>
-  <p>多帳號 selftest 涵蓋：建立帳號 B 不繼承 A 的 coins（隔離）；切換帳號各自還原 <code>111</code>/<code>222</code>；刪除非使用中帳號不動使用中；刪除使用中帳號後 <code>activeId</code> 清空（交回帳號選擇）；清單回到 baseline（自我清理）。對映 <code>intTest#15-17</code>。</p>
+  <p class="meta"><code>playtimer</code> selftest 以注入合成時鐘驗證：起始遊玩、計時遞減（過半 ~50%）、時間到結算（本回合金錢 +40／答題 4／答對 3／正確度 75%）、休息鎖定（未滿不可續玩）、休息屆滿可續玩且開始全新回合（cycle 歸零）：</p>
+  <pre>{"test":"playtimer","passed":true,"errors":[]}</pre>
 
-  <h2>3. 端對端 UI（真實按鈕點擊）</h2>
+  <h2>3. 端對端 UI 實測（真實 ticker，注入時鐘加速）</h2>
+  <p class="meta">於遊戲畫面實際進入帳號→遊玩，由每秒 ticker 驅動，注入時鐘越過遊玩/休息時長以觀察 UI。</p>
   <table>
-    <tr><th>步驟</th><th>預期</th><th>實測</th></tr>
-    <tr><td>首次進入（無帳號）</td><td>顯示 Account Select 空狀態，Back 隱藏</td><td class="pass">符合</td></tr>
-    <tr><td>每次進入（已有使用中帳號）</td><td>仍先顯示帳號選擇，不自動沿用上一位</td><td class="pass">gate 顯示、Back 隱藏</td></tr>
-    <tr><td>啟動 gate 不可略過</td><td>點背景/無 Back，必須選擇才進入</td><td class="pass">backdrop 點擊後仍開啟</td></tr>
-    <tr><td>Add player → 命名 Mia</td><td>強制選角→確認→進入遊戲</td><td class="pass">標題 Princess Mia</td></tr>
-    <tr><td>Settings → Switch player</td><td>列出帳號、Back 出現可取消</td><td class="pass">Back 可見、可關閉</td></tr>
-    <tr><td>新增第二位 Zoe</td><td>兩帳號並存、Zoe 成使用中</td><td class="pass">index=["Mia","Zoe"]</td></tr>
-    <tr><td>切換回 Mia</td><td>載入 Mia、overlay 關閉</td><td class="pass">標題 Princess Mia</td></tr>
+    <tr><th>情境</th><th>觀察</th><th>結果</th></tr>
+    <tr><td>HUD 遊玩時間預算</td><td>側欄顯示「PLAY TIME 100%」，能量條隨時間遞減</td><td class="pass">通過</td></tr>
+    <tr><td>時間到結算</td><td>overlay「Time for an eye break!」顯示本回合金錢/Questions 5/Correct 4/Accuracy 80%</td><td class="pass">通過</td></tr>
+    <tr><td>強制休息鎖定</td><td>倒數「Resting… 10:00 left」逐秒遞減；「Play again」禁用；HUD 能量 0%；焦點移入卡片</td><td class="pass">通過</td></tr>
+    <tr><td>休息屆滿續玩</td><td>顯示「Eyes rested!」、續玩鈕啟用並取得焦點；按下後 overlay 關閉、能量回 100%、開始新回合</td><td class="pass">通過</td></tr>
+    <tr><td>設定調整（各帳號）</td><td>Settings 顯示遊玩/休息時長（10/10）；改 15/5 並儲存後套用且持久化至帳號進度</td><td class="pass">通過</td></tr>
+    <tr><td>主控台錯誤</td><td>全程載入與操作 console 0 error</td><td class="pass">通過</td></tr>
   </table>
 
-  <h2>4. 資料安全：既有單一存檔遷移</h2>
-  <p>植入舊版單一存檔 <code>{playerName:"OldPlayer", coins:777}</code> 後重新載入，並於帳號選擇點選該玩家：</p>
-  <pre>{"accountCount":1,"migratedName":"OldPlayer","activeIdExistsFromMigration":true,
- "gateShownOnLaunchWithActiveAccount":true,"listed":["OldPlayer"],
- "coinsAfterPick":777,"legacyKeyRemoved":true,"title":"Princess OldPlayer"}</pre>
-  <p class="pass">既有玩家進度完整保留、遷移為首個帳號、舊鍵移除（冪等）；每次進入仍先顯示帳號選擇（<code>spec#8</code>），選定後載入該帳號進度。</p>
-
-  <h2>5. 變更範圍</h2>
+  <h2>4. 產品能力矩陣與專家評價</h2>
+  <p>5/5 核心 story/case <span class="pass">已測通過</span>，0 未實作、0 責任邊界不符。完整矩陣與 ≥10 項專家評價（含已修復 2 項：結算/休息 overlay z-index 蓋過場景、overlay 焦點管理）見 <code>docs/expert-review-issue6.md</code>。</p>
   <ul>
-    <li><span class="mono">game-engine/state/storage.js</span> — 帳號索引鍵 + 每帳號狀態鍵</li>
-    <li><span class="mono">game-engine/state/accounts.js</span>（新）— 帳號索引 CRUD、舊存檔遷移、寫入保護</li>
-    <li><span class="mono">game-engine/state/game-state.js</span> — load/persist 以使用中帳號為範圍 + loadAccountState/createFreshAccount</li>
-    <li><span class="mono">game-engine/main.js</span> — Account Select overlay、boot gate、切換/新增/刪除、testing hooks</li>
-    <li><span class="mono">game-engine/app/elements.js</span>、<span class="mono">index.html</span>、<span class="mono">styles/account-select.css</span> — UI</li>
-    <li><span class="mono">game-engine/testing/selftests.js</span> — <span class="mono">?selftest=accounts</span></li>
+    <li><b>已修復</b>：overlay <code>z-index</code> 由 70 提高至 200（原低於 ADV 場景 80，鎖定畫面會被蓋住）。</li>
+    <li><b>已修復</b>：overlay 焦點管理（顯示聚焦卡片、休息屆滿聚焦續玩鈕）。</li>
+    <li><b>依 USR 裁定</b>：各帳號各自計時（可切帳號繞過休息）、防作弊簡化——均為審查門裁定取捨，已載明。</li>
   </ul>
 
-  <p class="foot">完整 GATE 矩陣與專家評價（≥10 發現與處置）見 <code>docs/expert-review-issue63.md</code>。本檔為 source of truth，<code>docs/test-summary.pdf</code> 為其列印快照。</p>
+  <h2>5. 結論</h2>
+  <p><span class="verdict">可宣稱完成</span> — 機器判定全綠、selftest 5/5、端對端 UI 6/6 通過、矩陣 5/5 已測通過、專家評價重大發現均已回修重測。狀態可達 <code>CODE-READY</code>，待 USR 於 PR #94 核准。</p>
+
+  <p class="foot">本檔為單一自包含 HTML（CSS 內聯、無外部相依），可離線開啟；<code>docs/test-summary.pdf</code> 為其列印快照。issue #6 · spec#9 · gateVersion 1.0 · releaseVersion 1.0。</p>
 </div>
 </body>
 </html>

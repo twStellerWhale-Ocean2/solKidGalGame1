@@ -17,6 +17,7 @@ import {
   nodeMapForArea,
   sceneConfigFor
 } from "../core/lookups.js";
+import { normalizePlayLimit } from "../system/play-clock.js";
 
 const legacyAreaIds = Object.freeze({
   kingdom: "urban",
@@ -143,6 +144,7 @@ export function normalizeState(candidate = {}) {
   merged.player = normalizePlayer(candidate.player, merged.playerNode, merged.area);
   merged.difficulty = Number(difficultyConfig[candidate.difficulty] ? candidate.difficulty : base.difficulty);
   merged.activeQuest = normalizeQuest(candidate.activeQuest || candidate.currentQuest);
+  merged.playLimit = normalizePlayLimit(candidate.playLimit);
   delete merged.schedule;
   delete merged.currentQuest;
   delete merged.week;
@@ -277,7 +279,7 @@ export function createQuestFromTemplate(template) {
 
 export function applyEffects(state, effects = {}) {
   state.coins = Math.max(0, state.coins + (effects.coins || 0));
-  state.energy = clamp(state.energy + (effects.energy || 0), 0, 100);
+  // energy 自 issue #6 起為「遊玩時間預算」顯示值，由 play-clock 依真實時間重算，不再由答題等 effects 變動。
   state.vocab += effects.vocab || 0;
   state.expression += effects.expression || 0;
   state.kindness += effects.kindness || 0;
@@ -287,7 +289,6 @@ export function applyEffects(state, effects = {}) {
 export function effectText(effects = {}) {
   const parts = [];
   if (effects.coins) parts.push(`${effects.coins > 0 ? "+" : ""}${effects.coins} coins`);
-  if (effects.energy) parts.push(`${effects.energy > 0 ? "+" : ""}${effects.energy} energy`);
   if (effects.vocab) parts.push(`+${effects.vocab} words`);
   if (effects.expression) parts.push(`+${effects.expression} talk`);
   if (effects.kindness) parts.push(`+${effects.kindness} kind`);

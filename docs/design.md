@@ -22,6 +22,7 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 * **spec#6-可選擇與命名自己的公主**：方案須讓玩家首次進入時選定公主外觀並命名，之後可重選外觀或改名，且不影響既有存檔進度。
 * **spec#7-可用純靜態網站方式部署並模組化擴充內容**：方案須能以 GitHub Pages 等純靜態方式部署遊玩，且 area、角色與衣物等內容可模組化新增與調整。
 * **spec#8-可用本機多帳號分離不同玩家進度**：方案須讓同一裝置上多位玩家各自擁有獨立帳號，每次進入遊戲先選擇要使用的帳號，並可新增與刪除帳號，使不同玩家的進度與換裝成果互不混用；多帳號僅限同一瀏覽器本機，不含網路登入、密碼或雲端同步。
+* **spec#9-可限制每次遊玩時長並強制休息以護眼**：方案須在兒童連續遊玩達設定時長後自動結算本回合成果並進入強制休息，休息時間結束前不可續玩，以保護兒童視力；每次遊玩與休息的時長可由玩家於設定調整，並以各帳號各自計算。
 
 # II. 設計分析
 
@@ -99,6 +100,11 @@ OPENAI -->|"🎚️paramHelpModel=`gpt-4o-mini`"| SYS
   * **solCase#10.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家選擇帳號]，每次進入遊戲時於帳號選擇畫面選擇要使用的帳號。
   * **solCase#10.2**：[etyCfg通用兒童玩家]執行[runAct自訂玩家新增帳號]，建立一個新帳號並成為使用中帳號。
   * **solCase#10.3**：[etyCfg通用兒童玩家]執行[runAct自訂玩家刪除帳號]，刪除一個帳號，並於刪除使用中帳號後回到帳號選擇。
+* **solStory#11-遊玩時間限制與護眼休息**：
+  * **solCase#11.1**：[sysGame系統]執行[runAct自訂系統遊玩計時消耗]，依真實經過時間逐步遞減目前帳號的遊玩時間預算（energy）。
+  * **solCase#11.2**：[sysGame系統]執行[runAct自訂系統時間到結算]，於遊玩時間預算耗盡時自動結算並呈現本回合成果（獲得金錢、答題數與答題正確度）。
+  * **solCase#11.3**：[sysGame系統]執行[runAct自訂系統休息鎖定]，結算後鎖定目前帳號遊玩，休息時長屆滿前不可續玩、屆滿後解鎖。
+  * **solCase#11.4**：[etyCfg通用兒童玩家]執行[runAct自訂玩家調整遊玩限制]，於設定調整每次遊玩與休息的時長。
 
 ### (D) 重點組態
 
@@ -170,6 +176,8 @@ STATE -->|"🎚️paramStorageKey=`luminara-princess-english-adv`"| SYS
 STATE -->|"🎚️paramAccountIndexKey=`luminara-princess-english-accounts`"| SYS
 SCENE -->|"🎚️paramHelpModel=`gpt-4o-mini`"| SYS
 CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
+STATE -->|"🎚️paramPlayMinutes=`10`"| SYS
+STATE -->|"🎚️paramRestMinutes=`10`"| SYS
 ```
 
 ### (C) 運作個案
@@ -194,6 +202,11 @@ CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
   * **sysCase#6.1**：[modShell模組]承接[runAct自訂玩家選擇帳號]，啟動時先進入帳號選擇，讀取帳號清單，玩家選定後透過 modState 載入該帳號進度再進入遊戲。
   * **sysCase#6.2**：[modState模組]承接[runAct自訂玩家新增帳號]，建立新帳號的初始進度並設為使用中帳號。
   * **sysCase#6.3**：[modState模組]承接[runAct自訂玩家刪除帳號]，移除指定帳號，刪除使用中帳號後清除使用中指向並交回帳號選擇。
+* **sysStory#7-承接遊玩時間限制與護眼休息**：
+  * **sysCase#7.1**：[modState模組]承接[runAct自訂系統遊玩計時消耗]，依真實經過時間遞減目前帳號的遊玩時間預算並持久化至該帳號進度。
+  * **sysCase#7.2**：[modShell模組]承接[runAct自訂系統時間到結算]，於預算耗盡時呈現本回合成果結算畫面。
+  * **sysCase#7.3**：[modShell模組]承接[runAct自訂系統休息鎖定]，依休息時長鎖定遊玩入口、屆滿後解鎖。
+  * **sysCase#7.4**：[modState模組]承接[runAct自訂玩家調整遊玩限制]，保存每次遊玩與休息時長至目前帳號。
 
 ### (D) 重點組態
 
@@ -206,6 +219,8 @@ CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
     * paramStorageKey=`luminara-princess-english-adv`
     * paramSaveMarker=`LUMINARA_SAVE_JSON`
     * paramAccountIndexKey=`luminara-princess-english-accounts`
+    * paramPlayMinutes=`10`
+    * paramRestMinutes=`10`
   * [etyCfg自訂modContent組態]
     * paramDefaultArea=`castle`
     * paramDefaultCharacter=`lumi`
@@ -414,6 +429,46 @@ CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
   1. 被刪帳號自清單移除，其餘帳號進度不受影響。
   2. 刪除使用中帳號後回到帳號選擇；刪除最後一個帳號後僅顯示新增帳號的空狀態。
 
+#### intTest#18-驗證 [runAct自訂玩家調整遊玩限制]
+
+* 既有基底：intTest#15。
+* 新增項目：[sysGame系統]之遊玩／休息時長設定與持久化。
+* 步驟：
+  1. 以一個帳號進入遊戲，於設定將每次遊玩與休息時長改為非預設值並儲存。
+  2. 重新整理頁面並以同一帳號進入。
+* 預期結果：
+  1. 設定值套用且重整後仍保留，僅作用於該帳號，其他帳號維持各自設定。
+
+#### intTest#19-驗證 [runAct自訂系統遊玩計時消耗]
+
+* 既有基底：intTest#18。
+* 新增項目：[sysGame系統]之遊玩時間預算隨真實時間遞減行為。
+* 步驟：
+  1. 將每次遊玩時長設為極短測試值後進入遊戲並停留於遊玩畫面。
+  2. 等待設定時長經過。
+* 預期結果：
+  1. 該帳號的遊玩時間預算（energy）隨真實經過時間遞減至 0。
+
+#### intTest#20-驗證 [runAct自訂系統時間到結算]
+
+* 既有基底：intTest#19。
+* 新增項目：[sysGame系統]之時間到自動結算行為。
+* 步驟：
+  1. 接續 intTest#19，待遊玩時間預算遞減至 0。
+* 預期結果：
+  1. 自動顯示本回合成果結算畫面，含本回合獲得金錢、答題數與答題正確度。
+
+#### intTest#21-驗證 [runAct自訂系統休息鎖定]
+
+* 既有基底：intTest#20。
+* 新增項目：[sysGame系統]之休息鎖定與屆滿解鎖行為。
+* 步驟：
+  1. 接續 intTest#20 結算後，於休息時長屆滿前嘗試續玩。
+  2. 等待休息時長屆滿後再次嘗試續玩。
+* 預期結果：
+  1. 休息時長屆滿前遊玩入口被鎖定、不可續玩。
+  2. 休息時長屆滿後解鎖，可重新開始遊玩。
+
 ## E. 方案層級：文件程式化測試
 
 #### docProgTest#01-productReadme 承接 [solStory#1-短回合英文練習]
@@ -486,6 +541,13 @@ CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
 * 通過判定：
   1. 讀者可依 productReadme 新增、選擇與刪除帳號，且不同帳號進度互不混用。
 
+#### docProgTest#11-productReadme 承接 [solStory#11-遊玩時間限制與護眼休息]
+
+* productReadme 要求：
+  1. 說明連續遊玩會逐步用盡遊玩時間、時間到的本回合結算、休息等待後才可續玩，以及如何於設定調整每次遊玩與休息時長（各帳號各自）。
+* 通過判定：
+  1. 讀者可依 productReadme 預期玩到時間上限後進入休息，並能於設定調整時長。
+
 ## F. 方案層級：文件端對端測試
 
 #### e2eTest#01-依 productReadme 驗測主循環
@@ -535,6 +597,18 @@ CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
   2. 切換後顯示對應帳號進度。
   3. 刪除使用中帳號後回到帳號選擇；刪除最後一個帳號顯示僅可新增的空狀態。
 
+#### e2eTest#06-依 productReadme 驗測遊玩時間限制與休息
+
+* 依據：docProgTest#11、[solCase#11.1]、[solCase#11.2]、[solCase#11.3]。
+* 步驟：
+  1. 依 productReadme 於設定將每次遊玩時長設為極短測試值並開始遊玩至用盡。
+  2. 觀察時間到的結算與其後的休息鎖定。
+  3. 等待休息時長屆滿後依 productReadme 續玩。
+* 預期結果：
+  1. 時間到顯示本回合成果結算（金錢、答題數、答題正確度）。
+  2. 休息期間遊玩入口被鎖定、不可續玩。
+  3. 休息屆滿後可續玩；切換至另一帳號時其遊玩時間與休息獨立計算。
+
 # IV. 部署成效
 
 ## A. 部署組態
@@ -573,3 +647,6 @@ CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
 * **spec#8-可用本機多帳號分離不同玩家進度**
   * 評估方式：以多個帳號分別遊玩後比對各自進度是否互不混用。
   * 觀察項目：帳號間進度隔離正確率、刪除帳號後狀態一致性。
+* **spec#9-可限制每次遊玩時長並強制休息以護眼**
+  * 評估方式：觀察單次連續遊玩是否於設定時長後進入結算與休息，且休息屆滿前無法續玩。
+  * 觀察項目：達上限後休息遵守率、本回合結算呈現正確率、時長設定調整生效率。
