@@ -674,7 +674,7 @@ function normalizeVisibleOutfit(outfit = state.outfit) {
 function toggleEquip(item) {
   if (item.type === "room") {
     state.outfit.room = item.id;
-    elements.statusMessage.textContent = `${item.name} is placed in Lumi's room.`;
+    elements.statusMessage.textContent = `${item.name} is placed in ${princessName()}'s room.`;
     persist();
     render();
     return;
@@ -1357,8 +1357,7 @@ function openSceneAdv(hotspot) {
 
 function openRoomScene(hotspot = hotspotById("princessRoom")) {
   openAdvBase(hotspot, "scene");
-  addUnique("metNpcs", ["Lumi"]);
-  elements.advLine.textContent = "Lumi is in her room. What should we change today?";
+  elements.advLine.textContent = `${princessName()} is in her room. What should we change today?`;
   elements.advPrompt.textContent = "Choose a room action.";
   renderFirstLayerSceneActions(hotspot);
   scheduleAdvFocus(0);
@@ -1512,7 +1511,7 @@ function openWardrobeDetail(category = "dresses") {
   shopCategory = category;
   clearTryOnPreview({ renderDoll: false });
   elements.advScene.dataset.mode = "wardrobe";
-  elements.advLine.textContent = `Choose ${categoryLabel(category).toLowerCase()} for Lumi.`;
+  elements.advLine.textContent = `Choose ${categoryLabel(category).toLowerCase()} for ${princessName()}.`;
   elements.advPrompt.textContent = "Tap to preview, then equip.";
   elements.shopArea.classList.remove("refund-detail");
   elements.shopArea.classList.add("show", "wardrobe-detail");
@@ -1593,7 +1592,7 @@ function equipWardrobePreview(item) {
   if (!item) return;
   if (item.type === "room") {
     state.outfit.room = item.id;
-    elements.advFeedback.textContent = `${item.name} is placed in Lumi's room.`;
+    elements.advFeedback.textContent = `${item.name} is placed in ${princessName()}'s room.`;
   } else {
     equipOutfitItem(item);
     elements.advFeedback.textContent = `${item.name} equipped.`;
@@ -1740,7 +1739,7 @@ function backToRoomScene() {
 function shopActionLabel(item) {
   if (!item) return "Pick a treasure";
   if (state.owned.includes(item.id)) {
-    return item.type === "room" ? "Already in Lumi's room" : "Already in wardrobe";
+    return item.type === "room" ? `Already in ${princessName()}'s room` : "Already in wardrobe";
   }
   if (state.coins < item.cost) return `Need ${item.cost - state.coins} more coins`;
   return `BUY ${item.cost} coins`;
@@ -1753,8 +1752,8 @@ function tryOnFeedbackText(item, source) {
   const status = owned ? equipped ? "Equipped now" : "Owned treasure" : affordable ? "Ready to buy" : `Need ${item.cost - state.coins} more coins`;
   if (item.type === "room") return `${item.name}: ${status}.`;
   const action = item.type === "outfitSet"
-    ? source === "wardrobe" ? "Trying the full set on Lumi" : "Trying the full set before buying"
-    : source === "wardrobe" ? "Trying it on Lumi" : "Trying it on Lumi before buying";
+    ? source === "wardrobe" ? `Trying the full set on ${princessName()}` : "Trying the full set before buying"
+    : source === "wardrobe" ? `Trying it on ${princessName()}` : `Trying it on ${princessName()} before buying`;
   return `${item.name}: ${action}. ${status}.`;
 }
 
@@ -1763,14 +1762,14 @@ function renderShopSoldOut() {
   renderPaperDolls();
   elements.advLine.textContent = "You found every treasure in this shop.";
   elements.advPrompt.textContent = "Visit the wardrobe to wear owned treasures.";
-  elements.advFeedback.textContent = `${sceneConfigFor(activeShopHotspot).npc} smiles. Lumi can wear owned treasures from the wardrobe.`;
+  elements.advFeedback.textContent = `${sceneConfigFor(activeShopHotspot).npc} smiles. ${princessName()} can wear owned treasures from the wardrobe.`;
 }
 
 function buyItemInAdv(item) {
   if (!item) return;
   if (state.owned.includes(item.id)) {
     elements.advFeedback.textContent = item.type === "room"
-      ? `${item.name} is already in Lumi's room.`
+      ? `${item.name} is already in ${princessName()}'s room.`
       : `${item.name} is already in the wardrobe.`;
     shopPreviewItemId = "";
     renderAdvShop(true);
@@ -1799,7 +1798,7 @@ function buyItemInAdv(item) {
   awardBadge("First Shopping");
   updateProgressBadges();
   addDiary({ type: "shop", title: activeShopHotspot?.label || "Shop", body: `Bought ${item.name}.`, result: `-${item.cost} coins` });
-  const feedbackText = item.type === "room" ? `${item.name} is in Lumi's room now.` : `${item.name} is on Lumi now.`;
+  const feedbackText = item.type === "room" ? `${item.name} is in ${princessName()}'s room now.` : `${item.name} is on ${princessName()} now.`;
   elements.advLine.textContent = `${item.name} is yours now. It looks wonderful.`;
   elements.advFeedback.textContent = feedbackText;
   elements.statusMessage.textContent = feedbackText;
@@ -2042,7 +2041,7 @@ function answerLesson(button, choice) {
     vocabProfile: activeLesson.vocabProfile
   });
   elements.advLine.textContent = quest.ending;
-  elements.advPrompt.textContent = "Help complete. Try a reward now, or go back to Lumi's room.";
+  elements.advPrompt.textContent = `Help complete. Try a reward now, or go back to ${princessName()}'s room.`;
   elements.advFeedback.textContent = `${effectText(reward)}.`;
   state.activeQuest = null;
   activeLesson = null;
@@ -2449,13 +2448,13 @@ function bindEvents() {
     renderSettings();
   });
   elements.clearDiaryButton.addEventListener("click", () => {
-    if (!window.confirm("Clear Lumi's diary pages?")) return;
+    if (!window.confirm(`Clear ${princessName()}'s diary pages?`)) return;
     state.diary = [];
     persist();
     render();
   });
   elements.resetButton.addEventListener("click", () => {
-    if (!window.confirm("Reset Lumi's coins, clothes, quests, and diary?")) return;
+    if (!window.confirm(`Reset ${princessName()}'s coins, clothes, quests, and diary?`)) return;
     resetProgress();
   });
   elements.openaiSettingsForm.addEventListener("submit", (event) => {
