@@ -15,8 +15,9 @@
           <div class="mini-doll-frame">
             <div class="paper-doll side-doll" data-doll="side"></div>
           </div>
-          <h1>Princess Lumi</h1>
+          <h1 id="princessNameTitle">Princess Lumi</h1>
             <p class="subtitle">A little princess who learns English, earns coins, and dresses up.</p>
+            <button class="soft-button change-character-button" id="changeCharacterButton" type="button">Change princess</button>
           <div class="status-grid">
             <div class="stat"><span>Coins</span><strong id="coinValue">0</strong></div>
           </div>
@@ -173,6 +174,25 @@
               </div>
             </div>
           </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="character-select-overlay" id="characterSelect" aria-hidden="true" aria-labelledby="characterSelectTitle">
+      <div class="character-select-backdrop" data-character-cancel></div>
+      <div class="character-select-card" role="dialog" aria-modal="true" tabindex="-1">
+        <div class="character-select-header">
+          <h2 id="characterSelectTitle">Choose your princess</h2>
+          <p>Pick how she looks, then give her a name.</p>
+        </div>
+        <div class="character-grid" id="characterGrid" role="radiogroup" aria-label="Princess appearance"></div>
+        <form class="character-name-form" id="characterNameForm" autocomplete="off">
+          <label for="playerNameInput">Princess name</label>
+          <input id="playerNameInput" type="text" maxlength="16" autocomplete="off" placeholder="Lumi" />
+        </form>
+        <div class="character-select-actions">
+          <button class="soft-button character-select-cancel" id="characterCancel" type="button">Back</button>
+          <button class="primary-button" id="characterConfirm" type="button">Start</button>
         </div>
       </div>
     </section>

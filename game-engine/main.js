@@ -46,7 +46,7 @@ import { renderItemDetailPanel } from "./render/item-panel.js";
 import { createPaperDollRenderer } from "./render/paper-doll.js";
 import { renderBuildInfo } from "./render/settings.js";
 import { applyAdvSceneArt } from "./scene/scene-art.js";
-import { openAISettingsKey, saveMarkerEnd, saveMarkerStart } from "./state/storage.js";
+import { openAISettingsKey, saveMarkerEnd, saveMarkerStart, storageKey } from "./state/storage.js";
 import {
   addDiary as addStateDiary,
   addUnique as addStateUnique,
@@ -64,6 +64,7 @@ import {
   outfitSummary as stateOutfitSummary,
   persistOpenAISettings as saveOpenAISettings,
   persistState,
+  sanitizePlayerName,
   updateProgressBadges as updateStateProgressBadges
 } from "./state/game-state.js";
 import { installTestingHooks } from "./testing/selftests.js";
@@ -90,6 +91,8 @@ let pendingMapRefreshArea = "";
 let systemMenuPanel = "diary";
 let activeCastleHotspot = null;
 let activeWorldDestinationId = "castle";
+let pendingCharacterId = state.activeCharacterId;
+let playerNameEdited = false;
 
 const elements = createElements();
 const areaMapViewportController = createAreaMapViewportController({
@@ -326,6 +329,7 @@ function setExpressions(princess = "normal", npc = "normal") {
 
 function render() {
   renderStatus();
+  renderIdentity();
   renderAreaNav();
   renderPaperDolls();
   renderHome();
@@ -339,6 +343,79 @@ function render() {
 function renderStatus() {
   elements.coinValue.textContent = state.coins;
   elements.outfitSummary.textContent = outfitSummary();
+}
+
+// 玩家公主的名字為使用者設定；遊戲內稱呼一律取此值（世界觀／品牌名 Luminara 不在此列）。
+function princessName() {
+  return state.playerName || playableCharacterById(state.activeCharacterId)?.defaultName || "Lumi";
+}
+
+function renderIdentity() {
+  const name = princessName();
+  if (elements.princessNameTitle) elements.princessNameTitle.textContent = `Princess ${name}`;
+  const sideDollLabel = `Princess ${name}`;
+  document.querySelector(".adv-princess")?.setAttribute("aria-label", sideDollLabel);
+  elements.castlePlayerToken?.setAttribute("aria-label", `Princess ${name} in the castle`);
+  elements.playerToken?.setAttribute("aria-label", `Princess ${name}`);
+  const diaryTitle = `${name} Diary`;
+  const systemMenuTitleEl = document.getElementById("systemMenuTitle");
+  if (systemMenuTitleEl) systemMenuTitleEl.textContent = diaryTitle;
+  elements.systemMenuButton?.setAttribute("aria-label", `Open ${diaryTitle} and Settings`);
+  elements.systemMenuClose?.setAttribute("aria-label", `Close ${diaryTitle}`);
+}
+
+function openCharacterSelect({ forced = false } = {}) {
+  pendingCharacterId = state.activeCharacterId;
+  playerNameEdited = false;
+  buildCharacterCards();
+  elements.playerNameInput.value = state.playerName || playableCharacterById(pendingCharacterId)?.defaultName || "";
+  elements.characterSelect.classList.toggle("first-run", forced);
+  elements.characterSelect.classList.add("show");
+  elements.characterSelect.setAttribute("aria-hidden", "false");
+  document.body.classList.add("character-select-open");
+  setTimeout(() => elements.characterSelectCard?.focus({ preventScroll: true }), 0);
+}
+
+function closeCharacterSelect() {
+  elements.characterSelect.classList.remove("show");
+  elements.characterSelect.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("character-select-open");
+}
+
+function buildCharacterCards() {
+  elements.characterGrid.innerHTML = "";
+  Object.values(characterRegistry).forEach((character) => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "character-card";
+    card.dataset.characterId = character.id;
+    card.setAttribute("role", "radio");
+    card.setAttribute("aria-checked", String(character.id === pendingCharacterId));
+    card.innerHTML = `<img src="${domAssetUrl(character.thumbImage)}" alt="" /><span>${character.label}</span>`;
+    card.addEventListener("click", () => selectPendingCharacter(character.id));
+    elements.characterGrid.appendChild(card);
+  });
+}
+
+function selectPendingCharacter(characterId) {
+  if (!characterRegistry[characterId]) return;
+  pendingCharacterId = characterId;
+  [...elements.characterGrid.querySelectorAll(".character-card")].forEach((card) => {
+    card.setAttribute("aria-checked", String(card.dataset.characterId === characterId));
+  });
+  if (!playerNameEdited) {
+    elements.playerNameInput.value = playableCharacterById(characterId)?.defaultName || "";
+  }
+}
+
+function confirmCharacterSelect() {
+  const character = playableCharacterById(pendingCharacterId);
+  state.activeCharacterId = character.id;
+  state.playerName = sanitizePlayerName(elements.playerNameInput.value) || character.defaultName;
+  persist();
+  closeCharacterSelect();
+  render();
+  elements.statusMessage.textContent = `${princessName()} is ready. Choose a place to start.`;
 }
 
 function moodLabel(mood) {
@@ -2331,6 +2408,19 @@ function bindEvents() {
   elements.tabs.forEach((tab) => tab.addEventListener("click", () => changeView(tab.dataset.view)));
   window.addEventListener("hashchange", () => changeView(location.hash ? location.hash.slice(1) : "home"));
   elements.systemMenuButton.addEventListener("click", () => openSystemMenu(systemMenuPanel || "diary"));
+  elements.changeCharacterButton?.addEventListener("click", () => openCharacterSelect({ forced: false }));
+  elements.characterConfirm?.addEventListener("click", confirmCharacterSelect);
+  elements.characterCancel?.addEventListener("click", closeCharacterSelect);
+  elements.characterSelect?.addEventListener("click", (event) => {
+    if (event.target.matches("[data-character-cancel]") && !elements.characterSelect.classList.contains("first-run")) {
+      closeCharacterSelect();
+    }
+  });
+  elements.playerNameInput?.addEventListener("input", () => { playerNameEdited = true; });
+  elements.characterNameForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    confirmCharacterSelect();
+  });
   elements.systemMenuClose.addEventListener("click", closeSystemMenu);
   elements.systemMenu.addEventListener("click", (event) => {
     if (event.target.matches("[data-system-close]")) closeSystemMenu();
@@ -2601,9 +2691,11 @@ Object.defineProperty(window, "__luminaraTest", {
   }
 });
 
+const isFirstRun = !localStorage.getItem(storageKey);
 bindEvents();
 render();
 changeView(location.hash ? location.hash.slice(1) : "home");
+if (isFirstRun) openCharacterSelect({ forced: true });
 
 installTestingHooks({
   get state() { return state; },

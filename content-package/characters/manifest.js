@@ -19,6 +19,7 @@ export const characterRegistry = Object.freeze({
   lumi: Object.freeze({
     id: "lumi",
     label: "Princess Lumi",
+    defaultName: "Lumi",
     baseLayer: characterAsset("lumi", "base"),
     thumbImage: characterAsset("lumi", "thumb"),
     naturalHeightCm: 125,
@@ -28,6 +29,7 @@ export const characterRegistry = Object.freeze({
   yumi: Object.freeze({
     id: "yumi",
     label: "Princess Yumi",
+    defaultName: "Yumi",
     baseLayer: characterAsset("yumi", "base"),
     thumbImage: characterAsset("yumi", "thumb"),
     naturalHeightCm: 125,
@@ -37,6 +39,7 @@ export const characterRegistry = Object.freeze({
   sol: Object.freeze({
     id: "sol",
     label: "Princess Sol",
+    defaultName: "Sol",
     baseLayer: characterAsset("sol", "base"),
     thumbImage: characterAsset("sol", "thumb"),
     naturalHeightCm: 125,

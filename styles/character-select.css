@@ -1,0 +1,122 @@
+/* 選角＋命名畫面：首次進入強制顯示，之後可由側欄重新叫出 */
+.character-select-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.character-select-overlay.show {
+  display: flex;
+}
+
+.character-select-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(80, 56, 70, 0.55);
+}
+
+.character-select-card {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.character-select-header h2 {
+  margin: 0 0 4px;
+  color: var(--rose-dark);
+}
+
+.character-select-header p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.character-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.character-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: var(--radius);
+  border: 2px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.character-card:hover {
+  border-color: var(--rose);
+}
+
+.character-card[aria-checked="true"] {
+  border-color: var(--rose-dark);
+  box-shadow: 0 0 0 3px rgba(216, 103, 140, 0.22);
+}
+
+.character-card img {
+  width: 100%;
+  max-width: 96px;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  background: #fff6f9;
+  border-radius: var(--radius);
+}
+
+.character-card span {
+  font-weight: 900;
+}
+
+.character-name-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.character-name-form label {
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.character-name-form input {
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+}
+
+.character-select-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* 首次進入無存檔：不可取消，必須先選角＋命名 */
+.character-select-overlay.first-run .character-select-cancel {
+  display: none;
+}
+
+.change-character-button {
+  align-self: flex-start;
+  margin-top: 2px;
+}
