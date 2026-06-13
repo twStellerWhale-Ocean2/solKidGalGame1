@@ -3,6 +3,7 @@ export function installTestingHooks(api) {
     exportMarkdown: api.buildSaveMarkdown,
     importMarkdown: api.loadMarkdownText,
     getState: () => JSON.parse(JSON.stringify(api.state)),
+    accounts: api.accounts,
     setDifficulty: () => {
       api.persist();
       api.render();
@@ -44,6 +45,55 @@ export function installTestingHooks(api) {
   runDataAudit(api);
   runVisualQa(api);
   runMonkeyTest(api);
+  runAccountSelfTest(api);
+}
+
+// 本機多帳號（issue #63）：驗證新增、隔離、切換與刪除（含刪除使用中帳號回到帳號選擇）。
+function runAccountSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "accounts") return;
+  const errors = [];
+  const accounts = api.accounts;
+  try {
+    const baseline = accounts.list().length;
+    // 1) 建立帳號 A，寫入可辨識進度。
+    const accA = accounts.create();
+    api.state.coins = 111;
+    api.state.playerName = "TestA";
+    api.persist();
+    // 2) 建立帳號 B：應為乾淨初始（隔離），寫入不同進度。
+    const accB = accounts.create();
+    if (api.state.coins === 111) errors.push("new account B inherited account A coins (no isolation)");
+    api.state.coins = 222;
+    api.state.playerName = "TestB";
+    api.persist();
+    // 3) 切回 A：應還原 111。
+    accounts.select(accA.id);
+    if (api.state.coins !== 111) errors.push(`account A coins after switch = ${api.state.coins}, expected 111`);
+    // 4) 切到 B：應還原 222。
+    accounts.select(accB.id);
+    if (api.state.coins !== 222) errors.push(`account B coins after switch = ${api.state.coins}, expected 222`);
+    // 5) 刪除非使用中帳號 A（目前使用中為 B）。
+    const remainingAfterDeleteA = accounts.remove(accA.id);
+    if (accounts.list().some((account) => account.id === accA.id)) errors.push("deleted account A still listed");
+    if (accounts.activeId() !== accB.id) errors.push("deleting non-active account changed the active account");
+    if (remainingAfterDeleteA !== baseline + 1) errors.push(`account count after deleting A = ${remainingAfterDeleteA}, expected ${baseline + 1}`);
+    // 6) 刪除使用中帳號 B：activeId 應清空（交回帳號選擇）。
+    accounts.remove(accB.id);
+    if (accounts.activeId()) errors.push("deleting active account left an active id (should return to account select)");
+    // 7) 帳號數回到 baseline（測試自我清理）。
+    if (accounts.list().length !== baseline) errors.push(`account count after cleanup = ${accounts.list().length}, expected ${baseline}`);
+  } catch (error) {
+    errors.push(error.message);
+  }
+  const result = document.createElement("pre");
+  result.id = "accountTestResult";
+  result.textContent = JSON.stringify({
+    test: "accounts",
+    passed: errors.length === 0,
+    errors: errors.slice(0, 10)
+  });
+  document.body.prepend(result);
 }
 
 async function runDataAudit(api) {
