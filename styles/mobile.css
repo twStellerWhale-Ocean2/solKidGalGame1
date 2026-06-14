@@ -1139,8 +1139,7 @@ body {
 .collection-summary > div,
 .diary-entry,
 .settings-card select,
-.settings-card input,
-.openai-settings {
+.settings-card input {
   background: rgba(255, 255, 255, 0.74);
 }
 
@@ -1168,12 +1167,6 @@ body {
 
 .settings-card {
   max-width: min(760px, calc(100% - 28px));
-}
-
-.openai-settings {
-  border: 1px dashed rgba(193, 80, 126, 0.24);
-  border-radius: var(--radius);
-  padding: 14px;
 }
 
 .adv-modal {
@@ -2217,11 +2210,6 @@ body {
 
   .system-menu-body .settings-card {
     max-width: none;
-  }
-
-  .system-menu-body .openai-settings {
-    margin-top: 14px;
-    padding: 10px;
   }
 
   .save-book-actions {
@@ -3417,7 +3405,6 @@ body {
   .system-panel,
   .system-menu-body .simple-panel,
   .system-menu-body .settings-card,
-  .system-menu-body .openai-settings,
   .save-book-panel,
   .save-book-note {
     min-width: 0;
@@ -3675,16 +3662,14 @@ body {
   border-color: rgba(255, 182, 192, 0.72);
 }
 
-.adv-scene .speaker-button,
-.adv-scene .help-button {
+.adv-scene .speaker-button {
   color: var(--adv-dialog-text);
   background: rgba(65, 51, 70, 0.94);
   border-color: rgba(255, 211, 231, 0.35);
   box-shadow: 0 8px 16px rgba(18, 12, 22, 0.22);
 }
 
-.adv-scene .speaker-button:focus,
-.adv-scene .help-button:focus {
+.adv-scene .speaker-button:focus {
   outline: 3px solid rgba(241, 154, 193, 0.38);
   outline-offset: 2px;
 }

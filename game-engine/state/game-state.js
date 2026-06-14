@@ -8,7 +8,7 @@ import {
   shopItems
 } from "../data/game-data.js";
 import { defaultState } from "./default-state.js";
-import { accountStateKey, openAISettingsKey, saveMarkerEnd, saveMarkerStart } from "./storage.js";
+import { accountStateKey, saveMarkerEnd, saveMarkerStart } from "./storage.js";
 import { createAccount, getActiveAccountId, migrateLegacyAccount } from "./accounts.js";
 import {
   clamp,
@@ -63,24 +63,6 @@ export function loadAccountState(accountId) {
 // 建立新帳號並寫入一份乾淨初始進度，回傳帳號資料（已設為使用中）。
 export function createFreshAccount() {
   return createAccount({ initialStateJson: JSON.stringify(freshState()) });
-}
-
-export function loadOpenAISettings() {
-  try {
-    const saved = localStorage.getItem(openAISettingsKey);
-    if (!saved) return { orgId: "", apiKey: "" };
-    const parsed = JSON.parse(saved);
-    return {
-      orgId: typeof parsed.orgId === "string" ? parsed.orgId : "",
-      apiKey: typeof parsed.apiKey === "string" ? parsed.apiKey : ""
-    };
-  } catch {
-    return { orgId: "", apiKey: "" };
-  }
-}
-
-export function persistOpenAISettings(openAISettings) {
-  localStorage.setItem(openAISettingsKey, JSON.stringify(openAISettings));
 }
 
 export function persistState(state) {
@@ -339,7 +321,6 @@ export function outfitSummary(state) {
 export function buildSaveMarkdown(state) {
   const questRows = state.diary.filter((entry) => entry.type === "quest");
   const exportState = JSON.parse(JSON.stringify(state));
-  delete exportState.openaiApiKey;
   const rows = state.diary.length
     ? state.diary.map((entry) => `| ${entry.title} | ${entry.body.replaceAll("|", "/")} | ${entry.result || ""} |`).join("\n")
     : "| - | - | - |";

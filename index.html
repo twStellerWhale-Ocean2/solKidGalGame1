@@ -142,19 +142,6 @@
                 <span id="versionValue">2026.06.02-area-packs-wild</span>
                 <small>Build time: <span id="buildDateValue">2026-06-02 13:55 (UTC+8)</span></small>
               </div>
-              <form class="openai-settings" id="openaiSettingsForm" autocomplete="off">
-                <h3>Help Teacher</h3>
-                <p>For local family use only. Public GitHub Pages should use a backend proxy instead of a browser key.</p>
-                <label for="openaiOrgInput">OpenAI Org ID</label>
-                <input id="openaiOrgInput" type="text" autocomplete="off" placeholder="org_..." />
-                <label for="openaiKeyInput">OpenAI API Key</label>
-                <input id="openaiKeyInput" type="password" autocomplete="off" placeholder="sk-..." />
-                <div class="settings-actions">
-                  <button class="soft-button" id="saveOpenAIButton" type="button">Save Help Key</button>
-                  <button class="soft-button" id="clearOpenAIButton" type="button">Clear Help Key</button>
-                </div>
-                <p id="aiStatus">No help key saved. The ? button will use local hints.</p>
-              </form>
             </div>
           </section>
 
@@ -163,13 +150,13 @@
               <h2 id="englishTitle">English Map</h2>
               <p>Each area has its own English word set. The princess does not choose a level in Settings.</p>
               <div class="english-guide-grid">
-                <div><strong>Castle</strong><span>Dolch Sight Words 220</span><small>20 coins for each Help question.</small></div>
-                <div><strong>Urban</strong><span>Cambridge Pre-A1 Starters</span><small>100 coins for each Help question.</small></div>
-                <div><strong>Rural</strong><span>Cambridge A1 Movers</span><small>500 coins for each Help question.</small></div>
-                <div><strong>Wild</strong><span>Cambridge A2 Flyers</span><small>2000 coins for each Help question.</small></div>
+                <div><strong>Castle</strong><span>Dolch Sight Words 220</span><small>20 coins for each practice question.</small></div>
+                <div><strong>Urban</strong><span>Cambridge Pre-A1 Starters</span><small>100 coins for each practice question.</small></div>
+                <div><strong>Rural</strong><span>Cambridge A1 Movers</span><small>500 coins for each practice question.</small></div>
+                <div><strong>Wild</strong><span>Cambridge A2 Flyers</span><small>2000 coins for each practice question.</small></div>
               </div>
-              <p>Every Help place keeps five local questions in its own area pack. Questions do not move between places.</p>
-              <p>Princess Room has no Help questions because the princess cannot reward herself.</p>
+              <p>Every practice place keeps five local questions in its own area pack. Questions do not move between places.</p>
+              <p>Princess Room has no practice questions because the princess cannot reward herself.</p>
             </div>
           </section>
 
@@ -188,7 +175,7 @@
               </div>
               <div class="save-book-note">
                 <strong>Family save page</strong>
-                <span>Save MD exports readable diary pages and game progress. Help Teacher keys stay only in this browser.</span>
+                <span>Save MD exports readable diary pages and game progress for the current player.</span>
               </div>
             </div>
           </section>
@@ -250,7 +237,6 @@
       <div class="adv-backdrop"></div>
       <div class="adv-scene scene-garden" id="advScene" role="dialog" aria-modal="true">
         <div class="adv-location" id="advTitle">Castle Garden</div>
-        <button class="help-button" id="helpButton" type="button" aria-label="Help">?</button>
         <div class="adv-portraits">
           <div class="adv-princess" aria-label="Princess Lumi">
             <div class="paper-doll adv-doll" data-doll="adv"></div>

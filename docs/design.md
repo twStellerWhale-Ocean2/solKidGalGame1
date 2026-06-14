@@ -35,7 +35,6 @@ flowchart TB
 
 USR["😃[etyCfg通用兒童玩家]"]
 HOST["☁️[etyCfg通用靜態主機平台]"]
-OPENAI["☁️[etyCfg標準OpenAI服務]"]
 
 subgraph SOL["🗺️[solKidGalGame方案]"]
   SYS["💽[sysGame系統]"]
@@ -43,7 +42,6 @@ end
 
 USR ==>|"🔗comIntf通用HTTPS連線"| HOST
 HOST ==>|"🔗comIntf通用HTTPS連線<br/>🔩apiIntf標準HTTP網站服務"| SYS
-SYS ==>|"🔗comIntf通用HTTPS連線<br/>🔩apiIntf標準OPENAI的API協定"| OPENAI
 ```
 
 ### (B) 組態項目
@@ -55,8 +53,6 @@ USR["😃[etyCfg通用兒童玩家]"]
 ADM["😃[etyCfg通用家長維護者]"]
 HOST["☁️[etyCfg通用靜態主機平台]
 ⚙️etyCfg通用靜態主機平台"]
-OPENAI["☁️[etyCfg標準OpenAI服務]
-⚙️etyCfg標準OpenAI服務"]
 
 subgraph SOL["🗺️[solKidGalGame方案]"]
   SYS["💽[sysGame系統]
@@ -65,10 +61,8 @@ end
 
 ADM -.->|"🔧setAct自訂維護者部署網站"| HOST
 ADM -.->|"🔧setAct自訂維護者移除部署"| HOST
-ADM -.->|"🔧setAct自訂維護者設定OpenAI輔助"| OPENAI
 USR -.->|"🔧setAct自訂玩家匯入存檔"| SYS
 HOST -->|"🎚️paramDeployBranch=`main`"| SYS
-OPENAI -->|"🎚️paramHelpModel=`gpt-4o-mini`"| SYS
 ```
 
 ### (C) 運作個案
@@ -93,31 +87,26 @@ OPENAI -->|"🎚️paramHelpModel=`gpt-4o-mini`"| SYS
   * **solCase#7.3**：[etyCfg通用家長維護者]執行[setAct自訂維護者移除部署]，停用靜態主機平台上的部署。
 * **solStory#8-初始化與異常復原**：
   * **solCase#8.1**：[sysGame系統]執行[runAct自訂系統還原進度]，讀取本機存檔並將缺漏或損壞欄位正規化回預設值。
-* **solStory#9-輔助提示與外部服務**：
-  * **solCase#9.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家取得Help提示]，於答題遇困難時向 OpenAI 輔助取得一則簡短提示。
-  * **solCase#9.2**：[etyCfg通用家長維護者]執行[setAct自訂維護者設定OpenAI輔助]，設定本機 OpenAI proxy 與金鑰以啟用提示。
-* **solStory#10-多帳號選擇與管理**：
-  * **solCase#10.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家選擇帳號]，每次進入遊戲時於帳號選擇畫面選擇要使用的帳號。
-  * **solCase#10.2**：[etyCfg通用兒童玩家]執行[runAct自訂玩家新增帳號]，建立一個新帳號並成為使用中帳號。
-  * **solCase#10.3**：[etyCfg通用兒童玩家]執行[runAct自訂玩家刪除帳號]，刪除一個帳號，並於刪除使用中帳號後回到帳號選擇。
-* **solStory#11-遊玩時間限制與護眼休息**：
-  * **solCase#11.1**：[sysGame系統]執行[runAct自訂系統遊玩計時消耗]，依真實經過時間逐步遞減目前帳號的遊玩時間預算（energy）。
-  * **solCase#11.2**：[sysGame系統]執行[runAct自訂系統時間到結算]，於遊玩時間預算耗盡時自動結算並呈現本回合成果（獲得金錢、答題數與答題正確度）。
-  * **solCase#11.3**：[sysGame系統]執行[runAct自訂系統休息鎖定]，結算後鎖定目前帳號遊玩，休息時長屆滿前不可續玩、屆滿後解鎖。
-  * **solCase#11.4**：[etyCfg通用兒童玩家]執行[runAct自訂玩家調整遊玩限制]，於設定調整每次遊玩與休息的時長。
-* **solStory#12-中文雙語協助與獎勵階梯**：
-  * **solCase#12.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家取用中文協助]，於答題時撥放題目或某一選項的中文以理解題意。
-  * **solCase#12.2**：[sysGame系統]執行[runAct自訂系統結算協助獎勵]，依本題是否取用過中文與答對前的送出次數，套用全額／半額／無獎勵。
-* **solStory#13-角色差異化配音**：
-  * **solCase#13.1**：[sysGame系統]執行[runAct自訂系統角色配音]，依場景人物各自的角色特性，以貼合該人物的聲音撥放其對白與場景開場。
-  * **solCase#13.2**：[sysGame系統]執行[runAct自訂系統公主朗讀作答]，於玩家選定選項時，以目前玩家公主的聲音朗讀所選的選項文字。
+* **solStory#9-多帳號選擇與管理**：
+  * **solCase#9.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家選擇帳號]，每次進入遊戲時於帳號選擇畫面選擇要使用的帳號。
+  * **solCase#9.2**：[etyCfg通用兒童玩家]執行[runAct自訂玩家新增帳號]，建立一個新帳號並成為使用中帳號。
+  * **solCase#9.3**：[etyCfg通用兒童玩家]執行[runAct自訂玩家刪除帳號]，刪除一個帳號，並於刪除使用中帳號後回到帳號選擇。
+* **solStory#10-遊玩時間限制與護眼休息**：
+  * **solCase#10.1**：[sysGame系統]執行[runAct自訂系統遊玩計時消耗]，依真實經過時間逐步遞減目前帳號的遊玩時間預算（energy）。
+  * **solCase#10.2**：[sysGame系統]執行[runAct自訂系統時間到結算]，於遊玩時間預算耗盡時自動結算並呈現本回合成果（獲得金錢、答題數與答題正確度）。
+  * **solCase#10.3**：[sysGame系統]執行[runAct自訂系統休息鎖定]，結算後鎖定目前帳號遊玩，休息時長屆滿前不可續玩、屆滿後解鎖。
+  * **solCase#10.4**：[etyCfg通用兒童玩家]執行[runAct自訂玩家調整遊玩限制]，於設定調整每次遊玩與休息的時長。
+* **solStory#11-中文雙語協助與獎勵階梯**：
+  * **solCase#11.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家取用中文協助]，於答題時撥放題目或某一選項的中文以理解題意。
+  * **solCase#11.2**：[sysGame系統]執行[runAct自訂系統結算協助獎勵]，依本題是否取用過中文與答對前的送出次數，套用全額／半額／無獎勵。
+* **solStory#12-角色差異化配音**：
+  * **solCase#12.1**：[sysGame系統]執行[runAct自訂系統角色配音]，依場景人物各自的角色特性，以貼合該人物的聲音撥放其對白與場景開場。
+  * **solCase#12.2**：[sysGame系統]執行[runAct自訂系統公主朗讀作答]，於玩家選定選項時，以目前玩家公主的聲音朗讀所選的選項文字。
 
 ### (D) 重點組態
 
 * **Env轉K8sSec參數**
-  * [etyCfg標準OpenAI服務]
-    * `OPENAI_API_KEY`：本機 proxy 環境變數，不入網站包。
-    * `OPENAI_ORG_ID`：本機 proxy 環境變數，選配。
+  * 暫無。
 * **HelmChart參數-chart.yaml**
   * [etyCfg自訂sysGame組態]：暫無（靜態網站包採 [techStackStaticWeb]，預設 Pages 直推，無自有 chart）。
 * **HelmChart參數-values.yaml**
@@ -136,7 +125,6 @@ OPENAI -->|"🎚️paramHelpModel=`gpt-4o-mini`"| SYS
 flowchart TB
 
 USR["😃[etyCfg通用兒童玩家]"]
-OPENAI["☁️[etyCfg標準OpenAI服務]"]
 
 subgraph SYS["💽[sysGame系統]"]
   SHELL["📦[modShell模組]<br/>組裝啟動與檢視切換"]
@@ -156,7 +144,6 @@ SHELL ==>|"🔗comIntf自訂瀏覽器內模組呼叫"| STATE
 MAP ==>|"🔗comIntf自訂瀏覽器內模組呼叫"| CONTENT
 SCENE ==>|"🔗comIntf自訂瀏覽器內模組呼叫"| CONTENT
 WARDROBE ==>|"🔗comIntf自訂瀏覽器內模組呼叫"| STATE
-SCENE ==>|"🔗comIntf通用HTTPS連線<br/>🔩apiIntf標準OPENAI的API協定"| OPENAI
 TESTING ==>|"🔗comIntf自訂瀏覽器內模組呼叫"| SHELL
 ```
 
@@ -180,7 +167,6 @@ end
 ADM -.->|"🔧setAct自訂維護者擴充內容"| CONTENT
 STATE -->|"🎚️paramStorageKey=`luminara-princess-english-adv`"| SYS
 STATE -->|"🎚️paramAccountIndexKey=`luminara-princess-english-accounts`"| SYS
-SCENE -->|"🎚️paramHelpModel=`gpt-4o-mini`"| SYS
 CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
 CONTENT -->|"🎚️paramDefaultVoiceProfile=`default`"| SYS
 STATE -->|"🎚️paramPlayMinutes=`10`"| SYS
@@ -189,9 +175,8 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
 
 ### (C) 運作個案
 
-* **sysStory#1-承接英文練習與提示**：
+* **sysStory#1-承接英文練習**：
   * **sysCase#1.1**：[modScene模組]承接[runAct自訂玩家答英文題]，載入題庫、比對選項並回饋獎勵。
-  * **sysCase#1.2**：[modScene模組]承接[runAct自訂玩家取得Help提示]，呼叫 OpenAI 輔助回傳一則提示。
 * **sysStory#2-承接地圖導航**：
   * **sysCase#2.1**：[modMap模組]承接[runAct自訂玩家地圖導航]，處理世界與地區地圖移動及進入地點。
 * **sysStory#3-承接換裝與商店**：
@@ -224,7 +209,7 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
 ### (D) 重點組態
 
 * **Env轉K8sSec參數**
-  * [etyCfg自訂modScene組態]：`OPENAI_API_KEY` 經本機 proxy 注入，網站包不含金鑰。
+  * 暫無。
 * **HelmChart參數-chart.yaml**
   * [etyCfg自訂sysGame組態]：暫無。
 * **HelmChart參數-values.yaml**
@@ -239,8 +224,7 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
     * paramDefaultCharacter=`lumi`
     * paramDefaultVoiceProfile=`default`
   * [etyCfg自訂modScene組態]
-    * paramHelpModel=`gpt-4o-mini`
-    * paramHelpAudioLang=`zh-TW`
+    * paramChineseAudioLang=`zh-TW`
     * paramRewardSecondTryRatio=`0.5`
     * paramSpeechRateScale=`0.75`
 
@@ -300,12 +284,11 @@ erDiagram
 |---|---|---|
 | cfgTest#01 | [etyCfg通用兒童玩家] | 玩家角色組態符合契約規範 |
 | cfgTest#02 | [etyCfg通用家長維護者] | 維護者角色組態符合契約規範 |
-| cfgTest#03 | [etyCfg標準OpenAI服務] | OpenAI 服務組態與金鑰來源符合契約規範 |
-| cfgTest#04 | [etyCfg通用靜態主機平台] | 靜態主機部署組態符合契約規範 |
-| cfgTest#05 | [etyCfg自訂sysGame組態] | 系統部署與選型組態符合契約規範 |
-| cfgTest#06 | [etyCfg自訂modContent組態] | 內容包預設與 registry 組態符合契約規範 |
-| cfgTest#07 | [etyCfg自訂modState組態] | 儲存鍵與存檔標記組態符合契約規範 |
-| cfgTest#08 | [etyCfg自訂modScene組態] | 提示模型與輔助組態符合契約規範 |
+| cfgTest#03 | [etyCfg通用靜態主機平台] | 靜態主機部署組態符合契約規範 |
+| cfgTest#04 | [etyCfg自訂sysGame組態] | 系統部署與選型組態符合契約規範 |
+| cfgTest#05 | [etyCfg自訂modContent組態] | 內容包預設與 registry 組態符合契約規範 |
+| cfgTest#06 | [etyCfg自訂modState組態] | 儲存鍵與存檔標記組態符合契約規範 |
+| cfgTest#07 | [etyCfg自訂modScene組態] | 英文練習、中文協助與獎勵組態符合契約規範 |
 
 ## D. 方案層級：整合測試(setAct/runAct)
 
@@ -321,17 +304,7 @@ erDiagram
 * 預期結果：
   1. 首頁載入成功，index.html 與 game-engine ES module 無 404。
 
-#### intTest#02-驗證 [setAct自訂維護者設定OpenAI輔助]
-
-* 既有基底：intTest#01。
-* 新增項目：[sysGame系統]之本機 OpenAI Help proxy 設定。
-* 步驟：
-  1. 設定環境變數 OPENAI_API_KEY 後啟動 server.mjs。
-  2. 對 /api/help 發出一筆 POST 請求。
-* 預期結果：
-  1. 已設金鑰時回傳 200 與一則簡短提示文字；未設金鑰時回傳 503。
-
-#### intTest#03-驗證 [setAct自訂維護者擴充內容]
+#### intTest#02-驗證 [setAct自訂維護者擴充內容]
 
 * 既有基底：intTest#01。
 * 新增項目：[sysGame系統]之新增內容包。
@@ -341,7 +314,7 @@ erDiagram
 * 預期結果：
   1. 新內容出現於對應地圖、商店或選角，且既有內容不受影響。
 
-#### intTest#04-驗證 [setAct自訂維護者移除部署]
+#### intTest#03-驗證 [setAct自訂維護者移除部署]
 
 * 既有基底：intTest#01。
 * 新增項目：[sysGame系統]之部署移除。
@@ -350,7 +323,7 @@ erDiagram
 * 預期結果：
   1. 部署 URL 不再提供遊戲，且本機開發環境不受影響。
 
-#### intTest#05-驗證 [setAct自訂玩家匯入存檔]
+#### intTest#04-驗證 [setAct自訂玩家匯入存檔]
 
 * 既有基底：intTest#01。
 * 新增項目：[sysGame系統]之 Markdown 存檔匯入。
@@ -361,7 +334,7 @@ erDiagram
 
 ### 加入[sysGame系統]相關 runAct
 
-#### intTest#06-驗證 [runAct自訂玩家答英文題]
+#### intTest#05-驗證 [runAct自訂玩家答英文題]
 
 * 既有基底：intTest#01。
 * 新增項目：[sysGame系統]之答題行為。
@@ -370,43 +343,43 @@ erDiagram
 * 預期結果：
   1. 顯示答對回饋並增加 coins 與學習紀錄。
 
-#### intTest#07-驗證 [runAct自訂玩家地圖導航]
+#### intTest#06-驗證 [runAct自訂玩家地圖導航]
 
-* 既有基底：intTest#06。
+* 既有基底：intTest#05。
 * 新增項目：[sysGame系統]之地圖導航行為。
 * 步驟：
   1. 由地區地圖經 gate 回世界地圖，再進入另一地區 entry node。
 * 預期結果：
   1. 場景切換至目標地區，玩家位置與 playerNode 一致。
 
-#### intTest#08-驗證 [runAct自訂玩家購買衣物]
+#### intTest#07-驗證 [runAct自訂玩家購買衣物]
 
-* 既有基底：intTest#06。
+* 既有基底：intTest#05。
 * 新增項目：[sysGame系統]之購買行為。
 * 步驟：
   1. 於商店以足夠 coins 購買一件商品。
 * 預期結果：
   1. coins 正確扣除，商品標記為 owned。
 
-#### intTest#09-驗證 [runAct自訂玩家換裝]
+#### intTest#08-驗證 [runAct自訂玩家換裝]
 
-* 既有基底：intTest#08。
+* 既有基底：intTest#07。
 * 新增項目：[sysGame系統]之換裝行為。
 * 步驟：
   1. 於衣櫃穿戴已擁有商品。
 * 預期結果：
   1. 紙娃娃 outfit 更新且互斥 slot 正確處理。
 
-#### intTest#10-驗證 [runAct自訂玩家退款]
+#### intTest#09-驗證 [runAct自訂玩家退款]
 
-* 既有基底：intTest#08。
+* 既有基底：intTest#07。
 * 新增項目：[sysGame系統]之退款行為。
 * 步驟：
   1. 於退款介面退回一件已擁有商品。
 * 預期結果：
   1. coins 回補，商品取消 owned 且不再可穿戴。
 
-#### intTest#11-驗證 [runAct自訂玩家選角命名]
+#### intTest#10-驗證 [runAct自訂玩家選角命名]
 
 * 既有基底：intTest#01。
 * 新增項目：[sysGame系統]之選角命名行為。
@@ -415,34 +388,25 @@ erDiagram
 * 預期結果：
   1. activeCharacterId 與 playerName 更新，遊戲內稱呼隨之改變。
 
-#### intTest#12-驗證 [runAct自訂玩家取得Help提示]
+#### intTest#11-驗證 [runAct自訂系統保存進度]
 
-* 既有基底：intTest#02、intTest#06。
-* 新增項目：[sysGame系統]之 Help 提示行為。
-* 步驟：
-  1. 於答題畫面按下 Help。
-* 預期結果：
-  1. 顯示一則不直接揭露答案的簡短提示；輔助不可用時顯示降級訊息。
-
-#### intTest#13-驗證 [runAct自訂系統保存進度]
-
-* 既有基底：intTest#08。
+* 既有基底：intTest#07。
 * 新增項目：[sysGame系統]之自動保存行為。
 * 步驟：
   1. 進行任一會改變狀態的操作後重新整理頁面。
 * 預期結果：
   1. coins、outfit 與位置等狀態自瀏覽器本機儲存還原。
 
-#### intTest#14-驗證 [runAct自訂系統還原進度]
+#### intTest#12-驗證 [runAct自訂系統還原進度]
 
-* 既有基底：intTest#13。
+* 既有基底：intTest#11。
 * 新增項目：[sysGame系統]之缺漏正規化行為。
 * 步驟：
   1. 載入缺少 activeCharacterId 或含未知 item 的存檔。
 * 預期結果：
   1. 缺漏欄位回退預設值，狀態不變量（coins 非負、裝備指向已擁有物）成立。
 
-#### intTest#15-驗證 [runAct自訂玩家選擇帳號]
+#### intTest#13-驗證 [runAct自訂玩家選擇帳號]
 
 * 既有基底：intTest#01。
 * 新增項目：[sysGame系統]之進入時帳號選擇行為。
@@ -451,7 +415,7 @@ erDiagram
 * 預期結果：
   1. 載入該帳號進度並進入遊戲，coins、穿搭與所在位置與該帳號一致。
 
-#### intTest#16-驗證 [runAct自訂玩家新增帳號]
+#### intTest#14-驗證 [runAct自訂玩家新增帳號]
 
 * 既有基底：intTest#01。
 * 新增項目：[sysGame系統]之新增帳號行為。
@@ -460,9 +424,9 @@ erDiagram
 * 預期結果：
   1. 建立乾淨初始進度（coins 為預設、無 owned、無穿搭）並成為使用中帳號，且不影響其他帳號。
 
-#### intTest#17-驗證 [runAct自訂玩家刪除帳號]
+#### intTest#15-驗證 [runAct自訂玩家刪除帳號]
 
-* 既有基底：intTest#16。
+* 既有基底：intTest#14。
 * 新增項目：[sysGame系統]之刪除帳號行為。
 * 步驟：
   1. 刪除一個非使用中帳號。
@@ -471,9 +435,9 @@ erDiagram
   1. 被刪帳號自清單移除，其餘帳號進度不受影響。
   2. 刪除使用中帳號後回到帳號選擇；刪除最後一個帳號後僅顯示新增帳號的空狀態。
 
-#### intTest#18-驗證 [runAct自訂玩家調整遊玩限制]
+#### intTest#16-驗證 [runAct自訂玩家調整遊玩限制]
 
-* 既有基底：intTest#15。
+* 既有基底：intTest#13。
 * 新增項目：[sysGame系統]之遊玩／休息時長設定與持久化。
 * 步驟：
   1. 以一個帳號進入遊戲，於設定將每次遊玩與休息時長改為非預設值並儲存。
@@ -481,9 +445,9 @@ erDiagram
 * 預期結果：
   1. 設定值套用且重整後仍保留，僅作用於該帳號，其他帳號維持各自設定。
 
-#### intTest#19-驗證 [runAct自訂系統遊玩計時消耗]
+#### intTest#17-驗證 [runAct自訂系統遊玩計時消耗]
 
-* 既有基底：intTest#18。
+* 既有基底：intTest#16。
 * 新增項目：[sysGame系統]之遊玩時間預算隨真實時間遞減行為。
 * 步驟：
   1. 將每次遊玩時長設為極短測試值後進入遊戲並停留於遊玩畫面。
@@ -491,29 +455,29 @@ erDiagram
 * 預期結果：
   1. 該帳號的遊玩時間預算（energy）隨真實經過時間遞減至 0。
 
-#### intTest#20-驗證 [runAct自訂系統時間到結算]
+#### intTest#18-驗證 [runAct自訂系統時間到結算]
 
-* 既有基底：intTest#19。
+* 既有基底：intTest#17。
 * 新增項目：[sysGame系統]之時間到自動結算行為。
 * 步驟：
-  1. 接續 intTest#19，待遊玩時間預算遞減至 0。
+  1. 接續 intTest#17，待遊玩時間預算遞減至 0。
 * 預期結果：
   1. 自動顯示本回合成果結算畫面，含本回合獲得金錢、答題數與答題正確度。
 
-#### intTest#21-驗證 [runAct自訂系統休息鎖定]
+#### intTest#19-驗證 [runAct自訂系統休息鎖定]
 
-* 既有基底：intTest#20。
+* 既有基底：intTest#18。
 * 新增項目：[sysGame系統]之休息鎖定與屆滿解鎖行為。
 * 步驟：
-  1. 接續 intTest#20 結算後，於休息時長屆滿前嘗試續玩。
+  1. 接續 intTest#18 結算後，於休息時長屆滿前嘗試續玩。
   2. 等待休息時長屆滿後再次嘗試續玩。
 * 預期結果：
   1. 休息時長屆滿前遊玩入口被鎖定、不可續玩。
   2. 休息時長屆滿後解鎖，可重新開始遊玩。
 
-#### intTest#22-驗證 [runAct自訂玩家取用中文協助]
+#### intTest#20-驗證 [runAct自訂玩家取用中文協助]
 
-* 既有基底：intTest#06。
+* 既有基底：intTest#05。
 * 新增項目：[sysGame系統]之題目與選項中文撥放行為。
 * 步驟：
   1. 進入具 lesson 的地點，於題目按下中文撥放，再於任一選項按下中文撥放。
@@ -522,9 +486,9 @@ erDiagram
   1. 題目與該選項以 zh-TW 語音撥放中文。
   2. 缺中文欄位時降級為僅英文撥放，不報錯。
 
-#### intTest#23-驗證 [runAct自訂系統結算協助獎勵]
+#### intTest#21-驗證 [runAct自訂系統結算協助獎勵]
 
-* 既有基底：intTest#22。
+* 既有基底：intTest#20。
 * 新增項目：[sysGame系統]之獎勵階梯結算行為。
 * 步驟：
   1. 不按中文，第一次即選出正確選項。
@@ -535,7 +499,7 @@ erDiagram
   2. 第二次答對且未用中文：發半額 coins（paramRewardSecondTryRatio）。
   3. 曾用中文或第三次起答對：不發 coins；旗標與次數於換題後重置。
 
-#### intTest#24-驗證 [runAct自訂系統角色配音]
+#### intTest#22-驗證 [runAct自訂系統角色配音]
 
 * 既有基底：intTest#01。
 * 新增項目：[sysGame系統]之依角色音色配音行為。
@@ -544,27 +508,27 @@ erDiagram
 * 預期結果：
   1. 各角色之語音以 [datIntf自訂角色音色目錄] 中其特性對應之音頻參數（pitch／rate／voice）建構，兩者參數不相同。
 
-#### intTest#25-驗證 [runAct自訂系統公主朗讀作答]
+#### intTest#23-驗證 [runAct自訂系統公主朗讀作答]
 
-* 既有基底：intTest#06。
+* 既有基底：intTest#05。
 * 新增項目：[sysGame系統]之公主朗讀所選選項行為。
 * 步驟：
   1. 於答題畫面選定一個選項。
 * 預期結果：
   1. 系統以目前玩家公主之音色朗讀所選選項，語音文字為該選項、音頻參數為該公主 profile；語音開關關閉時不發聲。
 
-#### intTest#26-驗證 角色配音缺特性降級
+#### intTest#24-驗證 角色配音缺特性降級
 
-* 既有基底：intTest#24。
+* 既有基底：intTest#22。
 * 新增項目：[sysGame系統]之缺特性降級行為。
 * 步驟：
   1. 為一個未宣告特性或特性值不在目錄的角色觸發配音。
 * 預期結果：
   1. 以 paramDefaultVoiceProfile 之預設嗓音發聲，不丟出例外、流程不中斷。
 
-#### intTest#27-驗證全域朗讀語速倍率
+#### intTest#25-驗證全域朗讀語速倍率
 
-* 既有基底：intTest#24。
+* 既有基底：intTest#22。
 * 新增項目：[sysGame系統]之全域朗讀語速倍率套用行為。
 * 步驟：
   1. 取兩個 rate 不同的角色音色 profile，分別計算其最終發聲語速。
@@ -629,35 +593,28 @@ erDiagram
 * 通過判定：
   1. 讀者可依 productReadme 預期缺漏存檔會回退預設並可繼續遊玩。
 
-#### docProgTest#09-productReadme 承接 [solStory#9-輔助提示與外部服務]
-
-* productReadme 要求：
-  1. 說明 Help 提示的啟用條件與 OpenAI 本機 proxy 設定。
-* 通過判定：
-  1. 維護者可依 productReadme 設定並驗證 Help 提示。
-
-#### docProgTest#10-productReadme 承接 [solStory#10-多帳號選擇與管理]
+#### docProgTest#09-productReadme 承接 [solStory#9-多帳號選擇與管理]
 
 * productReadme 要求：
   1. 說明進入遊戲時如何選擇帳號，以及如何新增與刪除帳號，與刪除使用中／最後帳號後的表現。
 * 通過判定：
   1. 讀者可依 productReadme 新增、選擇與刪除帳號，且不同帳號進度互不混用。
 
-#### docProgTest#11-productReadme 承接 [solStory#11-遊玩時間限制與護眼休息]
+#### docProgTest#10-productReadme 承接 [solStory#10-遊玩時間限制與護眼休息]
 
 * productReadme 要求：
   1. 說明連續遊玩會逐步用盡遊玩時間、時間到的本回合結算、休息等待後才可續玩，以及如何於設定調整每次遊玩與休息時長（各帳號各自）。
 * 通過判定：
   1. 讀者可依 productReadme 預期玩到時間上限後進入休息，並能於設定調整時長。
 
-#### docProgTest#12-productReadme 承接 [solStory#12-中文雙語協助與獎勵階梯]
+#### docProgTest#11-productReadme 承接 [solStory#11-中文雙語協助與獎勵階梯]
 
 * productReadme 要求：
   1. 說明題目與各選項可撥放中文以理解，以及獎勵階梯（未用中文越早答對獎勵越高、用中文或多次才對則無）。
 * 通過判定：
   1. 讀者可依 productReadme 取用中文協助並理解不同情況下的獎勵差異。
 
-#### docProgTest#13-productReadme 承接 [solStory#13-角色差異化配音]
+#### docProgTest#12-productReadme 承接 [solStory#12-角色差異化配音]
 
 * productReadme 要求：
   1. 說明不同場景人物會以各自的聲音說話、玩家公主會以其聲音唸出所選的答案，以及這些語音受既有 Voice 開關控制。
@@ -693,17 +650,9 @@ erDiagram
 * 預期結果：
   1. 首次進入顯示選角命名畫面，命名後進入遊戲且 ES module 無 404。
 
-#### e2eTest#04-依 productReadme 驗測輔助降級
+#### e2eTest#04-依 productReadme 驗測多帳號隔離與刪除
 
-* 依據：docProgTest#09、[solCase#9.1]。
-* 步驟：
-  1. 在未設定 OpenAI 金鑰的環境下依 productReadme 按下 Help。
-* 預期結果：
-  1. 顯示降級提示而非崩潰，答題流程仍可繼續。
-
-#### e2eTest#05-依 productReadme 驗測多帳號隔離與刪除
-
-* 依據：docProgTest#10、[solCase#10.1]、[solCase#10.2]、[solCase#10.3]。
+* 依據：docProgTest#09、[solCase#9.1]、[solCase#9.2]、[solCase#9.3]。
 * 步驟：
   1. 依 productReadme 新增兩個帳號，分別遊玩產生不同 coins 與穿搭。
   2. 依 productReadme 在帳號選擇切換到另一帳號。
@@ -713,9 +662,9 @@ erDiagram
   2. 切換後顯示對應帳號進度。
   3. 刪除使用中帳號後回到帳號選擇；刪除最後一個帳號顯示僅可新增的空狀態。
 
-#### e2eTest#06-依 productReadme 驗測遊玩時間限制與休息
+#### e2eTest#05-依 productReadme 驗測遊玩時間限制與休息
 
-* 依據：docProgTest#11、[solCase#11.1]、[solCase#11.2]、[solCase#11.3]。
+* 依據：docProgTest#10、[solCase#10.1]、[solCase#10.2]、[solCase#10.3]。
 * 步驟：
   1. 依 productReadme 於設定將每次遊玩時長設為極短測試值並開始遊玩至用盡。
   2. 觀察時間到的結算與其後的休息鎖定。
@@ -725,9 +674,9 @@ erDiagram
   2. 休息期間遊玩入口被鎖定、不可續玩。
   3. 休息屆滿後可續玩；切換至另一帳號時其遊玩時間與休息獨立計算。
 
-#### e2eTest#07-依 productReadme 驗測中文協助與獎勵階梯
+#### e2eTest#06-依 productReadme 驗測中文協助與獎勵階梯
 
-* 依據：docProgTest#12、[solCase#12.1]、[solCase#12.2]。
+* 依據：docProgTest#11、[solCase#11.1]、[solCase#11.2]。
 * 步驟：
   1. 依 productReadme 進入答題，不按中文且第一次答對，記錄所得 coins。
   2. 另一題不按中文、第二次才答對，記錄所得 coins。
@@ -737,9 +686,9 @@ erDiagram
   2. 第二次才答對所得約為全額之半。
   3. 用過中文者該題無 coins。
 
-#### e2eTest#08-依 productReadme 驗測角色配音與公主朗讀
+#### e2eTest#07-依 productReadme 驗測角色配音與公主朗讀
 
-* 依據：docProgTest#13、[solCase#13.1]、[solCase#13.2]。
+* 依據：docProgTest#12、[solCase#12.1]、[solCase#12.2]。
 * 步驟：
   1. 依 productReadme 進入不同場景人物的地點，聽其對白或場景開場。
   2. 依 productReadme 答題並聽公主朗讀所選選項，再關閉 Voice 後重試。
@@ -755,8 +704,8 @@ erDiagram
 * **產品 REPO**：`待定`（預設與開發 REPO 同庫，經 GitHub Pages 發佈）
 * **productReadme 來源**：`README.md`（本 repo 根目錄產品手冊；尚未採 buildStage 目錄慣例）
 * **部署方式**：靜態網站包，依 [techStackStaticWeb]；預設直推 GitHub Pages（Deploy from a branch，repository root 為站根，保留 .nojekyll），可選後置標準 static-serve Helm chart。namespace、release、主機與網域由部署者於實際部署時決定並記錄。
-* **建置指令**：無打包（no-op，直接收集靜態檔）；本機預覽 `python -m http.server 4173`，或 `node server.mjs`（另含選配 OpenAI Help proxy，預設 `http://127.0.0.1:4174/`）。
-* **測試指令**：型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=data-audit`／`?selftest=save-load`／`?selftest=monkey`／`?selftest=help-reward`／`?selftest=visual-qa&surface=<id>`；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`。
+* **建置指令**：無打包（no-op，直接收集靜態檔）；本機預覽 `python -m http.server 4173`，或 `node server.mjs`（預設 `http://127.0.0.1:4174/`）。
+* **測試指令**：型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=data-audit`／`?selftest=save-load`／`?selftest=monkey`／`?selftest=chinese-reward`／`?selftest=visual-qa&surface=<id>`；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`。
 * **部署指令**：GitHub Pages「Deploy from a branch」，站根為 repository root，保留 `.nojekyll`；可選後置 static-serve Helm chart。
 
 ## B. 成效追蹤

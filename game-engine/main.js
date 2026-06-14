@@ -51,7 +51,7 @@ import { renderItemDetailPanel } from "./render/item-panel.js";
 import { createPaperDollRenderer } from "./render/paper-doll.js";
 import { renderBuildInfo } from "./render/settings.js";
 import { applyAdvSceneArt } from "./scene/scene-art.js";
-import { openAISettingsKey, saveMarkerEnd, saveMarkerStart } from "./state/storage.js";
+import { saveMarkerEnd, saveMarkerStart } from "./state/storage.js";
 import {
   addDiary as addStateDiary,
   addUnique as addStateUnique,
@@ -65,11 +65,9 @@ import {
   freshState,
   loadAccountState,
   loadLocalState,
-  loadOpenAISettings,
   moodLabel as stateMoodLabel,
   normalizeState,
   outfitSummary as stateOutfitSummary,
-  persistOpenAISettings as saveOpenAISettings,
   persistState,
   sanitizePlayerName,
   updateProgressBadges as updateStateProgressBadges
@@ -93,14 +91,13 @@ import {
 } from "./system/play-clock.js";
 
 let state = loadLocalState();
-let openAISettings = loadOpenAISettings();
 let activeHotspot = null;
 let activeLesson = null;
 let advMode = "closed";
-let advHelpChineseUsed = false;   // issue #73：本題是否按過中文撥放（按過＝該題無獎勵）
+let advChineseUsed = false;   // issue #73：本題是否按過中文撥放（按過＝該題無獎勵）
 let advWrongAttempts = 0;          // issue #73：本題答錯次數（0→全額、1→半額、≥2→無）
 let activeOpeningZh = "";           // issue #73：本題題目（advLine）的中文，無則空字串
-const HELP_AUDIO_LANG_ZH = "zh-TW";     // design paramHelpAudioLang
+const CHINESE_AUDIO_LANG = "zh-TW";     // design paramChineseAudioLang
 const REWARD_SECOND_TRY_RATIO = 0.5;    // design paramRewardSecondTryRatio
 const SPEECH_RATE_SCALE = 0.75;         // issue #102 design paramSpeechRateScale：全域朗讀語速倍率（套用於所有發聲）
 let shopCategory = "dresses";
@@ -159,10 +156,6 @@ const saveLoadController = createSaveLoadController({
   persist,
   render
 });
-
-function persistOpenAISettings() {
-  saveOpenAISettings(openAISettings);
-}
 
 function persist() {
   persistState(state);
@@ -1334,7 +1327,7 @@ function renderDestinationPicker() {
         <strong>${hotspot.label}</strong>
         <small>${destinationActionText(hotspot)}</small>
       </span>
-      <span class="destination-badge">${hasLessonsForPlace(hotspot.id) ? "Help" : isShop ? "Shop" : "Visit"}</span>
+      <span class="destination-badge">${hasLessonsForPlace(hotspot.id) ? "Practice" : isShop ? "Shop" : "Visit"}</span>
     `;
     button.addEventListener("click", () => chooseDestination(hotspot.id));
     elements.destinationList.appendChild(button);
@@ -1506,7 +1499,7 @@ function travelActionLabel(hotspot) {
     return sceneConfigFor(hotspot).travelAction || "World Map";
   }
   if (hotspot.kind === "future") return "Soon";
-  if (hasLessonsForPlace(hotspot.id)) return "Help";
+  if (hasLessonsForPlace(hotspot.id)) return "Practice";
   if (hotspot.kind === "shop") return "Shop";
   return sceneConfigFor(hotspot).travelAction || "Visit";
 }
@@ -1630,7 +1623,7 @@ function openRoomScene(hotspot = hotspotById("princessRoom")) {
 }
 
 function renderFirstLayerSceneActions(hotspot) {
-  firstLayerActionsFor(hotspot, { hasHelp: hasLessonsForPlace(hotspot?.id) }).forEach((action) => {
+  firstLayerActionsFor(hotspot, { hasLessons: hasLessonsForPlace(hotspot?.id) }).forEach((action) => {
     addAdvOption(sceneActionLabel(action), () => handleFirstLayerSceneAction(action, hotspot), {
       leave: action.handlerKey === "leave",
       navigation: action.navigation && action.handlerKey !== "leave"
@@ -1643,8 +1636,8 @@ function handleFirstLayerSceneAction(action, hotspot) {
     case "wardrobe":
       openWardrobeDetail(action.category);
       return;
-    case "help":
-      openHelpAction(hotspot);
+    case "practice":
+      openPracticeAction(hotspot);
       return;
     case "shop":
       openShopDetail(hotspot);
@@ -1660,12 +1653,12 @@ function handleFirstLayerSceneAction(action, hotspot) {
   }
 }
 
-function openHelpAction(hotspot) {
+function openPracticeAction(hotspot) {
   if (hasLessonsForPlace(hotspot?.id)) {
     openQuestAdv(hotspot);
     return;
   }
-  openHintAdv(hotspot, hotspot?.hint || "There is no English help task here.");
+  openHintAdv(hotspot, hotspot?.hint || "There is no English practice ready here.");
 }
 
 function leaveScene(hotspot) {
@@ -1712,7 +1705,7 @@ function openQuestAdv(hotspot) {
   openAdvBase(hotspot, "quest");
   addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
   activeLesson = localizeLesson(lesson);
-  advHelpChineseUsed = false;
+  advChineseUsed = false;
   advWrongAttempts = 0;
   activeOpeningZh = withPlayerName(quest.openingZh) || "";
   elements.advLine.textContent = quest.opening;
@@ -1745,9 +1738,9 @@ function addChoiceRow(choice, zh, number) {
   row.appendChild(answer);
   const audio = document.createElement("div");
   audio.className = "choice-audio";
-  audio.appendChild(makeAudioButton("En", `Read "${choice}" in English`, () => playHelpAudio(choice, "en-US")));
+  audio.appendChild(makeAudioButton("En", `Read "${choice}" in English`, () => playLessonAudio(choice, "en-US")));
   if (zh) {
-    const zhBtn = makeAudioButton("中", `用中文唸「${choice}」`, () => playHelpAudio(zh, HELP_AUDIO_LANG_ZH));
+    const zhBtn = makeAudioButton("中", `用中文唸「${choice}」`, () => playLessonAudio(zh, CHINESE_AUDIO_LANG));
     zhBtn.classList.add("zh");
     audio.appendChild(zhBtn);
   }
@@ -1768,7 +1761,7 @@ function makeAudioButton(label, ariaLabel, onClick) {
 
 // issue #73 獎勵階梯（按送出次數計）：未用中文且第一次答對＝full、第二次＝half、第三次起或用過中文＝none。
 function helpRewardTier() {
-  if (advHelpChineseUsed) return "none";
+  if (advChineseUsed) return "none";
   if (advWrongAttempts === 0) return "full";
   if (advWrongAttempts === 1) return "half";
   return "none";
@@ -1779,7 +1772,7 @@ function openHintAdv(hotspot, line = hotspot.hint) {
   setExpressions("thinking", "normal");
   elements.advLine.textContent = line;
   elements.advPrompt.textContent = hasLessonsForPlace(hotspot?.id)
-    ? "Choose Help to practice this place's English."
+    ? "Choose Practice to start this place's English."
     : "This place is for travel or story only.";
   elements.advFeedback.textContent = "";
   addAdvOption("↩ Back", () => openSceneAdv(hotspot), { navigation: true });
@@ -2368,10 +2361,10 @@ function answerLesson(button, choice) {
     vocabProfile: activeLesson.vocabProfile
   });
   elements.advLine.textContent = quest.ending;
-  elements.advPrompt.textContent = `Help complete. Try a reward now, or go back to ${princessName()}'s room.`;
+  elements.advPrompt.textContent = `Practice complete. Try a reward now, or go back to ${princessName()}'s room.`;
   elements.advFeedback.textContent = coins > 0
     ? (rewardTier === "half" ? `${effectText(reward)}. Half coins for the second try.` : `${effectText(reward)}.`)
-    : advHelpChineseUsed
+    : advChineseUsed
       ? "Nice learning with Chinese help! No coins this time."
       : "No coins this time — try to answer sooner next time.";
   state.activeQuest = null;
@@ -2389,7 +2382,7 @@ function answerLesson(button, choice) {
     addAdvOption("🏰 Back to Room", closeAdvThenHome, { navigation: true });
     addAdvOption("↩ Leave", closeAdv, { leave: true });
   }
-  elements.statusMessage.textContent = `Help complete at ${completedHotspot.label}.`;
+  elements.statusMessage.textContent = `Practice complete at ${completedHotspot.label}.`;
   persist();
   render();
   scheduleAdvFocus(0);
@@ -2412,62 +2405,6 @@ function closeAdv() {
   persist();
   const focusTarget = activeViewName() === "home" ? elements.castleStage : activeViewName() === "world" ? elements.worldStage : elements.mapStage;
   focusTarget?.focus({ preventScroll: true });
-}
-
-async function showHelp() {
-  if (advMode === "closed") return;
-  const line = elements.advLine.textContent;
-  const prompt = activeLesson?.prompt || elements.advPrompt.textContent;
-  elements.advFeedback.textContent = "Help teacher is thinking...";
-  try {
-    const choices = [...elements.choiceList.querySelectorAll("button")].map((button) => button.dataset.choice || button.textContent);
-    const proxyResponse = await fetch("/api/help", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ line, prompt, choices })
-    });
-    if (proxyResponse.ok) {
-      const data = await proxyResponse.json();
-      elements.advFeedback.textContent = data.text || localHelpText(line, prompt);
-      return;
-    }
-    if (!openAISettings.apiKey) {
-      elements.advFeedback.textContent = localHelpText(line, prompt);
-      return;
-    }
-    const response = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${openAISettings.apiKey}`,
-        ...(openAISettings.orgId ? { "OpenAI-Organization": openAISettings.orgId } : {})
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        input: [
-          {
-            role: "system",
-            content: "You are a kind English helper for a young child. Give one short hint. Do not directly reveal the answer."
-          },
-          {
-            role: "user",
-            content: `NPC line: ${line}\nTask: ${prompt}\nChoices: ${choices.join(" | ")}`
-          }
-        ],
-        max_output_tokens: 90
-      })
-    });
-    if (!response.ok) throw new Error(`OpenAI request failed: ${response.status}`);
-    const data = await response.json();
-    const text = data.output_text || data.output?.flatMap((item) => item.content || []).map((part) => part.text).filter(Boolean).join(" ");
-    elements.advFeedback.textContent = text || localHelpText(line, prompt);
-  } catch (error) {
-    elements.advFeedback.textContent = `${localHelpText(line, prompt)} Help API was not available: ${error.message}`;
-  }
-}
-
-function localHelpText(line, prompt) {
-  return `Hint: "${line}" is the clue. ${prompt} Look for the main word in the choices.`;
 }
 
 function shuffled(items) {
@@ -2505,11 +2442,6 @@ function renderSettings() {
   elements.speakToggleButton.textContent = `Voice: ${state.speechEnabled ? "On" : "Off"}`;
   if (elements.playMinutesInput) elements.playMinutesInput.value = String(state.playLimit.playMinutes);
   if (elements.restMinutesInput) elements.restMinutesInput.value = String(state.playLimit.restMinutes);
-  elements.openaiOrgInput.value = openAISettings.orgId;
-  elements.openaiKeyInput.value = openAISettings.apiKey ? "••••••••" : "";
-  elements.aiStatus.textContent = openAISettings.apiKey
-    ? "Help key saved locally in this browser. Save MD will not export it."
-    : "No help key saved. The ? button will use local hints.";
   renderBuildInfo(elements, buildInfo);
 }
 
@@ -2553,9 +2485,9 @@ function playerVoiceProfile() {
 }
 
 // issue #73 中文協助：撥放題目／選項語音。按中文（zh-TW）即標記本題已用中文協助，影響獎勵階梯。
-function playHelpAudio(text, lang = "en-US") {
+function playLessonAudio(text, lang = "en-US") {
   if (!text) return;
-  if (lang === HELP_AUDIO_LANG_ZH) advHelpChineseUsed = true;
+  if (lang === CHINESE_AUDIO_LANG) advChineseUsed = true;
   speak(text, lang);
 }
 
@@ -2808,9 +2740,8 @@ function bindEvents() {
   elements.systemMenuTabs.forEach((tab) => tab.addEventListener("click", () => changeSystemPanel(tab.dataset.menuPanel)));
   elements.goMapButton?.addEventListener("click", openWorldMap);
   elements.returnHomeButton?.addEventListener("click", () => openArea("castle"));
-  elements.helpButton.addEventListener("click", showHelp);
-  elements.speakPromptButton.addEventListener("click", () => playHelpAudio(elements.advLine.textContent, "en-US"));
-  elements.speakPromptButtonZh?.addEventListener("click", () => playHelpAudio(activeOpeningZh, HELP_AUDIO_LANG_ZH));
+  elements.speakPromptButton.addEventListener("click", () => playLessonAudio(elements.advLine.textContent, "en-US"));
+  elements.speakPromptButtonZh?.addEventListener("click", () => playLessonAudio(activeOpeningZh, CHINESE_AUDIO_LANG));
   elements.saveButton.addEventListener("click", saveMarkdown);
   elements.loadButton.addEventListener("click", loadMarkdown);
   elements.loadFileInput.addEventListener("change", async () => {
@@ -2843,23 +2774,6 @@ function bindEvents() {
   elements.resetButton.addEventListener("click", () => {
     if (!window.confirm(`Reset ${princessName()}'s coins, clothes, quests, and diary?`)) return;
     resetProgress();
-  });
-  elements.openaiSettingsForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-  });
-  elements.saveOpenAIButton.addEventListener("click", () => {
-    const typedKey = elements.openaiKeyInput.value.trim();
-    openAISettings = {
-      orgId: elements.openaiOrgInput.value.trim(),
-      apiKey: typedKey && typedKey !== "••••••••" ? typedKey : openAISettings.apiKey
-    };
-    persistOpenAISettings();
-    renderSettings();
-  });
-  elements.clearOpenAIButton.addEventListener("click", () => {
-    openAISettings = { orgId: "", apiKey: "" };
-    localStorage.removeItem(openAISettingsKey);
-    renderSettings();
   });
   window.addEventListener("resize", () => {
     if (elements.mapStage?.offsetParent !== null) renderMap();
@@ -3060,7 +2974,6 @@ Object.defineProperty(window, "__luminaraTest", {
       };
       const markdown = buildSaveMarkdown();
       const hasMarkers = markdown.includes(saveMarkerStart) && markdown.includes(saveMarkerEnd);
-      const hasNoOpenAIKey = !markdown.includes(openAISettings.apiKey || "___NO_KEY___");
       loadMarkdownText(markdown);
       const after = {
         activeCharacterId: state.activeCharacterId,
@@ -3077,7 +2990,6 @@ Object.defineProperty(window, "__luminaraTest", {
       };
       return {
         hasMarkers,
-        hasNoOpenAIKey,
         roundtripSame: JSON.stringify(before) === JSON.stringify(after),
         before,
         after
@@ -3246,7 +3158,6 @@ installTestingHooks({
     refreshAreaMapPositions(areaId);
   },
   shopItems,
-  showHelp,
   toggleEquip,
   worldMap
 });

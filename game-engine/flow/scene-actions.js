@@ -1,5 +1,5 @@
 export const SCENE_ACTION_TYPES = Object.freeze({
-  HELP: "help",
+  PRACTICE: "practice",
   NAVIGATION: "navigation",
   REFUND: "refund",
   SHOP: "shop",
@@ -20,29 +20,29 @@ const ROOM_ACTIONS = Object.freeze([
 ]);
 
 const SHOP_ACTIONS = Object.freeze([
-  helpAction(),
+  practiceAction(),
   { type: SCENE_ACTION_TYPES.SHOP, label: "Shop", icon: "🎁", handlerKey: "shop" },
   { type: SCENE_ACTION_TYPES.REFUND, label: "Refund", icon: "💱", handlerKey: "refund" },
   leaveAction()
 ]);
 
 const NPC_ACTIONS = Object.freeze([
-  helpAction(),
+  practiceAction(),
   leaveAction()
 ]);
 
 export function firstLayerActionsFor(hotspot, options = {}) {
   if (hotspot?.kind === "room") return ROOM_ACTIONS;
-  const help = options.hasHelp ? [helpAction()] : [];
+  const practice = options.hasLessons ? [practiceAction()] : [];
   if (hotspot?.kind === "shop") {
     return Object.freeze([
-      ...help,
+      ...practice,
       { type: SCENE_ACTION_TYPES.SHOP, label: "Shop", icon: "🎁", handlerKey: "shop" },
       { type: SCENE_ACTION_TYPES.REFUND, label: "Refund", icon: "💱", handlerKey: "refund" },
       leaveAction()
     ]);
   }
-  return Object.freeze([...help, leaveAction()]);
+  return Object.freeze([...practice, leaveAction()]);
 }
 
 export function sceneActionLabel(action) {
@@ -59,8 +59,8 @@ function wardrobeAction(label, category, icon) {
   };
 }
 
-function helpAction() {
-  return { type: SCENE_ACTION_TYPES.HELP, label: "Help", icon: "🤝", handlerKey: "help" };
+function practiceAction() {
+  return { type: SCENE_ACTION_TYPES.PRACTICE, label: "Practice", icon: "📘", handlerKey: "practice" };
 }
 
 function leaveAction() {

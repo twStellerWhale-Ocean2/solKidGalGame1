@@ -132,8 +132,7 @@ p {
 .primary-button,
 .danger-button,
 .speaker-button,
-.category-tab,
-.help-button {
+.category-tab {
   min-height: 36px;
   border: 0;
   border-radius: var(--radius);
@@ -174,8 +173,7 @@ p {
   background: #9d4b4b;
 }
 
-.speaker-button,
-.help-button {
+.speaker-button {
   width: 38px;
   color: var(--rose-dark);
   background: #fff3f7;

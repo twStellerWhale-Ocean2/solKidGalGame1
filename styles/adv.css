@@ -36,8 +36,7 @@
   box-shadow: 0 28px 70px rgba(40, 24, 34, 0.45);
 }
 
-.adv-location,
-.help-button {
+.adv-location {
   position: absolute;
   top: 14px;
   z-index: 3;
@@ -51,10 +50,6 @@
   border-radius: 999px;
   font-size: 0.9rem;
   font-weight: 900;
-}
-
-.help-button {
-  right: 14px;
 }
 
 .adv-portraits {

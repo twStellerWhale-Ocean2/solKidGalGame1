@@ -49,7 +49,7 @@ export function installTestingHooks(api) {
   runMonkeyTest(api);
   runAccountSelfTest(api);
   runPlayTimerSelfTest(api);
-  runHelpRewardSelfTest(api);
+  runChineseRewardSelfTest(api);
   runCharacterVoiceSelfTest(api);
 }
 
@@ -179,9 +179,9 @@ function runAccountSelfTest(api) {
 }
 
 // issue #73 中文協助：驗證獎勵階梯（按送出次數計）與中文撥放、缺中文降級。
-function runHelpRewardSelfTest(api) {
+function runChineseRewardSelfTest(api) {
   const params = new URLSearchParams(location.search);
-  if (params.get("selftest") !== "help-reward") return;
+  if (params.get("selftest") !== "chinese-reward") return;
   const errors = [];
   try {
     if (!api.accounts.activeId()) api.accounts.create();
@@ -251,9 +251,9 @@ function runHelpRewardSelfTest(api) {
     errors.push(error.message);
   }
   const result = document.createElement("pre");
-  result.id = "helpRewardTestResult";
+  result.id = "chineseRewardTestResult";
   result.textContent = JSON.stringify({
-    test: "help-reward",
+    test: "chinese-reward",
     passed: errors.length === 0,
     errors: errors.slice(0, 10)
   });
@@ -833,7 +833,6 @@ function runSaveLoadSelfTest(api) {
   const passed =
     markdown.includes("## Diary") &&
     markdown.includes("LUMINARA_SAVE_JSON") &&
-    !markdown.includes("OPENAI_API_KEY") &&
     after.activeCharacterId === before.activeCharacterId &&
     after.coins === before.coins &&
     Math.abs(after.player.x - before.player.x) < 0.01 &&
@@ -1168,7 +1167,6 @@ function runMonkeyTest(api) {
     () => api.moveOnMap(0, 1),
     () => api.moveOnMap(0, -1),
     () => api.interactNearby(),
-    () => api.showHelp(),
     () => api.closeAdv(),
     () => {
       const buttons = [...api.elements.choiceList.querySelectorAll("button")].filter((button) => !button.disabled);
