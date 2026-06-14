@@ -14,6 +14,17 @@ export {
   playableCharacterById,
   shopItems
 } from "../../content-package/wardrobe/manifest.js";
+export {
+  composeVoiceProfile,
+  resolveVoiceProfile,
+  voiceProfileForNpcName,
+  voiceProfileForCharacterId,
+  DEFAULT_VOICE_PROFILE,
+  npcVoiceByName,
+  playableVoiceById,
+  VOICE_DIMENSIONS,
+  voiceCatalogVersion
+} from "../../content-package/voice/manifest.js";
 
 export const difficultyConfig = {
   100: { label: "Common English 100 words", reward: 1, maxTier: 100 },

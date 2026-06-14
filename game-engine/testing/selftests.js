@@ -50,6 +50,7 @@ export function installTestingHooks(api) {
   runAccountSelfTest(api);
   runPlayTimerSelfTest(api);
   runHelpRewardSelfTest(api);
+  runCharacterVoiceSelfTest(api);
 }
 
 // 遊玩時間限制與護眼休息（issue #6 / spec#9）：以注入時鐘驗證計時遞減、時間到結算、休息鎖定與屆滿續玩。
@@ -254,6 +255,101 @@ function runHelpRewardSelfTest(api) {
   result.textContent = JSON.stringify({
     test: "help-reward",
     passed: errors.length === 0,
+    errors: errors.slice(0, 10)
+  });
+  document.body.prepend(result);
+}
+
+// issue #93 角色差異化配音（spec#2 / solStory#13 / sysStory#9）：
+// 以純函式驗證維度→音色合成（intTest#24）、公主音色（intTest#25）、缺維度降級（intTest#26）。
+function runCharacterVoiceSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "voice") return;
+  const errors = [];
+  let coverage = null;
+  try {
+    const compose = api.composeVoiceProfile;
+    const resolve = api.resolveVoiceProfile;
+    if (!compose || !resolve || !api.npcVoiceFor || !api.playerVoiceProfile) throw new Error("voice testing hooks missing");
+    if (!api.accounts.activeId()) api.accounts.create();
+
+    // intTest#24：不同維度 → 不同音頻參數（女性年輕 vs 成年男性 應明顯有別）
+    const maid = compose({ gender: "female", age: "youth", personality: "cheerful" });
+    const king = compose({ gender: "male", age: "middle", personality: "bold" });
+    if (maid.pitch === king.pitch && maid.rate === king.rate) errors.push("不同維度音色未區分");
+    if (!(maid.pitch > king.pitch)) errors.push(`女性年輕音高(${maid.pitch})未高於成年男性(${king.pitch})`);
+
+    // intTest#24（NPC 落地）：castle King 與 Queen 經宣告音色應有別、且非降級 default
+    const kingHall = api.npcVoiceFor(api.hotspotById("kingHall"));
+    const queenStudy = api.npcVoiceFor(api.hotspotById("queenStudy"));
+    if (kingHall.pitch === queenStudy.pitch && kingHall.rate === queenStudy.rate) errors.push("King/Queen NPC 音色未區分");
+    if (kingHall.profileId === "default") errors.push("King Rowan 未宣告音色（落回 default）");
+
+    // intTest#25：玩家公主音色可解析且為高於基準的童聲（child female）
+    const princess = api.playerVoiceProfile();
+    if (!princess || typeof princess.pitch !== "number") errors.push("公主音色解析失敗");
+    else if (!(princess.pitch > 1)) errors.push(`公主音高(${princess.pitch})未高於基準 1`);
+
+    // intTest#26：缺宣告／未知值降級為 default，且不丟錯
+    if (resolve(null).profileId !== "default") errors.push("無宣告未降級為 default");
+    if (resolve(undefined).profileId !== "default") errors.push("undefined 未降級為 default");
+    const unknown = compose({ gender: "alien", age: "ancient", personality: "spicy" });
+    if (typeof unknown.pitch !== "number" || typeof unknown.rate !== "number") errors.push("未知維度未安全合成");
+    if (unknown.pitch !== 1 || unknown.rate !== 0.86) errors.push("未知維度未落回基準參數");
+    const partial = compose({ gender: "female" });
+    if (typeof partial.pitch !== "number") errors.push("部分維度未安全合成");
+
+    // 跨地區覆蓋（castle/urban/rural/wild）：所有 area NPC 應解析音色；
+    // 僅刻意未宣告者（如告示牌 *Sign）可降級 default。
+    const npcHotspots = Object.values(api.areaRegistry)
+      .flatMap((area) => area.locations || [])
+      .filter((h) => h.npc && h.npc !== "Lumi");
+    const declared = npcHotspots.filter((h) => api.npcVoiceFor(h).profileId !== "default");
+    const fellBack = npcHotspots.filter((h) => api.npcVoiceFor(h).profileId === "default").map((h) => h.npc);
+    coverage = { total: npcHotspots.length, declared: declared.length, fellBack: [...new Set(fellBack)] };
+    if (declared.length < npcHotspots.length - 2) {
+      errors.push(`NPC 音色覆蓋不足：${declared.length}/${npcHotspots.length} 已宣告，降級者 ${coverage.fellBack.join("／")}`);
+    }
+
+    // 整合（intTest#24/#25）：實開題→答對，spy speechSynthesis 驗 NPC 開場低音與公主朗讀正解高音。
+    if ("speechSynthesis" in window) {
+      const spoken = [];
+      const synth = window.speechSynthesis;
+      const origSpeak = synth.speak.bind(synth);
+      const origCancel = synth.cancel.bind(synth);
+      synth.cancel = () => {};
+      synth.speak = (u) => spoken.push({ text: u.text, pitch: u.pitch });
+      try {
+        api.state.speechEnabled = true;
+        api.openQuestAdv(api.hotspotById("kingHall"));
+        const lesson = api.getActiveLesson();
+        if (!lesson) {
+          errors.push("integration: 無 active lesson");
+        } else {
+          if (!spoken.some((s) => typeof s.pitch === "number" && s.pitch < 1)) errors.push("NPC 開場未以角色低音發聲");
+          const before = spoken.length;
+          const btn = [...api.elements.choiceList.querySelectorAll("button")].find((b) => b.dataset.choice === lesson.answer);
+          if (!btn) errors.push("integration: 找不到正解按鈕");
+          else api.answerLesson(btn, lesson.answer);
+          const princessSpoke = spoken.slice(before).find((s) => s.text === lesson.answer);
+          if (!princessSpoke) errors.push("公主未朗讀所選正解");
+          else if (!(princessSpoke.pitch > 1)) errors.push(`公主朗讀音高(${princessSpoke.pitch})未高於基準`);
+        }
+        api.closeAdv();
+      } finally {
+        synth.speak = origSpeak;
+        synth.cancel = origCancel;
+      }
+    }
+  } catch (error) {
+    errors.push(error.message);
+  }
+  const result = document.createElement("pre");
+  result.id = "characterVoiceTestResult";
+  result.textContent = JSON.stringify({
+    test: "character-voice",
+    passed: errors.length === 0,
+    coverage,
     errors: errors.slice(0, 10)
   });
   document.body.prepend(result);

@@ -34,7 +34,12 @@ import {
   questTemplates,
   sceneConfigs,
   shopItems,
-  worldMap
+  worldMap,
+  voiceProfileForNpcName,
+  voiceProfileForCharacterId,
+  composeVoiceProfile,
+  resolveVoiceProfile,
+  DEFAULT_VOICE_PROFILE
 } from "./data/game-data.js";
 import { createAdvControls } from "./flow/adv-controls.js";
 import { firstLayerActionsFor, sceneActionLabel } from "./flow/scene-actions.js";
@@ -1612,7 +1617,7 @@ function openSceneAdv(hotspot) {
   elements.advPrompt.textContent = "Choose what to do here.";
   renderFirstLayerSceneActions(hotspot);
   scheduleAdvFocus(0);
-  speak(elements.advLine.textContent);
+  speak(elements.advLine.textContent, npcVoiceFor(hotspot));
 }
 
 function openRoomScene(hotspot = hotspotById("princessRoom")) {
@@ -1717,7 +1722,7 @@ function openQuestAdv(hotspot) {
   shuffled(options).forEach((option, index) => addChoiceRow(option.choice, option.zh, index + 1));
   addAdvOption("↩ Leave", closeAdv, { leave: true });
   scheduleAdvFocus(0);
-  speak(quest.opening);
+  speak(quest.opening, npcVoiceFor(hotspot));
 }
 
 // issue #73：題目（advLine）的中文撥放鈕僅在有中文時顯示。
@@ -1798,7 +1803,7 @@ function openShopDetail(hotspot) {
   elements.shopArea.classList.add("show");
   renderAdvShop();
   scheduleAdvFocus(0);
-  speak(elements.advLine.textContent);
+  speak(elements.advLine.textContent, npcVoiceFor(hotspot));
 }
 
 function openRefundDetail(hotspot) {
@@ -1812,7 +1817,7 @@ function openRefundDetail(hotspot) {
   elements.shopArea.classList.add("show", "refund-detail");
   renderRefundDetail();
   scheduleAdvFocus(0);
-  speak(elements.advLine.textContent);
+  speak(elements.advLine.textContent, npcVoiceFor(hotspot));
 }
 
 function openWardrobeDetail(category = "dresses") {
@@ -2319,7 +2324,7 @@ function answerLesson(button, choice) {
     setExpressions("thinking", "surprised");
     elements.advFeedback.textContent = "Try again.";
     playTone("wrong");
-    speak("Try again.");
+    speak(choice, playerVoiceProfile()); // issue #93：公主以其音色朗讀玩家所選選項
     return;
   }
 
@@ -2387,7 +2392,9 @@ function answerLesson(button, choice) {
   persist();
   render();
   scheduleAdvFocus(0);
-  speak(elements.advLine.textContent);
+  // issue #93：公主以其音色朗讀所選正解，結束後再由 NPC 以其音色說結語。
+  const endingLine = elements.advLine.textContent;
+  speak(choice, playerVoiceProfile(), { then: () => speak(endingLine, npcVoiceFor(completedHotspot)) });
 }
 
 function closeAdv() {
@@ -2505,13 +2512,36 @@ function renderSettings() {
   renderBuildInfo(elements, buildInfo);
 }
 
-function speak(text, lang = "en-US") {
-  if (!state.speechEnabled || !("speechSynthesis" in window)) return;
+// issue #93：speak 第二參數相容 lang 字串（中文協助沿用）與音色 profile 物件（角色配音）；
+// 第三參數 then 於語音自然結束後回呼，供「公主朗讀作答 → NPC 結語」串接，避免彼此 cancel。
+function speak(text, voiceOrLang = "en-US", { then } = {}) {
+  if (!state.speechEnabled || !("speechSynthesis" in window)) {
+    if (then) then();
+    return;
+  }
+  const profile = typeof voiceOrLang === "string"
+    ? { lang: voiceOrLang, pitch: DEFAULT_VOICE_PROFILE.pitch, rate: DEFAULT_VOICE_PROFILE.rate }
+    : (voiceOrLang || DEFAULT_VOICE_PROFILE);
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = lang;
-  utterance.rate = 0.86;
+  utterance.lang = profile.lang || "en-US";
+  utterance.pitch = typeof profile.pitch === "number" ? profile.pitch : 1;
+  utterance.rate = typeof profile.rate === "number" ? profile.rate : 0.86;
+  if (then) {
+    let fired = false;
+    const fireThen = () => { if (!fired) { fired = true; then(); } };
+    utterance.addEventListener("end", fireThen);
+    utterance.addEventListener("error", fireThen); // 無可用語音時改由 error 觸發，確保 NPC 結語仍接續
+  }
   window.speechSynthesis.speak(utterance);
+}
+
+// issue #93：依場景人物／玩家公主的特性宣告解析音色（缺宣告自動降級 default）。
+function npcVoiceFor(hotspot) {
+  return voiceProfileForNpcName(sceneConfigFor(hotspot)?.npc);
+}
+function playerVoiceProfile() {
+  return voiceProfileForCharacterId(state.activeCharacterId);
 }
 
 // issue #73 中文協助：撥放題目／選項語音。按中文（zh-TW）即標記本題已用中文協助，影響獎勵階梯。
@@ -3193,6 +3223,10 @@ installTestingHooks({
   renderMap,
   refundItemInAdv,
   sceneConfigFor,
+  composeVoiceProfile,
+  resolveVoiceProfile,
+  npcVoiceFor,
+  playerVoiceProfile,
   setMapViewport: (areaId, viewport = {}) => {
     if (areaId !== "world" && !areaRegistry[areaId]) throw new Error("Unknown area");
     applyAreaMapViewport(areaId, {
