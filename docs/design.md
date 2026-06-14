@@ -1,6 +1,6 @@
 ---
 name: solKidGalGame
-date: 2026/6/13
+date: 2026/6/14
 formatVersion: "2.0"
 description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 ---
@@ -14,7 +14,7 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 
 ## B. 設計目的
 
-* **spec#1-可用短回合低挫折方式練習英文**：方案須讓年幼學習者以「聽情境句、從少量選項選出正確英文、立即對錯回饋」的短回合循環接觸英文，遇困難時可取得提示，降低挫折。
+* **spec#1-可用短回合低挫折方式練習英文**：方案須讓年幼學習者以「聽情境句、從少量選項選出正確英文、立即對錯回饋」的短回合循環接觸英文，遇困難時可取得提示（含題目與各選項的中文理解協助），降低挫折；並以獎勵高低鼓勵先嘗試英文——未借助中文且越早答對者獎勵越高、曾借助中文者該題無獎勵，維持以英文為主、中文為輔的學習動機。
 * **spec#2-可用角色陪伴與場景探索維持遊玩意願**：方案須以公主角色陪伴、王國地圖與多地區場景探索及地點互動，提高兒童反覆遊玩意願。
 * **spec#3-可把學習成果轉為看得見的外觀獎勵**：方案須讓答對所得 coins 能兌換為角色外觀（髮型、衣物、鞋帽、配件、outfit set）等可見變化，使成就可見而非僅顯示分數。
 * **spec#4-可形成練英文獲獎勵換裝的正向閉環**：方案須使英文練習、獎勵取得與換裝回饋構成同一個可重複的正向循環。
@@ -105,6 +105,9 @@ OPENAI -->|"🎚️paramHelpModel=`gpt-4o-mini`"| SYS
   * **solCase#11.2**：[sysGame系統]執行[runAct自訂系統時間到結算]，於遊玩時間預算耗盡時自動結算並呈現本回合成果（獲得金錢、答題數與答題正確度）。
   * **solCase#11.3**：[sysGame系統]執行[runAct自訂系統休息鎖定]，結算後鎖定目前帳號遊玩，休息時長屆滿前不可續玩、屆滿後解鎖。
   * **solCase#11.4**：[etyCfg通用兒童玩家]執行[runAct自訂玩家調整遊玩限制]，於設定調整每次遊玩與休息的時長。
+* **solStory#12-中文雙語協助與獎勵階梯**：
+  * **solCase#12.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家取用中文協助]，於答題時撥放題目或某一選項的中文以理解題意。
+  * **solCase#12.2**：[sysGame系統]執行[runAct自訂系統結算協助獎勵]，依本題是否取用過中文與答對前的送出次數，套用全額／半額／無獎勵。
 
 ### (D) 重點組態
 
@@ -207,6 +210,9 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
   * **sysCase#7.2**：[modShell模組]承接[runAct自訂系統時間到結算]，於預算耗盡時呈現本回合成果結算畫面。
   * **sysCase#7.3**：[modShell模組]承接[runAct自訂系統休息鎖定]，依休息時長鎖定遊玩入口、屆滿後解鎖。
   * **sysCase#7.4**：[modState模組]承接[runAct自訂玩家調整遊玩限制]，保存每次遊玩與休息時長至目前帳號。
+* **sysStory#8-承接中文雙語協助與獎勵階梯**：
+  * **sysCase#8.1**：[modScene模組]承接[runAct自訂玩家取用中文協助]，以瀏覽器語音依 `zh-TW` 撥放題目或選項的中文（題庫含中文欄位；缺中文時降級為僅英文撥放）。
+  * **sysCase#8.2**：[modScene模組]承接[runAct自訂系統結算協助獎勵]，依中文使用旗標與答對前送出次數，以全額／半額（paramRewardSecondTryRatio）／無 結算 coins。
 
 ### (D) 重點組態
 
@@ -226,6 +232,8 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
     * paramDefaultCharacter=`lumi`
   * [etyCfg自訂modScene組態]
     * paramHelpModel=`gpt-4o-mini`
+    * paramHelpAudioLang=`zh-TW`
+    * paramRewardSecondTryRatio=`0.5`
 
 # III. 測試規格
 
@@ -469,6 +477,30 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
   1. 休息時長屆滿前遊玩入口被鎖定、不可續玩。
   2. 休息時長屆滿後解鎖，可重新開始遊玩。
 
+#### intTest#22-驗證 [runAct自訂玩家取用中文協助]
+
+* 既有基底：intTest#06。
+* 新增項目：[sysGame系統]之題目與選項中文撥放行為。
+* 步驟：
+  1. 進入具 lesson 的地點，於題目按下中文撥放，再於任一選項按下中文撥放。
+  2. 載入一個缺中文欄位的 lesson 後重試。
+* 預期結果：
+  1. 題目與該選項以 zh-TW 語音撥放中文。
+  2. 缺中文欄位時降級為僅英文撥放，不報錯。
+
+#### intTest#23-驗證 [runAct自訂系統結算協助獎勵]
+
+* 既有基底：intTest#22。
+* 新增項目：[sysGame系統]之獎勵階梯結算行為。
+* 步驟：
+  1. 不按中文，第一次即選出正確選項。
+  2. 另一題不按中文，先答錯一次、第二次選出正確選項。
+  3. 另一題先按中文撥放再答對，或連續答錯兩次後第三次才答對。
+* 預期結果：
+  1. 第一次答對且未用中文：發全額 coins。
+  2. 第二次答對且未用中文：發半額 coins（paramRewardSecondTryRatio）。
+  3. 曾用中文或第三次起答對：不發 coins；旗標與次數於換題後重置。
+
 ## E. 方案層級：文件程式化測試
 
 #### docProgTest#01-productReadme 承接 [solStory#1-短回合英文練習]
@@ -548,6 +580,13 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
 * 通過判定：
   1. 讀者可依 productReadme 預期玩到時間上限後進入休息，並能於設定調整時長。
 
+#### docProgTest#12-productReadme 承接 [solStory#12-中文雙語協助與獎勵階梯]
+
+* productReadme 要求：
+  1. 說明題目與各選項可撥放中文以理解，以及獎勵階梯（未用中文越早答對獎勵越高、用中文或多次才對則無）。
+* 通過判定：
+  1. 讀者可依 productReadme 取用中文協助並理解不同情況下的獎勵差異。
+
 ## F. 方案層級：文件端對端測試
 
 #### e2eTest#01-依 productReadme 驗測主循環
@@ -609,6 +648,18 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
   2. 休息期間遊玩入口被鎖定、不可續玩。
   3. 休息屆滿後可續玩；切換至另一帳號時其遊玩時間與休息獨立計算。
 
+#### e2eTest#07-依 productReadme 驗測中文協助與獎勵階梯
+
+* 依據：docProgTest#12、[solCase#12.1]、[solCase#12.2]。
+* 步驟：
+  1. 依 productReadme 進入答題，不按中文且第一次答對，記錄所得 coins。
+  2. 另一題不按中文、第二次才答對，記錄所得 coins。
+  3. 另一題先按中文協助再答對，記錄所得 coins。
+* 預期結果：
+  1. 第一次答對所得為全額。
+  2. 第二次才答對所得約為全額之半。
+  3. 用過中文者該題無 coins。
+
 # IV. 部署成效
 
 ## A. 部署組態
@@ -618,14 +669,14 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
 * **productReadme 來源**：`README.md`（本 repo 根目錄產品手冊；尚未採 buildStage 目錄慣例）
 * **部署方式**：靜態網站包，依 [techStackStaticWeb]；預設直推 GitHub Pages（Deploy from a branch，repository root 為站根，保留 .nojekyll），可選後置標準 static-serve Helm chart。namespace、release、主機與網域由部署者於實際部署時決定並記錄。
 * **建置指令**：無打包（no-op，直接收集靜態檔）；本機預覽 `python -m http.server 4173`，或 `node server.mjs`（另含選配 OpenAI Help proxy，預設 `http://127.0.0.1:4174/`）。
-* **測試指令**：型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=data-audit`／`?selftest=save-load`／`?selftest=monkey`／`?selftest=visual-qa&surface=<id>`；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`。
+* **測試指令**：型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=data-audit`／`?selftest=save-load`／`?selftest=monkey`／`?selftest=help-reward`／`?selftest=visual-qa&surface=<id>`；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`。
 * **部署指令**：GitHub Pages「Deploy from a branch」，站根為 repository root，保留 `.nojekyll`；可選後置 static-serve Helm chart。
 
 ## B. 成效追蹤
 
 * **spec#1-可用短回合低挫折方式練習英文**
-  * 評估方式：觀察兒童完成單題所需時間與重試次數。
-  * 觀察項目：單回合時長、答對率、提示使用比例。
+  * 評估方式：觀察兒童完成單題所需時間、重試次數與中文協助使用情形。
+  * 觀察項目：單回合時長、答對率、提示與中文協助使用比例、全額／半額／無獎勵各層級分佈。
 * **spec#2-可用角色陪伴與場景探索維持遊玩意願**
   * 評估方式：觀察單次遊玩探索的地點數與回訪次數。
   * 觀察項目：到訪地點數、連續遊玩回合數。

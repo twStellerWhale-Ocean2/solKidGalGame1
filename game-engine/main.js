@@ -92,6 +92,11 @@ let openAISettings = loadOpenAISettings();
 let activeHotspot = null;
 let activeLesson = null;
 let advMode = "closed";
+let advHelpChineseUsed = false;   // issue #73：本題是否按過中文撥放（按過＝該題無獎勵）
+let advWrongAttempts = 0;          // issue #73：本題答錯次數（0→全額、1→半額、≥2→無）
+let activeOpeningZh = "";           // issue #73：本題題目（advLine）的中文，無則空字串
+const HELP_AUDIO_LANG_ZH = "zh-TW";     // design paramHelpAudioLang
+const REWARD_SECOND_TRY_RATIO = 0.5;    // design paramRewardSecondTryRatio
 let shopCategory = "dresses";
 let activeShopHotspot = null;
 let wardrobeCategory = "dresses";
@@ -504,8 +509,10 @@ function localizeLesson(lesson) {
   return {
     ...lesson,
     prompt: withPlayerName(lesson.prompt),
+    promptZh: withPlayerName(lesson.promptZh),
     answer: withPlayerName(lesson.answer),
     choices: Array.isArray(lesson.choices) ? lesson.choices.map(withPlayerName) : lesson.choices,
+    choicesZh: Array.isArray(lesson.choicesZh) ? lesson.choicesZh.map(withPlayerName) : lesson.choicesZh,
     words: Array.isArray(lesson.words) ? lesson.words.map(withPlayerName) : lesson.words
   };
 }
@@ -1699,15 +1706,66 @@ function openQuestAdv(hotspot) {
   openAdvBase(hotspot, "quest");
   addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
   activeLesson = localizeLesson(lesson);
+  advHelpChineseUsed = false;
+  advWrongAttempts = 0;
+  activeOpeningZh = withPlayerName(quest.openingZh) || "";
   elements.advLine.textContent = quest.opening;
   elements.advPrompt.textContent = `${quest.title}: ${activeLesson.prompt}`;
-  shuffled(activeLesson.choices).forEach((choice, index) => {
-    let button;
-    button = addAdvOption(choice, () => answerLesson(button, choice), { number: index + 1, choice });
-  });
+  updatePromptAudioButtons();
+  const zhByChoice = Array.isArray(activeLesson.choicesZh) ? activeLesson.choicesZh : [];
+  const options = activeLesson.choices.map((choice, i) => ({ choice, zh: zhByChoice[i] || "" }));
+  shuffled(options).forEach((option, index) => addChoiceRow(option.choice, option.zh, index + 1));
   addAdvOption("↩ Leave", closeAdv, { leave: true });
   scheduleAdvFocus(0);
   speak(quest.opening);
+}
+
+// issue #73：題目（advLine）的中文撥放鈕僅在有中文時顯示。
+function updatePromptAudioButtons() {
+  if (elements.speakPromptButtonZh) elements.speakPromptButtonZh.hidden = !activeOpeningZh;
+}
+
+// issue #73：一列選項＝可作答的選項鈕＋英文撥放鈕＋（有中文時）中文撥放鈕。
+function addChoiceRow(choice, zh, number) {
+  const row = document.createElement("div");
+  row.className = "choice-row";
+  const answer = document.createElement("button");
+  answer.className = "choice-button";
+  answer.type = "button";
+  answer.textContent = number ? `${number}. ${choice}` : choice;
+  answer.setAttribute("aria-label", choice);
+  answer.dataset.choice = choice;
+  answer.addEventListener("click", () => answerLesson(answer, choice));
+  row.appendChild(answer);
+  const audio = document.createElement("div");
+  audio.className = "choice-audio";
+  audio.appendChild(makeAudioButton("🔊", `Read "${choice}" in English`, () => playHelpAudio(choice, "en-US")));
+  if (zh) {
+    const zhBtn = makeAudioButton("中", `用中文唸「${choice}」`, () => playHelpAudio(zh, HELP_AUDIO_LANG_ZH));
+    zhBtn.classList.add("zh");
+    audio.appendChild(zhBtn);
+  }
+  row.appendChild(audio);
+  elements.choiceList.appendChild(row);
+  return answer;
+}
+
+function makeAudioButton(label, ariaLabel, onClick) {
+  const button = document.createElement("button");
+  button.className = "choice-audio-button";
+  button.type = "button";
+  button.textContent = label;
+  button.setAttribute("aria-label", ariaLabel);
+  button.addEventListener("click", onClick);
+  return button;
+}
+
+// issue #73 獎勵階梯（按送出次數計）：未用中文且第一次答對＝full、第二次＝half、第三次起或用過中文＝none。
+function helpRewardTier() {
+  if (advHelpChineseUsed) return "none";
+  if (advWrongAttempts === 0) return "full";
+  if (advWrongAttempts === 1) return "half";
+  return "none";
 }
 
 function openHintAdv(hotspot, line = hotspot.hint) {
@@ -2255,7 +2313,9 @@ function answerLesson(button, choice) {
   const correct = choice === activeLesson.answer;
   recordCycleAnswer(state, correct); // 本回合答題統計（spec#9 結算用）：每次嘗試計入，答對另計。
   if (!correct) {
+    advWrongAttempts += 1;
     button.classList.add("wrong");
+    button.disabled = true;
     setExpressions("thinking", "surprised");
     elements.advFeedback.textContent = "Try again.";
     playTone("wrong");
@@ -2265,8 +2325,15 @@ function answerLesson(button, choice) {
 
   const quest = state.activeQuest || createQuestForPlace(activeLesson.place);
   const completedHotspot = hotspotById(activeLesson.place);
+  const baseCoins = activeLesson.reward.coins || 0;
+  const rewardTier = helpRewardTier();   // issue #73 獎勵階梯：full／half／none
+  const coins = rewardTier === "full"
+    ? baseCoins
+    : rewardTier === "half"
+      ? Math.round(baseCoins * REWARD_SECOND_TRY_RATIO)
+      : 0;
   const reward = {
-    coins: activeLesson.reward.coins || 0,
+    coins,
     vocab: activeLesson.reward.vocab || 0,
     expression: activeLesson.reward.expression || 0,
     kindness: activeLesson.reward.kindness || 0,
@@ -2280,7 +2347,7 @@ function answerLesson(button, choice) {
   updateProgressBadges();
   setExpressions("happy", "happy");
   button.classList.add("correct");
-  showRewardBurst(`+${reward.coins} coins`);
+  showRewardBurst(coins > 0 ? `+${coins} coins` : "No coins this time");
   elements.choiceList.querySelectorAll("button").forEach((item) => {
     item.disabled = true;
     if (item.dataset.choice === activeLesson.answer) item.classList.add("correct");
@@ -2296,7 +2363,11 @@ function answerLesson(button, choice) {
   });
   elements.advLine.textContent = quest.ending;
   elements.advPrompt.textContent = `Help complete. Try a reward now, or go back to ${princessName()}'s room.`;
-  elements.advFeedback.textContent = `${effectText(reward)}.`;
+  elements.advFeedback.textContent = coins > 0
+    ? (rewardTier === "half" ? `${effectText(reward)}. Half coins for the second try.` : `${effectText(reward)}.`)
+    : advHelpChineseUsed
+      ? "Nice learning with Chinese help! No coins this time."
+      : "No coins this time — try to answer sooner next time.";
   state.activeQuest = null;
   activeLesson = null;
   advMode = "complete";
@@ -2434,13 +2505,20 @@ function renderSettings() {
   renderBuildInfo(elements, buildInfo);
 }
 
-function speak(text) {
+function speak(text, lang = "en-US") {
   if (!state.speechEnabled || !("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "en-US";
+  utterance.lang = lang;
   utterance.rate = 0.86;
   window.speechSynthesis.speak(utterance);
+}
+
+// issue #73 中文協助：撥放題目／選項語音。按中文（zh-TW）即標記本題已用中文協助，影響獎勵階梯。
+function playHelpAudio(text, lang = "en-US") {
+  if (!text) return;
+  if (lang === HELP_AUDIO_LANG_ZH) advHelpChineseUsed = true;
+  speak(text, lang);
 }
 
 function playTone(kind) {
@@ -2693,7 +2771,8 @@ function bindEvents() {
   elements.goMapButton?.addEventListener("click", openWorldMap);
   elements.returnHomeButton?.addEventListener("click", () => openArea("castle"));
   elements.helpButton.addEventListener("click", showHelp);
-  elements.speakPromptButton.addEventListener("click", () => speak(elements.advLine.textContent));
+  elements.speakPromptButton.addEventListener("click", () => playHelpAudio(elements.advLine.textContent, "en-US"));
+  elements.speakPromptButtonZh?.addEventListener("click", () => playHelpAudio(activeOpeningZh, HELP_AUDIO_LANG_ZH));
   elements.saveButton.addEventListener("click", saveMarkdown);
   elements.loadButton.addEventListener("click", loadMarkdown);
   elements.loadFileInput.addEventListener("change", async () => {
@@ -3027,6 +3106,8 @@ installTestingHooks({
   areaRegistry,
   allowedShopCategories,
   answerLesson,
+  openQuestAdv,
+  getActiveLesson: () => activeLesson,
   buildSaveMarkdown,
   buyItemInAdv,
   castleMapNodes,

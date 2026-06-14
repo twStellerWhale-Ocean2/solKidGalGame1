@@ -1,91 +1,78 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>solKidGalGame — issue #6 遊玩時間限制與護眼休息 測試結果摘要</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>solKidGalGame — issue #73 中文協助 測試結果摘要</title>
 <style>
-  :root { --rose:#d8678c; --rose-dark:#a84368; --ink:#3a2630; --muted:#7a6670; --line:#e7d3dc; --ok:#1f8a55; --warn:#b8860b; --bg:#fff8fb; --panel:#ffffff; }
+  :root { --ink:#503846; --rose:#a93f67; --mint:#2d7259; --line:#e7d6dc; --bg:#fbf5f7; }
   * { box-sizing: border-box; }
-  body { margin:0; padding:28px; background:var(--bg); color:var(--ink);
-    font-family:"Segoe UI",system-ui,-apple-system,"Microsoft JhengHei",sans-serif; line-height:1.55; }
-  .wrap { max-width:980px; margin:0 auto; }
-  h1 { color:var(--rose-dark); margin:0 0 4px; font-size:24px; }
-  h2 { color:var(--rose-dark); margin:28px 0 10px; font-size:18px; border-bottom:2px solid var(--line); padding-bottom:6px; }
-  .sub { color:var(--muted); margin:0 0 16px; }
-  .verdict { display:inline-block; background:var(--ok); color:#fff; font-weight:800;
-    padding:6px 14px; border-radius:999px; font-size:15px; }
-  table { width:100%; border-collapse:collapse; background:var(--panel); margin:8px 0 4px;
-    border:1px solid var(--line); border-radius:10px; overflow:hidden; font-size:14px; }
-  th,td { text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
-  th { background:#fdeef4; color:var(--rose-dark); font-weight:700; }
-  tr:last-child td { border-bottom:none; }
-  .pass { color:var(--ok); font-weight:800; }
-  .note { color:var(--warn); font-weight:700; }
-  code,.mono { font-family:"Cascadia Code",Consolas,monospace; font-size:12.5px;
-    background:#fbeaf1; padding:1px 5px; border-radius:5px; }
-  pre { background:#2d1f27; color:#ffe7f0; padding:12px 14px; border-radius:8px; overflow:auto;
-    font-family:"Cascadia Code",Consolas,monospace; font-size:12.5px; margin:4px 0 12px; }
-  .meta { color:var(--muted); font-size:13px; }
-  ul { margin:6px 0 12px; padding-left:22px; }
-  li { margin:3px 0; }
-  .foot { margin-top:26px; color:var(--muted); font-size:12.5px; border-top:1px solid var(--line); padding-top:12px; }
+  body { margin:0; padding:28px; font-family:"Segoe UI","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif; color:var(--ink); background:var(--bg); line-height:1.5; }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1 { font-size:1.5rem; margin:0 0 4px; color:var(--rose); }
+  h2 { font-size:1.12rem; margin:26px 0 8px; border-bottom:2px solid var(--line); padding-bottom:4px; }
+  .sub { color:#826b73; margin:0 0 18px; }
+  table { width:100%; border-collapse:collapse; margin:6px 0 4px; font-size:0.93rem; background:#fff; }
+  th,td { border:1px solid var(--line); padding:7px 9px; text-align:left; vertical-align:top; }
+  th { background:#f3e6ec; }
+  .pass { color:var(--mint); font-weight:700; }
+  code { background:#f1e7eb; padding:1px 5px; border-radius:4px; font-size:0.86em; }
+  .pill { display:inline-block; background:var(--mint); color:#fff; border-radius:999px; padding:2px 12px; font-weight:700; font-size:0.85rem; }
+  footer { margin-top:28px; color:#9a8088; font-size:0.82rem; border-top:1px solid var(--line); padding-top:10px; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>測試結果摘要 — issue #6 遊玩時間限制與護眼休息</h1>
-  <p class="sub">3dev 開發研改 · 對應 <code>spec#9</code> / <code>solStory#11</code> / <code>sysStory#7</code> · 技術選型 techStackStaticWeb</p>
-  <p><span class="verdict">完成判斷 Gate：可宣稱完成（5/5 已測通過，0 未實作，0 責任邊界不符）</span></p>
-  <p class="meta">產出日期 2026-06-13 · 分支 <code>feat/issue6-play-time-limit</code> · 機器判定與測試於本機 runtime 實跑</p>
+  <h1>issue #73 — 提供中文協助功能</h1>
+  <p class="sub">3dev 測試結果摘要 · 分支 <code>feat/issue73-chinese-help</code> · 2026-06-14 · 結論：<span class="pill">可宣稱完成（本議題範圍）</span></p>
 
   <h2>1. 機器判定（GATE §1）</h2>
   <table>
     <tr><th>判定</th><th>指令</th><th>結果</th></tr>
-    <tr><td>建置／型別檢查</td><td><span class="mono">tsc --noEmit --project jsconfig.json</span></td><td class="pass">exit 0</td></tr>
-    <tr><td>結構合規（repo）</td><td><span class="mono">pwsh scripts/repoLint.ps1 -Path .</span></td><td class="pass">PASS（0 違規）</td></tr>
-    <tr><td>結構合規（設計）</td><td><span class="mono">pwsh scripts/docLint.ps1 -Path docs/design.md -Level sol</span></td><td class="pass">PASS（0 違規）</td></tr>
-    <tr><td>依賴安全</td><td><span class="mono">npm audit</span></td><td class="note">N/A — 純靜態無 package.json、0 依賴</td></tr>
-    <tr><td>單元覆蓋 ≥80%</td><td>—</td><td class="note">本 repo 無覆蓋率工具；以下瀏覽器 selftest 為可重跑測試證據（見專家評價#13）</td></tr>
+    <tr><td>型別契約</td><td><code>tsc --noEmit --project jsconfig.json</code></td><td class="pass">0 錯 (exit 0)</td></tr>
+    <tr><td>結構合規</td><td><code>repoLint.ps1 -Path .</code></td><td class="pass">PASS（0 違規）</td></tr>
+    <tr><td>設計格式</td><td><code>docLint.ps1 -Path docs/design.md</code></td><td class="pass">PASS（0 違規）</td></tr>
+    <tr><td>整合測試</td><td><code>?selftest=help-reward</code></td><td class="pass">passed（errors: []）</td></tr>
+    <tr><td>執行期錯誤</td><td>瀏覽器 console（warn/error）</td><td class="pass">0 error</td></tr>
+    <tr><td>依賴安全</td><td>純前端、無新增 npm 依賴（瀏覽器內建 SpeechSynthesis）</td><td class="pass">不適用</td></tr>
   </table>
 
-  <h2>2. 整合／端對端：瀏覽器 selftest</h2>
-  <p class="meta">於 <span class="mono">node server.mjs</span> 服務的 runtime 實跑，結果由頁面 <code>&lt;pre id="…Result"&gt;</code> 取得。新增 <code>?selftest=playtimer</code> 驗證本議題；既有四項確認無回歸。</p>
+  <h2>2. 獎勵階梯（sysCase#8.2，按送出次數計）</h2>
   <table>
-    <tr><th>selftest</th><th>啟動 URL</th><th>結果</th></tr>
-    <tr><td><b>遊玩時間限制與護眼休息（本議題）</b></td><td><span class="mono">?selftest=playtimer</span></td><td class="pass">passed（0 errors）</td></tr>
-    <tr><td>存檔匯出匯入還原（含新 playLimit 欄位）</td><td><span class="mono">?selftest=save-load</span></td><td class="pass">passed</td></tr>
-    <tr><td>內容資料稽核</td><td><span class="mono">?selftest=data-audit</span></td><td class="pass">passed（0 errors）</td></tr>
-    <tr><td>隨機操作 300 步</td><td><span class="mono">?selftest=monkey</span></td><td class="pass">passed（0 errors）</td></tr>
-    <tr><td>多帳號（新增/隔離/切換/刪除）</td><td><span class="mono">?selftest=accounts</span></td><td class="pass">passed</td></tr>
+    <tr><th>情境</th><th>條件</th><th>預期</th><th>實測（castle base=20）</th><th>狀態</th></tr>
+    <tr><td>全額</td><td>未用中文、第 1 次答對</td><td>full = base</td><td>+20</td><td class="pass">通過</td></tr>
+    <tr><td>半額</td><td>未用中文、第 2 次答對</td><td>round(base×0.5)</td><td>+10</td><td class="pass">通過</td></tr>
+    <tr><td>無（用中文）</td><td>本題曾按任一中文鈕</td><td>0</td><td>+0</td><td class="pass">通過</td></tr>
+    <tr><td>無（第 3 次）</td><td>第 3 次起才答對</td><td>0</td><td>+0</td><td class="pass">通過</td></tr>
   </table>
-  <p class="meta"><code>playtimer</code> selftest 以注入合成時鐘驗證：起始遊玩、計時遞減（過半 ~50%）、時間到結算（本回合金錢 +40／答題 4／答對 3／正確度 75%）、休息鎖定（未滿不可續玩）、休息屆滿可續玩且開始全新回合（cycle 歸零）：</p>
-  <pre>{"test":"playtimer","passed":true,"errors":[]}</pre>
+  <p class="sub">旗標與次數於換題（openQuestAdv）時重置。撥放英文不計協助；只有中文鈕計入。</p>
 
-  <h2>3. 端對端 UI 實測（真實 ticker，注入時鐘加速）</h2>
-  <p class="meta">於遊戲畫面實際進入帳號→遊玩，由每秒 ticker 驅動，注入時鐘越過遊玩/休息時長以觀察 UI。</p>
+  <h2>3. 雙語內容覆蓋（sysCase#8.1）</h2>
   <table>
-    <tr><th>情境</th><th>觀察</th><th>結果</th></tr>
-    <tr><td>HUD 遊玩時間預算</td><td>側欄顯示「PLAY TIME 100%」，能量條隨時間遞減</td><td class="pass">通過</td></tr>
-    <tr><td>時間到結算</td><td>overlay「Time for an eye break!」顯示本回合金錢/Questions 5/Correct 4/Accuracy 80%</td><td class="pass">通過</td></tr>
-    <tr><td>強制休息鎖定</td><td>倒數「Resting… 10:00 left」逐秒遞減；「Play again」禁用；HUD 能量 0%；焦點移入卡片</td><td class="pass">通過</td></tr>
-    <tr><td>休息屆滿續玩</td><td>顯示「Eyes rested!」、續玩鈕啟用並取得焦點；按下後 overlay 關閉、能量回 100%、開始新回合</td><td class="pass">通過</td></tr>
-    <tr><td>設定調整（各帳號）</td><td>Settings 顯示遊玩/休息時長（10/10）；改 15/5 並儲存後套用且持久化至帳號進度</td><td class="pass">通過</td></tr>
-    <tr><td>主控台錯誤</td><td>全程載入與操作 console 0 error</td><td class="pass">通過</td></tr>
+    <tr><th>地區</th><th>題庫來源</th><th>抽測地點</th><th>題目中文鈕</th><th>選項中文鈕</th></tr>
+    <tr><td>castle</td><td>字面題庫 + castleZh</td><td>5 房間全測</td><td class="pass">顯示</td><td class="pass">4 / 4</td></tr>
+    <tr><td>urban</td><td>starterQuestions + urbanZh</td><td>garden/market/library</td><td class="pass">顯示</td><td class="pass">4 / 4</td></tr>
+    <tr><td>rural</td><td>moversQuestions + ruralZh</td><td>mine/pasture</td><td class="pass">顯示</td><td class="pass">4 / 4</td></tr>
+    <tr><td>wild</td><td>flyersQuestions + wildZh</td><td>elfGlade/wizardHut</td><td class="pass">顯示</td><td class="pass">4 / 4</td></tr>
+  </table>
+  <p class="sub">selftest 內建跨地區覆蓋檢查（4 區各驗 4 中文選項鈕＋題目中文鈕）；缺中文則自動降級為僅英文撥放。</p>
+
+  <h2>4. 行動裝置版面（mobile 375×812 實測）</h2>
+  <table>
+    <tr><th>量測</th><th>值</th><th>判定</th></tr>
+    <tr><td>選項列寬 / 清單寬</td><td>279px / 283px</td><td class="pass">未溢出</td></tr>
+    <tr><td>列右緣 / 清單右緣</td><td>325px / 329px</td><td class="pass">在界內</td></tr>
+    <tr><td>row.scrollWidth &gt; clientWidth</td><td>false</td><td class="pass">無水平捲動</td></tr>
+    <tr><td>撥放鈕觸控目標</td><td>≥44×44</td><td class="pass">達標</td></tr>
   </table>
 
-  <h2>4. 產品能力矩陣與專家評價</h2>
-  <p>5/5 核心 story/case <span class="pass">已測通過</span>，0 未實作、0 責任邊界不符。完整矩陣與 ≥10 項專家評價（含已修復 2 項：結算/休息 overlay z-index 蓋過場景、overlay 焦點管理）見 <code>docs/expert-review-issue6.md</code>。</p>
-  <ul>
-    <li><b>已修復</b>：overlay <code>z-index</code> 由 70 提高至 200（原低於 ADV 場景 80，鎖定畫面會被蓋住）。</li>
-    <li><b>已修復</b>：overlay 焦點管理（顯示聚焦卡片、休息屆滿聚焦續玩鈕）。</li>
-    <li><b>依 USR 裁定</b>：各帳號各自計時（可切帳號繞過休息）、防作弊簡化——均為審查門裁定取捨，已載明。</li>
-  </ul>
+  <h2>5. 專家評價（GATE §6）</h2>
+  <p>共 14 項發現；重大者已回修並重跑受影響測試（獎勵回饋透明化、中文鈕 a11y、跨地區覆蓋檢查、mobile 溢出驗證）。完整清單與處置見 <code>docs/expert-review-issue73.md</code>。無「未實作／責任邊界不符」之重大缺口。</p>
 
-  <h2>5. 結論</h2>
-  <p><span class="verdict">可宣稱完成</span> — 機器判定全綠、selftest 5/5、端對端 UI 6/6 通過、矩陣 5/5 已測通過、專家評價重大發現均已回修重測。狀態可達 <code>CODE-READY</code>，待 USR 於 PR #94 核准。</p>
+  <h2>6. 追溯</h2>
+  <p>spec#1（擴充）→ solStory#12 → sysStory#8（sysCase#8.1 撥放／#8.2 結算）→ intTest#22／#23、docProgTest#12、e2eTest#07 →（部署後）＜IV.B＞成效追蹤。</p>
 
-  <p class="foot">本檔為單一自包含 HTML（CSS 內聯、無外部相依），可離線開啟；<code>docs/test-summary.pdf</code> 為其列印快照。issue #6 · spec#9 · gateVersion 1.0 · releaseVersion 1.0。</p>
+  <footer>產生者：3dev（2tech-devSet-3dev）· 本 HTML 為 source of truth，test-summary.pdf 為其列印快照 · 無外部相依，離線可開。</footer>
 </div>
 </body>
 </html>

@@ -32,6 +32,7 @@ export function installTestingHooks(api) {
       api.answerLesson(button, choice);
     },
     closeAdv: api.closeAdv,
+    openQuest: (place = "kingHall") => api.openQuestAdv(api.hotspotById(place)),
     buy: (itemId) => api.buyItemInAdv(api.itemById(itemId)),
     refund: (itemId) => api.refundItemInAdv(api.itemById(itemId)),
     focusCastle: api.focusCastle,
@@ -48,6 +49,7 @@ export function installTestingHooks(api) {
   runMonkeyTest(api);
   runAccountSelfTest(api);
   runPlayTimerSelfTest(api);
+  runHelpRewardSelfTest(api);
 }
 
 // 遊玩時間限制與護眼休息（issue #6 / spec#9）：以注入時鐘驗證計時遞減、時間到結算、休息鎖定與屆滿續玩。
@@ -169,6 +171,88 @@ function runAccountSelfTest(api) {
   result.id = "accountTestResult";
   result.textContent = JSON.stringify({
     test: "accounts",
+    passed: errors.length === 0,
+    errors: errors.slice(0, 10)
+  });
+  document.body.prepend(result);
+}
+
+// issue #73 中文協助：驗證獎勵階梯（按送出次數計）與中文撥放、缺中文降級。
+function runHelpRewardSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "help-reward") return;
+  const errors = [];
+  try {
+    if (!api.accounts.activeId()) api.accounts.create();
+    const place = "kingHall";
+    const answer = (choice) => {
+      const button = [...api.elements.choiceList.querySelectorAll("button")].find((b) => b.dataset.choice === choice);
+      if (!button) throw new Error(`choice button not found: ${choice}`);
+      api.answerLesson(button, choice);
+    };
+    const openOne = (p = place) => {
+      api.openQuestAdv(api.hotspotById(p));
+      const lesson = api.getActiveLesson();
+      if (!lesson) throw new Error("no active lesson after openQuestAdv");
+      return lesson;
+    };
+    const wrongsFor = (lesson) => lesson.choices.filter((c) => c !== lesson.answer);
+
+    // A) 未用中文、第一次答對 → 全額
+    let lesson = openOne();
+    let base = lesson.reward.coins || 0;
+    let before = api.state.coins;
+    answer(lesson.answer);
+    const gainedFull = api.state.coins - before;
+    if (gainedFull !== base) errors.push(`first-try(no zh) gained ${gainedFull}, expected full ${base}`);
+
+    // B) 未用中文、第二次才答對 → 半額
+    lesson = openOne();
+    base = lesson.reward.coins || 0;
+    before = api.state.coins;
+    answer(wrongsFor(lesson)[0]);
+    answer(lesson.answer);
+    const gainedHalf = api.state.coins - before;
+    const expectHalf = Math.round(base * 0.5);
+    if (gainedHalf !== expectHalf) errors.push(`second-try(no zh) gained ${gainedHalf}, expected half ${expectHalf}`);
+
+    // C) 按過中文 → 無（同時驗證 kingHall 有渲染中文撥放鈕）
+    lesson = openOne();
+    before = api.state.coins;
+    const zhBtn = api.elements.choiceList.querySelector(".choice-audio-button.zh");
+    if (!zhBtn) errors.push("no Chinese audio button rendered for kingHall (expected zh content)");
+    else zhBtn.click();
+    answer(lesson.answer);
+    const gainedZh = api.state.coins - before;
+    if (gainedZh !== 0) errors.push(`chinese-used gained ${gainedZh}, expected 0`);
+
+    // D) 第三次才答對 → 無
+    lesson = openOne();
+    before = api.state.coins;
+    const wrongs = wrongsFor(lesson);
+    answer(wrongs[0]);
+    answer(wrongs[1]);
+    answer(lesson.answer);
+    const gainedThird = api.state.coins - before;
+    if (gainedThird !== 0) errors.push(`third-try gained ${gainedThird}, expected 0`);
+
+    // E) 跨地區中文覆蓋：每區一處應渲染題目中文鈕與 4 個選項中文鈕
+    for (const [area, p] of [["castle", "kingHall"], ["urban", "garden"], ["rural", "mine"], ["wild", "elfGlade"]]) {
+      openOne(p);
+      const zhCount = api.elements.choiceList.querySelectorAll(".choice-audio-button.zh").length;
+      const promptZhHidden = document.getElementById("speakPromptButtonZh").hidden;
+      if (zhCount !== 4) errors.push(`${area}/${p}: zh choice buttons ${zhCount}, expected 4`);
+      if (promptZhHidden) errors.push(`${area}/${p}: prompt zh button hidden (missing openingZh)`);
+    }
+
+    api.closeAdv();
+  } catch (error) {
+    errors.push(error.message);
+  }
+  const result = document.createElement("pre");
+  result.id = "helpRewardTestResult";
+  result.textContent = JSON.stringify({
+    test: "help-reward",
     passed: errors.length === 0,
     errors: errors.slice(0, 10)
   });

@@ -31,13 +31,37 @@ const reward = { coins: 2000, vocab: 3, expression: 3, kindness: 2 };
 // q() 是題目簡寫輔助函式，避免每題重複寫完整物件。
 const q = (prompt, answer, choices, words, questionType = "sentence-choice") => ({ prompt, answer, choices, words, questionType, reward });
 
-// flyersQuestions() 用同一組題型產生 Wild 各童話場景的練習題。
+// 中文協助對照（issue #73）：含整句片語（problem／action／result）的查表；缺項回退。
+const wildZh = {
+  "the elf": "小精靈", "the dwarf": "小矮人", "the golem": "石巨人", "the halfling": "半身人", "the wizard": "巫師", "the girl": "小女孩", "the piglet": "小豬", "the spirit": "樹靈",
+  glade: "林間空地", cottage: "小屋", pass: "山道", village: "村莊", hut: "小屋", path: "小路", grove: "樹叢",
+  "silver bell": "銀鈴", "wooden wheel": "木輪", "missing stone": "遺失的石頭", "picnic basket": "野餐籃", "blue herb jar": "藍色藥草罐", basket: "籃子", "straw roof": "稻草屋頂", "moon seed": "月亮種子",
+  "the flowers are too bright": "花太亮了", "it rolled behind the table": "它滾到桌子後面", "moss covers the sign": "青苔蓋住了告示牌", "it is beside the wrong door": "它在錯的門旁邊", "the shelf is too high": "架子太高了", "leaves cover the handle": "葉子蓋住了提把", "the wind moved some straw": "風把一些稻草吹動了", "it fell near the roots": "它掉在樹根附近",
+  "follow the quiet music": "跟著安靜的音樂走", "look behind the workbench": "看看工作檯後面", "clean the old sign": "清理舊告示牌", "check each round door": "檢查每一扇圓門", "move the little ladder": "移動小梯子", "brush away the leaves": "撥開葉子", "tie the roof gently": "輕輕綁好屋頂", "place the seed in moonlight": "把種子放在月光下",
+  "the silver bell rings softly": "銀鈴輕輕響起", "the wooden wheel turns again": "木輪又轉動了", "the mountain pass opens": "山道打開了", "the picnic basket is found": "野餐籃找到了", "the blue herb jar shines": "藍色藥草罐閃閃發亮", "the basket is ready": "籃子準備好了", "the straw roof stays still": "稻草屋頂穩穩不動", "the moon seed begins to glow": "月亮種子開始發光",
+  "The elf glade glows with tiny blue flowers.": "精靈空地上開滿了藍色小花，閃閃發光。",
+  "Pip the dwarf warms a small workshop fire.": "小矮人 Pip 生起了小小的工作坊爐火。",
+  "A friendly stone golem blocks the old path.": "一個友善的石巨人擋住了舊路。",
+  "Small round doors peek from the hill.": "小小的圓門從山丘探出頭來。",
+  "A purple roof curls above the wizard's herbs.": "紫色的屋頂在巫師的藥草上方捲起。",
+  "A red hood rests near a basket on the path.": "一頂紅帽子在小路上的籃子旁邊。",
+  "Three tiny cottages stand under warm trees.": "三間小小的屋子立在溫暖的樹下。",
+  "The ancient tree spirit blinks with blue lights.": "古老的樹靈眨著藍色的光。"
+};
+const tz = (w) => wildZh[w] || w;
+
+// flyersQuestions() 用同一組題型產生 Wild 各童話場景的練習題（含中文協助）。
 const flyersQuestions = ({ character, place, object, problem, action, result }) => [
-  q(`Pick the sentence that explains the ${place} problem.`, `${character} cannot find the ${object} because ${problem}.`, [`${character} cannot find the ${object} because ${problem}.`, `${character} cannot eat the ${object} because it is a castle.`, `${character} cannot wear the river because it is noisy.`, `${character} cannot read the mountain before breakfast.`], [character, object, "because", ...problem.split(" ")]),
-  q(`Pick the best helpful sentence.`, `Lumi should ${action} before the path gets dark.`, [`Lumi should ${action} before the path gets dark.`, `Lumi should hide the path under her shoe.`, `Lumi should shout until the trees run away.`, `Lumi should cook the moon before it rains.`], ["should", action, "before", "path", "dark"]),
-  q(`Pick the sentence about what happened next.`, `After Lumi helps, ${result}.`, [`After Lumi helps, ${result}.`, "After Lumi helps, the castle drinks a book.", "After Lumi helps, the basket becomes angry.", "After Lumi helps, every tree forgets the road."], ["after", "helps", ...result.split(" ")]),
-  q(`Pick the careful wild sentence.`, `If we listen carefully, we can hear the wild answer.`, ["If we listen carefully, we can hear the wild answer.", "If we run loudly, the answer becomes a shoe.", "If the river sleeps, the basket can fly.", "If the wolf reads maps, bread gets taller."], ["if", "listen", "carefully", "answer"]),
-  q(`Pick the story question.`, `Why does ${character} need Lumi's help?`, [`Why does ${character} need Lumi's help?`, `Why does ${character} sell the castle?`, `Where does ${character} eat a thundercloud?`, `When does ${character} become a teacup?`], ["why", character, "need", "help"], "question-choice")
+  { ...q(`Pick the sentence that explains the ${place} problem.`, `${character} cannot find the ${object} because ${problem}.`, [`${character} cannot find the ${object} because ${problem}.`, `${character} cannot eat the ${object} because it is a castle.`, `${character} cannot wear the river because it is noisy.`, `${character} cannot read the mountain before breakfast.`], [character, object, "because", ...problem.split(" ")]),
+    promptZh: `選出說明${tz(place)}問題的句子。`, choicesZh: [`${tz(character)}找不到${tz(object)}，因為${tz(problem)}。`, `${tz(character)}不能吃${tz(object)}，因為它是一座城堡。`, `${tz(character)}不能穿上河流，因為它很吵。`, `${tz(character)}不能在早餐前讀那座山。`] },
+  { ...q(`Pick the best helpful sentence.`, `Lumi should ${action} before the path gets dark.`, [`Lumi should ${action} before the path gets dark.`, `Lumi should hide the path under her shoe.`, `Lumi should shout until the trees run away.`, `Lumi should cook the moon before it rains.`], ["should", action, "before", "path", "dark"]),
+    promptZh: `選出最有幫助的句子。`, choicesZh: [`Lumi 應該在路變暗前${tz(action)}。`, `Lumi 應該把路藏在鞋子底下。`, `Lumi 應該大叫到樹都跑走。`, `Lumi 應該在下雨前把月亮煮熟。`] },
+  { ...q(`Pick the sentence about what happened next.`, `After Lumi helps, ${result}.`, [`After Lumi helps, ${result}.`, "After Lumi helps, the castle drinks a book.", "After Lumi helps, the basket becomes angry.", "After Lumi helps, every tree forgets the road."], ["after", "helps", ...result.split(" ")]),
+    promptZh: `選出接下來發生什麼的句子。`, choicesZh: [`Lumi 幫忙之後，${tz(result)}。`, `Lumi 幫忙之後，城堡喝了一本書。`, `Lumi 幫忙之後，籃子生氣了。`, `Lumi 幫忙之後，每棵樹都忘了路。`] },
+  { ...q(`Pick the careful wild sentence.`, `If we listen carefully, we can hear the wild answer.`, ["If we listen carefully, we can hear the wild answer.", "If we run loudly, the answer becomes a shoe.", "If the river sleeps, the basket can fly.", "If the wolf reads maps, bread gets taller."], ["if", "listen", "carefully", "answer"]),
+    promptZh: `選出小心的野外句子。`, choicesZh: ["如果我們仔細聽，就能聽到野外的答案。", "如果我們大聲跑，答案就會變成一隻鞋子。", "如果河流睡著了，籃子就能飛。", "如果狼讀地圖，麵包就會變高。"] },
+  { ...q(`Pick the story question.`, `Why does ${character} need Lumi's help?`, [`Why does ${character} need Lumi's help?`, `Why does ${character} sell the castle?`, `Where does ${character} eat a thundercloud?`, `When does ${character} become a teacup?`], ["why", character, "need", "help"], "question-choice"),
+    promptZh: `選出故事的問題句。`, choicesZh: [`${tz(character)}為什麼需要 Lumi 的幫忙？`, `${tz(character)}為什麼要賣掉城堡？`, `${tz(character)}在哪裡吃了一朵雷雲？`, `${tz(character)}什麼時候變成了一個茶杯？`] }
 ];
 
 // lessonPlaces 是本地區所有可練習地點與題目清單。
@@ -113,6 +137,6 @@ export const wildSceneConfigs = Object.freeze({
 
 //#region 衍生匯出
 // 由題庫資料統一產生給 game-engine/data/game-data.js 匯總使用的資料註冊表。
-export const wildQuestTemplates = makeQuestTemplates(wildLessonPlaces);
-export const wildLessons = makeLessons("wild", wildVocabularyProfile, wildLessonPlaces);
+export const wildQuestTemplates = makeQuestTemplates(wildLessonPlaces, wildZh);
+export const wildLessons = makeLessons("wild", wildVocabularyProfile, wildLessonPlaces, wildZh);
 //#endregion 衍生匯出

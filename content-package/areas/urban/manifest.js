@@ -31,13 +31,56 @@ const reward = { coins: 100, vocab: 1, expression: 1 };
 // q() 是題目簡寫輔助函式，避免每題重複寫完整物件。
 const q = (prompt, answer, choices, words, questionType = "sentence-choice") => ({ prompt, answer, choices, words, questionType, reward });
 
-// starterQuestions() 用同一組題型產生不同地點的 Starters 練習題。
+// 中文協助對照（issue #73）：產生器以參數英文字查表得中文，組出 promptZh／choicesZh；
+// 缺項回退原字（前端再降級為僅英文）。extra 整句與 openings 也收錄，供 makeQuestTemplates 取 openingZh。
+const urbanZh = {
+  cat: "貓", bread: "麵包", fish: "魚", boat: "船", dress: "洋裝", brush: "梳子", shirt: "襯衫", shoe: "鞋子", ribbon: "緞帶", light: "燈", book: "書", flower: "花", map: "地圖",
+  garden: "花園", market: "市場", shop: "商店", port: "碼頭", boutique: "服飾店", salon: "沙龍", studio: "工作室", classroom: "教室", library: "圖書館", temple: "神廟", office: "辦公室", lighthouse: "燈塔",
+  look: "看", buy: "買東西", choose: "挑選", wave: "揮手", try: "試穿", comb: "梳頭髮", fold: "摺衣服", walk: "走路", pick: "挑選", check: "檢查", read: "看書", listen: "聆聽", help: "幫忙",
+  green: "綠色的", busy: "忙碌的", blue: "藍色的", open: "開闊的", pink: "粉紅色的", bright: "明亮的", neat: "整齊的", soft: "柔軟的", red: "紅色的", happy: "開心的", quiet: "安靜的", white: "白色的",
+  "The cat is cute.": "這隻貓很可愛。",
+  "May I have bread?": "我可以要一些麵包嗎？",
+  "I want a fish.": "我想要一條魚。",
+  "The boat is small.": "這艘船很小。",
+  "The dress is pretty.": "這件洋裝很漂亮。",
+  "This hair is soft.": "這頭髮很柔軟。",
+  "This shirt is clean.": "這件襯衫很乾淨。",
+  "These shoes are soft.": "這雙鞋子很柔軟。",
+  "This ribbon is nice.": "這條緞帶很好看。",
+  "It is sunny today.": "今天是晴天。",
+  "Open your book.": "打開你的書。",
+  "Please read here.": "請在這裡看書。",
+  "The flower is white.": "這朵花是白色的。",
+  "This map is for town.": "這張地圖是給城鎮用的。",
+  "Mira is looking for a small garden friend.": "Mira 正在找一個小小的花園朋友。",
+  "Auntie Pom smiles by the warm bread.": "Pom 阿姨在溫熱的麵包旁微笑。",
+  "Nami has fresh fish by the water.": "Nami 在水邊有新鮮的魚。",
+  "The dock guide watches the little boats.": "碼頭嚮導看著小船。",
+  "Rena has a new dress to show.": "Rena 有一件新洋裝要展示。",
+  "Stylist Lina brushes soft story hair.": "造型師 Lina 梳著柔軟的頭髮。",
+  "Tailor Tess folds tops and skirts.": "裁縫師 Tess 摺著上衣和裙子。",
+  "Mina is checking soft walking shoes.": "Mina 正在檢查好走的鞋子。",
+  "Lili has ribbons and crowns.": "Lili 有緞帶和皇冠。",
+  "Captain Sol looks at the sky and sea.": "Sol 船長看著天空和海。",
+  "Teacher Bell points to the board.": "Bell 老師指著黑板。",
+  "Librarian Nola has a quiet reading table.": "圖書館員 Nola 有一張安靜的閱讀桌。",
+  "Sister Luma waters the temple flowers.": "Luma 修女為神廟的花澆水。",
+  "Clerk Otto sorts the town notes.": "Otto 職員整理城鎮的紙條。"
+};
+const tz = (w) => urbanZh[w] || w;
+
+// starterQuestions() 用同一組題型產生不同地點的 Starters 練習題（含中文協助）。
 const starterQuestions = ({ object, place, action, color, person, extra }) => [
-  q(`Pick the sentence about the ${object}.`, `I can see the ${object}.`, [`I can see the ${object}.`, `I can eat the ${object}.`, `The ${object} is under my shoe.`, `The ${object} can fly away.`], ["I", "can", "see", object]),
-  q(`Pick the sentence for ${person}.`, `${person} has a ${object}.`, [`${person} has a ${object}.`, `${person} has a moon.`, `${person} is a boat.`, `${person} eats the castle.`], [person, "has", object]),
-  q(`Pick the ${place} sentence.`, `This ${place} is ${color}.`, [`This ${place} is ${color}.`, `This ${place} is a fish.`, `My shoe is ${color}.`, `The cow reads here.`], ["this", place, color]),
-  q(`Pick what Lumi can do here.`, `Lumi can ${action}.`, [`Lumi can ${action}.`, `Lumi can sleep in the sea.`, `Lumi can eat a road.`, `Lumi can run into the sky.`], ["Lumi", "can", action]),
-  q(`Pick the kind sentence.`, extra, [extra, `The ${object} is angry.`, `I do not like this ${place}.`, `The ${place} is under water.`], extra.toLowerCase().replaceAll(".", "").split(" "))
+  { ...q(`Pick the sentence about the ${object}.`, `I can see the ${object}.`, [`I can see the ${object}.`, `I can eat the ${object}.`, `The ${object} is under my shoe.`, `The ${object} can fly away.`], ["I", "can", "see", object]),
+    promptZh: `選出關於${tz(object)}的句子。`, choicesZh: [`我看得到${tz(object)}。`, `我可以吃${tz(object)}。`, `${tz(object)}在我的鞋子底下。`, `${tz(object)}會飛走。`] },
+  { ...q(`Pick the sentence for ${person}.`, `${person} has a ${object}.`, [`${person} has a ${object}.`, `${person} has a moon.`, `${person} is a boat.`, `${person} eats the castle.`], [person, "has", object]),
+    promptZh: `選出給${person}的句子。`, choicesZh: [`${person}有一個${tz(object)}。`, `${person}有一個月亮。`, `${person}是一艘船。`, `${person}把城堡吃掉。`] },
+  { ...q(`Pick the ${place} sentence.`, `This ${place} is ${color}.`, [`This ${place} is ${color}.`, `This ${place} is a fish.`, `My shoe is ${color}.`, `The cow reads here.`], ["this", place, color]),
+    promptZh: `選出關於${tz(place)}的句子。`, choicesZh: [`這個${tz(place)}是${tz(color)}。`, `這個${tz(place)}是一條魚。`, `我的鞋子是${tz(color)}。`, `牛在這裡讀書。`] },
+  { ...q(`Pick what Lumi can do here.`, `Lumi can ${action}.`, [`Lumi can ${action}.`, `Lumi can sleep in the sea.`, `Lumi can eat a road.`, `Lumi can run into the sky.`], ["Lumi", "can", action]),
+    promptZh: `選出 Lumi 在這裡會做的事。`, choicesZh: [`Lumi 會${tz(action)}。`, `Lumi 會在海裡睡覺。`, `Lumi 會吃一條路。`, `Lumi 會跑進天空。`] },
+  { ...q(`Pick the kind sentence.`, extra, [extra, `The ${object} is angry.`, `I do not like this ${place}.`, `The ${place} is under water.`], extra.toLowerCase().replaceAll(".", "").split(" ")),
+    promptZh: `選出親切的句子。`, choicesZh: [tz(extra), `${tz(object)}在生氣。`, `我不喜歡這個${tz(place)}。`, `這個${tz(place)}在水底下。`] }
 ];
 
 // lessonPlaces 是本地區所有可練習地點與題目清單。
@@ -134,6 +177,6 @@ export const urbanSceneConfigs = Object.freeze({
 
 //#region 衍生匯出
 // 由題庫資料統一產生給 game-engine/data/game-data.js 匯總使用的資料註冊表。
-export const urbanQuestTemplates = makeQuestTemplates(urbanLessonPlaces);
-export const urbanLessons = makeLessons("urban", urbanVocabularyProfile, urbanLessonPlaces);
+export const urbanQuestTemplates = makeQuestTemplates(urbanLessonPlaces, urbanZh);
+export const urbanLessons = makeLessons("urban", urbanVocabularyProfile, urbanLessonPlaces, urbanZh);
 //#endregion 衍生匯出
