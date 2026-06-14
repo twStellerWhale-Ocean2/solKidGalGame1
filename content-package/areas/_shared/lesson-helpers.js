@@ -11,10 +11,10 @@ export function makeLessons(areaId, vocabularyProfile, placeDefinitions, zh = {}
     theme: place.theme,
     questionType: question.questionType || "sentence-choice",
     prompt: question.prompt,
-    promptZh: zhOf(question.prompt),
+    promptZh: question.promptZh || zhOf(question.prompt),
     answer: question.answer,
     choices: question.choices,
-    choicesZh: question.choices.map(zhOf),
+    choicesZh: Array.isArray(question.choicesZh) ? question.choicesZh : question.choices.map(zhOf),
     words: question.words,
     reward: question.reward || place.reward || { vocab: 1, expression: 1 }
   }))));
@@ -27,7 +27,7 @@ export function makeQuestTemplates(placeDefinitions, zh = {}) {
     place: place.id,
     title: place.title,
     opening: place.opening,
-    openingZh: zhOf(place.opening),
+    openingZh: place.openingZh || zhOf(place.opening),
     ending: place.ending
   })));
 }
