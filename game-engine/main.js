@@ -2527,7 +2527,12 @@ function speak(text, voiceOrLang = "en-US", { then } = {}) {
   utterance.lang = profile.lang || "en-US";
   utterance.pitch = typeof profile.pitch === "number" ? profile.pitch : 1;
   utterance.rate = typeof profile.rate === "number" ? profile.rate : 0.86;
-  if (then) utterance.addEventListener("end", then);
+  if (then) {
+    let fired = false;
+    const fireThen = () => { if (!fired) { fired = true; then(); } };
+    utterance.addEventListener("end", fireThen);
+    utterance.addEventListener("error", fireThen); // 無可用語音時改由 error 觸發，確保 NPC 結語仍接續
+  }
   window.speechSynthesis.speak(utterance);
 }
 

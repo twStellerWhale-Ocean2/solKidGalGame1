@@ -310,6 +310,37 @@ function runCharacterVoiceSelfTest(api) {
     if (declared.length < npcHotspots.length - 2) {
       errors.push(`NPC 音色覆蓋不足：${declared.length}/${npcHotspots.length} 已宣告，降級者 ${coverage.fellBack.join("／")}`);
     }
+
+    // 整合（intTest#24/#25）：實開題→答對，spy speechSynthesis 驗 NPC 開場低音與公主朗讀正解高音。
+    if ("speechSynthesis" in window) {
+      const spoken = [];
+      const synth = window.speechSynthesis;
+      const origSpeak = synth.speak.bind(synth);
+      const origCancel = synth.cancel.bind(synth);
+      synth.cancel = () => {};
+      synth.speak = (u) => spoken.push({ text: u.text, pitch: u.pitch });
+      try {
+        api.state.speechEnabled = true;
+        api.openQuestAdv(api.hotspotById("kingHall"));
+        const lesson = api.getActiveLesson();
+        if (!lesson) {
+          errors.push("integration: 無 active lesson");
+        } else {
+          if (!spoken.some((s) => typeof s.pitch === "number" && s.pitch < 1)) errors.push("NPC 開場未以角色低音發聲");
+          const before = spoken.length;
+          const btn = [...api.elements.choiceList.querySelectorAll("button")].find((b) => b.dataset.choice === lesson.answer);
+          if (!btn) errors.push("integration: 找不到正解按鈕");
+          else api.answerLesson(btn, lesson.answer);
+          const princessSpoke = spoken.slice(before).find((s) => s.text === lesson.answer);
+          if (!princessSpoke) errors.push("公主未朗讀所選正解");
+          else if (!(princessSpoke.pitch > 1)) errors.push(`公主朗讀音高(${princessSpoke.pitch})未高於基準`);
+        }
+        api.closeAdv();
+      } finally {
+        synth.speak = origSpeak;
+        synth.cancel = origCancel;
+      }
+    }
   } catch (error) {
     errors.push(error.message);
   }
