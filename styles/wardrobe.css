@@ -123,8 +123,10 @@
   gap: 4px;
   padding: 8px;
   text-align: left;
-  background: #fff;
-  border: 1px solid var(--line);
+  /* issue #103 專家會審: 商品/衣物列沿用對話選項(.choice-button)之深色半透明底色與粉色邊框，跨畫面一致 */
+  color: #fff;
+  background: rgba(70, 52, 76, 0.88);
+  border: 2px solid rgba(241, 154, 193, 0.55);
   border-radius: var(--radius);
 }
 
@@ -141,14 +143,15 @@
 }
 
 .item-card strong {
-  color: var(--rose-dark);
+  /* issue #103: 深色卡上改用淺色文字 */
+  color: #fff;
   font-size: 0.82rem;
   line-height: 1.1;
 }
 
 .item-card span,
 .item-card small {
-  color: var(--muted);
+  color: rgba(255, 247, 251, 0.82);
   font-size: 0.72rem;
   font-weight: 800;
 }
