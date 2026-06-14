@@ -291,9 +291,10 @@
 }
 
 .choice-audio-button.zh {
-  color: #fff;
-  background: var(--rose);
-  border-color: var(--rose);
+  /* issue #103 專家會審: 中文鈕由實心粉降為淡色次要樣式，避免在選項列中喧賓奪主、視覺上鼓勵先試英文 */
+  color: var(--rose-dark);
+  background: #fdeef3;
+  border-color: rgba(216, 103, 140, 0.30);
 }
 
 .choice-audio-button:disabled {

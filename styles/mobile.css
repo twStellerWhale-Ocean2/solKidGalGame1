@@ -2067,13 +2067,13 @@ body {
   overflow: auto;
   border-width: 4px;
   background:
-    linear-gradient(90deg, rgba(255, 250, 246, 0.82), rgba(255, 250, 246, 0.66)),
+    linear-gradient(90deg, rgba(255, 250, 246, 0.95), rgba(255, 250, 246, 0.9)),
     url("../content-base/ui/diary-book.webp") center / cover no-repeat;
 }
 
 #settingsView .simple-panel {
   background:
-    linear-gradient(90deg, rgba(255, 250, 246, 0.84), rgba(255, 250, 246, 0.68)),
+    linear-gradient(90deg, rgba(255, 250, 246, 0.95), rgba(255, 250, 246, 0.9)),
     url("../content-base/ui/settings-book.webp") center / cover no-repeat;
 }
 
