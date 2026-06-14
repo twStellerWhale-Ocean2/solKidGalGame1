@@ -2318,7 +2318,10 @@ function answerLesson(button, choice) {
     vocabProfile: activeLesson.vocabProfile
   });
   elements.advLine.textContent = quest.ending;
-  elements.advPrompt.textContent = `Practice complete. Try a reward now, or go back to ${princessName()}'s room.`;
+  // issue #100：完成提示文案對齊實際可用動作（已移除「選擇獎勵」導購）——商店場景可逛商店，其餘場景僅返回／離開。
+  elements.advPrompt.textContent = completedHotspot?.kind === "shop"
+    ? `Practice complete. Visit the shop, or go back to ${princessName()}'s room.`
+    : `Practice complete. Go back to ${princessName()}'s room, or leave.`;
   elements.advFeedback.textContent = coins > 0
     ? (rewardTier === "half" ? `${effectText(reward)}. Half coins for the second try.` : `${effectText(reward)}.`)
     : advChineseUsed
