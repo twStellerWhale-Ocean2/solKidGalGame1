@@ -246,6 +246,7 @@ export function normalizeQuest(quest) {
     place: template.place,
     title: template.title,
     opening: template.opening,
+    openingZh: template.openingZh,
     ending: template.ending,
     npc: scene.npc
   };
@@ -272,6 +273,7 @@ export function createQuestFromTemplate(template) {
     place: template.place,
     title: template.title,
     opening: template.opening,
+    openingZh: template.openingZh,
     ending: template.ending,
     npc: scene.npc
   };

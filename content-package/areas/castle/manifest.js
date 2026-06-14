@@ -160,8 +160,41 @@ export const castleSceneConfigs = Object.freeze({
 });
 //#endregion 對話場景設定
 
+//#region 中文協助對照（issue #73）
+// 英文字串 → 中文（zh-TW）對照表，供題目（advLine）與選項的中文撥放使用；
+// 查無對應者前端自動降級為僅英文撥放。目前涵蓋 King's Hall，其餘城堡房間於後續切片補齊。
+const castleZh = {
+  "The king smiles. A small job is here.": "國王笑了。這裡有一個小任務。",
+  "Pick the sentence for the king.": "選出要對國王說的句子。",
+  "The king is here.": "國王在這裡。",
+  "The fish is here.": "魚在這裡。",
+  "We go down.": "我們往下走。",
+  "It is red.": "它是紅色的。",
+  "Pick what Lumi can see.": "選出 Lumi 看得到的東西。",
+  "I see the crown.": "我看到皇冠。",
+  "I eat the crown.": "我吃皇冠。",
+  "Go to sleep.": "去睡覺。",
+  "The cow can run.": "牛會跑。",
+  "Pick the polite help sentence.": "選出有禮貌的幫忙句子。",
+  "Can I help?": "我可以幫忙嗎？",
+  "Can I jump?": "我可以跳嗎？",
+  "I am away.": "我不在。",
+  "They are blue.": "它們是藍色的。",
+  "Pick the sentence about the hall.": "選出關於大廳的句子。",
+  "This hall is big.": "這個大廳很大。",
+  "This hall is wet.": "這個大廳是濕的。",
+  "My hat can swim.": "我的帽子會游泳。",
+  "She has a fish.": "她有一條魚。",
+  "Pick the happy sentence.": "選出開心的句子。",
+  "We can go now.": "我們現在可以走了。",
+  "We can eat now.": "我們現在可以吃了。",
+  "They are not here.": "他們不在這裡。",
+  "Look at my shoe.": "看看我的鞋子。"
+};
+//#endregion 中文協助對照
+
 //#region 衍生匯出
 // 由題庫資料統一產生給 game-engine/data/game-data.js 匯總使用的資料註冊表。
-export const castleQuestTemplates = makeQuestTemplates(castleLessonPlaces);
-export const castleLessons = makeLessons("castle", castleVocabularyProfile, castleLessonPlaces);
+export const castleQuestTemplates = makeQuestTemplates(castleLessonPlaces, castleZh);
+export const castleLessons = makeLessons("castle", castleVocabularyProfile, castleLessonPlaces, castleZh);
 //#endregion 衍生匯出

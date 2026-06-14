@@ -77,6 +77,7 @@ export function createElements() {
     advActionFooter: $("#advActionFooter"),
     advFeedback: $("#advFeedback"),
     speakPromptButton: $("#speakPromptButton"),
+    speakPromptButtonZh: $("#speakPromptButtonZh"),
     helpButton: $("#helpButton"),
     collectionSummary: $("#collectionSummary"),
     diaryList: $("#diaryList"),

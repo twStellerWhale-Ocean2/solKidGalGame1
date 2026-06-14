@@ -258,3 +258,53 @@
   background: #fff1f1;
   border-color: #d48787;
 }
+
+/* issue #73 中文協助：選項列（作答鈕＋英文/中文撥放鈕）與題目中文鈕 */
+.choice-row {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.choice-row .choice-button {
+  flex: 1 1 auto;
+}
+
+.choice-audio {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.choice-audio-button {
+  min-width: 42px;
+  padding: 0 8px;
+  color: var(--rose-dark);
+  background: #fff;
+  border: 2px solid rgba(216, 103, 140, 0.22);
+  border-radius: var(--radius);
+  font-size: 1.02rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.choice-audio-button.zh {
+  color: #fff;
+  background: var(--rose);
+  border-color: var(--rose);
+}
+
+.choice-audio-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.speaker-button-zh {
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.speaker-button-zh[hidden] {
+  display: none;
+}
