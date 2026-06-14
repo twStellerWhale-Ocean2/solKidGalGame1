@@ -15,7 +15,7 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 ## B. 設計目的
 
 * **spec#1-可用短回合低挫折方式練習英文**：方案須讓年幼學習者以「聽情境句、從少量選項選出正確英文、立即對錯回饋」的短回合循環接觸英文，遇困難時可取得提示（含題目與各選項的中文理解協助），降低挫折；並以獎勵高低鼓勵先嘗試英文——未借助中文且越早答對者獎勵越高、曾借助中文者該題無獎勵，維持以英文為主、中文為輔的學習動機。
-* **spec#2-可用角色陪伴與場景探索維持遊玩意願**：方案須以公主角色陪伴、王國地圖與多地區場景探索及地點互動，提高兒童反覆遊玩意願。
+* **spec#2-可用角色陪伴與場景探索維持遊玩意願**：方案須以公主角色陪伴、王國地圖與多地區場景探索及地點互動，提高兒童反覆遊玩意願；並讓不同場景人物與玩家公主各具貼合其角色的聲音表現（含玩家公主以其聲音朗讀所選作答），使陪伴與場景更具辨識度與臨場沉浸，而非一律同一語音。
 * **spec#3-可把學習成果轉為看得見的外觀獎勵**：方案須讓答對所得 coins 能兌換為角色外觀（髮型、衣物、鞋帽、配件、outfit set）等可見變化，使成就可見而非僅顯示分數。
 * **spec#4-可形成練英文獲獎勵換裝的正向閉環**：方案須使英文練習、獎勵取得與換裝回饋構成同一個可重複的正向循環。
 * **spec#5-可保存並還原玩家進度**：方案須讓每個帳號各自的 coins、學習紀錄、擁有與穿搭、所在位置與所選角色及名字可被保存並於再次遊玩時還原。
@@ -108,6 +108,9 @@ OPENAI -->|"🎚️paramHelpModel=`gpt-4o-mini`"| SYS
 * **solStory#12-中文雙語協助與獎勵階梯**：
   * **solCase#12.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家取用中文協助]，於答題時撥放題目或某一選項的中文以理解題意。
   * **solCase#12.2**：[sysGame系統]執行[runAct自訂系統結算協助獎勵]，依本題是否取用過中文與答對前的送出次數，套用全額／半額／無獎勵。
+* **solStory#13-角色差異化配音**：
+  * **solCase#13.1**：[sysGame系統]執行[runAct自訂系統角色配音]，依場景人物各自的角色特性，以貼合該人物的聲音撥放其對白與場景開場。
+  * **solCase#13.2**：[sysGame系統]執行[runAct自訂系統公主朗讀作答]，於玩家選定選項時，以目前玩家公主的聲音朗讀所選的選項文字。
 
 ### (D) 重點組態
 
@@ -179,6 +182,7 @@ STATE -->|"🎚️paramStorageKey=`luminara-princess-english-adv`"| SYS
 STATE -->|"🎚️paramAccountIndexKey=`luminara-princess-english-accounts`"| SYS
 SCENE -->|"🎚️paramHelpModel=`gpt-4o-mini`"| SYS
 CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
+CONTENT -->|"🎚️paramDefaultVoiceProfile=`default`"| SYS
 STATE -->|"🎚️paramPlayMinutes=`10`"| SYS
 STATE -->|"🎚️paramRestMinutes=`10`"| SYS
 ```
@@ -213,6 +217,9 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
 * **sysStory#8-承接中文雙語協助與獎勵階梯**：
   * **sysCase#8.1**：[modScene模組]承接[runAct自訂玩家取用中文協助]，以瀏覽器語音依 `zh-TW` 撥放題目或選項的中文（題庫含中文欄位；缺中文時降級為僅英文撥放）。
   * **sysCase#8.2**：[modScene模組]承接[runAct自訂系統結算協助獎勵]，依中文使用旗標與答對前送出次數，以全額／半額（paramRewardSecondTryRatio）／無 結算 coins。
+* **sysStory#9-承接角色差異化配音**：
+  * **sysCase#9.1**：[modScene模組]承接[runAct自訂系統角色配音]，依說話者宣告的角色特性查 [modContent模組] 的 [datIntf自訂角色音色目錄] 取得音頻參數（pitch／rate／偏好 voice）套用發聲；特性缺漏或不在目錄時降級為 paramDefaultVoiceProfile 之預設嗓音。
+  * **sysCase#9.2**：[modScene模組]承接[runAct自訂系統公主朗讀作答]，於玩家選定選項時以目前玩家公主之音色朗讀所選選項文字，並沿用既有語音開關（關閉時不發聲）。
 
 ### (D) 重點組態
 
@@ -230,10 +237,36 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
   * [etyCfg自訂modContent組態]
     * paramDefaultArea=`castle`
     * paramDefaultCharacter=`lumi`
+    * paramDefaultVoiceProfile=`default`
   * [etyCfg自訂modScene組態]
     * paramHelpModel=`gpt-4o-mini`
     * paramHelpAudioLang=`zh-TW`
     * paramRewardSecondTryRatio=`0.5`
+
+## C. 補充設計(選配)
+
+* [datIntf自訂角色音色目錄]：角色特性維度與其音頻參數對照之單一資料來源，供 [modScene模組] 查表配音；維度（如性別、年齡、性格）相互組合為音色項，每項對應 pitch／rate／偏好 voice，並含 `default` 降級項。角色（NPC 與可玩公主）以其特性宣告對應至一個音色項。
+
+```mermaid
+erDiagram
+  VOICE_CATALOG ||--o{ VOICE_PROFILE : contains
+  CHARACTER ||--|| VOICE_PROFILE : resolves
+  VOICE_PROFILE {
+    string profileId
+    string gender
+    string age
+    string personality
+    number pitch
+    number rate
+    string voiceHint
+  }
+  CHARACTER {
+    string characterId
+    string gender
+    string age
+    string personality
+  }
+```
 
 # III. 測試規格
 
@@ -501,6 +534,33 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
   2. 第二次答對且未用中文：發半額 coins（paramRewardSecondTryRatio）。
   3. 曾用中文或第三次起答對：不發 coins；旗標與次數於換題後重置。
 
+#### intTest#24-驗證 [runAct自訂系統角色配音]
+
+* 既有基底：intTest#01。
+* 新增項目：[sysGame系統]之依角色音色配音行為。
+* 步驟：
+  1. 進入兩個角色特性宣告不同的場景，分別觸發其對白或場景開場語音。
+* 預期結果：
+  1. 各角色之語音以 [datIntf自訂角色音色目錄] 中其特性對應之音頻參數（pitch／rate／voice）建構，兩者參數不相同。
+
+#### intTest#25-驗證 [runAct自訂系統公主朗讀作答]
+
+* 既有基底：intTest#06。
+* 新增項目：[sysGame系統]之公主朗讀所選選項行為。
+* 步驟：
+  1. 於答題畫面選定一個選項。
+* 預期結果：
+  1. 系統以目前玩家公主之音色朗讀所選選項，語音文字為該選項、音頻參數為該公主 profile；語音開關關閉時不發聲。
+
+#### intTest#26-驗證 角色配音缺特性降級
+
+* 既有基底：intTest#24。
+* 新增項目：[sysGame系統]之缺特性降級行為。
+* 步驟：
+  1. 為一個未宣告特性或特性值不在目錄的角色觸發配音。
+* 預期結果：
+  1. 以 paramDefaultVoiceProfile 之預設嗓音發聲，不丟出例外、流程不中斷。
+
 ## E. 方案層級：文件程式化測試
 
 #### docProgTest#01-productReadme 承接 [solStory#1-短回合英文練習]
@@ -587,6 +647,13 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
 * 通過判定：
   1. 讀者可依 productReadme 取用中文協助並理解不同情況下的獎勵差異。
 
+#### docProgTest#13-productReadme 承接 [solStory#13-角色差異化配音]
+
+* productReadme 要求：
+  1. 說明不同場景人物會以各自的聲音說話、玩家公主會以其聲音唸出所選的答案，以及這些語音受既有 Voice 開關控制。
+* 通過判定：
+  1. 讀者可依 productReadme 預期不同角色的聲音差異與公主朗讀作答，並知道如何開關語音。
+
 ## F. 方案層級：文件端對端測試
 
 #### e2eTest#01-依 productReadme 驗測主循環
@@ -660,6 +727,16 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
   2. 第二次才答對所得約為全額之半。
   3. 用過中文者該題無 coins。
 
+#### e2eTest#08-依 productReadme 驗測角色配音與公主朗讀
+
+* 依據：docProgTest#13、[solCase#13.1]、[solCase#13.2]。
+* 步驟：
+  1. 依 productReadme 進入不同場景人物的地點，聽其對白或場景開場。
+  2. 依 productReadme 答題並聽公主朗讀所選選項，再關閉 Voice 後重試。
+* 預期結果：
+  1. 不同角色聲音可辨；公主以其聲音朗讀所選作答。
+  2. 關閉 Voice 後角色配音與公主朗讀皆靜音，答題流程仍可繼續。
+
 # IV. 部署成效
 
 ## A. 部署組態
@@ -678,8 +755,8 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
   * 評估方式：觀察兒童完成單題所需時間、重試次數與中文協助使用情形。
   * 觀察項目：單回合時長、答對率、提示與中文協助使用比例、全額／半額／無獎勵各層級分佈。
 * **spec#2-可用角色陪伴與場景探索維持遊玩意願**
-  * 評估方式：觀察單次遊玩探索的地點數與回訪次數。
-  * 觀察項目：到訪地點數、連續遊玩回合數。
+  * 評估方式：觀察單次遊玩探索的地點數與回訪次數，以及角色配音的覆蓋與降級情形。
+  * 觀察項目：到訪地點數、連續遊玩回合數、已宣告音色特性的角色比例、缺特性降級發生率。
 * **spec#3-可把學習成果轉為看得見的外觀獎勵**
   * 評估方式：觀察 coins 兌換為外觀的比例。
   * 觀察項目：購買件數、換裝次數、coins 留存。
