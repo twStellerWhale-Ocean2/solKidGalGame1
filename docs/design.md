@@ -218,7 +218,7 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
   * **sysCase#8.1**：[modScene模組]承接[runAct自訂玩家取用中文協助]，以瀏覽器語音依 `zh-TW` 撥放題目或選項的中文（題庫含中文欄位；缺中文時降級為僅英文撥放）。
   * **sysCase#8.2**：[modScene模組]承接[runAct自訂系統結算協助獎勵]，依中文使用旗標與答對前送出次數，以全額／半額（paramRewardSecondTryRatio）／無 結算 coins。
 * **sysStory#9-承接角色差異化配音**：
-  * **sysCase#9.1**：[modScene模組]承接[runAct自訂系統角色配音]，依說話者宣告的角色特性查 [modContent模組] 的 [datIntf自訂角色音色目錄] 取得音頻參數（pitch／rate／偏好 voice）套用發聲；特性缺漏或不在目錄時降級為 paramDefaultVoiceProfile 之預設嗓音。
+  * **sysCase#9.1**：[modScene模組]承接[runAct自訂系統角色配音]，依說話者宣告的角色特性查 [modContent模組] 的 [datIntf自訂角色音色目錄] 取得音頻參數（pitch／rate／偏好 voice）套用發聲，且所有經 [modScene模組] 之語音發聲（含角色配音、公主朗讀作答與中文協助）最終語速均另乘全域 paramSpeechRateScale 倍率以利兒童聽辨；特性缺漏或不在目錄時降級為 paramDefaultVoiceProfile 之預設嗓音。
   * **sysCase#9.2**：[modScene模組]承接[runAct自訂系統公主朗讀作答]，於玩家選定選項時以目前玩家公主之音色朗讀所選選項文字，並沿用既有語音開關（關閉時不發聲）。
 
 ### (D) 重點組態
@@ -242,6 +242,7 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
     * paramHelpModel=`gpt-4o-mini`
     * paramHelpAudioLang=`zh-TW`
     * paramRewardSecondTryRatio=`0.5`
+    * paramSpeechRateScale=`0.75`
 
 ## C. 補充設計(選配)
 
@@ -560,6 +561,15 @@ erDiagram
   1. 為一個未宣告特性或特性值不在目錄的角色觸發配音。
 * 預期結果：
   1. 以 paramDefaultVoiceProfile 之預設嗓音發聲，不丟出例外、流程不中斷。
+
+#### intTest#27-驗證全域朗讀語速倍率
+
+* 既有基底：intTest#24。
+* 新增項目：[sysGame系統]之全域朗讀語速倍率套用行為。
+* 步驟：
+  1. 取兩個 rate 不同的角色音色 profile，分別計算其最終發聲語速。
+* 預期結果：
+  1. 各 profile 之最終發聲語速＝其 rate × paramSpeechRateScale；兩者相對快慢順序維持不變。
 
 ## E. 方案層級：文件程式化測試
 

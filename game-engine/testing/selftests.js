@@ -299,6 +299,20 @@ function runCharacterVoiceSelfTest(api) {
     const partial = compose({ gender: "female" });
     if (typeof partial.pitch !== "number") errors.push("部分維度未安全合成");
 
+    // intTest#27：全域朗讀語速倍率——最終發聲語速＝profile.rate × paramSpeechRateScale，且相對快慢順序不變
+    if (typeof api.speechRateScale !== "number" || typeof api.effectiveSpeechRate !== "function") {
+      errors.push("speechRateScale／effectiveSpeechRate hook 缺失");
+    } else {
+      const fast = compose({ gender: "female", age: "child", personality: "cheerful" });   // 較快童聲
+      const slow = compose({ gender: "male", age: "elderly", personality: "melancholy" });  // 較慢長者
+      const fastEff = api.effectiveSpeechRate(fast.rate);
+      const slowEff = api.effectiveSpeechRate(slow.rate);
+      const expectFast = Math.round(fast.rate * api.speechRateScale * 100) / 100;
+      if (Math.abs(fastEff - expectFast) > 0.001) errors.push(`全域語速倍率未套用(${fastEff}≠${fast.rate}×${api.speechRateScale})`);
+      if (!(fastEff < fast.rate)) errors.push("套用倍率後語速未變慢");
+      if ((fast.rate > slow.rate) !== (fastEff > slowEff)) errors.push("套用倍率後相對快慢順序改變");
+    }
+
     // 跨地區覆蓋（castle/urban/rural/wild）：所有 area NPC 應解析音色；
     // 僅刻意未宣告者（如告示牌 *Sign）可降級 default。
     const npcHotspots = Object.values(api.areaRegistry)
@@ -318,7 +332,7 @@ function runCharacterVoiceSelfTest(api) {
       const origSpeak = synth.speak.bind(synth);
       const origCancel = synth.cancel.bind(synth);
       synth.cancel = () => {};
-      synth.speak = (u) => spoken.push({ text: u.text, pitch: u.pitch });
+      synth.speak = (u) => spoken.push({ text: u.text, pitch: u.pitch, rate: u.rate });
       try {
         api.state.speechEnabled = true;
         api.openQuestAdv(api.hotspotById("kingHall"));
@@ -334,6 +348,13 @@ function runCharacterVoiceSelfTest(api) {
           const princessSpoke = spoken.slice(before).find((s) => s.text === lesson.answer);
           if (!princessSpoke) errors.push("公主未朗讀所選正解");
           else if (!(princessSpoke.pitch > 1)) errors.push(`公主朗讀音高(${princessSpoke.pitch})未高於基準`);
+          // intTest#27（端對端）：實際 utterance.rate 已套用全域朗讀語速倍率
+          if (princessSpoke && typeof api.effectiveSpeechRate === "function") {
+            const expectedRate = api.effectiveSpeechRate(api.playerVoiceProfile().rate);
+            if (typeof princessSpoke.rate !== "number" || Math.abs(princessSpoke.rate - expectedRate) > 0.011) {
+              errors.push(`公主朗讀實際語速(${princessSpoke.rate})未套用全域倍率(期望 ${expectedRate})`);
+            }
+          }
         }
         api.closeAdv();
       } finally {
