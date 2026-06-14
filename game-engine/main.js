@@ -1741,7 +1741,7 @@ function addChoiceRow(choice, zh, number) {
   audio.className = "choice-audio";
   audio.appendChild(makeAudioButton("🔊", `Read "${choice}" in English`, () => playHelpAudio(choice, "en-US")));
   if (zh) {
-    const zhBtn = makeAudioButton("中", "用中文唸這個選項", () => playHelpAudio(zh, HELP_AUDIO_LANG_ZH));
+    const zhBtn = makeAudioButton("中", `用中文唸「${choice}」`, () => playHelpAudio(zh, HELP_AUDIO_LANG_ZH));
     zhBtn.classList.add("zh");
     audio.appendChild(zhBtn);
   }
@@ -2363,7 +2363,11 @@ function answerLesson(button, choice) {
   });
   elements.advLine.textContent = quest.ending;
   elements.advPrompt.textContent = `Help complete. Try a reward now, or go back to ${princessName()}'s room.`;
-  elements.advFeedback.textContent = `${effectText(reward)}.`;
+  elements.advFeedback.textContent = coins > 0
+    ? (rewardTier === "half" ? `${effectText(reward)}. Half coins for the second try.` : `${effectText(reward)}.`)
+    : advHelpChineseUsed
+      ? "Nice learning with Chinese help! No coins this time."
+      : "No coins this time — try to answer sooner next time.";
   state.activeQuest = null;
   activeLesson = null;
   advMode = "complete";

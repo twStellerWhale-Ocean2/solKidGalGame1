@@ -190,8 +190,8 @@ function runHelpRewardSelfTest(api) {
       if (!button) throw new Error(`choice button not found: ${choice}`);
       api.answerLesson(button, choice);
     };
-    const openOne = () => {
-      api.openQuestAdv(api.hotspotById(place));
+    const openOne = (p = place) => {
+      api.openQuestAdv(api.hotspotById(p));
       const lesson = api.getActiveLesson();
       if (!lesson) throw new Error("no active lesson after openQuestAdv");
       return lesson;
@@ -235,6 +235,15 @@ function runHelpRewardSelfTest(api) {
     answer(lesson.answer);
     const gainedThird = api.state.coins - before;
     if (gainedThird !== 0) errors.push(`third-try gained ${gainedThird}, expected 0`);
+
+    // E) 跨地區中文覆蓋：每區一處應渲染題目中文鈕與 4 個選項中文鈕
+    for (const [area, p] of [["castle", "kingHall"], ["urban", "garden"], ["rural", "mine"], ["wild", "elfGlade"]]) {
+      openOne(p);
+      const zhCount = api.elements.choiceList.querySelectorAll(".choice-audio-button.zh").length;
+      const promptZhHidden = document.getElementById("speakPromptButtonZh").hidden;
+      if (zhCount !== 4) errors.push(`${area}/${p}: zh choice buttons ${zhCount}, expected 4`);
+      if (promptZhHidden) errors.push(`${area}/${p}: prompt zh button hidden (missing openingZh)`);
+    }
 
     api.closeAdv();
   } catch (error) {
