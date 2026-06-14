@@ -99,10 +99,7 @@
   line-height: 1.22;
 }
 
-.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) {
-  height: min(860px, 92dvh);
-}
-
+/* issue#111: 移除購物/衣櫥/退款的外框高度覆寫，改由 .adv-scene 單一來源 --adv-scene-height 決定 */
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .adv-box {
   padding-bottom: 10px;
 }

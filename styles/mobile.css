@@ -485,7 +485,7 @@ body {
 
 .adv-scene {
   width: min(980px, 70vw);
-  height: min(620px, 70dvh);
+  height: var(--adv-scene-height);
   border: 1px solid rgba(255, 255, 255, 0.62);
   border-radius: var(--radius);
 }
@@ -700,7 +700,7 @@ body {
 
 .adv-scene {
   width: min(1800px, 100vw);
-  height: min(960px, 100vh);
+  height: var(--adv-scene-height);
 }
 
 @media (max-height: 760px) {
@@ -1181,7 +1181,7 @@ body {
   left: 56%;
   top: 49%;
   width: min(980px, 70vw);
-  height: min(620px, 70dvh);
+  height: var(--adv-scene-height);
   max-width: calc(100vw - 32px);
   max-height: calc(100dvh - 32px);
   border-radius: var(--radius);
@@ -1209,7 +1209,7 @@ body {
     left: 50%;
     top: 52%;
     width: calc(100vw - 20px);
-    height: min(78dvh, 680px);
+    height: var(--adv-scene-height);
   }
 
   .adv-backdrop {
@@ -1671,7 +1671,7 @@ body {
 
 .adv-scene {
   width: min(1080px, calc(100vw - 32px));
-  height: min(680px, calc(100dvh - 32px));
+  height: var(--adv-scene-height);
   grid-template-rows: minmax(230px, 1fr) auto;
 }
 
@@ -1718,9 +1718,7 @@ body {
   line-height: 1.16;
 }
 
-.adv-scene[data-mode="shop"] {
-  height: min(720px, calc(100dvh - 32px));
-}
+/* issue#111: 購物外框高度覆寫已移除，改由 --adv-scene-height 單一來源決定 */
 
 .adv-scene[data-mode="shop"] .adv-box {
   max-height: min(360px, 50dvh);
@@ -1787,7 +1785,7 @@ body {
   .adv-scene {
     top: 50%;
     width: calc(100vw - 20px);
-    height: calc(100dvh - 28px);
+    height: var(--adv-scene-height);
     grid-template-rows: minmax(270px, 1fr) auto;
   }
 
@@ -3163,7 +3161,7 @@ body {
     left: 50%;
     top: 50%;
     width: min(330px, calc(100vw - 20px));
-    height: min(760px, calc(100dvh - 16px));
+    height: var(--adv-scene-height);
   }
 
   .adv-scene:is(
@@ -3308,7 +3306,7 @@ body {
 
 @media (min-width: 821px) {
   .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) {
-    height: min(860px, calc(100dvh - 32px));
+    height: var(--adv-scene-height);
     grid-template-rows: minmax(260px, 0.82fr) minmax(360px, 1fr);
   }
 
