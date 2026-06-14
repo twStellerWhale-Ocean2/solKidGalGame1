@@ -86,7 +86,41 @@ export const npcVoiceByName = Object.freeze({
   "Maid Lala": Object.freeze({ gender: "female", age: "youth", personality: "cheerful" }),
   "Cloak Keeper": Object.freeze({ gender: "male", age: "elderly", personality: "graceful" }),
   "Seamstress Bea": Object.freeze({ gender: "female", age: "middle", personality: "graceful" }),
-  "Gate Guard": Object.freeze({ gender: "male", age: "middle", personality: "bold" })
+  "Gate Guard": Object.freeze({ gender: "male", age: "middle", personality: "bold" }),
+  // urban
+  "Mira": Object.freeze({ gender: "female", age: "youth", personality: "graceful" }),
+  "Teacher Bell": Object.freeze({ gender: "female", age: "middle", personality: "graceful" }),
+  "Librarian Nola": Object.freeze({ gender: "female", age: "middle", personality: "graceful" }),
+  "Sister Luma": Object.freeze({ gender: "female", age: "youth", personality: "cheerful" }),
+  "Clerk Otto": Object.freeze({ gender: "male", age: "middle", personality: "bold" }),
+  "Nami": Object.freeze({ gender: "female", age: "youth", personality: "cheerful" }),
+  "Dock Guide": Object.freeze({ gender: "male", age: "middle", personality: "bold" }),
+  "Rena": Object.freeze({ gender: "female", age: "youth", personality: "cheerful" }),
+  "Stylist Lina": Object.freeze({ gender: "female", age: "youth", personality: "cheerful" }),
+  "Tailor Tess": Object.freeze({ gender: "female", age: "middle", personality: "graceful" }),
+  "Mina": Object.freeze({ gender: "female", age: "youth", personality: "cheerful" }),
+  "Lili": Object.freeze({ gender: "female", age: "child", personality: "cheerful" }),
+  "Captain Sol": Object.freeze({ gender: "male", age: "middle", personality: "bold" }),
+  // rural（Auntie Pom 亦出現於 urban，共用本宣告）
+  "Miner Gemma": Object.freeze({ gender: "female", age: "middle", personality: "bold" }),
+  "Logger Rowan": Object.freeze({ gender: "male", age: "middle", personality: "bold" }),
+  "Fisher Nami": Object.freeze({ gender: "female", age: "middle", personality: "cheerful" }),
+  "Farmer Theo": Object.freeze({ gender: "male", age: "middle", personality: "bold" }),
+  "Auntie Pom": Object.freeze({ gender: "female", age: "elderly", personality: "cheerful" }),
+  "Miller Bell": Object.freeze({ gender: "female", age: "middle", personality: "cheerful" }),
+  "Workwear Keeper": Object.freeze({ gender: "male", age: "middle", personality: "graceful" }),
+  "Field Cobbler": Object.freeze({ gender: "male", age: "elderly", personality: "graceful" }),
+  "Grandma Fina": Object.freeze({ gender: "female", age: "elderly", personality: "graceful" }),
+  // wild（"Rural Sign"／"Wild Sign" 為告示牌，刻意不宣告 → 降級 default 嗓音，亦為降級路徑實況）
+  "Elia": Object.freeze({ gender: "female", age: "youth", personality: "graceful" }),
+  "Faye": Object.freeze({ gender: "female", age: "youth", personality: "cheerful" }),
+  "Pip": Object.freeze({ gender: "male", age: "child", personality: "cheerful" }),
+  "Goro": Object.freeze({ gender: "male", age: "middle", personality: "bold" }),
+  "Penny": Object.freeze({ gender: "female", age: "youth", personality: "cheerful" }),
+  "Wiz Beryl": Object.freeze({ gender: "male", age: "elderly", personality: "melancholy" }),
+  "Ruby": Object.freeze({ gender: "female", age: "youth", personality: "cheerful" }),
+  "Pippo": Object.freeze({ gender: "male", age: "child", personality: "cheerful" }),
+  "Sylvie": Object.freeze({ gender: "female", age: "youth", personality: "graceful" })
 });
 
 export function voiceProfileForNpcName(name) {

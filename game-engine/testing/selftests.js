@@ -266,6 +266,7 @@ function runCharacterVoiceSelfTest(api) {
   const params = new URLSearchParams(location.search);
   if (params.get("selftest") !== "voice") return;
   const errors = [];
+  let coverage = null;
   try {
     const compose = api.composeVoiceProfile;
     const resolve = api.resolveVoiceProfile;
@@ -297,6 +298,18 @@ function runCharacterVoiceSelfTest(api) {
     if (unknown.pitch !== 1 || unknown.rate !== 0.86) errors.push("未知維度未落回基準參數");
     const partial = compose({ gender: "female" });
     if (typeof partial.pitch !== "number") errors.push("部分維度未安全合成");
+
+    // 跨地區覆蓋（castle/urban/rural/wild）：所有 area NPC 應解析音色；
+    // 僅刻意未宣告者（如告示牌 *Sign）可降級 default。
+    const npcHotspots = Object.values(api.areaRegistry)
+      .flatMap((area) => area.locations || [])
+      .filter((h) => h.npc && h.npc !== "Lumi");
+    const declared = npcHotspots.filter((h) => api.npcVoiceFor(h).profileId !== "default");
+    const fellBack = npcHotspots.filter((h) => api.npcVoiceFor(h).profileId === "default").map((h) => h.npc);
+    coverage = { total: npcHotspots.length, declared: declared.length, fellBack: [...new Set(fellBack)] };
+    if (declared.length < npcHotspots.length - 2) {
+      errors.push(`NPC 音色覆蓋不足：${declared.length}/${npcHotspots.length} 已宣告，降級者 ${coverage.fellBack.join("／")}`);
+    }
   } catch (error) {
     errors.push(error.message);
   }
@@ -305,6 +318,7 @@ function runCharacterVoiceSelfTest(api) {
   result.textContent = JSON.stringify({
     test: "character-voice",
     passed: errors.length === 0,
+    coverage,
     errors: errors.slice(0, 10)
   });
   document.body.prepend(result);
