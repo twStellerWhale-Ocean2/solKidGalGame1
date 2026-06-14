@@ -5,10 +5,6 @@ export const defaultState = {
   // energy 即「每次遊玩時間預算」的顯示值（0–100%，issue #6 / spec#9）；由 play-clock 依真實時間重算，
   // 不再由答題等 effects 變動。實際倒數時間以 playLimit.sessionEndsAt／restEndsAt 時戳為準。
   energy: 100,
-  vocab: 0,
-  expression: 0,
-  kindness: 0,
-  mood: 72,
   difficulty: 100,
   speechEnabled: true,
   // 遊玩時間限制與護眼休息（issue #6 / spec#9）。各帳號各自計算（存於各帳號進度）。

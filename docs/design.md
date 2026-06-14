@@ -176,7 +176,7 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
 ### (C) 運作個案
 
 * **sysStory#1-承接英文練習**：
-  * **sysCase#1.1**：[modScene模組]承接[runAct自訂玩家答英文題]，載入題庫、比對選項並回饋獎勵。
+  * **sysCase#1.1**：[modScene模組]承接[runAct自訂玩家答英文題]，載入題庫、比對選項並以 coins 回饋獎勵（答題獎勵單一為 coins，不另計其他屬性）。
 * **sysStory#2-承接地圖導航**：
   * **sysCase#2.1**：[modMap模組]承接[runAct自訂玩家地圖導航]，處理世界與地區地圖移動及進入地點。
 * **sysStory#3-承接換裝與商店**：
