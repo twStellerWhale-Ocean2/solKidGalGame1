@@ -26,7 +26,7 @@ export const urbanVocabularyProfile = Object.freeze({
 
 //#region 題庫資料
 // reward 是每題完成後給玩家的固定獎勵。
-const reward = { coins: 100, vocab: 1, expression: 1 };
+const reward = { coins: 100 };
 
 // q() 是題目簡寫輔助函式，避免每題重複寫完整物件。
 const q = (prompt, answer, choices, words, questionType = "sentence-choice") => ({ prompt, answer, choices, words, questionType, reward });

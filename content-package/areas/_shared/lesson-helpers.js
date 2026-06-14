@@ -16,7 +16,7 @@ export function makeLessons(areaId, vocabularyProfile, placeDefinitions, zh = {}
     choices: question.choices,
     choicesZh: Array.isArray(question.choicesZh) ? question.choicesZh : question.choices.map(zhOf),
     words: question.words,
-    reward: question.reward || place.reward || { vocab: 1, expression: 1 }
+    reward: question.reward || place.reward || { coins: 0 }
   }))));
 }
 

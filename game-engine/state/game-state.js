@@ -131,6 +131,11 @@ export function normalizeState(candidate = {}) {
   delete merged.currentQuest;
   delete merged.week;
   delete merged.dayIndex;
+  // issue #100：清除舊存檔殘留的非金錢屬性欄位（reward 已收斂為僅 coins）。
+  delete merged.vocab;
+  delete merged.expression;
+  delete merged.kindness;
+  delete merged.mood;
   return merged;
 }
 
@@ -264,19 +269,12 @@ export function createQuestFromTemplate(template) {
 export function applyEffects(state, effects = {}) {
   state.coins = Math.max(0, state.coins + (effects.coins || 0));
   // energy 自 issue #6 起為「遊玩時間預算」顯示值，由 play-clock 依真實時間重算，不再由答題等 effects 變動。
-  state.vocab += effects.vocab || 0;
-  state.expression += effects.expression || 0;
-  state.kindness += effects.kindness || 0;
-  state.mood = clamp(state.mood + (effects.mood || 0), 0, 100);
+  // issue #100：答題獎勵收斂為僅 coins，移除 vocab/expression/kindness/mood 等非金錢屬性加成。
 }
 
 export function effectText(effects = {}) {
   const parts = [];
   if (effects.coins) parts.push(`${effects.coins > 0 ? "+" : ""}${effects.coins} coins`);
-  if (effects.vocab) parts.push(`+${effects.vocab} words`);
-  if (effects.expression) parts.push(`+${effects.expression} talk`);
-  if (effects.kindness) parts.push(`+${effects.kindness} kind`);
-  if (effects.mood) parts.push(`${effects.mood > 0 ? "+" : ""}${effects.mood} mood`);
   return parts.join(", ") || "No change";
 }
 
@@ -302,13 +300,6 @@ export function updateProgressBadges(state) {
   if (state.owned.length >= 4) awardBadge(state, "Doll Stylist");
 }
 
-export function moodLabel(mood) {
-  if (mood >= 82) return "Happy";
-  if (mood >= 56) return "OK";
-  if (mood >= 30) return "Tired";
-  return "Sad";
-}
-
 export function outfitSummary(state) {
   const labels = [];
   ["hairstyle", "top", "bottom", "dress", "outer", "shoes", "headTop", "headSide", "faceEyes", "faceMask", "neck", "hand"].forEach((type) => {
@@ -329,10 +320,6 @@ export function buildSaveMarkdown(state) {
 
 - Saved at: ${new Date().toLocaleString("en-US")}
 - Coins: ${state.coins}
-- Vocabulary: ${state.vocab}
-- Expression: ${state.expression}
-- Kindness: ${state.kindness}
-- Mood: ${moodLabel(state.mood)}
 - Name: ${state.playerName}
 - Character: ${playableCharacterById(state.activeCharacterId)?.label || state.activeCharacterId}
 - Quests completed: ${questRows.length}

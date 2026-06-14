@@ -97,8 +97,6 @@
  * @property {{ x: number, y: number }} player
  * @property {number} coins
  * @property {number} energy
- * @property {number} vocab
- * @property {number} kindness
  * @property {number} difficulty
  * @property {OutfitState} outfit
  * @property {string[]} owned

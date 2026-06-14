@@ -65,7 +65,6 @@ import {
   freshState,
   loadAccountState,
   loadLocalState,
-  moodLabel as stateMoodLabel,
   normalizeState,
   outfitSummary as stateOutfitSummary,
   persistState,
@@ -675,10 +674,6 @@ function handleDeleteAccount(accountId, label) {
   deleteAccount(accountId);
   if (wasActive) state = freshState(); // 刪到使用中帳號：清掉當前狀態，交回帳號選擇。
   buildAccountList();
-}
-
-function moodLabel(mood) {
-  return stateMoodLabel(mood);
 }
 
 function outfitSummary() {
@@ -2247,38 +2242,6 @@ function fallbackOwnedItemForSlot(type) {
   return ownedItems.find((item) => item.cost === 0)?.id || ownedItems[0]?.id || "none";
 }
 
-function recommendedShopHotspot() {
-  const shopHotspots = Object.values(areaRegistry).flatMap((area) => area.locations || []).filter((hotspot) => hotspot.kind === "shop");
-  const affordableShop = shopHotspots.find((hotspot) => {
-    const allowed = allowedShopCategories(hotspot);
-    return shopItems.some((item) => (
-      item.storeId === hotspot.id &&
-      allowed.some((allowedCategory) => itemMatchesCategory(item, allowedCategory)) &&
-      !state.owned.includes(item.id) &&
-      state.coins >= item.cost
-    ));
-  });
-  return affordableShop || shopHotspots[0] || null;
-}
-
-function openRewardShop() {
-  const hotspot = recommendedShopHotspot();
-  if (!hotspot) {
-    closeAdv();
-    return;
-  }
-  const areaId = areaForHotspot(hotspot);
-  const node = nodeMapForArea(areaId)[hotspot.node];
-  if (node) {
-    state.area = areaId;
-    state.playerNode = node.id;
-    state.player = { x: node.x, y: node.y };
-  }
-  persist();
-  renderMap();
-  openShopDetail(hotspot);
-}
-
 function closeAdvThenHome() {
   closeAdv();
   changeView("home");
@@ -2331,13 +2294,7 @@ function answerLesson(button, choice) {
     : rewardTier === "half"
       ? Math.round(baseCoins * REWARD_SECOND_TRY_RATIO)
       : 0;
-  const reward = {
-    coins,
-    vocab: activeLesson.reward.vocab || 0,
-    expression: activeLesson.reward.expression || 0,
-    kindness: activeLesson.reward.kindness || 0,
-    mood: 2
-  };
+  const reward = { coins };
   applyEffects(reward);
   playTone("correct");
   addUnique("completedLessons", [activeLesson.id]);
@@ -2373,15 +2330,12 @@ function answerLesson(button, choice) {
   elements.advScene.dataset.mode = "complete";
   elements.choiceList.innerHTML = "";
   elements.advActionFooter.innerHTML = "";
+  // issue #100：答對一律直接發 coins（已於上方結算）；商店場景額外提供購物入口，移除「選擇獎勵」導購分支。
   if (completedHotspot?.kind === "shop") {
     addAdvOption("🎁 Shop", () => openShopDetail(completedHotspot));
-    addAdvOption("🏰 Back to Room", closeAdvThenHome, { navigation: true });
-    addAdvOption("↩ Leave", closeAdv, { leave: true });
-  } else {
-    addAdvOption("🎁 Choose Reward", openRewardShop);
-    addAdvOption("🏰 Back to Room", closeAdvThenHome, { navigation: true });
-    addAdvOption("↩ Leave", closeAdv, { leave: true });
   }
+  addAdvOption("🏰 Back to Room", closeAdvThenHome, { navigation: true });
+  addAdvOption("↩ Leave", closeAdv, { leave: true });
   elements.statusMessage.textContent = `Practice complete at ${completedHotspot.label}.`;
   persist();
   render();
@@ -2964,9 +2918,6 @@ Object.defineProperty(window, "__luminaraTest", {
         playerName: state.playerName,
         coins: state.coins,
         energy: state.energy,
-        vocab: state.vocab,
-        expression: state.expression,
-        kindness: state.kindness,
         difficulty: state.difficulty,
         outfit: { ...state.outfit },
         owned: [...state.owned],
@@ -2980,9 +2931,6 @@ Object.defineProperty(window, "__luminaraTest", {
         playerName: state.playerName,
         coins: state.coins,
         energy: state.energy,
-        vocab: state.vocab,
-        expression: state.expression,
-        kindness: state.kindness,
         difficulty: state.difficulty,
         outfit: { ...state.outfit },
         owned: [...state.owned],
