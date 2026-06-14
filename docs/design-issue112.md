@@ -1,7 +1,7 @@
 # 設計note — issue #112 NPC 表情徽章改用 emoji 心情符號（2plan→3code）
 
 * **議題**：[#112](https://github.com/twStellerWhale-Ocean2/solKidGalGame/issues/112) 對話場景 NPC 立繪右上角表情徽章，由文字符號（`!`／`OK`／`?`）改為 emoji 心情符號。
-* **分支／PR**：`feat/issue112-emoji-mood-badge` ／ PR #（建立後回填）。
+* **分支／PR**：`feat/issue112-emoji-mood-badge` ／ PR #113。
 * **型態**：UI／視覺。Option A（同 #101／#103 精神）：不動 `docs/design.md`（docLint 0）；`README.md` 未描述此徽章、不需校準。
 
 ---
@@ -45,8 +45,9 @@
 * 既有測試：[game-engine/testing/selftests.js] 僅以 `rectFor(".adv-npc")` 取幾何，未斷言徽章 `content` → 換字不回歸。
 * 風險：emoji 跨平台字形差異（Windows／Android／iOS）、泡泡底色與場景背景對比 → 由 3code visual-qa 逐畫面驗。
 
-## 4. 待 3code（GATE）
+## 4. 實作與驗證（3code，GATE）
 
-* 實作 [styles/adv.css] 三態 `content` ＋ D2 樣式。
-* 機器判定：`tsc --noEmit` exit 0；`docLint -Level sol` 0（design.md 未動）；`repoLint` 0；相關 `?selftest` `passed:true`、console 0 error。
-* visual-qa（手機 375×812）逐態截圖確認 🙂／😄／😮 清晰、不溢出圓、與場景對比足夠；回填本 note 與 `docs/test-summary.html`。
+* **實作**：[styles/adv.css] `.adv-npc::after` 三態 `content` 改 🙂／😄／😮；底色玫瑰／綠 → 中性白泡泡 `rgba(255, 255, 255, 0.92)`、`font-size:1.25rem`（20px）、`line-height:1`、加 `box-shadow` 提升與場景對比；移除對 emoji 無效的 `color:#fff`／`font-weight:900` 與 happy 綠底。**僅改字符與徽章內樣式，未動徽章與立繪的 `position`／尺寸**，故 RWD 定位與可見性與改動前一致。**未動** DOM、`data-expression` 介面、[game-engine/main.js] 邏輯與觸發時機。
+* **GATE §1 機器判定**：`tsc --noEmit -p jsconfig.json` exit 0；`docLint -Level sol` 0（design.md 未動）；`repoLint -Path .` 0；`?selftest=voice` `passed:true`／`errors:[]`（答題流程＝驅動三態 `setExpressions` 的路徑，無回歸）；console 0 error；`npm audit` 不適用（純靜態無相依）。
+* **GATE §5 視覺（聚焦變更元件）**：Playwright(chromium) 逐態截圖確認 🙂／😄／😮 於白泡泡內正確著色、置中、不溢出、與場景對比足夠；computed-style 三態 `content`＝🙂／😄／😮、`font-size:20px`、`background:rgba(255, 255, 255, 0.92)`、`34×34`。其餘畫面無版面／色彩異動，沿用 #103／#105 基線 `docs/test-summary.html`、不重跑逐頁。
+* **結論：可宣稱完成**（emoji 三態落地、機器判定全綠、無回歸、視覺確認著色正確）。
