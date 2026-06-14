@@ -1745,7 +1745,7 @@ function addChoiceRow(choice, zh, number) {
   row.appendChild(answer);
   const audio = document.createElement("div");
   audio.className = "choice-audio";
-  audio.appendChild(makeAudioButton("🔊", `Read "${choice}" in English`, () => playHelpAudio(choice, "en-US")));
+  audio.appendChild(makeAudioButton("En", `Read "${choice}" in English`, () => playHelpAudio(choice, "en-US")));
   if (zh) {
     const zhBtn = makeAudioButton("中", `用中文唸「${choice}」`, () => playHelpAudio(zh, HELP_AUDIO_LANG_ZH));
     zhBtn.classList.add("zh");
