@@ -23,7 +23,9 @@
   left: 56%;
   top: 49%;
   width: min(980px, 70vw);
-  height: min(620px, 70dvh);
+  /* issue#111: 對話框外框高度單一事實來源（全模式/全斷點共用；方案甲＝向 shop 近全高對齊） */
+  --adv-scene-height: min(860px, calc(100dvh - 32px));
+  height: var(--adv-scene-height);
   --adv-character-stage-height: min(590px, 66vh);
   --adv-character-stage-aspect: 0.6666667;
   --lumi-stage-scale: 1.2;
@@ -104,25 +106,24 @@
   height: 34px;
   display: grid;
   place-items: center;
-  color: #fff;
-  background: rgba(169, 63, 103, 0.9);
+  background: rgba(255, 255, 255, 0.92);
   border: 2px solid #fff;
   border-radius: 50%;
-  font-weight: 900;
+  font-size: 1.25rem;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(82, 61, 37, 0.28);
 }
 
 .adv-npc[data-expression="normal"]::after {
-  content: "!";
+  content: "🙂";
 }
 
 .adv-npc[data-expression="happy"]::after {
-  content: "OK";
-  font-size: 0.72rem;
-  background: rgba(45, 114, 89, 0.9);
+  content: "😄";
 }
 
 .adv-npc[data-expression="surprised"]::after {
-  content: "?";
+  content: "😮";
 }
 
 .adv-box {
