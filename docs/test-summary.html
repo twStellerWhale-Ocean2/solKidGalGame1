@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>solKidGalGame — issue #73 中文協助 測試結果摘要</title>
+<title>solKidGalGame — issue #93 角色差異化配音 測試結果摘要</title>
 <style>
   :root { --ink:#503846; --rose:#a93f67; --mint:#2d7259; --line:#e7d6dc; --bg:#fbf5f7; }
   * { box-sizing: border-box; }
@@ -23,8 +23,8 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>issue #73 — 提供中文協助功能</h1>
-  <p class="sub">3dev 測試結果摘要 · 分支 <code>feat/issue73-chinese-help</code> · 2026-06-14 · 結論：<span class="pill">可宣稱完成（本議題範圍）</span></p>
+  <h1>issue #93 — 針對不同場景角色提供不同聲音語調</h1>
+  <p class="sub">3dev 測試結果摘要 · 分支 <code>feat/issue93-character-voice</code> · 2026-06-14 · 結論：<span class="pill">可宣稱完成（本議題範圍）</span></p>
 
   <h2>1. 機器判定（GATE §1）</h2>
   <table>
@@ -32,47 +32,55 @@
     <tr><td>型別契約</td><td><code>tsc --noEmit --project jsconfig.json</code></td><td class="pass">0 錯 (exit 0)</td></tr>
     <tr><td>結構合規</td><td><code>repoLint.ps1 -Path .</code></td><td class="pass">PASS（0 違規）</td></tr>
     <tr><td>設計格式</td><td><code>docLint.ps1 -Path docs/design.md</code></td><td class="pass">PASS（0 違規）</td></tr>
-    <tr><td>整合測試</td><td><code>?selftest=help-reward</code></td><td class="pass">passed（errors: []）</td></tr>
+    <tr><td>整合測試</td><td><code>?selftest=voice</code></td><td class="pass">passed（errors: []）</td></tr>
+    <tr><td>回歸測試</td><td><code>?selftest=help-reward</code>（#73 未受影響）</td><td class="pass">passed（errors: []）</td></tr>
     <tr><td>執行期錯誤</td><td>瀏覽器 console（warn/error）</td><td class="pass">0 error</td></tr>
     <tr><td>依賴安全</td><td>純前端、無新增 npm 依賴（瀏覽器內建 SpeechSynthesis）</td><td class="pass">不適用</td></tr>
   </table>
 
-  <h2>2. 獎勵階梯（sysCase#8.2，按送出次數計）</h2>
+  <h2>2. 維度合成式音色目錄（datIntf自訂角色音色目錄）</h2>
+  <p class="sub">pitch／rate 由「性別 × 年齡 × 性格」各維度增量疊加運算（非枚舉笛卡兒積），新增維度值僅加一筆貢獻；基準 <code>default</code> = pitch 1.00 / rate 0.86。</p>
   <table>
-    <tr><th>情境</th><th>條件</th><th>預期</th><th>實測（castle base=20）</th><th>狀態</th></tr>
-    <tr><td>全額</td><td>未用中文、第 1 次答對</td><td>full = base</td><td>+20</td><td class="pass">通過</td></tr>
-    <tr><td>半額</td><td>未用中文、第 2 次答對</td><td>round(base×0.5)</td><td>+10</td><td class="pass">通過</td></tr>
-    <tr><td>無（用中文）</td><td>本題曾按任一中文鈕</td><td>0</td><td>+0</td><td class="pass">通過</td></tr>
-    <tr><td>無（第 3 次）</td><td>第 3 次起才答對</td><td>0</td><td>+0</td><td class="pass">通過</td></tr>
+    <tr><th>角色（範例）</th><th>宣告維度</th><th>解析 pitch</th><th>解析 rate</th></tr>
+    <tr><td>玩家公主 Lumi</td><td>female × child × cheerful</td><td>1.59</td><td>1.00</td></tr>
+    <tr><td>Maid Lala</td><td>female × youth × cheerful</td><td>1.39</td><td>0.97</td></tr>
+    <tr><td>Queen Mira</td><td>female × middle × graceful</td><td>1.20</td><td>0.80</td></tr>
+    <tr><td>King Rowan</td><td>male × middle × bold</td><td>0.72</td><td>0.90</td></tr>
+    <tr><td>Wiz Beryl</td><td>male × elderly × melancholy</td><td>0.62</td><td>0.62</td></tr>
+    <tr><td>告示牌（未宣告）</td><td>—（降級）</td><td>1.00</td><td>0.86</td></tr>
   </table>
-  <p class="sub">旗標與次數於換題（openQuestAdv）時重置。撥放英文不計協助；只有中文鈕計入。</p>
 
-  <h2>3. 雙語內容覆蓋（sysCase#8.1）</h2>
+  <h2>3. 角色配音與公主朗讀作答（執行期 spy 證據）</h2>
   <table>
-    <tr><th>地區</th><th>題庫來源</th><th>抽測地點</th><th>題目中文鈕</th><th>選項中文鈕</th></tr>
-    <tr><td>castle</td><td>字面題庫 + castleZh</td><td>5 房間全測</td><td class="pass">顯示</td><td class="pass">4 / 4</td></tr>
-    <tr><td>urban</td><td>starterQuestions + urbanZh</td><td>garden/market/library</td><td class="pass">顯示</td><td class="pass">4 / 4</td></tr>
-    <tr><td>rural</td><td>moversQuestions + ruralZh</td><td>mine/pasture</td><td class="pass">顯示</td><td class="pass">4 / 4</td></tr>
-    <tr><td>wild</td><td>flyersQuestions + wildZh</td><td>elfGlade/wizardHut</td><td class="pass">顯示</td><td class="pass">4 / 4</td></tr>
+    <tr><th>行為</th><th>對應</th><th>實測 utterance</th><th>狀態</th></tr>
+    <tr><td>NPC 開場配音</td><td>solCase#13.1 / sysCase#9.1</td><td>King「The king smiles…」pitch <code>0.72</code></td><td class="pass">通過</td></tr>
+    <tr><td>公主朗讀所選作答</td><td>solCase#13.2 / sysCase#9.2</td><td>公主讀所選選項 pitch <code>1.59</code></td><td class="pass">通過</td></tr>
+    <tr><td>音色明顯有別</td><td>intTest#24</td><td>King 0.72 vs 公主 1.59（女童 &gt; 成年男）</td><td class="pass">通過</td></tr>
+    <tr><td>受 Voice 開關控制</td><td>sysCase#9.2</td><td>關閉時 <code>speak()</code> no-op</td><td class="pass">通過</td></tr>
   </table>
-  <p class="sub">selftest 內建跨地區覆蓋檢查（4 區各驗 4 中文選項鈕＋題目中文鈕）；缺中文則自動降級為僅英文撥放。</p>
 
-  <h2>4. 行動裝置版面（mobile 375×812 實測）</h2>
+  <h2>4. 跨地區覆蓋與降級（intTest#26）</h2>
   <table>
-    <tr><th>量測</th><th>值</th><th>判定</th></tr>
-    <tr><td>選項列寬 / 清單寬</td><td>279px / 283px</td><td class="pass">未溢出</td></tr>
-    <tr><td>列右緣 / 清單右緣</td><td>325px / 329px</td><td class="pass">在界內</td></tr>
-    <tr><td>row.scrollWidth &gt; clientWidth</td><td>false</td><td class="pass">無水平捲動</td></tr>
-    <tr><td>撥放鈕觸控目標</td><td>≥44×44</td><td class="pass">達標</td></tr>
+    <tr><th>項目</th><th>數值</th><th>說明</th><th>狀態</th></tr>
+    <tr><td>場景人物總數</td><td>43</td><td>castle / urban / rural / wild 全 area</td><td class="pass">—</td></tr>
+    <tr><td>已宣告音色</td><td>41</td><td>各具差異化 pitch/rate</td><td class="pass">通過</td></tr>
+    <tr><td>降級 default</td><td>2</td><td>僅 <code>Rural Sign</code>／<code>Wild Sign</code>（告示牌，刻意不宣告）</td><td class="pass">符合預期</td></tr>
+    <tr><td>缺維度安全合成</td><td>null／未知值</td><td>降級 default、不丟例外、流程不中斷</td><td class="pass">通過</td></tr>
   </table>
 
   <h2>5. 專家評價（GATE §6）</h2>
-  <p>共 14 項發現；重大者已回修並重跑受影響測試（獎勵回饋透明化、中文鈕 a11y、跨地區覆蓋檢查、mobile 溢出驗證）。完整清單與處置見 <code>docs/expert-review-issue73.md</code>。無「未實作／責任邊界不符」之重大缺口。</p>
+  <p class="sub">詳見 <code>docs/expert-review-issue93.md</code>：以幼兒英語/語音 UX/無障礙/在地化視角列 14 項發現。重大者 2 項已回修：</p>
+  <table>
+    <tr><th>#</th><th>發現</th><th>處置</th></tr>
+    <tr><td>3</td><td>then 串接僅聽 <code>end</code>，無語音裝置會吞 NPC 結語</td><td class="pass">已修：end/error 雙觸發去重</td></tr>
+    <tr><td>12</td><td>缺自動化跨地區音色覆蓋檢查</td><td class="pass">已修：selftest 加覆蓋斷言（41/43）</td></tr>
+    <tr><td>1·2·4</td><td>具名 voice 平台相依、性格可辨性、答錯朗讀所選</td><td>設計取捨，已記錄（pitch/rate 為主、性格小幅修飾、忠實朗讀所選）</td></tr>
+  </table>
 
-  <h2>6. 追溯</h2>
-  <p>spec#1（擴充）→ solStory#12 → sysStory#8（sysCase#8.1 撥放／#8.2 結算）→ intTest#22／#23、docProgTest#12、e2eTest#07 →（部署後）＜IV.B＞成效追蹤。</p>
+  <h2>6. 結論</h2>
+  <p>核心能力（場景人物依特性差異化配音、玩家公主朗讀所選作答、維度合成式音色目錄、缺維度自動降級、四地區覆蓋）皆「已測通過」，無「未實作／責任邊界不符」之重大缺口；<strong>可宣稱完成（本議題範圍）</strong>。後續增修建議：具名 voice 偵測選用、性格維度可辨性增強、缺語音時視覺降級提示。</p>
 
-  <footer>產生者：3dev（2tech-devSet-3dev）· 本 HTML 為 source of truth，test-summary.pdf 為其列印快照 · 無外部相依，離線可開。</footer>
+  <footer>solKidGalGame · issue #93 角色差異化配音 · 純前端 techStackStaticWeb · 本檔為單一自包含 HTML，PDF 為其衍生快照。</footer>
 </div>
 </body>
 </html>
