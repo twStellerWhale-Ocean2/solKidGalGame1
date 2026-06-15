@@ -20,10 +20,10 @@ export const defaultState = {
   },
   owned: ["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair", "starterPajama"],
   outfit: {
-    hairstyle: "softBrownHair",
+    hairstyle: "none",
     top: "none",
     bottom: "none",
-    dress: "starterPajama",
+    dress: "none",
     outer: "none",
     shoes: "none",
     headTop: "none",

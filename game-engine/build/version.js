@@ -3,6 +3,7 @@
 export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
+  { version: "2026.06.16-user-princess-base", buildDateTime: "2026-06-16", issue: "#123", summaryZh: "依使用者提供圖片替換四位公主 base，轉透明 WebP 並對齊紙娃娃版型" },
   { version: "2026.06.15-princess-roster", buildDateTime: "2026-06-15", issue: "#123", summaryZh: "重整可玩公主 base 分層，新增 Rosa 並調整 Yumi／Sol" },
   { version: "2026.06.15-about-tab", buildDateTime: "2026-06-15", issue: "#110", summaryZh: "設定選單新增 About 頁籤：作品版權宣告與歷次版本中文短主旨" },
   { version: "2026.06.15-map-avatar", buildDateTime: "2026-06-15", issue: "#99", summaryZh: "統一世界／城堡／各地區地圖的公主頭像顯示與移動" },

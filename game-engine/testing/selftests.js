@@ -627,8 +627,8 @@ async function collectPaperDollCharacterAudit(api, errors) {
   const starterItems = (api.shopItems || []).filter((item) => item.storeId === "starter");
   const starterLayerItems = starterItems.filter((item) => item.type === "hairstyle" || item.type === "dress");
   starterLayerItems.forEach((item) => {
-    if (!Array.isArray(item.layers) || item.layers.length === 0) {
-      errors.push(`starter item ${item.id} has no controllable layer`);
+    if (!Array.isArray(item.layers)) {
+      errors.push(`starter item ${item.id} layers is not an array`);
     }
   });
   const starterIds = new Set(starterItems.map((item) => item.id));
@@ -645,17 +645,20 @@ async function collectPaperDollCharacterAudit(api, errors) {
     if (rosa.activeCharacterId !== "rosa") {
       errors.push(`rosa activeCharacterId normalizes to ${rosa.activeCharacterId}`);
     }
+    const bakedDefault = api.normalizeState({ outfit: { hairstyle: "softBrownHair", dress: "starterPajama" } });
+    if (bakedDefault.outfit.hairstyle !== "none" || bakedDefault.outfit.dress !== "none") {
+      errors.push("starter baked-base outfit did not normalize to no overlay");
+    }
   }
-  let baseBBoxSignature = "";
   for (const character of Object.values(registry)) {
     if (!character.id) errors.push("character without id");
     if (!character.baseLayer) errors.push(`${character.id || "character"} has no baseLayer`);
     if (!character.thumbImage) errors.push(`${character.id || "character"} has no thumbImage`);
     if (!character.rig?.compatibleWardrobeRig) errors.push(`${character.id || "character"} is not marked wardrobe-compatible`);
-    if (character.defaultOutfit?.hairstyle && !starterIds.has(character.defaultOutfit.hairstyle)) {
+    if (character.defaultOutfit?.hairstyle && character.defaultOutfit.hairstyle !== "none" && !starterIds.has(character.defaultOutfit.hairstyle)) {
       errors.push(`${character.id}/defaultOutfit.hairstyle points to non-starter item ${character.defaultOutfit.hairstyle}`);
     }
-    if (character.defaultOutfit?.dress && !starterIds.has(character.defaultOutfit.dress)) {
+    if (character.defaultOutfit?.dress && character.defaultOutfit.dress !== "none" && !starterIds.has(character.defaultOutfit.dress)) {
       errors.push(`${character.id}/defaultOutfit.dress points to non-starter item ${character.defaultOutfit.dress}`);
     }
     const assets = {};
@@ -670,9 +673,12 @@ async function collectPaperDollCharacterAudit(api, errors) {
           errors.push(`${character.id}/baseLayer has no alpha content`);
         }
         if (assetName === "baseLayer" && metrics.alphaBBox) {
-          const signature = JSON.stringify(metrics.alphaBBox);
-          if (!baseBBoxSignature) baseBBoxSignature = signature;
-          else if (signature !== baseBBoxSignature) errors.push(`${character.id}/baseLayer alpha bbox differs from shared rig`);
+          const bbox = metrics.alphaBBox;
+          const centerX = bbox.left + (bbox.width / 2);
+          if (Math.abs(bbox.bottom - 768) > 2) errors.push(`${character.id}/baseLayer foot baseline is ${bbox.bottom}, expected 768`);
+          if (Math.abs(bbox.top - 280) > 4) errors.push(`${character.id}/baseLayer top is ${bbox.top}, expected near 280`);
+          if (Math.abs(bbox.height - 488) > 4) errors.push(`${character.id}/baseLayer alpha height ${bbox.height}, expected near 488`);
+          if (Math.abs(centerX - 256) > 8) errors.push(`${character.id}/baseLayer centerX ${centerX}, expected near 256`);
         }
         assets[assetName] = metrics;
       } catch (error) {

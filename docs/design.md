@@ -16,7 +16,7 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 
 * **spec#1-可用短回合低挫折方式練習英文**：方案須讓年幼學習者以「聽情境句、從少量選項選出正確英文、立即對錯回饋」的短回合循環接觸英文，遇困難時可取得提示（含題目與各選項的中文理解協助），降低挫折；並以獎勵高低鼓勵先嘗試英文——未借助中文且越早答對者獎勵越高、曾借助中文者該題無獎勵，維持以英文為主、中文為輔的學習動機。
 * **spec#2-可用角色陪伴與場景探索維持遊玩意願**：方案須以公主角色陪伴、王國地圖與多地區場景探索及地點互動，提高兒童反覆遊玩意願；並讓不同場景人物與玩家公主各具貼合其角色的聲音表現（含玩家公主以其聲音朗讀所選作答），使陪伴與場景更具辨識度與臨場沉浸，而非一律同一語音。
-* **spec#3-可把學習成果轉為看得見的外觀獎勵**：方案須讓答對所得 coins 能兌換為角色外觀（髮型、衣物、鞋帽、配件、outfit set）等可見變化，使成就可見而非僅顯示分數；預設髮型與預設衣物亦須由可控制的外觀 layer 或等效機制表達，不得依賴角色 base 烘入長髮、長袖或睡衣。
+* **spec#3-可把學習成果轉為看得見的外觀獎勵**：方案須讓答對所得 coins 能兌換為角色外觀（髮型、衣物、鞋帽、配件、outfit set）等可見變化，使成就可見而非僅顯示分數；目前可玩公主 base 依使用者指定採 baked-in 短髮 playwear，仍不得烘入長髮、長袖、睡衣、禮服、皇冠或背景，且預設 starter 項不得造成重複疊圖。
 * **spec#4-可形成練英文獲獎勵換裝的正向閉環**：方案須使英文練習、獎勵取得與換裝回饋構成同一個可重複的正向循環。
 * **spec#5-可保存並還原玩家進度**：方案須讓每個帳號各自的 coins、學習紀錄、擁有與穿搭、所在位置與所選角色及名字可被保存並於再次遊玩時還原。
 * **spec#6-可選擇與命名自己的公主**：方案須讓玩家首次進入時選定公主外觀並命名，之後可重選外觀或改名，且不影響既有存檔進度；可玩公主 roster 須提供可辨識差異並保留既有 `lumi`／`yumi`／`sol` id 的舊存檔相容。
@@ -84,7 +84,7 @@ HOST -->|"🎚️paramDeployBranch=`main`"| SYS
   * **solCase#6.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家選角命名]，首次進入時自 Lumi、Yumi、Sol、Rosa 四位可辨識公主外觀選定一位並輸入名字，之後仍可重選外觀或改名。
 * **solStory#7-部署擴充與移除**：
   * **solCase#7.1**：[etyCfg通用家長維護者]執行[setAct自訂維護者部署網站]，將網站包發佈至靜態主機平台。
-  * **solCase#7.2**：[etyCfg通用家長維護者]執行[setAct自訂維護者擴充內容]，調整 area、角色、可玩公主或衣物內容包（新增、替換或移除單一包），且可玩公主 base 與 starter 外觀層須持續遵守同一紙娃娃 rig。
+  * **solCase#7.2**：[etyCfg通用家長維護者]執行[setAct自訂維護者擴充內容]，調整 area、角色、可玩公主或衣物內容包（新增、替換或移除單一包），且可玩公主 base 與 wardrobe 外觀層須持續遵守同一紙娃娃 rig。
   * **solCase#7.3**：[etyCfg通用家長維護者]執行[setAct自訂維護者移除部署]，停用靜態主機平台上的部署。
 * **solStory#8-初始化與異常復原**：
   * **solCase#8.1**：[sysGame系統]執行[runAct自訂系統還原進度]，讀取本機存檔並將缺漏或損壞欄位正規化回預設值。
@@ -185,7 +185,7 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
   * **sysCase#2.2**：[modMap模組]承接[runAct自訂玩家地圖導航]，於世界地圖點選目的地時先令公主頭像移動至該目的地座標後再進入，移動途中再次點選即略過位移直接進入。
 * **sysStory#3-承接換裝與商店**：
   * **sysCase#3.1**：[modWardrobe模組]承接[runAct自訂玩家購買衣物]，扣除 coins 並標記擁有。
-  * **sysCase#3.2**：[modWardrobe模組]承接[runAct自訂玩家換裝]，以角色中性 base 加上髮型、衣物與配件 layer 的順序更新 outfit 並重繪紙娃娃；預設髮型與預設衣物不得靠 base baked-in 呈現。
+  * **sysCase#3.2**：[modWardrobe模組]承接[runAct自訂玩家換裝]，以角色 base 加上髮型、衣物與配件 layer 的順序更新 outfit 並重繪紙娃娃；目前角色 base 依使用者指定含 baked-in 短髮 playwear，starter 髮型與 starter 服裝須正規化為 no overlay 以避免重複疊圖。
   * **sysCase#3.3**：[modWardrobe模組]承接[runAct自訂玩家退款]，回補 coins 並取消擁有。
 * **sysStory#4-承接狀態保存與還原**：
   * **sysCase#4.1**：[modState模組]承接[runAct自訂系統保存進度]，寫入瀏覽器本機儲存。
@@ -193,7 +193,7 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
   * **sysCase#4.3**：[modState模組]承接[runAct自訂系統還原進度]，缺漏欄位回退預設值。
 * **sysStory#5-承接選角與內容擴充**：
   * **sysCase#5.1**：[modShell模組]承接[runAct自訂玩家選角命名]，於 `lumi`、`yumi`、`sol`、`rosa` 可玩公主 roster 中更新 activeCharacterId 與 playerName，且保留 `lumi`／`yumi`／`sol` 舊 id 對既有存檔相容。
-  * **sysCase#5.2**：[modContent模組]承接[setAct自訂維護者擴充內容]，匯入新內容包至 registry；可玩公主與 starter wardrobe layer 均須遵守 [hmiIntf自訂角色尺度與美術規範] 的 `shared-512x768-v1` rig。
+  * **sysCase#5.2**：[modContent模組]承接[setAct自訂維護者擴充內容]，匯入新內容包至 registry；可玩公主與 wardrobe layer 均須遵守 [hmiIntf自訂角色尺度與美術規範] 的 `shared-512x768-v1` rig。
 * **sysStory#6-承接多帳號選擇與管理**：
   * **sysCase#6.1**：[modShell模組]承接[runAct自訂玩家選擇帳號]，啟動時先進入帳號選擇，讀取帳號清單，玩家選定後透過 modState 載入該帳號進度再進入遊戲。
   * **sysCase#6.2**：[modState模組]承接[runAct自訂玩家新增帳號]，建立新帳號的初始進度並設為使用中帳號。
@@ -390,7 +390,7 @@ erDiagram
 * 步驟：
   1. 於衣櫃穿戴已擁有商品。
 * 預期結果：
-  1. 紙娃娃 outfit 更新且互斥 slot 正確處理，短髮與短袖等外觀不會露出 base 烘入的舊髮型或舊袖子。
+  1. 紙娃娃 outfit 更新且互斥 slot 正確處理；目前 baked-in playwear base 不得出現黑底，且 starter 髮型／服裝不會重複疊在 base 上。
 
 #### intTest#09-驗證 [runAct自訂玩家退款]
 
@@ -588,18 +588,18 @@ erDiagram
   1. About 頁籤顯示版權宣告字串，並列出最近 10 個版本（或現有全部）的版本標識與中文短主旨。
   2. 版本沿革資料源非空且首筆版本與當前版本一致；Settings 頁籤不再出現獨立版本卡。
 
-#### intTest#29-驗證 可玩公主基底與 starter 外觀分層
+#### intTest#29-驗證 可玩公主基底與 starter 相容項不重疊
 
 * 既有基底：intTest#08。
-* 新增項目：[sysGame系統]之可玩紙娃娃 base 與 starter 外觀分層契約。
+* 新增項目：[sysGame系統]之可玩紙娃娃 baked-in playwear base 與 starter 相容項契約。
 * 步驟：
   1. 載入 Lumi、Yumi、Sol、Rosa 四位可玩公主 base。
-  2. 對同一角色分別套用 starter 髮型、短髮、starter 衣物與短袖／露手臂衣物。
-  3. 檢查 `starterPajama`、`softBrownHair` 或其後續等效預設外觀項是否具有可控制 layer。
+  2. 對同一角色套用預設狀態、舊存檔 starter 髮型與舊存檔 `starterPajama`。
+  3. 檢查 `starterPajama`、`softBrownHair` 或其後續等效預設外觀項不會在 baked-in base 上重複疊圖。
 * 預期結果：
-  1. 四位可玩公主 base 皆為 `512x768` 透明 WebP 並遵守 `shared-512x768-v1` 對位，且不含可替換髮型、長袖、睡衣或其他衣物。
-  2. 預設髮型與預設衣物由可開關 layer 或等效可控制外觀項呈現。
-  3. 短髮與短袖／露手臂衣物在所有膚色角色上不殘留舊長髮、舊袖子或單一膚色色塊。
+  1. 四位可玩公主 base 皆為 `512x768` 透明 WebP 並遵守 `shared-512x768-v1` 對位，無黑底，腳底 baseline 與身高比例符合紙娃娃版型。
+  2. 預設狀態與舊存檔 starter 外觀正規化為 no overlay，不會在 baked-in 短髮 playwear base 上重複顯示第二套 starter hair 或 starter outfit。
+  3. 其他 wardrobe layer 仍可依既有 slot 疊在角色 base 上。
 
 #### intTest#30-驗證 四角色 roster 與舊存檔相容
 
@@ -610,7 +610,7 @@ erDiagram
   2. 載入舊存檔中 activeCharacterId 為 `lumi`、`yumi`、`sol` 的資料。
   3. 對四位可玩公主各觸發一次公主朗讀作答。
 * 預期結果：
-  1. Lumi 保留既有方向；Yumi 呈冷色優雅系；Sol 呈陽光短髮系；Rosa 呈棕髮甜美系且不把參考圖禮服、皇冠或背景烘進 base。
+  1. Lumi、Yumi、Sol、Rosa 依使用者指定四張 PNG 照順序對應，皆轉為透明 WebP，且不把黑底、禮服、皇冠或背景烘進 base。
   2. 舊存檔的 `lumi`、`yumi`、`sol` 均正常載入，不因 roster 增加 `rosa` 而重置。
   3. `playableVoiceById` 對四個 id 皆能解析，缺瀏覽器 voice 時依既有規則降級。
 
@@ -633,7 +633,7 @@ erDiagram
 #### docProgTest#03-productReadme 承接 [solStory#3-換裝獎勵]
 
 * productReadme 要求：
-  1. 說明如何用 coins 購買並換裝，且預設髮型與預設衣物屬可替換外觀而非角色 base 固定內容。
+  1. 說明如何用 coins 購買並換裝，且目前預設短髮 playwear 來自使用者指定 baked-in base；若要完全自由替換髮型或衣物，須改回中性 base 與可替換 layer。
 * 通過判定：
   1. 讀者可依 productReadme 完成一次購買與換裝。
 
@@ -808,11 +808,11 @@ erDiagram
 * 依據：docProgTest#03、docProgTest#06、docProgTest#07、[solCase#3.2]、[solCase#6.1]、[solCase#7.2]。
 * 步驟：
   1. 依 productReadme 建立新帳號，於選角畫面逐一檢視 Lumi、Yumi、Sol、Rosa。
-  2. 選擇一位公主進入遊戲，於衣櫃切換短髮與短袖／露手臂衣物。
+  2. 選擇一位公主進入遊戲，確認 baked-in 短髮 playwear base 顯示正常，並於衣櫃切換其他 wardrobe layer。
   3. 載入 activeCharacterId 為 `lumi`、`yumi`、`sol` 的舊存檔。
 * 預期結果：
   1. 四位公主在選角畫面可辨識，Rosa 以棕髮甜美系呈現，Yumi 與 Sol 重製方向不再同質。
-  2. 短髮與短袖／露手臂衣物不露出 base baked-in 長髮、長袖或睡衣。
+  2. 四張新 base 無黑底且對位正確，預設與舊存檔 starter 外觀不會重複疊圖。
   3. 舊存檔仍載入對應公主，不因新增 Rosa 而回退預設。
 
 # IV. 部署成效
@@ -836,8 +836,8 @@ erDiagram
   * 評估方式：觀察單次遊玩探索的地點數與回訪次數，以及角色配音的覆蓋與降級情形。
   * 觀察項目：到訪地點數、連續遊玩回合數、已宣告音色特性的角色比例、缺特性降級發生率。
 * **spec#3-可把學習成果轉為看得見的外觀獎勵**
-  * 評估方式：觀察 coins 兌換為外觀的比例，並以素材 QA 確認 base 與 starter layer 分離。
-  * 觀察項目：購買件數、換裝次數、coins 留存、短髮／短袖換裝殘留率、starter 預設外觀 layer 覆蓋率。
+  * 評估方式：觀察 coins 兌換為外觀的比例，並以素材 QA 確認 baked-in base 無黑底、對位正確且 starter 預設外觀不重複疊圖。
+  * 觀察項目：購買件數、換裝次數、coins 留存、base 對位錯誤率、starter 預設外觀重疊率。
 * **spec#4-可形成練英文獲獎勵換裝的正向閉環**
   * 評估方式：觀察「答題→購買→換裝」是否在單次遊玩內成環。
   * 觀察項目：單次遊玩完成閉環的比例。

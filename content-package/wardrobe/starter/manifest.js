@@ -1,11 +1,7 @@
 import { paperDollCharacterThumb } from "../_shared/paper-doll-assets.js";
-import { wardrobePackLayer, wardrobePackThumb } from "../_shared/paper-doll-assets.js";
 
 //#region 初始衣物
-const hairSalonLayer = (name) => wardrobePackLayer("urban-hair-salon", name);
-const tailorLayer = (name) => wardrobePackLayer("urban-tailor-studio", name);
-
-// starter 外觀需以真實 layer 表達，不再依賴 character base baked-in 髮型或衣物。
+// starter 外觀保留為舊存檔相容 item；目前四位公主 base 已包含短髮與 playwear，避免預設外觀重複疊圖。
 export const starterItems = [
   {
     id: "softBrownHair",
@@ -15,7 +11,7 @@ export const starterItems = [
     cost: 0,
     icon: "Hair",
     image: paperDollCharacterThumb,
-    layers: [{ slot: "hairstyle", src: hairSalonLayer("hairstyle-twin-braid") }]
+    layers: []
   },
   {
     id: "yumiStarterHair",
@@ -25,7 +21,7 @@ export const starterItems = [
     cost: 0,
     icon: "Hair",
     image: paperDollCharacterThumb,
-    layers: [{ slot: "hairstyle", src: hairSalonLayer("hairstyle-blonde-bob-silver") }]
+    layers: []
   },
   {
     id: "solStarterHair",
@@ -35,7 +31,7 @@ export const starterItems = [
     cost: 0,
     icon: "Hair",
     image: paperDollCharacterThumb,
-    layers: [{ slot: "hairstyle", src: hairSalonLayer("hairstyle-blonde-bob-honey") }]
+    layers: []
   },
   {
     id: "rosaStarterHair",
@@ -45,7 +41,7 @@ export const starterItems = [
     cost: 0,
     icon: "Hair",
     image: paperDollCharacterThumb,
-    layers: [{ slot: "hairstyle", src: hairSalonLayer("hairstyle-twin-braid-chestnut") }]
+    layers: []
   },
   {
     id: "starterPajama",
@@ -54,11 +50,8 @@ export const starterItems = [
     name: "Starter rose play outfit",
     cost: 0,
     icon: "Dress",
-    image: wardrobePackThumb("starter", "starter-rose-outfit"),
-    layers: [
-      { slot: "top", src: tailorLayer("top-cream-blouse") },
-      { slot: "bottom", src: tailorLayer("bottom-rose-skirt") }
-    ]
+    image: paperDollCharacterThumb,
+    layers: []
   }
 ];
 //#endregion 初始衣物
