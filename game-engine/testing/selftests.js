@@ -612,13 +612,26 @@ async function runDataAudit(api) {
 async function collectPaperDollCharacterAudit(api, errors) {
   const registry = api.characterRegistry || {};
   const characters = [];
+  const expectedPlayableIds = ["lumi", "yumi", "sol", "rosa"];
   if (!Object.keys(registry).length) {
     errors.push("characterRegistry is empty");
   }
+  expectedPlayableIds.forEach((characterId) => {
+    if (!registry[characterId]) errors.push(`characterRegistry missing ${characterId}`);
+    if (!api.playableVoiceById?.[characterId]) errors.push(`playableVoiceById missing ${characterId}`);
+  });
   const defaultCharacter = api.playableCharacterById(api.defaultActiveCharacterId);
   if (!defaultCharacter?.id) {
     errors.push("default active character is missing");
   }
+  const starterItems = (api.shopItems || []).filter((item) => item.storeId === "starter");
+  const starterLayerItems = starterItems.filter((item) => item.type === "hairstyle" || item.type === "dress");
+  starterLayerItems.forEach((item) => {
+    if (!Array.isArray(item.layers)) {
+      errors.push(`starter item ${item.id} layers is not an array`);
+    }
+  });
+  const starterIds = new Set(starterItems.map((item) => item.id));
   if (api.normalizeState) {
     const missing = api.normalizeState({});
     const invalid = api.normalizeState({ activeCharacterId: "__missing_character__" });
@@ -628,14 +641,27 @@ async function collectPaperDollCharacterAudit(api, errors) {
     if (invalid.activeCharacterId !== defaultCharacter?.id) {
       errors.push(`invalid activeCharacterId normalizes to ${invalid.activeCharacterId}, expected ${defaultCharacter?.id}`);
     }
+    const rosa = api.normalizeState({ activeCharacterId: "rosa", playerName: "Rosa" });
+    if (rosa.activeCharacterId !== "rosa") {
+      errors.push(`rosa activeCharacterId normalizes to ${rosa.activeCharacterId}`);
+    }
+    const bakedDefault = api.normalizeState({ outfit: { hairstyle: "softBrownHair", dress: "starterPajama" } });
+    if (bakedDefault.outfit.hairstyle !== "none" || bakedDefault.outfit.dress !== "none") {
+      errors.push("starter baked-base outfit did not normalize to no overlay");
+    }
   }
   for (const character of Object.values(registry)) {
     if (!character.id) errors.push("character without id");
     if (!character.baseLayer) errors.push(`${character.id || "character"} has no baseLayer`);
-    if (!character.thumbImage) errors.push(`${character.id || "character"} has no thumbImage`);
     if (!character.rig?.compatibleWardrobeRig) errors.push(`${character.id || "character"} is not marked wardrobe-compatible`);
+    if (character.defaultOutfit?.hairstyle && character.defaultOutfit.hairstyle !== "none" && !starterIds.has(character.defaultOutfit.hairstyle)) {
+      errors.push(`${character.id}/defaultOutfit.hairstyle points to non-starter item ${character.defaultOutfit.hairstyle}`);
+    }
+    if (character.defaultOutfit?.dress && character.defaultOutfit.dress !== "none" && !starterIds.has(character.defaultOutfit.dress)) {
+      errors.push(`${character.id}/defaultOutfit.dress points to non-starter item ${character.defaultOutfit.dress}`);
+    }
     const assets = {};
-    for (const [assetName, src] of Object.entries({ baseLayer: character.baseLayer, thumbImage: character.thumbImage })) {
+    for (const [assetName, src] of Object.entries({ baseLayer: character.baseLayer })) {
       if (!src) continue;
       try {
         const metrics = await imageMetrics(src);
@@ -644,6 +670,14 @@ async function collectPaperDollCharacterAudit(api, errors) {
         }
         if (assetName === "baseLayer" && !metrics.alphaBBox) {
           errors.push(`${character.id}/baseLayer has no alpha content`);
+        }
+        if (assetName === "baseLayer" && metrics.alphaBBox) {
+          const bbox = metrics.alphaBBox;
+          const centerX = bbox.left + (bbox.width / 2);
+          if (Math.abs(bbox.bottom - 768) > 2) errors.push(`${character.id}/baseLayer foot baseline is ${bbox.bottom}, expected 768`);
+          if (Math.abs(bbox.top - 280) > 4) errors.push(`${character.id}/baseLayer top is ${bbox.top}, expected near 280`);
+          if (Math.abs(bbox.height - 488) > 4) errors.push(`${character.id}/baseLayer alpha height ${bbox.height}, expected near 488`);
+          if (Math.abs(centerX - 256) > 8) errors.push(`${character.id}/baseLayer centerX ${centerX}, expected near 256`);
         }
         assets[assetName] = metrics;
       } catch (error) {
@@ -661,6 +695,13 @@ async function collectPaperDollCharacterAudit(api, errors) {
   }
   return {
     defaultActiveCharacterId: api.defaultActiveCharacterId,
+    expectedPlayableIds,
+    starterLayerItems: starterLayerItems.map((item) => ({
+      id: item.id,
+      type: item.type,
+      layerCount: item.layers?.length || 0,
+      layerSlots: (item.layers || []).map((layer) => layer.slot)
+    })),
     count: characters.length,
     characters
   };

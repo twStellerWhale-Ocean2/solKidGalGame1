@@ -73,7 +73,8 @@ export function resolveVoiceProfile(voiceDecl) {
 export const playableVoiceById = Object.freeze({
   lumi: Object.freeze({ gender: "female", age: "child", personality: "cheerful" }),
   yumi: Object.freeze({ gender: "female", age: "child", personality: "graceful" }),
-  sol: Object.freeze({ gender: "female", age: "child", personality: "bold" })
+  sol: Object.freeze({ gender: "female", age: "child", personality: "bold" }),
+  rosa: Object.freeze({ gender: "female", age: "child", personality: "cheerful" })
 });
 
 // 場景人物（NPC）以顯示名為鍵；未列名者解析時自動降級 default。

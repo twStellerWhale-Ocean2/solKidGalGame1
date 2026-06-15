@@ -5,15 +5,15 @@ import {
   characterAssetVersion,
   characterRegistry,
   defaultActiveCharacterId,
+  isPlayableCharacterId,
   playableCharacterById
 } from "../../characters/manifest.js";
 
 export const dollAssetVersion = characterAssetVersion;
-export { characterRegistry, defaultActiveCharacterId, playableCharacterById };
+export { characterRegistry, defaultActiveCharacterId, isPlayableCharacterId, playableCharacterById };
 
 export const characterAsset = (name, characterId = defaultActiveCharacterId) => registryCharacterAsset(characterId, name);
 export const paperDollBaseLayer = playableCharacterById(defaultActiveCharacterId).baseLayer;
-export const paperDollCharacterThumb = playableCharacterById(defaultActiveCharacterId).thumbImage;
 //#endregion 紙娃娃角色素材
 
 //#region 衣物資源包素材

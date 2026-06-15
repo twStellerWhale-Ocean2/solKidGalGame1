@@ -12,6 +12,7 @@ export {
   paperDollBaseLayer,
   paperDollLayerOrder,
   playableCharacterById,
+  isPlayableCharacterId,
   shopItems
 } from "../../content-package/wardrobe/manifest.js";
 export {

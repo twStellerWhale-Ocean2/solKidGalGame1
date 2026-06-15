@@ -1,7 +1,7 @@
 ---
 name: hmiIntf自訂角色尺度與美術規範
-date: 2026/6/13
-description: solKidGalGame 紙娃娃與 ADV 場景的角色自然尺度、共用 rig 與正式美術資產規範（自 README ch2.7 拆出之 contract-local 契約）。
+date: 2026/6/15
+description: solKidGalGame 紙娃娃與 ADV 場景的角色自然尺度、共用 rig、可玩角色 base 分層與正式美術資產規範（自 README ch2.7 拆出之 contract-local 契約）。
 ---
 
 # I. 主旨目的
@@ -10,7 +10,7 @@ description: solKidGalGame 紙娃娃與 ADV 場景的角色自然尺度、共用
 
 # II. 參考準備
 
-* 本契約由既有 README 第二章（2.7 素材與畫風規格、2.7.1 角色自然尺度規格）原文拆出，作為內部設計細則的單一事實來源。
+* 本契約由既有 README 第二章（2.7 素材與畫風規格、2.7.1 角色自然尺度規格）原文拆出，並補入 issue #123 可玩公主 base 分層規格，作為內部設計細則的單一事實來源。
 * 主題 token 與元件通則另依 [techStackStaticWeb] 與通用 hmiIntf 視覺規範；本契約只規範角色尺度與美術資產。
 
 # III. 內容程序
@@ -29,6 +29,7 @@ Lumi ADV stageScale = 1.20
 ```
 
 * 所有可玩紙娃娃共用同一 `shared-512x768-v1` rig：同身型、同畫布尺寸、同 slot 對位、同一套衣物 layer。
+* 可玩公主 registry 須保留既有 `lumi`、`yumi`、`sol` id 供舊存檔載入；新增可玩公主使用 `rosa` id。
 * `npcNaturalHeightCm` 寫在各 area 的 scene config，作為 runtime 與 QA 共用的機器可讀尺度來源。
 * 特殊矮小或大型角色可有不同 `naturalHeightCm`，但仍須落在同一 `768px = 200cm` 尺度內；超過 200cm 須拆成明確特殊規格，不得偷改 canvas 或 CSS。
 
@@ -38,8 +39,13 @@ Lumi ADV stageScale = 1.20
 * NPC 身體視覺中心須對齊 `x=256` 附近；偏移屬素材錯誤須改圖，不得在 runtime 為個別 NPC 加水平 nudge。
 * NPC 腳底須貼近 canvas 最底端；底部透明留白不得用來調整站位。
 * 可視人物高度由 `npcNaturalHeightCm` 換算，不得由 WebP 比例、mobile CSS 個別縮放或透明留白意外造成。
-* Lumi 與 wardrobe layer 共用同一 `512x768` paper-doll rig，須同一幾何對位；主角感只由 ADV 舞台倍率 `1.20` 表達，不得把 base 或衣物 layer 做成不同自然尺度。
+* Lumi、Yumi、Sol、Rosa 與 wardrobe layer 共用同一 `512x768` paper-doll rig，須同一幾何對位；主角感只由 ADV 舞台倍率 `1.20` 表達，不得把 base 或衣物 layer 做成不同自然尺度。
+* 可玩公主 `base.webp` 目前採使用者指定的 baked-in 短髮 playwear base：可包含短髮、粉紅短袖上衣與紅短褲，但不得烘入長髮、長袖、睡衣、禮服、鞋帽、皇冠、場景或黑色／純色背景。
+* 可玩公主 runtime 角色圖只保留 `base.webp`；選角畫面須直接以 CSS 裁切 `base.webp` 的頭部、肩膀與胸口上緣作為 portrait，不另維護角色 `thumb.webp`。
+* starter items（例如 `softBrownHair`、`starterPajama` 或後續替代品）保留為舊存檔相容項；在 baked-in playwear base 策略下可為空 layer/no-op，但預設與舊存檔正規化不得造成 starter 髮型或 starter 服裝重複疊圖。
+* 四位可玩公主的美術方向：Lumi、Yumi、Sol、Rosa 依使用者指定四張 PNG 照順序對應，並轉為同 rig、透明背景、同 baseline 的正式 WebP；若未來要完全自由替換髮型或衣物，需另行改回中性 base + 髮型 layer + 衣物 layer 策略。
 * 露膚衣物層（短袖、涼鞋／赤腳、手部配件邊界）須逐一在各膚色角色上檢查接縫，不得殘留為單一膚色繪製的色塊。
+* 不得為個別可玩公主新增 CSS nudge、改畫布尺寸或用透明留白調整 layer 對位；對位錯誤須回到素材修正。
 
 ## C. 場景與素材通則
 
@@ -54,3 +60,6 @@ Lumi ADV stageScale = 1.20
 # IV. 備註紀錄
 
 * 2026/6/13：自 README ch2.7／2.7.1 原文拆出，建立為 contract-local 契約（issue #88 方法論導入）。對應 [hmiIntf通用視覺規範] 為上位 UX 通則。
+* 2026/6/15：補入 issue #123 可玩公主 base 分層、四角色 roster、starter 外觀與舊 id 相容規格。
+* 2026/6/16：依使用者改圖決策調整 issue #123 契約，改採四張指定 PNG 轉 WebP 的 baked-in 短髮 playwear base，starter items 改為相容 no-op 以避免預設重複疊圖。
+* 2026/6/16：依使用者要求移除角色 `thumb.webp` runtime 用途，選角 portrait 改由 `base.webp` CSS 裁切頭胸部。

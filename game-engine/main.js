@@ -30,6 +30,7 @@ import {
   mapNodes,
   paperDollBaseLayer,
   paperDollLayerOrder,
+  playableVoiceById,
   questTemplates,
   sceneConfigs,
   shopItems,
@@ -562,7 +563,14 @@ function buildCharacterCards() {
     card.dataset.characterId = character.id;
     card.setAttribute("role", "radio");
     card.setAttribute("aria-checked", String(character.id === pendingCharacterId));
-    card.innerHTML = `<img src="${domAssetUrl(character.thumbImage)}" alt="" /><span>${character.label}</span>`;
+    const portrait = document.createElement("span");
+    portrait.className = "character-portrait";
+    const portraitUrl = new URL(domAssetUrl(character.baseLayer), document.baseURI).href;
+    portrait.style.setProperty("--character-portrait", `url("${portraitUrl.replaceAll('"', "%22")}")`);
+    portrait.setAttribute("aria-hidden", "true");
+    const label = document.createElement("span");
+    label.textContent = character.label;
+    card.append(portrait, label);
     card.addEventListener("click", () => selectPendingCharacter(character.id));
     elements.characterGrid.appendChild(card);
   });
@@ -579,9 +587,25 @@ function selectPendingCharacter(characterId) {
   }
 }
 
+function isStarterWardrobeItem(itemId, type) {
+  const item = itemById(itemId);
+  return item?.storeId === "starter" && (!type || item.type === type);
+}
+
+function applyCharacterStarterOutfit(character) {
+  const starterOutfit = character?.defaultOutfit || {};
+  if (isStarterWardrobeItem(state.outfit.hairstyle, "hairstyle") && starterOutfit.hairstyle) {
+    state.outfit.hairstyle = starterOutfit.hairstyle;
+  }
+  if (isStarterWardrobeItem(state.outfit.dress, "dress") && starterOutfit.dress) {
+    state.outfit.dress = starterOutfit.dress;
+  }
+}
+
 function confirmCharacterSelect() {
   const character = playableCharacterById(pendingCharacterId);
   state.activeCharacterId = character.id;
+  applyCharacterStarterOutfit(character);
   state.playerName = sanitizePlayerName(elements.playerNameInput.value) || character.defaultName;
   persist();
   const activeAccountId = getActiveAccountId();
@@ -3189,6 +3213,7 @@ installTestingHooks({
   openSystemMenu,
   openWardrobeDetail,
   playableCharacterById,
+  playableVoiceById,
   paperDollBaseLayer,
   persist,
   renderWorldMap,

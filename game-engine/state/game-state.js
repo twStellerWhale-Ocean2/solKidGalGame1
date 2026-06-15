@@ -42,6 +42,9 @@ const legacyItemIds = Object.freeze({
   forestTrailSet: "wildTrailSet"
 });
 
+const bakedBaseStarterHairIds = new Set(["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair"]);
+const bakedBaseStarterDressIds = new Set(["starterPajama"]);
+
 export function loadLocalState() {
   migrateLegacyAccount(); // 一次性將舊單一存檔遷移為首個帳號，保留既有玩家進度。
   const activeId = getActiveAccountId();
@@ -171,6 +174,7 @@ function normalizeOutfit(candidateOutfit = {}, baseOutfit = defaultState.outfit)
   if (candidateOutfit.shoes) outfit.shoes = migrateLegacyItemId(candidateOutfit.shoes);
   applyLegacyAccessory(outfit, candidateOutfit.accessory || candidateOutfit.hat || candidateOutfit.head);
   if (candidateOutfit.pants && !candidateOutfit.bottom) outfit.bottom = migrateLegacyItemId(candidateOutfit.pants);
+  normalizeBakedBaseStarterOutfit(outfit);
   outfitSlots.forEach((slot) => {
     if (slot !== "room" && outfit[slot] !== "none" && !itemById(outfit[slot])) outfit[slot] = baseOutfit[slot] || "none";
   });
@@ -181,6 +185,11 @@ function normalizeOutfit(candidateOutfit = {}, baseOutfit = defaultState.outfit)
     outfit.dress = baseOutfit.dress;
   }
   return outfit;
+}
+
+function normalizeBakedBaseStarterOutfit(outfit) {
+  if (bakedBaseStarterHairIds.has(outfit.hairstyle)) outfit.hairstyle = "none";
+  if (bakedBaseStarterDressIds.has(outfit.dress)) outfit.dress = "none";
 }
 
 function applyLegacyAccessory(outfit, itemId) {
