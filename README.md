@@ -66,7 +66,7 @@ node server.mjs
 - **Princess Sol**：重製為陽光、短髮系外觀，提高親和度與辨識度。
 - **Princess Rosa**：新增棕髮甜美系公主，參考附圖氣質，但不把禮服、皇冠或背景固定進角色底圖。
 
-紙娃娃 base 依使用者指定的四張正式 PNG 重製為短髮、粉紅短袖上衣與紅短褲的 baked-in playwear base；四位角色仍共用 `shared-512x768-v1`、`512x768` 透明 WebP 與同一套 wardrobe layer 對位。內部仍保留 `softBrownHair`／`starterPajama` 等 starter item id 以相容舊存檔，但預設狀態會正規化為不額外疊 starter 髮型或 starter 服裝，避免雙重疊圖。若未來要完全自由替換髮型或衣服，需再回到「中性 base + 髮型 layer + 衣物 layer」的做法。
+紙娃娃 base 依使用者指定的四張正式 PNG 重製為短髮、粉紅短袖上衣與紅短褲的 baked-in playwear base；四位角色仍共用 `shared-512x768-v1`、`512x768` 透明 WebP 與同一套 wardrobe layer 對位。角色圖只保留 `base.webp`；選角畫面直接以 CSS 裁切 `base.webp` 的頭部、肩膀與胸口上緣，不再維護獨立 `thumb.webp`。內部仍保留 `softBrownHair`／`starterPajama` 等 starter item id 以相容舊存檔，但預設狀態會正規化為不額外疊 starter 髮型或 starter 服裝，避免雙重疊圖。若未來要完全自由替換髮型或衣服，需再回到「中性 base + 髮型 layer + 衣物 layer」的做法。
 
 ## 遊玩時間與休息（護眼）
 
@@ -153,7 +153,7 @@ area、角色、可玩公主與衣物都是 `content-package/` 下的**模組化
 
 ## 變更紀錄
 
-- 2026-06-16（issue #123）：依使用者提供的四張 PNG 重製四位可玩公主 base/thumb，轉為透明 WebP 並縮放對位到 `shared-512x768-v1`；新 base 採 baked-in 短髮、粉紅短袖上衣與紅短褲，預設 starter 髮型／服裝不再額外疊圖，保留 `lumi`／`yumi`／`sol`／`rosa` id 相容。待 opr 終驗。
+- 2026-06-16（issue #123）：依使用者提供的四張 PNG 重製四位可玩公主 base，轉為透明 WebP 並縮放對位到 `shared-512x768-v1`；選角畫面直接裁切 `base.webp` 頭胸部特寫，不再使用角色 `thumb.webp`；新 base 採 baked-in 短髮、粉紅短袖上衣與紅短褲，預設 starter 髮型／服裝不再額外疊圖，保留 `lumi`／`yumi`／`sol`／`rosa` id 相容。待 opr 終驗。
 - 2026-06-15（issue #110）：設定選單新增 About 頁籤，集中呈現作品版權宣告（`carlton0521@gmail.com, copyright reserved, 2026`）與歷次版本的中文短主旨（預設最近 10 版）；既有版本與建置時間併入 About，Settings 不再另列版本卡。本項為 2plan 初稿，待 dev／opr 校準。
 - 2026-06-15（issue #99）：統一各地圖的公主頭像顯示與控制。World Map／Castle Map／各地區地圖都有可見、可移動的公主（鍵盤方向鍵走動）並加強頭像辨識度；在 World Map 點選地點後公主會先走過去再進入，移動途中再點一次可略過直接進入。本項為 2plan 初稿，待 dev／opr 校準。
 - 2026-06-15（issue #100）：答題獎勵統一收斂為只發 coins，移除原本附帶的字彙／表達／善良／心情屬性獎勵與答對後的「選擇獎勵」導購捷徑，所有場景答對一致直接給 coins，簡化獎勵邏輯。本項為 2plan 初稿，待 dev／opr 校準。

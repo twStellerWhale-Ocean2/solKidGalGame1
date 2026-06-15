@@ -14,7 +14,6 @@ export { characterRegistry, defaultActiveCharacterId, isPlayableCharacterId, pla
 
 export const characterAsset = (name, characterId = defaultActiveCharacterId) => registryCharacterAsset(characterId, name);
 export const paperDollBaseLayer = playableCharacterById(defaultActiveCharacterId).baseLayer;
-export const paperDollCharacterThumb = playableCharacterById(defaultActiveCharacterId).thumbImage;
 //#endregion 紙娃娃角色素材
 
 //#region 衣物資源包素材

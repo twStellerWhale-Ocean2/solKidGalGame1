@@ -41,6 +41,7 @@ Lumi ADV stageScale = 1.20
 * 可視人物高度由 `npcNaturalHeightCm` 換算，不得由 WebP 比例、mobile CSS 個別縮放或透明留白意外造成。
 * Lumi、Yumi、Sol、Rosa 與 wardrobe layer 共用同一 `512x768` paper-doll rig，須同一幾何對位；主角感只由 ADV 舞台倍率 `1.20` 表達，不得把 base 或衣物 layer 做成不同自然尺度。
 * 可玩公主 `base.webp` 目前採使用者指定的 baked-in 短髮 playwear base：可包含短髮、粉紅短袖上衣與紅短褲，但不得烘入長髮、長袖、睡衣、禮服、鞋帽、皇冠、場景或黑色／純色背景。
+* 可玩公主 runtime 角色圖只保留 `base.webp`；選角畫面須直接以 CSS 裁切 `base.webp` 的頭部、肩膀與胸口上緣作為 portrait，不另維護角色 `thumb.webp`。
 * starter items（例如 `softBrownHair`、`starterPajama` 或後續替代品）保留為舊存檔相容項；在 baked-in playwear base 策略下可為空 layer/no-op，但預設與舊存檔正規化不得造成 starter 髮型或 starter 服裝重複疊圖。
 * 四位可玩公主的美術方向：Lumi、Yumi、Sol、Rosa 依使用者指定四張 PNG 照順序對應，並轉為同 rig、透明背景、同 baseline 的正式 WebP；若未來要完全自由替換髮型或衣物，需另行改回中性 base + 髮型 layer + 衣物 layer 策略。
 * 露膚衣物層（短袖、涼鞋／赤腳、手部配件邊界）須逐一在各膚色角色上檢查接縫，不得殘留為單一膚色繪製的色塊。
@@ -61,3 +62,4 @@ Lumi ADV stageScale = 1.20
 * 2026/6/13：自 README ch2.7／2.7.1 原文拆出，建立為 contract-local 契約（issue #88 方法論導入）。對應 [hmiIntf通用視覺規範] 為上位 UX 通則。
 * 2026/6/15：補入 issue #123 可玩公主 base 分層、四角色 roster、starter 外觀與舊 id 相容規格。
 * 2026/6/16：依使用者改圖決策調整 issue #123 契約，改採四張指定 PNG 轉 WebP 的 baked-in 短髮 playwear base，starter items 改為相容 no-op 以避免預設重複疊圖。
+* 2026/6/16：依使用者要求移除角色 `thumb.webp` runtime 用途，選角 portrait 改由 `base.webp` CSS 裁切頭胸部。

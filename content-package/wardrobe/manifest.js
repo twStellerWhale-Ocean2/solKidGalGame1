@@ -3,7 +3,6 @@ import {
   characterRegistry,
   defaultActiveCharacterId,
   paperDollBaseLayer,
-  paperDollCharacterThumb,
   isPlayableCharacterId,
   playableCharacterById
 } from "./_shared/paper-doll-assets.js";
@@ -29,7 +28,6 @@ export {
   defaultActiveCharacterId,
   outfitSlots,
   paperDollBaseLayer,
-  paperDollCharacterThumb,
   paperDollLayerOrder,
   isPlayableCharacterId,
   playableCharacterById

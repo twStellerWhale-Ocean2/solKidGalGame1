@@ -653,7 +653,6 @@ async function collectPaperDollCharacterAudit(api, errors) {
   for (const character of Object.values(registry)) {
     if (!character.id) errors.push("character without id");
     if (!character.baseLayer) errors.push(`${character.id || "character"} has no baseLayer`);
-    if (!character.thumbImage) errors.push(`${character.id || "character"} has no thumbImage`);
     if (!character.rig?.compatibleWardrobeRig) errors.push(`${character.id || "character"} is not marked wardrobe-compatible`);
     if (character.defaultOutfit?.hairstyle && character.defaultOutfit.hairstyle !== "none" && !starterIds.has(character.defaultOutfit.hairstyle)) {
       errors.push(`${character.id}/defaultOutfit.hairstyle points to non-starter item ${character.defaultOutfit.hairstyle}`);
@@ -662,7 +661,7 @@ async function collectPaperDollCharacterAudit(api, errors) {
       errors.push(`${character.id}/defaultOutfit.dress points to non-starter item ${character.defaultOutfit.dress}`);
     }
     const assets = {};
-    for (const [assetName, src] of Object.entries({ baseLayer: character.baseLayer, thumbImage: character.thumbImage })) {
+    for (const [assetName, src] of Object.entries({ baseLayer: character.baseLayer })) {
       if (!src) continue;
       try {
         const metrics = await imageMetrics(src);

@@ -1,4 +1,4 @@
-import { paperDollCharacterThumb } from "../_shared/paper-doll-assets.js";
+import { paperDollBaseLayer } from "../_shared/paper-doll-assets.js";
 
 //#region 初始衣物
 // starter 外觀保留為舊存檔相容 item；目前四位公主 base 已包含短髮與 playwear，避免預設外觀重複疊圖。
@@ -10,7 +10,7 @@ export const starterItems = [
     name: "Soft brown story hair",
     cost: 0,
     icon: "Hair",
-    image: paperDollCharacterThumb,
+    image: paperDollBaseLayer,
     layers: []
   },
   {
@@ -20,7 +20,7 @@ export const starterItems = [
     name: "Yumi silver bob hair",
     cost: 0,
     icon: "Hair",
-    image: paperDollCharacterThumb,
+    image: paperDollBaseLayer,
     layers: []
   },
   {
@@ -30,7 +30,7 @@ export const starterItems = [
     name: "Sol honey bob hair",
     cost: 0,
     icon: "Hair",
-    image: paperDollCharacterThumb,
+    image: paperDollBaseLayer,
     layers: []
   },
   {
@@ -40,7 +40,7 @@ export const starterItems = [
     name: "Rosa chestnut braid hair",
     cost: 0,
     icon: "Hair",
-    image: paperDollCharacterThumb,
+    image: paperDollBaseLayer,
     layers: []
   },
   {
@@ -50,7 +50,7 @@ export const starterItems = [
     name: "Starter rose play outfit",
     cost: 0,
     icon: "Dress",
-    image: paperDollCharacterThumb,
+    image: paperDollBaseLayer,
     layers: []
   }
 ];
