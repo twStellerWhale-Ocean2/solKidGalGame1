@@ -52,6 +52,7 @@ export function installTestingHooks(api) {
   runChineseRewardSelfTest(api);
   runCharacterVoiceSelfTest(api);
   runMapAvatarSelfTest(api);
+  runAboutSelfTest(api);
 }
 
 // issue #99：跨地圖公主頭像一致顯示（intTest#26）＋世界地圖走到再進入與途中略過（intTest#27）。
@@ -108,6 +109,41 @@ function runMapAvatarSelfTest(api) {
   const result = document.createElement("pre");
   result.id = "mapAvatarResult";
   result.textContent = JSON.stringify({ test: "map-avatar", passed, errors });
+  document.body.prepend(result);
+}
+
+// issue #110：About 頁籤呈現版權宣告與版本沿革，版本卡併入 About（intTest#28）。
+function runAboutSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "about") return;
+  const errors = [];
+  api.render();
+  api.openSystemMenu("about");
+
+  const aboutView = document.getElementById("aboutView");
+  if (!aboutView || !aboutView.classList.contains("active")) errors.push("About 頁籤未啟用");
+
+  const copyright = (api.elements.aboutCopyright?.textContent || "").trim();
+  if (!copyright.includes("copyright reserved")) errors.push(`版權宣告缺漏或不符：「${copyright}」`);
+
+  const items = api.elements.aboutVersionList?.querySelectorAll(".about-version-item") || [];
+  if (items.length < 10) errors.push(`版本沿革少於 10 筆（實得 ${items.length}）`);
+
+  // 首筆版本須與當前版本顯示一致（單一資料源、避免雙軌）
+  const currentVersion = (api.elements.versionValue?.textContent || "").trim();
+  const firstVersion = (items[0]?.querySelector("strong")?.textContent || "").trim();
+  if (!currentVersion) errors.push("當前版本顯示為空");
+  if (firstVersion !== currentVersion) errors.push(`首筆版本（${firstVersion}）與當前版本（${currentVersion}）不一致`);
+
+  // 版本卡已併入 About：Settings 不得殘留、About 須具備
+  const settingsView = document.getElementById("settingsView");
+  if (settingsView?.querySelector(".version-card")) errors.push("Settings 仍殘留版本卡（應併入 About）");
+  if (!aboutView?.querySelector(".version-card")) errors.push("About 缺少版本卡");
+
+  const passed = errors.length === 0;
+  const result = document.createElement("pre");
+  result.id = "aboutResult";
+  result.textContent = JSON.stringify({ test: "about", passed, errors });
   document.body.prepend(result);
 }
 
@@ -1088,7 +1124,7 @@ function runVisualQa(api) {
     return;
   }
 
-  if (["diary", "settings", "english", "save"].includes(surface)) {
+  if (["diary", "settings", "english", "save", "about"].includes(surface)) {
     api.render();
     api.openSystemMenu(surface);
     return;

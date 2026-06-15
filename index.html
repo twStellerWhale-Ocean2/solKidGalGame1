@@ -100,6 +100,7 @@
           <button class="system-menu-tab" data-menu-panel="settings" type="button" role="tab" aria-selected="false" aria-controls="settingsView">Settings</button>
           <button class="system-menu-tab" data-menu-panel="english" type="button" role="tab" aria-selected="false" aria-controls="englishView">English</button>
           <button class="system-menu-tab" data-menu-panel="save" type="button" role="tab" aria-selected="false" aria-controls="saveView">Save / Load</button>
+          <button class="system-menu-tab" data-menu-panel="about" type="button" role="tab" aria-selected="false" aria-controls="aboutView">About</button>
         </div>
         <div class="system-menu-body">
           <section class="system-panel active" id="diaryView" data-menu-panel="diary" role="tabpanel" aria-labelledby="diaryTitle">
@@ -140,11 +141,6 @@
                   <button class="soft-button" id="savePlayLimitButton" type="submit">Save limits</button>
                 </div>
               </form>
-              <div class="version-card" aria-label="Software version">
-                <strong>Version</strong>
-                <span id="versionValue">2026.06.02-area-packs-wild</span>
-                <small>Build time: <span id="buildDateValue">2026-06-02 13:55 (UTC+8)</span></small>
-              </div>
             </div>
           </section>
 
@@ -179,6 +175,25 @@
               <div class="save-book-note">
                 <strong>Family save page</strong>
                 <span>Save MD exports readable diary pages and game progress for the current player.</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="system-panel" id="aboutView" data-menu-panel="about" role="tabpanel" aria-labelledby="aboutTitle" hidden>
+            <div class="simple-panel settings-card about-card">
+              <h2 id="aboutTitle">About</h2>
+              <div class="version-card" aria-label="Software version">
+                <strong>Version</strong>
+                <span id="versionValue">2026.06.15-about-tab</span>
+                <small>Build time: <span id="buildDateValue">2026-06-15</span></small>
+              </div>
+              <div class="about-copyright" aria-label="Copyright">
+                <strong>Copyright</strong>
+                <span id="aboutCopyright">carlton0521@gmail.com, copyright reserved, 2026</span>
+              </div>
+              <div class="about-history" aria-label="Version history">
+                <strong>版本沿革 Version history</strong>
+                <ul id="aboutVersionList" class="about-version-list"></ul>
               </div>
             </div>
           </section>

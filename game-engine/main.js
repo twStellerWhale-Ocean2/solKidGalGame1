@@ -1,4 +1,4 @@
-import { buildInfo } from "./build/version.js";
+import { buildInfo, copyright, versionHistory } from "./build/version.js";
 import { $, $$, createElements } from "./app/elements.js";
 import {
   areaForHotspot,
@@ -49,7 +49,7 @@ import { updateMarkerEdgeVisibility } from "./map/marker-visibility.js";
 import { createAreaMapViewportController } from "./map/viewport.js";
 import { renderItemDetailPanel } from "./render/item-panel.js";
 import { createPaperDollRenderer } from "./render/paper-doll.js";
-import { renderBuildInfo } from "./render/settings.js";
+import { renderBuildInfo, renderAbout } from "./render/settings.js";
 import { applyAdvSceneArt } from "./scene/scene-art.js";
 import { saveMarkerEnd, saveMarkerStart } from "./state/storage.js";
 import {
@@ -423,14 +423,14 @@ function closeSystemMenu() {
   elements.systemMenu.setAttribute("aria-hidden", "true");
   document.body.classList.remove("system-menu-open");
   const viewName = activeViewName();
-  if (["diary", "settings", "english", "save"].includes(location.hash.slice(1))) {
+  if (["diary", "settings", "english", "save", "about"].includes(location.hash.slice(1))) {
     history.replaceState(null, "", `#${viewName}`);
   }
   elements.systemMenuButton?.focus({ preventScroll: true });
 }
 
 function changeSystemPanel(panel = "diary") {
-  if (!["diary", "settings", "english", "save"].includes(panel)) panel = "diary";
+  if (!["diary", "settings", "english", "save", "about"].includes(panel)) panel = "diary";
   systemMenuPanel = panel;
   elements.systemMenuTabs.forEach((tab) => {
     const isActive = tab.dataset.menuPanel === panel;
@@ -2482,6 +2482,7 @@ function renderSettings() {
   if (elements.playMinutesInput) elements.playMinutesInput.value = String(state.playLimit.playMinutes);
   if (elements.restMinutesInput) elements.restMinutesInput.value = String(state.playLimit.restMinutes);
   renderBuildInfo(elements, buildInfo);
+  renderAbout(elements, { copyright, versionHistory });
 }
 
 // issue #102：全域朗讀語速倍率——所有發聲（角色配音／公主朗讀／中文協助）最終語速＝音色 rate × SPEECH_RATE_SCALE，
