@@ -51,6 +51,64 @@ export function installTestingHooks(api) {
   runPlayTimerSelfTest(api);
   runChineseRewardSelfTest(api);
   runCharacterVoiceSelfTest(api);
+  runMapAvatarSelfTest(api);
+}
+
+// issue #99：跨地圖公主頭像一致顯示（intTest#26）＋世界地圖走到再進入與途中略過（intTest#27）。
+function runMapAvatarSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "map-avatar") return;
+  const errors = [];
+  const positioned = (el, label) => {
+    if (!el) { errors.push(`${label} token 不存在`); return; }
+    const left = parseFloat(el.style.left);
+    const top = parseFloat(el.style.top);
+    if (!Number.isFinite(left) || !Number.isFinite(top)) errors.push(`${label} token 未定位（left/top 未設）`);
+  };
+
+  // intTest#26：跨地圖公主頭像一致顯示（world / castle / urban / rural / wild）
+  api.openWorldMap();
+  api.renderWorldMap();
+  positioned(api.elements.worldPlayerToken, "world");
+
+  api.openArea("castle");
+  api.renderCastleMap();
+  positioned(api.elements.castlePlayerToken, "castle");
+
+  for (const areaId of ["urban", "rural", "wild"]) {
+    api.openArea(areaId);
+    api.renderMap();
+    positioned(api.elements.playerToken, areaId);
+  }
+
+  // intTest#27（自由走動）：世界地圖鍵盤走動改變 world 座標
+  api.openWorldMap();
+  api.renderWorldMap();
+  const before = { ...api.currentPlayerPoint("world") };
+  api.moveOnWorldMap(1, 0);
+  const after = api.currentPlayerPoint("world");
+  if (!(Math.abs(after.x - before.x) > 0.001)) errors.push("鍵盤走動未改變 world 座標");
+
+  // intTest#27（走到再進入）：點選目的地後不立即進入，到達（finishWorldTravel）後才進入
+  api.openWorldMap();
+  api.renderWorldMap();
+  api.requestWorldTravel("urban");
+  if (api.state.area === "urban") errors.push("走到再進入：點選後未走動即進入");
+  api.finishWorldTravel();
+  if (api.state.area !== "urban") errors.push("走到再進入：到達後未進入 urban");
+
+  // intTest#27（途中略過）：移動途中再次點選即立即進入
+  api.openWorldMap();
+  api.renderWorldMap();
+  api.requestWorldTravel("rural");
+  api.requestWorldTravel("rural");
+  if (api.state.area !== "rural") errors.push("途中略過：再次點選未立即進入 rural");
+
+  const passed = errors.length === 0;
+  const result = document.createElement("pre");
+  result.id = "mapAvatarResult";
+  result.textContent = JSON.stringify({ test: "map-avatar", passed, errors });
+  document.body.prepend(result);
 }
 
 // 遊玩時間限制與護眼休息（issue #6 / spec#9）：以注入時鐘驗證計時遞減、時間到結算、休息鎖定與屆滿續玩。

@@ -100,6 +100,12 @@
   animation: hop 0.24s ease;
 }
 
+/* issue #99：世界地圖「點選地點 → 走到再進入」的位移滑行（與 WORLD_TRAVEL_MS 對齊）；
+   自由走動（方向鍵）仍用 .player 的短 transition。 */
+.world-player.traveling {
+  transition: left 0.6s ease, top 0.6s ease;
+}
+
 @keyframes hop {
   50% {
     margin-top: -8px;

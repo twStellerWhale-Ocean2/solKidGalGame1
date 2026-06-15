@@ -44,5 +44,8 @@ export const defaultState = {
   activeQuest: null,
   area: "castle",
   player: { x: 51.5, y: 50 },
-  playerNode: "princessRoom"
+  playerNode: "princessRoom",
+  // 世界地圖上公主頭像的自由走動座標（issue #99）。預設對齊 castle 目的地（world.js）。
+  // 缺漏時 currentPlayerPoint("world") 會退回目前選定目的地座標。
+  world: { x: 51, y: 32 }
 };
