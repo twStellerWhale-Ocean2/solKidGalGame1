@@ -3673,7 +3673,16 @@ body {
 }
 
 @media (min-width: 821px) {
-  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) {
+  /* issue#120: 桌機內層底框（.adv-box）高度統一——所有模式（場景/對話/購物…）共用同一 --adv-dialog-height、向購物拉高對齊，消除「桌機僅購物收口、場景放任隨內容」之分歧（窄版已於 max-width:820 統一） */
+  .adv-scene:is(
+    [data-mode="scene"],
+    [data-mode="hint"],
+    [data-mode="quest"],
+    [data-mode="complete"],
+    [data-mode="shop"],
+    [data-mode="wardrobe"],
+    [data-mode="refund"]
+  ) {
     --adv-dialog-height: clamp(360px, 48%, 470px);
   }
 }
