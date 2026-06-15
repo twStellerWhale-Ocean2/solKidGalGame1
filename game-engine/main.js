@@ -26,7 +26,6 @@ import {
   defaultActiveCharacterId,
   difficultyConfig,
   playableCharacterById,
-  lessons,
   mapImageSize,
   mapNodes,
   paperDollBaseLayer,
@@ -2342,14 +2341,17 @@ function clearRewardBursts() {
   document.querySelectorAll(".reward-burst").forEach((item) => item.remove());
 }
 
+// issue #96：題庫改為「場景自帶、進場才取」——直接讀該場景物件的 lesson.questions，
+// 不再過濾全域 lessons 註冊表。回傳帶 place 以利下游沿用。
 function pickLesson(place) {
-  const pool = lessons.filter((lesson) => lesson.place === place);
-  if (!pool.length) return null;
-  return pool[Math.floor(Math.random() * pool.length)];
+  const questions = sceneConfigs[place]?.lesson?.questions;
+  if (!Array.isArray(questions) || !questions.length) return null;
+  const question = questions[Math.floor(Math.random() * questions.length)];
+  return { ...question, place };
 }
 
 function hasLessonsForPlace(place) {
-  return Boolean(place && lessons.some((lesson) => lesson.place === place));
+  return Boolean(place && sceneConfigs[place]?.lesson?.questions?.length);
 }
 
 function answerLesson(button, choice) {

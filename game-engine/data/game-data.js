@@ -68,12 +68,17 @@ export const vocabularyProfiles = Object.freeze({
   [wildVocabularyProfile.id]: wildVocabularyProfile
 });
 
-export const questTemplates = [
-  ...castleQuestTemplates,
-  ...urbanQuestTemplates,
-  ...ruralQuestTemplates,
-  ...wildQuestTemplates
-];
+// issue #96：任務模板由「場景自帶題庫」就地導出（外框與題目同一塊），不再維護獨立的 questTemplates 註冊表。
+export const questTemplates = Object.entries(sceneConfigs)
+  .filter(([, config]) => config.lesson)
+  .map(([place, config]) => ({
+    id: `${place}Help`,
+    place,
+    title: config.lesson.title,
+    opening: config.lesson.opening,
+    openingZh: config.lesson.openingZh,
+    ending: config.lesson.ending
+  }));
 
 export const lessons = [
   ...castleLessons,
