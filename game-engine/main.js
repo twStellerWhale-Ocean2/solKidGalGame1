@@ -115,6 +115,10 @@ let pendingMapRefreshArea = "";
 let systemMenuPanel = "diary";
 let activeCastleHotspot = null;
 let activeWorldDestinationId = "castle";
+// issue #99：世界地圖「點選地點 → 公主走到再進入」進行中的目的地與計時器（null＝未在移動）。
+let worldTravelTargetId = null;
+let worldTravelTimer = null;
+const WORLD_TRAVEL_MS = 620; // 走到目的地時長；與 .world-player.traveling 之 CSS transition 對齊
 let pendingCharacterId = state.activeCharacterId;
 let playerNameEdited = false;
 let testClockOffset = 0;   // 測試用合成時鐘偏移（ms）；正式遊玩恆為 0，由 selftest hook 注入。
@@ -522,6 +526,7 @@ function renderIdentity() {
   document.querySelector(".adv-princess")?.setAttribute("aria-label", sideDollLabel);
   elements.castlePlayerToken?.setAttribute("aria-label", `Princess ${name} in the castle`);
   elements.playerToken?.setAttribute("aria-label", `Princess ${name}`);
+  elements.worldPlayerToken?.setAttribute("aria-label", `Princess ${name}`);
   const diaryTitle = `${name} Diary`;
   const systemMenuTitleEl = document.getElementById("systemMenuTitle");
   if (systemMenuTitleEl) systemMenuTitleEl.textContent = diaryTitle;
@@ -1016,6 +1021,7 @@ function positionCastleElement(element, x, y, metrics = castleCoverMetrics()) {
 
 function currentPlayerPoint(areaId) {
   if (areaId === "world") {
+    if (typeof state.world?.x === "number" && typeof state.world?.y === "number") return state.world;
     const destination = activeWorldDestination();
     return destination ? { x: destination.x, y: destination.y } : null;
   }
@@ -1221,11 +1227,12 @@ function renderWorldMap() {
     marker.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
-      openWorldDestination(destination.id);
+      requestWorldTravel(destination.id);
     });
     elements.worldMarkerLayer.appendChild(marker);
     updateMarkerEdgeVisibility(marker, elements.worldStage);
   });
+  updateWorldPlayerPosition(metrics);
   renderWorldDestinationList();
 }
 
@@ -1247,17 +1254,91 @@ function focusWorldDestination(destinationId, rerender = true) {
   elements.worldStage?.focus({ preventScroll: true });
 }
 
-function cycleWorldDestination(delta) {
-  const destinations = enabledWorldDestinations();
-  if (!destinations.length) return;
-  const currentIndex = Math.max(0, destinations.findIndex((destination) => destination.id === activeWorldDestinationId));
-  const next = destinations[(currentIndex + delta + destinations.length) % destinations.length];
-  focusWorldDestination(next.id);
+function updateWorldPlayerPosition(metrics = worldMapMetrics()) {
+  if (!elements.worldPlayerToken) return;
+  const point = currentPlayerPoint("world");
+  if (!point) return;
+  positionWorldElement(elements.worldPlayerToken, point.x, point.y, metrics);
+}
+
+// issue #99：世界地圖鄰近目的地偵測（比照地區地圖 nearbyAreaHotspot），供鍵盤走近後 Enter 進入與狀態提示。
+function nearbyWorldDestination(radius = 9) {
+  const player = currentPlayerPoint("world");
+  if (!player) return null;
+  const candidates = worldMap.destinations
+    .map((destination) => ({
+      destination,
+      distance: Math.hypot(destination.x - player.x, (destination.y - player.y) * 1.18)
+    }))
+    .filter((candidate) => candidate.distance <= radius);
+  if (!candidates.length) return null;
+  candidates.sort((a, b) => a.distance - b.distance);
+  return candidates[0].destination;
+}
+
+// issue #99：世界地圖鍵盤自由走動（比照地區地圖 moveOnAreaMap）。
+function moveOnWorldMap(dx, dy) {
+  const speed = 1.6;
+  const current = currentPlayerPoint("world") || { x: 51, y: 32 };
+  state.world = {
+    x: clamp(current.x + dx * speed, 0, 100),
+    y: clamp(current.y + dy * speed, 0, 100)
+  };
+  const nearby = nearbyWorldDestination();
+  if (nearby) {
+    activeWorldDestinationId = nearby.id;
+    elements.statusMessage.textContent = nearby.enabled
+      ? `${nearby.label}: press Enter to visit.`
+      : `${nearby.label} is not open yet.`;
+  }
+  elements.worldPlayerToken?.classList.add("walking");
+  window.setTimeout(() => elements.worldPlayerToken?.classList.remove("walking"), 180);
+  persist();
+  renderWorldMap();
+}
+
+// issue #99：點選目的地 → 公主先走到該座標再進入；移動途中再次點選即略過、立即進入。
+function requestWorldTravel(destinationId) {
+  const destination = worldDestinationById(destinationId);
+  if (!destination) return;
+  if (!destination.enabled) {
+    openWorldDestination(destination.id);
+    return;
+  }
+  if (worldTravelTargetId) {
+    finishWorldTravel();
+    return;
+  }
+  activeWorldDestinationId = destination.id;
+  worldTravelTargetId = destination.id;
+  state.world = { x: destination.x, y: destination.y };
+  elements.worldPlayerToken?.classList.add("traveling");
+  persist();
+  renderWorldMap();
+  worldTravelTimer = window.setTimeout(finishWorldTravel, WORLD_TRAVEL_MS);
+}
+
+function finishWorldTravel() {
+  if (worldTravelTimer) {
+    window.clearTimeout(worldTravelTimer);
+    worldTravelTimer = null;
+  }
+  elements.worldPlayerToken?.classList.remove("traveling");
+  const id = worldTravelTargetId;
+  worldTravelTargetId = null;
+  if (id) openWorldDestination(id);
 }
 
 function openWorldDestination(destinationId = activeWorldDestinationId) {
   const destination = worldDestinationById(destinationId);
   if (!destination) return;
+  // 取消任何進行中的「走到再進入」，避免計時器於已進入後再次觸發（issue #99）。
+  if (worldTravelTimer) {
+    window.clearTimeout(worldTravelTimer);
+    worldTravelTimer = null;
+  }
+  worldTravelTargetId = null;
+  elements.worldPlayerToken?.classList.remove("traveling");
   if (!destination.enabled) {
     elements.statusMessage.textContent = `${destination.label} is not open yet.`;
     activeWorldDestinationId = destination.id;
@@ -1274,6 +1355,7 @@ function openWorldDestination(destinationId = activeWorldDestinationId) {
   state.playerNode = targetNode.id;
   state.player = { x: targetNode.x, y: targetNode.y };
   activeWorldDestinationId = destination.id;
+  state.world = { x: destination.x, y: destination.y };
   activeHotspot = targetArea.id === "castle" ? null : locationsForArea(targetArea.id).find((item) => item.node === targetNode.id) || null;
   activeCastleHotspot = targetArea.id === "castle" ? locationsForArea("castle").find((item) => item.node === targetNode.id) || null : null;
   elements.statusMessage.textContent = `${destination.label} area opened.`;
@@ -2782,18 +2864,26 @@ function bindEvents() {
       event.preventDefault();
       event.stopPropagation();
       zoomAreaMapFromKeyboard("world", -1);
-    } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+    } else if (event.key === "ArrowUp" || event.key.toLowerCase() === "w") {
       event.preventDefault();
       event.stopPropagation();
-      cycleWorldDestination(-1);
-    } else if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      moveOnWorldMap(0, -1);
+    } else if (event.key === "ArrowDown" || event.key.toLowerCase() === "s") {
       event.preventDefault();
       event.stopPropagation();
-      cycleWorldDestination(1);
+      moveOnWorldMap(0, 1);
+    } else if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
+      event.preventDefault();
+      event.stopPropagation();
+      moveOnWorldMap(-1, 0);
+    } else if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
+      event.preventDefault();
+      event.stopPropagation();
+      moveOnWorldMap(1, 0);
     } else if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       event.stopPropagation();
-      openWorldDestination(activeWorldDestinationId);
+      openWorldDestination((nearbyWorldDestination() || activeWorldDestination())?.id);
     }
   });
   elements.worldStage?.addEventListener("pointerdown", beginWorldMapDrag);
@@ -3075,6 +3165,11 @@ installTestingHooks({
   openArea,
   openWorldDestination,
   openWorldMap,
+  currentPlayerPoint,
+  moveOnWorldMap,
+  requestWorldTravel,
+  finishWorldTravel,
+  nearbyWorldDestination,
   openHintAdv,
   openQuestAdv,
   openRefundDetail,
@@ -3087,6 +3182,7 @@ installTestingHooks({
   paperDollBaseLayer,
   persist,
   renderWorldMap,
+  renderCastleMap,
   render,
   renderAdvShop,
   renderWardrobeDetail,

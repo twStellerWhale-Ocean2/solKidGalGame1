@@ -66,9 +66,13 @@
 .paper-doll-layer-faceEyes,
 .paper-doll-layer-faceMask { z-index: 8; }
 
+/* issue #99：各地圖公主頭像一致的辨識度強化（白色描邊 + 暖金光暈），在手繪地圖上更明顯。 */
 .map-doll .paper-doll-layer {
   background-position: center bottom;
-  filter: drop-shadow(0 4px 5px rgba(58, 37, 46, 0.18));
+  filter:
+    drop-shadow(0 3px 4px rgba(58, 37, 46, 0.28))
+    drop-shadow(0 0 4px rgba(255, 255, 255, 0.95))
+    drop-shadow(0 0 8px rgba(255, 209, 102, 0.75));
 }
 
 .adv-doll.try-on-active {

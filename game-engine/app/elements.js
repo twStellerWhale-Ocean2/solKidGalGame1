@@ -48,6 +48,7 @@ export function createElements() {
     worldStage: $("#worldStage"),
     worldImage: $("#worldImage"),
     worldMarkerLayer: $("#worldMarkerLayer"),
+    worldPlayerToken: $("#worldPlayerToken"),
     worldDestinationPanel: $("#worldDestinationPanel"),
     worldDestinationHint: $("#worldDestinationHint"),
     worldDestinationList: $("#worldDestinationList"),
