@@ -86,6 +86,8 @@ export function createElements() {
     resetButton: $("#resetButton"),
     versionValue: $("#versionValue"),
     buildDateValue: $("#buildDateValue"),
+    aboutCopyright: $("#aboutCopyright"),
+    aboutVersionList: $("#aboutVersionList"),
     roomPropDesk: $("#roomPropDesk"),
     roomPropLamp: $("#roomPropLamp"),
     playMinutesInput: $("#playMinutesInput"),
