@@ -1,6 +1,6 @@
 ---
 name: solKidGalGame
-date: 2026/6/14
+date: 2026/6/15
 formatVersion: "2.0"
 description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 ---
@@ -16,11 +16,11 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 
 * **spec#1-可用短回合低挫折方式練習英文**：方案須讓年幼學習者以「聽情境句、從少量選項選出正確英文、立即對錯回饋」的短回合循環接觸英文，遇困難時可取得提示（含題目與各選項的中文理解協助），降低挫折；並以獎勵高低鼓勵先嘗試英文——未借助中文且越早答對者獎勵越高、曾借助中文者該題無獎勵，維持以英文為主、中文為輔的學習動機。
 * **spec#2-可用角色陪伴與場景探索維持遊玩意願**：方案須以公主角色陪伴、王國地圖與多地區場景探索及地點互動，提高兒童反覆遊玩意願；並讓不同場景人物與玩家公主各具貼合其角色的聲音表現（含玩家公主以其聲音朗讀所選作答），使陪伴與場景更具辨識度與臨場沉浸，而非一律同一語音。
-* **spec#3-可把學習成果轉為看得見的外觀獎勵**：方案須讓答對所得 coins 能兌換為角色外觀（髮型、衣物、鞋帽、配件、outfit set）等可見變化，使成就可見而非僅顯示分數。
+* **spec#3-可把學習成果轉為看得見的外觀獎勵**：方案須讓答對所得 coins 能兌換為角色外觀（髮型、衣物、鞋帽、配件、outfit set）等可見變化，使成就可見而非僅顯示分數；預設髮型與預設衣物亦須由可控制的外觀 layer 或等效機制表達，不得依賴角色 base 烘入長髮、長袖或睡衣。
 * **spec#4-可形成練英文獲獎勵換裝的正向閉環**：方案須使英文練習、獎勵取得與換裝回饋構成同一個可重複的正向循環。
 * **spec#5-可保存並還原玩家進度**：方案須讓每個帳號各自的 coins、學習紀錄、擁有與穿搭、所在位置與所選角色及名字可被保存並於再次遊玩時還原。
-* **spec#6-可選擇與命名自己的公主**：方案須讓玩家首次進入時選定公主外觀並命名，之後可重選外觀或改名，且不影響既有存檔進度。
-* **spec#7-可用純靜態網站方式部署並模組化擴充內容**：方案須能以 GitHub Pages 等純靜態方式部署遊玩，且 area、角色與衣物等內容可模組化新增與調整。
+* **spec#6-可選擇與命名自己的公主**：方案須讓玩家首次進入時選定公主外觀並命名，之後可重選外觀或改名，且不影響既有存檔進度；可玩公主 roster 須提供可辨識差異並保留既有 `lumi`／`yumi`／`sol` id 的舊存檔相容。
+* **spec#7-可用純靜態網站方式部署並模組化擴充內容**：方案須能以 GitHub Pages 等純靜態方式部署遊玩，且 area、角色、可玩公主 roster 與衣物等內容可模組化新增與調整。
 * **spec#8-可用本機多帳號分離不同玩家進度**：方案須讓同一裝置上多位玩家各自擁有獨立帳號，每次進入遊戲先選擇要使用的帳號，並可新增與刪除帳號，使不同玩家的進度與換裝成果互不混用；多帳號僅限同一瀏覽器本機，不含網路登入、密碼或雲端同步。
 * **spec#9-可限制每次遊玩時長並強制休息以護眼**：方案須在兒童連續遊玩達設定時長後自動結算本回合成果並進入強制休息，休息時間結束前不可續玩，以保護兒童視力；每次遊玩與休息的時長可由玩家於設定調整，並以各帳號各自計算。
 * **spec#10-可查看作品版權與版本沿革**：方案須在設定選單提供 About 頁籤，呈現作品版權宣告，並以中文短主旨列出歷次版本的主要變更，使玩家與家長能識別作品來源並了解版本演進。
@@ -74,17 +74,17 @@ HOST -->|"🎚️paramDeployBranch=`main`"| SYS
   * **solCase#2.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家地圖導航]，以可見的公主頭像在世界地圖、城堡地圖與各地區地圖一致地移動並進入地點場景（世界地圖採移動到目的地後再進入的探索式進入）。
 * **solStory#3-換裝獎勵**：
   * **solCase#3.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家購買衣物]，以 coins 於商店購買外觀商品。
-  * **solCase#3.2**：[etyCfg通用兒童玩家]執行[runAct自訂玩家換裝]，於衣櫃或商店試穿並穿戴所購商品。
+  * **solCase#3.2**：[etyCfg通用兒童玩家]執行[runAct自訂玩家換裝]，於衣櫃或商店試穿並穿戴所購商品，髮型與衣物變化均應由可替換外觀層呈現。
 * **solStory#4-學習換裝閉環**：
   * **solCase#4.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家退款]，將不需要的商品退回 coins，回到練習與換裝循環。
 * **solStory#5-進度保存與還原**：
   * **solCase#5.1**：[sysGame系統]執行[runAct自訂系統保存進度]，將玩家進度寫入瀏覽器本機儲存。
   * **solCase#5.2**：[etyCfg通用兒童玩家]執行[setAct自訂玩家匯入存檔]，從 Markdown 存檔還原進度。
 * **solStory#6-選角與命名**：
-  * **solCase#6.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家選角命名]，首次進入時選定公主外觀並輸入名字。
+  * **solCase#6.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家選角命名]，首次進入時自 Lumi、Yumi、Sol、Rosa 四位可辨識公主外觀選定一位並輸入名字，之後仍可重選外觀或改名。
 * **solStory#7-部署擴充與移除**：
   * **solCase#7.1**：[etyCfg通用家長維護者]執行[setAct自訂維護者部署網站]，將網站包發佈至靜態主機平台。
-  * **solCase#7.2**：[etyCfg通用家長維護者]執行[setAct自訂維護者擴充內容]，調整 area、角色或衣物內容包（新增、替換或移除單一包）。
+  * **solCase#7.2**：[etyCfg通用家長維護者]執行[setAct自訂維護者擴充內容]，調整 area、角色、可玩公主或衣物內容包（新增、替換或移除單一包），且可玩公主 base 與 starter 外觀層須持續遵守同一紙娃娃 rig。
   * **solCase#7.3**：[etyCfg通用家長維護者]執行[setAct自訂維護者移除部署]，停用靜態主機平台上的部署。
 * **solStory#8-初始化與異常復原**：
   * **solCase#8.1**：[sysGame系統]執行[runAct自訂系統還原進度]，讀取本機存檔並將缺漏或損壞欄位正規化回預設值。
@@ -185,15 +185,15 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
   * **sysCase#2.2**：[modMap模組]承接[runAct自訂玩家地圖導航]，於世界地圖點選目的地時先令公主頭像移動至該目的地座標後再進入，移動途中再次點選即略過位移直接進入。
 * **sysStory#3-承接換裝與商店**：
   * **sysCase#3.1**：[modWardrobe模組]承接[runAct自訂玩家購買衣物]，扣除 coins 並標記擁有。
-  * **sysCase#3.2**：[modWardrobe模組]承接[runAct自訂玩家換裝]，更新 outfit 並重繪紙娃娃。
+  * **sysCase#3.2**：[modWardrobe模組]承接[runAct自訂玩家換裝]，以角色中性 base 加上髮型、衣物與配件 layer 的順序更新 outfit 並重繪紙娃娃；預設髮型與預設衣物不得靠 base baked-in 呈現。
   * **sysCase#3.3**：[modWardrobe模組]承接[runAct自訂玩家退款]，回補 coins 並取消擁有。
 * **sysStory#4-承接狀態保存與還原**：
   * **sysCase#4.1**：[modState模組]承接[runAct自訂系統保存進度]，寫入瀏覽器本機儲存。
   * **sysCase#4.2**：[modState模組]承接[setAct自訂玩家匯入存檔]，解析 Markdown 並正規化還原。
   * **sysCase#4.3**：[modState模組]承接[runAct自訂系統還原進度]，缺漏欄位回退預設值。
 * **sysStory#5-承接選角與內容擴充**：
-  * **sysCase#5.1**：[modShell模組]承接[runAct自訂玩家選角命名]，更新 activeCharacterId 與 playerName。
-  * **sysCase#5.2**：[modContent模組]承接[setAct自訂維護者擴充內容]，匯入新內容包至 registry。
+  * **sysCase#5.1**：[modShell模組]承接[runAct自訂玩家選角命名]，於 `lumi`、`yumi`、`sol`、`rosa` 可玩公主 roster 中更新 activeCharacterId 與 playerName，且保留 `lumi`／`yumi`／`sol` 舊 id 對既有存檔相容。
+  * **sysCase#5.2**：[modContent模組]承接[setAct自訂維護者擴充內容]，匯入新內容包至 registry；可玩公主與 starter wardrobe layer 均須遵守 [hmiIntf自訂角色尺度與美術規範] 的 `shared-512x768-v1` rig。
 * **sysStory#6-承接多帳號選擇與管理**：
   * **sysCase#6.1**：[modShell模組]承接[runAct自訂玩家選擇帳號]，啟動時先進入帳號選擇，讀取帳號清單，玩家選定後透過 modState 載入該帳號進度再進入遊戲。
   * **sysCase#6.2**：[modState模組]承接[runAct自訂玩家新增帳號]，建立新帳號的初始進度並設為使用中帳號。
@@ -208,7 +208,7 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
   * **sysCase#8.2**：[modScene模組]承接[runAct自訂系統結算協助獎勵]，依中文使用旗標與答對前送出次數，以全額／半額（paramRewardSecondTryRatio）／無 結算 coins。
 * **sysStory#9-承接角色差異化配音**：
   * **sysCase#9.1**：[modScene模組]承接[runAct自訂系統角色配音]，依說話者宣告的角色特性查 [modContent模組] 的 [datIntf自訂角色音色目錄] 取得音頻參數（pitch／rate／偏好 voice）套用發聲，且所有經 [modScene模組] 之語音發聲（含角色配音、公主朗讀作答與中文協助）最終語速均另乘全域 paramSpeechRateScale 倍率以利兒童聽辨；特性缺漏或不在目錄時降級為 paramDefaultVoiceProfile 之預設嗓音。
-  * **sysCase#9.2**：[modScene模組]承接[runAct自訂系統公主朗讀作答]，於玩家選定選項時以目前玩家公主之音色朗讀所選選項文字，並沿用既有語音開關（關閉時不發聲）。
+  * **sysCase#9.2**：[modScene模組]承接[runAct自訂系統公主朗讀作答]，於玩家選定選項時以目前玩家公主之音色朗讀所選選項文字；`playableVoiceById` 須覆蓋 `lumi`、`yumi`、`sol`、`rosa`，並沿用既有語音開關（關閉時不發聲）。
 * **sysStory#10-承接關於與版本沿革**：
   * **sysCase#10.1**：[modShell模組]承接[runAct自訂玩家檢視關於資訊]，於系統選單新增 About 頁籤，渲染作品版權宣告與最近 10 個版本的中文短主旨；當前版本資訊併入此頁籤，由 [datIntf自訂版本沿革目錄] 之首筆導出，Settings 不再另列版本卡。
 
@@ -228,6 +228,7 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
   * [etyCfg自訂modContent組態]
     * paramDefaultArea=`castle`
     * paramDefaultCharacter=`lumi`
+    * paramPlayableCharacters=`lumi,yumi,sol,rosa`
     * paramDefaultVoiceProfile=`default`
   * [etyCfg自訂modScene組態]
     * paramChineseAudioLang=`zh-TW`
@@ -389,7 +390,7 @@ erDiagram
 * 步驟：
   1. 於衣櫃穿戴已擁有商品。
 * 預期結果：
-  1. 紙娃娃 outfit 更新且互斥 slot 正確處理。
+  1. 紙娃娃 outfit 更新且互斥 slot 正確處理，短髮與短袖等外觀不會露出 base 烘入的舊髮型或舊袖子。
 
 #### intTest#09-驗證 [runAct自訂玩家退款]
 
@@ -407,7 +408,7 @@ erDiagram
 * 步驟：
   1. 於選角畫面選定外觀並輸入名字後確認。
 * 預期結果：
-  1. activeCharacterId 與 playerName 更新，遊戲內稱呼隨之改變。
+  1. activeCharacterId 與 playerName 更新，遊戲內稱呼隨之改變，且 Lumi、Yumi、Sol、Rosa 四位可玩公主在選角畫面可辨識。
 
 #### intTest#11-驗證 [runAct自訂系統保存進度]
 
@@ -587,6 +588,32 @@ erDiagram
   1. About 頁籤顯示版權宣告字串，並列出最近 10 個版本（或現有全部）的版本標識與中文短主旨。
   2. 版本沿革資料源非空且首筆版本與當前版本一致；Settings 頁籤不再出現獨立版本卡。
 
+#### intTest#29-驗證 可玩公主基底與 starter 外觀分層
+
+* 既有基底：intTest#08。
+* 新增項目：[sysGame系統]之可玩紙娃娃 base 與 starter 外觀分層契約。
+* 步驟：
+  1. 載入 Lumi、Yumi、Sol、Rosa 四位可玩公主 base。
+  2. 對同一角色分別套用 starter 髮型、短髮、starter 衣物與短袖／露手臂衣物。
+  3. 檢查 `starterPajama`、`softBrownHair` 或其後續等效預設外觀項是否具有可控制 layer。
+* 預期結果：
+  1. 四位可玩公主 base 皆為 `512x768` 透明 WebP 並遵守 `shared-512x768-v1` 對位，且不含可替換髮型、長袖、睡衣或其他衣物。
+  2. 預設髮型與預設衣物由可開關 layer 或等效可控制外觀項呈現。
+  3. 短髮與短袖／露手臂衣物在所有膚色角色上不殘留舊長髮、舊袖子或單一膚色色塊。
+
+#### intTest#30-驗證 四角色 roster 與舊存檔相容
+
+* 既有基底：intTest#10、intTest#12、intTest#23。
+* 新增項目：[sysGame系統]之四位可玩公主 roster、舊 id 相容與可玩公主音色覆蓋。
+* 步驟：
+  1. 於選角畫面逐一選擇 `lumi`、`yumi`、`sol`、`rosa`。
+  2. 載入舊存檔中 activeCharacterId 為 `lumi`、`yumi`、`sol` 的資料。
+  3. 對四位可玩公主各觸發一次公主朗讀作答。
+* 預期結果：
+  1. Lumi 保留既有方向；Yumi 呈冷色優雅系；Sol 呈陽光短髮系；Rosa 呈棕髮甜美系且不把參考圖禮服、皇冠或背景烘進 base。
+  2. 舊存檔的 `lumi`、`yumi`、`sol` 均正常載入，不因 roster 增加 `rosa` 而重置。
+  3. `playableVoiceById` 對四個 id 皆能解析，缺瀏覽器 voice 時依既有規則降級。
+
 ## E. 方案層級：文件程式化測試
 
 #### docProgTest#01-productReadme 承接 [solStory#1-短回合英文練習]
@@ -606,7 +633,7 @@ erDiagram
 #### docProgTest#03-productReadme 承接 [solStory#3-換裝獎勵]
 
 * productReadme 要求：
-  1. 說明如何用 coins 購買並換裝。
+  1. 說明如何用 coins 購買並換裝，且預設髮型與預設衣物屬可替換外觀而非角色 base 固定內容。
 * 通過判定：
   1. 讀者可依 productReadme 完成一次購買與換裝。
 
@@ -627,14 +654,14 @@ erDiagram
 #### docProgTest#06-productReadme 承接 [solStory#6-選角與命名]
 
 * productReadme 要求：
-  1. 說明首次選角與命名，以及之後重選與改名的方式。
+  1. 說明首次選角與命名、Lumi／Yumi／Sol／Rosa 四位可玩公主方向，以及之後重選與改名的方式。
 * 通過判定：
-  1. 讀者可依 productReadme 完成選角與命名。
+  1. 讀者可依 productReadme 完成四角色選角與命名，並理解既有 `lumi`／`yumi`／`sol` 存檔仍相容。
 
 #### docProgTest#07-productReadme 承接 [solStory#7-部署擴充與移除]
 
 * productReadme 要求：
-  1. 說明以 GitHub Pages 部署、擴充內容包與移除部署的方式。
+  1. 說明以 GitHub Pages 部署、擴充內容包與移除部署的方式，並指向可玩公主 `shared-512x768-v1` rig 與 base 分層契約。
 * 通過判定：
   1. 維護者可依 productReadme 完成一次靜態部署。
 
@@ -776,6 +803,18 @@ erDiagram
 * 預期結果：
   1. About 頁籤顯示版權宣告，並以中文短主旨列出歷次版本（至少最近 10 版或現有全部）。
 
+#### e2eTest#10-依 productReadme 驗測四角色選角與換裝分層
+
+* 依據：docProgTest#03、docProgTest#06、docProgTest#07、[solCase#3.2]、[solCase#6.1]、[solCase#7.2]。
+* 步驟：
+  1. 依 productReadme 建立新帳號，於選角畫面逐一檢視 Lumi、Yumi、Sol、Rosa。
+  2. 選擇一位公主進入遊戲，於衣櫃切換短髮與短袖／露手臂衣物。
+  3. 載入 activeCharacterId 為 `lumi`、`yumi`、`sol` 的舊存檔。
+* 預期結果：
+  1. 四位公主在選角畫面可辨識，Rosa 以棕髮甜美系呈現，Yumi 與 Sol 重製方向不再同質。
+  2. 短髮與短袖／露手臂衣物不露出 base baked-in 長髮、長袖或睡衣。
+  3. 舊存檔仍載入對應公主，不因新增 Rosa 而回退預設。
+
 # IV. 部署成效
 
 ## A. 部署組態
@@ -797,8 +836,8 @@ erDiagram
   * 評估方式：觀察單次遊玩探索的地點數與回訪次數，以及角色配音的覆蓋與降級情形。
   * 觀察項目：到訪地點數、連續遊玩回合數、已宣告音色特性的角色比例、缺特性降級發生率。
 * **spec#3-可把學習成果轉為看得見的外觀獎勵**
-  * 評估方式：觀察 coins 兌換為外觀的比例。
-  * 觀察項目：購買件數、換裝次數、coins 留存。
+  * 評估方式：觀察 coins 兌換為外觀的比例，並以素材 QA 確認 base 與 starter layer 分離。
+  * 觀察項目：購買件數、換裝次數、coins 留存、短髮／短袖換裝殘留率、starter 預設外觀 layer 覆蓋率。
 * **spec#4-可形成練英文獲獎勵換裝的正向閉環**
   * 評估方式：觀察「答題→購買→換裝」是否在單次遊玩內成環。
   * 觀察項目：單次遊玩完成閉環的比例。
@@ -806,11 +845,11 @@ erDiagram
   * 評估方式：以匯出再匯入比對狀態一致性。
   * 觀察項目：還原欄位完整度、重整後狀態保留率。
 * **spec#6-可選擇與命名自己的公主**
-  * 評估方式：觀察選角命名完成率與改名後稱呼一致性。
-  * 觀察項目：選角完成率、稱呼動態化正確率。
+  * 評估方式：觀察選角命名完成率、改名後稱呼一致性、四位公主辨識度與舊存檔相容。
+  * 觀察項目：選角完成率、稱呼動態化正確率、Lumi／Yumi／Sol／Rosa 辨識正確率、舊 `lumi`／`yumi`／`sol` 存檔載入成功率。
 * **spec#7-可用純靜態網站方式部署並模組化擴充內容**
-  * 評估方式：以全新環境依 productReadme 完成部署與內容擴充。
-  * 觀察項目：部署成功率、新增內容包後既有功能未回歸。
+  * 評估方式：以全新環境依 productReadme 完成部署與內容擴充，並驗證可玩公主與衣物 layer 可獨立擴充。
+  * 觀察項目：部署成功率、新增內容包後既有功能未回歸、可玩公主新增／替換成功率、同一衣物 layer 跨角色對位成功率。
 * **spec#8-可用本機多帳號分離不同玩家進度**
   * 評估方式：以多個帳號分別遊玩後比對各自進度是否互不混用。
   * 觀察項目：帳號間進度隔離正確率、刪除帳號後狀態一致性。
