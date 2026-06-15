@@ -551,6 +551,35 @@ async function runDataAudit(api) {
   const characterRegistry = await collectPaperDollCharacterAudit(api, errors);
   const characterScale = await collectCharacterScaleAudit(api, errors);
 
+  // issue #96 設計契約 §3：場景自帶題庫之結構與中文覆蓋一致性（手寫固定、每題自帶中文、進場取題）。
+  const lessonAudit = { places: 0, questions: 0, byArea: {} };
+  Object.values(api.areaRegistry).forEach((area) => {
+    (area.locations || []).forEach((hotspot) => {
+      const lesson = api.sceneConfigFor(hotspot).lesson;
+      if (!lesson) return; // 無題庫之場景（房間／商店／出入口）不帶 lesson
+      lessonAudit.places += 1;
+      lessonAudit.byArea[area.id] = (lessonAudit.byArea[area.id] || 0) + 1;
+      const at = `${area.id}/${hotspot.id}`;
+      if (!lesson.title || !lesson.opening || !lesson.ending) errors.push(`${at} lesson missing title/opening/ending`);
+      if (!lesson.openingZh) errors.push(`${at} lesson missing openingZh`);
+      if (!lesson.area || !lesson.vocabProfile) errors.push(`${at} lesson missing area/vocabProfile (completedLessons/徽章/日誌所需)`);
+      if (!Array.isArray(lesson.questions) || !lesson.questions.length) { errors.push(`${at} lesson has no questions`); return; }
+      lesson.questions.forEach((q, i) => {
+        lessonAudit.questions += 1;
+        const where = `${at}#${i + 1}`;
+        if (!q.prompt || !q.answer || !Array.isArray(q.choices) || q.choices.length < 2) errors.push(`${where} missing prompt/answer/choices`);
+        else if (!q.choices.includes(q.answer)) errors.push(`${where} answer not in choices`);
+        if (!Array.isArray(q.words) || !q.words.length) errors.push(`${where} missing words`);
+        if (!q.reward || !Number.isFinite(q.reward.coins)) errors.push(`${where} missing reward.coins`);
+        if (!q.promptZh) errors.push(`${where} missing promptZh (中文協助所需)`);
+        if (!Array.isArray(q.choicesZh) || q.choicesZh.length !== q.choices.length || q.choicesZh.some((z) => !z)) errors.push(`${where} choicesZh incomplete (中文協助所需)`);
+      });
+    });
+  });
+  ["castle", "urban", "rural", "wild"].forEach((id) => {
+    if (!lessonAudit.byArea[id]) errors.push(`area ${id} has no lesson-bearing places`);
+  });
+
   const result = document.createElement("pre");
   result.id = "dataAuditResult";
   result.textContent = JSON.stringify({
@@ -564,6 +593,7 @@ async function runDataAudit(api) {
     sceneBackgroundContract,
     characterRegistry,
     characterScale,
+    lessonAudit,
     supportedActorMotions: [...supportedActorMotions],
     shops: shopLocations.map((hotspot) => ({
       area: api.areaForHotspot(hotspot),

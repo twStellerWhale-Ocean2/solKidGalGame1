@@ -1,7 +1,7 @@
-import { castleArea, castleLessons, castleQuestTemplates, castleSceneConfigs, castleVocabularyProfile } from "../../content-package/areas/castle/manifest.js";
-import { wildArea, wildLessons, wildQuestTemplates, wildSceneConfigs, wildVocabularyProfile } from "../../content-package/areas/wild/manifest.js";
-import { urbanArea, urbanLessons, urbanQuestTemplates, urbanSceneConfigs, urbanVocabularyProfile } from "../../content-package/areas/urban/manifest.js";
-import { ruralArea, ruralLessons, ruralQuestTemplates, ruralSceneConfigs, ruralVocabularyProfile } from "../../content-package/areas/rural/manifest.js";
+import { castleArea, castleSceneConfigs, castleVocabularyProfile } from "../../content-package/areas/castle/manifest.js";
+import { wildArea, wildSceneConfigs, wildVocabularyProfile } from "../../content-package/areas/wild/manifest.js";
+import { urbanArea, urbanSceneConfigs, urbanVocabularyProfile } from "../../content-package/areas/urban/manifest.js";
+import { ruralArea, ruralSceneConfigs, ruralVocabularyProfile } from "../../content-package/areas/rural/manifest.js";
 export { characterScaleContract, bodyHeightPxForCm } from "./character-scale.js";
 export { worldMap } from "../../content-package/areas/world.js";
 export {
@@ -68,16 +68,14 @@ export const vocabularyProfiles = Object.freeze({
   [wildVocabularyProfile.id]: wildVocabularyProfile
 });
 
-export const questTemplates = [
-  ...castleQuestTemplates,
-  ...urbanQuestTemplates,
-  ...ruralQuestTemplates,
-  ...wildQuestTemplates
-];
-
-export const lessons = [
-  ...castleLessons,
-  ...urbanLessons,
-  ...ruralLessons,
-  ...wildLessons
-];
+// issue #96：任務模板由「場景自帶題庫」就地導出（外框與題目同一塊），不再維護獨立的 questTemplates 註冊表。
+export const questTemplates = Object.entries(sceneConfigs)
+  .filter(([, config]) => config.lesson)
+  .map(([place, config]) => ({
+    id: `${place}Help`,
+    place,
+    title: config.lesson.title,
+    opening: config.lesson.opening,
+    openingZh: config.lesson.openingZh,
+    ending: config.lesson.ending
+  }));
