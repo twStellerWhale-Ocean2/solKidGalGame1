@@ -45,7 +45,8 @@ export const defaultState = {
   area: "castle",
   player: { x: 51.5, y: 50 },
   playerNode: "princessRoom",
-  // 世界地圖上公主頭像的自由走動座標（issue #99）。預設對齊 castle 目的地（world.js）。
-  // 缺漏時 currentPlayerPoint("world") 會退回目前選定目的地座標。
-  world: { x: 51, y: 32 }
+  // 世界地圖上公主頭像的自由走動座標（issue #99）。預設 null：玩家於世界地圖移動或進入地點前，
+  // currentPlayerPoint("world") 會退回目前選定目的地座標（依 state.area 推導），移動/進入後才寫入實際座標。
+  // 預設 null 亦確保舊存檔（normalizeState 淺合併 defaultState）不會被釘在 castle，而是依其所在地區顯示。
+  world: null
 };
