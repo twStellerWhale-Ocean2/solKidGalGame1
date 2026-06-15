@@ -116,6 +116,12 @@
 * **鏡頭 C（逐頁 UI/UX）：不適用**——本案無任何玩家可見變更（題庫 rendered 內容、難度分級、coins、中文協助行為均等價），未改 DOM 與樣式（scene-id 去共用不影響無專屬 CSS 之場景）。
 * **鏡頭 A/B（能力/專家缺口）**：產品能力（短回合英文練習、中文協助、獎勵閉環）經上表 selftest 驗證與重構前等價、無退步；題庫產出已收斂為單一作法（手寫固定＋內嵌中文＋場景自帶＋lazy），消除雙軌/雙註冊表技術債，並以 `data-audit` 契約守護防回歸。新地區（如 ocean）依 `lessonBank`＋`mergeLessons` 範式擴充即可。
 
+### 後續修復（PR 自動審查回應，`8c4d7c7`）
+
+* **Codex review P2**：序列化靜態 `lessonBank` 時遺漏每題 `id`／`vocabProfile`，致 `pickLesson` 回傳缺欄、`answerLesson` 寫入 `completedLessons`（徽章 First Quest／Kind Helper）與日誌 `lessonId`／`vocabProfile` 變 `undefined`，完成進度停擺。（原等價檢查只比對 rendered 欄位、漏比進度欄位；selftest 答題未斷言 `completedLessons` 推進，故漏接。）
+* **修法**：`mergeLessons` 注入地區常數 `area`／`vocabProfile` 至各 lesson 區塊；`pickLesson` 由 `${lesson.area}-${place}-${NN}` 導出 lessonId（格式同重構前）＋帶 `vocabProfile`。`data-audit` `lessonAudit` 加 area/vocabProfile 守護。
+* **驗證**：實機完成一題確認 `completedLessons` 0→1 且記為 `castle-kingHall-03`、日誌帶 `lessonId`/`vocabProfile`；`data-audit`／`chinese-reward`／`monkey`(300) 重跑全綠、console 0。
+
 ### 結論
 
-* **可宣稱完成（CODE-READY 候選）**：GATE §1 全綠、§3 契約守護就位、行為等價佐證齊備、design.md/README 未動（docLint 0）。待 USR 於 PR #122 審查 merge。
+* **可宣稱完成（CODE-READY 候選）**：GATE §1 全綠、§3 契約守護就位、行為等價佐證齊備（含完成進度/徽章/日誌）、design.md/README 未動（docLint 0）。待 USR 於 PR #122 審查 merge。
