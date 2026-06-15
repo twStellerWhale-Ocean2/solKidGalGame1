@@ -4,6 +4,7 @@ import {
   defaultActiveCharacterId,
   paperDollBaseLayer,
   paperDollCharacterThumb,
+  isPlayableCharacterId,
   playableCharacterById
 } from "./_shared/paper-doll-assets.js";
 import { outfitSlots, paperDollLayerOrder } from "./_shared/rules.js";
@@ -30,6 +31,7 @@ export {
   paperDollBaseLayer,
   paperDollCharacterThumb,
   paperDollLayerOrder,
+  isPlayableCharacterId,
   playableCharacterById
 };
 //#endregion 匯出共用規則

@@ -30,6 +30,7 @@ import {
   mapNodes,
   paperDollBaseLayer,
   paperDollLayerOrder,
+  playableVoiceById,
   questTemplates,
   sceneConfigs,
   shopItems,
@@ -579,9 +580,25 @@ function selectPendingCharacter(characterId) {
   }
 }
 
+function isStarterWardrobeItem(itemId, type) {
+  const item = itemById(itemId);
+  return item?.storeId === "starter" && (!type || item.type === type);
+}
+
+function applyCharacterStarterOutfit(character) {
+  const starterOutfit = character?.defaultOutfit || {};
+  if (isStarterWardrobeItem(state.outfit.hairstyle, "hairstyle") && starterOutfit.hairstyle) {
+    state.outfit.hairstyle = starterOutfit.hairstyle;
+  }
+  if (isStarterWardrobeItem(state.outfit.dress, "dress") && starterOutfit.dress) {
+    state.outfit.dress = starterOutfit.dress;
+  }
+}
+
 function confirmCharacterSelect() {
   const character = playableCharacterById(pendingCharacterId);
   state.activeCharacterId = character.id;
+  applyCharacterStarterOutfit(character);
   state.playerName = sanitizePlayerName(elements.playerNameInput.value) || character.defaultName;
   persist();
   const activeAccountId = getActiveAccountId();
@@ -3189,6 +3206,7 @@ installTestingHooks({
   openSystemMenu,
   openWardrobeDetail,
   playableCharacterById,
+  playableVoiceById,
   paperDollBaseLayer,
   persist,
   renderWorldMap,

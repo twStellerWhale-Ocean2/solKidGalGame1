@@ -18,7 +18,7 @@ export const defaultState = {
     restEndsAt: 0,
     cycle: { coinsAtStart: 0, answered: 0, correct: 0 }
   },
-  owned: ["softBrownHair", "starterPajama"],
+  owned: ["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair", "starterPajama"],
   outfit: {
     hairstyle: "softBrownHair",
     top: "none",
