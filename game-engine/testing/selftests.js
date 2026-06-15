@@ -562,6 +562,7 @@ async function runDataAudit(api) {
       const at = `${area.id}/${hotspot.id}`;
       if (!lesson.title || !lesson.opening || !lesson.ending) errors.push(`${at} lesson missing title/opening/ending`);
       if (!lesson.openingZh) errors.push(`${at} lesson missing openingZh`);
+      if (!lesson.area || !lesson.vocabProfile) errors.push(`${at} lesson missing area/vocabProfile (completedLessons/徽章/日誌所需)`);
       if (!Array.isArray(lesson.questions) || !lesson.questions.length) { errors.push(`${at} lesson has no questions`); return; }
       lesson.questions.forEach((q, i) => {
         lessonAudit.questions += 1;

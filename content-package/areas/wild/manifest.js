@@ -197,6 +197,6 @@ export const wildSceneConfigs = mergeLessons({
   redHoodPath: { ...wildSceneArt("red-hood-path"), scene: "scene-wild-red-hood-path", npc: "Ruby", npcImage: npcImage("ruby"), npcNaturalHeightCm: 125, travelAction: "Visit", travelLine: "Ruby checks her basket on the wild path." },
   threePigsCottage: { ...wildSceneArt("three-pigs"), scene: "scene-wild-three-pigs", npc: "Pippo", npcImage: npcImage("pippo"), npcNaturalHeightCm: 90, travelAction: "Visit", travelLine: "Pippo looks at three tiny cottages." },
   treeSpiritGrove: { ...wildSceneArt("tree-spirit-grove"), scene: "scene-wild-tree-spirit-grove", npc: "Sylvie", npcImage: npcImage("sylvie"), npcNaturalHeightCm: 170, travelAction: "Visit", travelLine: "Sylvie the tree spirit smiles from the branches." }
-}, wildLessonBank);
+}, wildLessonBank, { area: "wild", vocabProfile: wildVocabularyProfile.id });
 //#endregion 對話場景設定
 
