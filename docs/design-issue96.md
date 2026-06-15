@@ -80,3 +80,42 @@
   * **題庫一致性檢查**：於 [game-engine/testing/selftests.js] 增設檢查——每地點題數一致、每題必備欄位齊備、`answer ∈ choices`、**每題中文覆蓋率**（`promptZh`/`choicesZh` 補齊）；驗「進場取題 ≡ 原全域過濾」之集合等價（§3 不變式 1–3）。
   * 因本案涉引擎取題路徑（D3）改動，建議 3code 以 `data-audit`／新增結構檢查之 selftest 結果佐證；是否另產 `docs/test-summary.html` 由 3code 依 GATE 與改動面判定。
 * **回歸重點**：答題（`runAct自訂玩家答英文題`）、中文協助（`runAct自訂玩家取用中文協助`）、協助獎勵階梯（`runAct自訂系統結算協助獎勵`）行為不退步（對應既有 intTest#05／#20／#21）。
+
+## 7. 3code 實作與驗證結果（CODE-READY，2026-06-15）
+
+> 沿 #101／#111／#120 之 Option A：本案為**內部架構/內容一致性重構、無玩家可見變更**，不另產 `docs/test-summary.html`；GATE 驗證結果記於本節。`docs/design.md`／`README.md` 全程未動。
+
+### 實作（垂直切片，5 commit）
+
+* **切片1**（`29cef4c`）：四區 170 題以 Node 腳本由「已解析之 resolved lessons（含內嵌中文）」**序列化為靜態 `lessonBank`**（手寫固定形狀 `{prompt,promptZh,answer,choices,choicesZh,words,reward}`），經 `mergeLessons` 併入各 `sceneConfigs` 條目；castle 之 `castleZh` 整句表即於此內聯為各題內嵌中文。舊路徑暫留、行為不變。
+* **切片2**（`eb01622`）：引擎改 **lazy 進場取題**——[game-engine/main.js] `pickLesson`／`hasLessonsForPlace` 改讀 `sceneConfigs[place].lesson`；[game-engine/data/game-data.js] `questTemplates` 由 `sceneConfigs` 就地導出（**收掉雙註冊表拆分**）。
+* **切片3**（`4337c63`）：移除舊路徑——四區 manifest 之題型產生器（`starterQuestions`/`moversQuestions`/`flyersQuestions`）、zh 表＋`tz()`、`lessonPlaces`，`_shared/lesson-helpers.js` 之 `makeLessons`/`makeQuestTemplates`/`zhLookup`，game-data 全域 `lessons` 匯出（共 −469 行）。
+* **切片4**（`c0b9291`）：**場景 scene-id 去共用**——`scene-garden`（→`scene-luminara-castle`／`scene-castle-gate`）、`scene-harbor`（→`scene-port`）、`scene-rural-farm`（→`scene-rural-exit`）；44 場景各自獨立、背景圖檔續用同檔（scene-id 僅為 `.adv-scene` CSS class，唯 `scene-princess-room` 有專屬樣式、不在共用群）。並於 `data-audit` 增設**題庫契約守護**。
+
+### GATE §1（機器判定，全數 exit 0）
+
+* `npx tsc --noEmit --project jsconfig.json` → 0
+* `docLint docs/design.md` → PASS（0）；`repoLint .` → PASS（0）
+
+### GATE §1（瀏覽器 selftest，活 build，console 0 error）
+
+| selftest | 結果 | 涵蓋 |
+|---|---|---|
+| `data-audit`（含新增 `lessonAudit`） | ✅ passed | 題庫結構/欄位/`answer∈choices`/**中文覆蓋**；計 places 34（castle5/urban14/rural7/wild8）、questions 170 |
+| `chinese-reward` | ✅ passed | 答題＋中文協助＋獎勵階梯（全額/半額/無） |
+| `monkey`（300 步） | ✅ passed | 隨機操作無 runtime error |
+| `save-load` | ✅ passed | 匯出/匯入還原 |
+| `character-voice` | ✅ passed | NPC 配音＋公主朗讀所選作答（經 `getActiveLesson`） |
+
+### 等價佐證（取題行為不退步，§3 不變式 3）
+
+* 切片落地時以 Node 比對：每區 `sceneConfigs[place].lesson.questions` 與重構前 resolved lessons **逐題逐欄位全等**（castle 25／urban 70／rural 35／wild 40＝170）；derived `questTemplates` 與舊 `xxxQuestTemplates` 串接**集合全等**（34）；34 個有題地點皆可由 `sceneConfigs` 解析（無不可達）。
+
+### GATE §5（業界水準審查）
+
+* **鏡頭 C（逐頁 UI/UX）：不適用**——本案無任何玩家可見變更（題庫 rendered 內容、難度分級、coins、中文協助行為均等價），未改 DOM 與樣式（scene-id 去共用不影響無專屬 CSS 之場景）。
+* **鏡頭 A/B（能力/專家缺口）**：產品能力（短回合英文練習、中文協助、獎勵閉環）經上表 selftest 驗證與重構前等價、無退步；題庫產出已收斂為單一作法（手寫固定＋內嵌中文＋場景自帶＋lazy），消除雙軌/雙註冊表技術債，並以 `data-audit` 契約守護防回歸。新地區（如 ocean）依 `lessonBank`＋`mergeLessons` 範式擴充即可。
+
+### 結論
+
+* **可宣稱完成（CODE-READY 候選）**：GATE §1 全綠、§3 契約守護就位、行為等價佐證齊備、design.md/README 未動（docLint 0）。待 USR 於 PR #122 審查 merge。
