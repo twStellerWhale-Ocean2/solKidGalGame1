@@ -50,3 +50,29 @@
 * 3code 完成判定：
   * GATE §1：`tsc`／`docLint`／`repoLint` 0；`?selftest=monkey`／`save-load` passed、console 0。
   * GATE §5（有畫面）：實機 visual-qa **寬版＋窄版 × 場景/購物（及 wardrobe/refund）** 量測 `.adv-box` 同視口同高（差 0）；商品格不被裁切、無 overflow、場景面板無過度留白；與 #111 外框、#112 emoji 徽章共存。
+
+## 6. 實作與驗證結果（3code，2026-06-15）
+
+> 沿 #101／#111 之 Option A：本焦點 UI 一致性修正**不另產 `docs/test-summary.html`**，GATE 驗證結果記於本節。
+
+### 實作（純 CSS，1 處）
+
+* `styles/mobile.css` `@media (min-width: 821px)`：將原僅涵蓋 `shop/wardrobe/refund` 之 `--adv-dialog-height: clamp(360px, 48%, 470px)` 選擇器**擴及全 7 模式**（scene/hint/quest/complete/shop/wardrobe/refund），使桌機所有模式共用同一內層高度、向購物拉高對齊。
+* 窄版（`@max-width: 820px`）原已全模式統一 `min(316px, 42%)`，不動；base（全域）`--adv-dialog-height` 維持為 fallback。內層 `.adv-box { height: var(--adv-dialog-height) }`（單一來源、既有）不變——本案僅收斂其桌機取值至全模式一致。
+* 不動 DOM／遊戲邏輯，不動 `docs/design.md`／`README.md`。
+
+### GATE §1（機器判定，全數 exit 0）
+
+* `npx tsc --noEmit --project jsconfig.json` → exit 0
+* `docLint docs/design.md` → PASS（0）；`repoLint .` → PASS（0）
+* `?selftest=save-load` → `passed:true`；`?selftest=monkey`（300 步）→ `passed:true, errors:[]`；console 0 error
+
+### GATE §5（實機 visual-qa 量測 `.adv-box` 高度）
+
+| 視口 | 場景 scene | 購物 shop | 對話 quest | 同視口一致？ |
+|---|---|---|---|---|
+| 桌機 1280×800 | 修前 260 → **修後 368** | 368 | 修前 ~260 → **368** | ✅ 全 368 |
+| 手機 375×812 | 316 | 316 | 316 | ✅ 全 316（未動） |
+
+* 各模式 `.adv-box` 無 overflow；購物 `.compact-shop` 於框內捲動（容性 OK）；外框 `.adv-scene`（#111）桌機 768／手機 780 不變。
+* **不變式達成**：同視口下 `.adv-box` 全模式同高（桌機 368／手機 316）；桌機場景/購物高度差由 108px → **0**。
