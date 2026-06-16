@@ -1,6 +1,6 @@
 ---
 name: solKidGalGame
-date: 2026/6/15
+date: 2026/6/16
 formatVersion: "2.0"
 description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 ---
@@ -18,11 +18,11 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 * **spec#2-可用角色陪伴與場景探索維持遊玩意願**：方案須以公主角色陪伴、王國地圖與多地區場景探索及地點互動，提高兒童反覆遊玩意願；並讓不同場景人物與玩家公主各具貼合其角色的聲音表現（含玩家公主以其聲音朗讀所選作答），使陪伴與場景更具辨識度與臨場沉浸，而非一律同一語音。
 * **spec#3-可把學習成果轉為看得見的外觀獎勵**：方案須讓答對所得 coins 能兌換為角色外觀（髮型、衣物、鞋帽、配件、outfit set）等可見變化，使成就可見而非僅顯示分數；目前可玩公主 base 依使用者指定採 baked-in 短髮 playwear，仍不得烘入長髮、長袖、睡衣、禮服、皇冠或背景，且預設 starter 項不得造成重複疊圖。
 * **spec#4-可形成練英文獲獎勵換裝的正向閉環**：方案須使英文練習、獎勵取得與換裝回饋構成同一個可重複的正向循環。
-* **spec#5-可保存並還原玩家進度**：方案須讓每個帳號各自的 coins、學習紀錄、擁有與穿搭、所在位置與所選角色及名字可被保存並於再次遊玩時還原。
-* **spec#6-可選擇與命名自己的公主**：方案須讓玩家首次進入時選定公主外觀並命名，之後可重選外觀或改名，且不影響既有存檔進度；可玩公主 roster 須提供可辨識差異並保留既有 `lumi`／`yumi`／`sol` id 的舊存檔相容。
+* **spec#5-可保存並還原玩家進度**：方案須讓每個帳號各自的 coins、學習紀錄、擁有與穿搭、所在位置、所選角色、名字與識別色可被保存並於再次遊玩時還原。
+* **spec#6-可選擇與命名自己的公主**：方案須讓玩家首次進入時選定公主外觀、命名並確認識別色，之後可重選外觀、改名或調整識別色，且不影響既有存檔進度；可玩公主 roster 須提供可辨識差異與預設不同背景色，並保留既有 `lumi`／`yumi`／`sol` id 的舊存檔相容。
 * **spec#7-可用純靜態網站方式部署並模組化擴充內容**：方案須能以 GitHub Pages 等純靜態方式部署遊玩，且 area、角色、可玩公主 roster 與衣物等內容可模組化新增與調整。
-* **spec#8-可用本機多帳號分離不同玩家進度**：方案須讓同一裝置上多位玩家各自擁有獨立帳號，每次進入遊戲先選擇要使用的帳號，並可新增與刪除帳號，使不同玩家的進度與換裝成果互不混用；多帳號僅限同一瀏覽器本機，不含網路登入、密碼或雲端同步。
-* **spec#9-可限制每次遊玩時長並強制休息以護眼**：方案須在兒童連續遊玩達設定時長後自動結算本回合成果並進入強制休息，休息時間結束前不可續玩，以保護兒童視力；每次遊玩與休息的時長可由玩家於設定調整，並以各帳號各自計算。
+* **spec#8-可用本機多帳號分離不同玩家進度**：方案須讓同一裝置上多位玩家各自擁有獨立帳號，每次進入遊戲先選擇要使用的帳號，並可新增與刪除帳號；帳號選擇與遊戲內人物資訊須以同一套頭胸部大頭照、背景識別色、最近遊玩時間、coins 與可遊玩／休息狀態輔助辨識，使不同玩家的進度與換裝成果互不混用；多帳號僅限同一瀏覽器本機，不含網路登入、密碼或雲端同步。
+* **spec#9-可限制每次遊玩時長並強制休息以護眼**：方案須在兒童連續遊玩達設定時長後自動結算本回合成果並進入強制休息，休息時間結束前不可續玩，以保護兒童視力；每次遊玩與休息的預設時長各 15 分鐘，且可由玩家於設定調整並以各帳號各自計算。遊戲內須顯示本次開始時間與剩餘可玩時間，休息／結算畫面須允許回到初始帳號／公主選單但不得繞過休息鎖定；地圖上公主 token 光暈須使用同一個帳號／公主識別色。
 * **spec#10-可查看作品版權與版本沿革**：方案須在設定選單提供 About 頁籤，呈現作品版權宣告，並以中文短主旨列出歷次版本的主要變更，使玩家與家長能識別作品來源並了解版本演進。
 
 # II. 設計分析
@@ -82,6 +82,7 @@ HOST -->|"🎚️paramDeployBranch=`main`"| SYS
   * **solCase#5.2**：[etyCfg通用兒童玩家]執行[setAct自訂玩家匯入存檔]，從 Markdown 存檔還原進度。
 * **solStory#6-選角與命名**：
   * **solCase#6.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家選角命名]，首次進入時自 Lumi、Yumi、Sol、Rosa 四位可辨識公主外觀選定一位並輸入名字，之後仍可重選外觀或改名。
+  * **solCase#6.2**：[etyCfg通用兒童玩家]執行[runAct自訂玩家設定公主識別色]，於選角命名流程選擇公主識別色；四位公主各有不同預設色，玩家可改為 palette 中任一色，該色會用於公主選單與人物資訊的大頭照背景、地圖公主 token 光暈與帳號辨識。
 * **solStory#7-部署擴充與移除**：
   * **solCase#7.1**：[etyCfg通用家長維護者]執行[setAct自訂維護者部署網站]，將網站包發佈至靜態主機平台。
   * **solCase#7.2**：[etyCfg通用家長維護者]執行[setAct自訂維護者擴充內容]，調整 area、角色、可玩公主或衣物內容包（新增、替換或移除單一包），且可玩公主 base 與 wardrobe 外觀層須持續遵守同一紙娃娃 rig。
@@ -89,13 +90,14 @@ HOST -->|"🎚️paramDeployBranch=`main`"| SYS
 * **solStory#8-初始化與異常復原**：
   * **solCase#8.1**：[sysGame系統]執行[runAct自訂系統還原進度]，讀取本機存檔並將缺漏或損壞欄位正規化回預設值。
 * **solStory#9-多帳號選擇與管理**：
-  * **solCase#9.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家選擇帳號]，每次進入遊戲時於帳號選擇畫面選擇要使用的帳號。
+  * **solCase#9.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家選擇帳號]，每次進入遊戲時於帳號選擇畫面選擇要使用的帳號；帳號卡顯示頭胸部大頭照、背景識別色、最近遊玩時間、coins 與目前可玩／休息狀態。
   * **solCase#9.2**：[etyCfg通用兒童玩家]執行[runAct自訂玩家新增帳號]，建立一個新帳號並成為使用中帳號。
   * **solCase#9.3**：[etyCfg通用兒童玩家]執行[runAct自訂玩家刪除帳號]，刪除一個帳號，並於刪除使用中帳號後回到帳號選擇。
+  * **solCase#9.4**：[etyCfg通用兒童玩家]執行[runAct自訂玩家回到初始選單]，於遊戲內透過明確按鈕返回初始帳號／公主選單，以便同裝置玩家切換帳號或調整公主設定；返回不得重置既有進度。
 * **solStory#10-遊玩時間限制與護眼休息**：
-  * **solCase#10.1**：[sysGame系統]執行[runAct自訂系統遊玩計時消耗]，依真實經過時間逐步遞減目前帳號的遊玩時間預算（energy）。
+  * **solCase#10.1**：[sysGame系統]執行[runAct自訂系統遊玩計時消耗]，依真實經過時間逐步遞減目前帳號的遊玩時間預算，並在人物資訊欄顯示本次開始時間與剩餘可玩時間。
   * **solCase#10.2**：[sysGame系統]執行[runAct自訂系統時間到結算]，於遊玩時間預算耗盡時自動結算並呈現本回合成果（獲得金錢、答題數與答題正確度）。
-  * **solCase#10.3**：[sysGame系統]執行[runAct自訂系統休息鎖定]，結算後鎖定目前帳號遊玩，休息時長屆滿前不可續玩、屆滿後解鎖。
+  * **solCase#10.3**：[sysGame系統]執行[runAct自訂系統休息鎖定]，結算後鎖定目前帳號遊玩，休息時長屆滿前不可續玩、屆滿後解鎖；休息／結算畫面可返回初始帳號／公主選單，但回到同一未解鎖帳號仍維持休息鎖定。
   * **solCase#10.4**：[etyCfg通用兒童玩家]執行[runAct自訂玩家調整遊玩限制]，於設定調整每次遊玩與休息的時長。
 * **solStory#11-中文雙語協助與獎勵階梯**：
   * **solCase#11.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家取用中文協助]，於答題時撥放題目或某一選項的中文以理解題意。
@@ -172,8 +174,10 @@ STATE -->|"🎚️paramStorageKey=`luminara-princess-english-adv`"| SYS
 STATE -->|"🎚️paramAccountIndexKey=`luminara-princess-english-accounts`"| SYS
 CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
 CONTENT -->|"🎚️paramDefaultVoiceProfile=`default`"| SYS
-STATE -->|"🎚️paramPlayMinutes=`10`"| SYS
-STATE -->|"🎚️paramRestMinutes=`10`"| SYS
+STATE -->|"🎚️paramPlayMinutes=`15`"| SYS
+STATE -->|"🎚️paramRestMinutes=`15`"| SYS
+CONTENT -->|"🎚️paramProfileColorPalette=`16 colors`"| SYS
+CONTENT -->|"🎚️paramDefaultProfileColors=`lumi,yumi,sol,rosa`"| SYS
 ```
 
 ### (C) 運作個案
@@ -192,17 +196,20 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
   * **sysCase#4.2**：[modState模組]承接[setAct自訂玩家匯入存檔]，解析 Markdown 並正規化還原。
   * **sysCase#4.3**：[modState模組]承接[runAct自訂系統還原進度]，缺漏欄位回退預設值。
 * **sysStory#5-承接選角與內容擴充**：
-  * **sysCase#5.1**：[modShell模組]承接[runAct自訂玩家選角命名]，於 `lumi`、`yumi`、`sol`、`rosa` 可玩公主 roster 中更新 activeCharacterId 與 playerName，且保留 `lumi`／`yumi`／`sol` 舊 id 對既有存檔相容。
-  * **sysCase#5.2**：[modContent模組]承接[setAct自訂維護者擴充內容]，匯入新內容包至 registry；可玩公主與 wardrobe layer 均須遵守 [hmiIntf自訂角色尺度與美術規範] 的 `shared-512x768-v1` rig。
+  * **sysCase#5.1**：[modShell模組]承接[runAct自訂玩家選角命名]，於 `lumi`、`yumi`、`sol`、`rosa` 可玩公主 roster 中更新 activeCharacterId、playerName 與 profileColor，且保留 `lumi`／`yumi`／`sol` 舊 id 對既有存檔相容；若舊存檔缺 profileColor，依角色預設識別色補齊。
+  * **sysCase#5.2**：[modShell模組]承接[runAct自訂玩家設定公主識別色]，提供 16 色 palette 供玩家調整 profileColor；公主選單、帳號卡與人物資訊欄均使用同一個可重用頭胸部大頭照渲染函式，背景色來自 profileColor，不另維護第二套裁切邏輯。
+  * **sysCase#5.3**：[modContent模組]承接[setAct自訂維護者擴充內容]，匯入新內容包至 registry；可玩公主與 wardrobe layer 均須遵守 [hmiIntf自訂角色尺度與美術規範] 的 `shared-512x768-v1` rig。
 * **sysStory#6-承接多帳號選擇與管理**：
-  * **sysCase#6.1**：[modShell模組]承接[runAct自訂玩家選擇帳號]，啟動時先進入帳號選擇，讀取帳號清單，玩家選定後透過 modState 載入該帳號進度再進入遊戲。
+  * **sysCase#6.1**：[modShell模組]承接[runAct自訂玩家選擇帳號]，啟動時先進入帳號選擇，讀取帳號清單與各帳號摘要（頭胸部大頭照、profileColor、lastPlayedAt、coins、play/rest 狀態），玩家選定後透過 modState 載入該帳號進度再進入遊戲。
   * **sysCase#6.2**：[modState模組]承接[runAct自訂玩家新增帳號]，建立新帳號的初始進度並設為使用中帳號。
   * **sysCase#6.3**：[modState模組]承接[runAct自訂玩家刪除帳號]，移除指定帳號，刪除使用中帳號後清除使用中指向並交回帳號選擇。
+  * **sysCase#6.4**：[modShell模組]承接[runAct自訂玩家回到初始選單]，於遊戲內提供返回初始帳號／公主選單的明確按鈕，返回時先保存目前帳號進度與 lastPlayedAt，再顯示帳號選擇畫面。
 * **sysStory#7-承接遊玩時間限制與護眼休息**：
-  * **sysCase#7.1**：[modState模組]承接[runAct自訂系統遊玩計時消耗]，依真實經過時間遞減目前帳號的遊玩時間預算並持久化至該帳號進度。
-  * **sysCase#7.2**：[modShell模組]承接[runAct自訂系統時間到結算]，於預算耗盡時呈現本回合成果結算畫面。
-  * **sysCase#7.3**：[modShell模組]承接[runAct自訂系統休息鎖定]，依休息時長鎖定遊玩入口、屆滿後解鎖。
+  * **sysCase#7.1**：[modState模組]承接[runAct自訂系統遊玩計時消耗]，依真實經過時間遞減目前帳號的遊玩時間預算並持久化至該帳號進度；預設每次遊玩與休息各 15 分鐘。
+  * **sysCase#7.2**：[modShell模組]承接[runAct自訂系統時間到結算]，於預算耗盡時呈現本回合成果結算畫面，並顯示返回初始帳號／公主選單的按鈕。
+  * **sysCase#7.3**：[modShell模組]承接[runAct自訂系統休息鎖定]，依休息時長鎖定遊玩入口、屆滿後解鎖；若玩家返回初始選單再選回同一帳號，仍依該帳號 restUntil 判斷不可續玩。
   * **sysCase#7.4**：[modState模組]承接[runAct自訂玩家調整遊玩限制]，保存每次遊玩與休息時長至目前帳號。
+  * **sysCase#7.5**：[modShell模組]承接[runAct自訂系統遊玩計時消耗]，在人物資訊欄顯示本次開始時間與剩餘可玩時間，不以百分比作為主要呈現。
 * **sysStory#8-承接中文雙語協助與獎勵階梯**：
   * **sysCase#8.1**：[modScene模組]承接[runAct自訂玩家取用中文協助]，以瀏覽器語音依 `zh-TW` 撥放題目或選項的中文（題庫含中文欄位；缺中文時降級為僅英文撥放）。
   * **sysCase#8.2**：[modScene模組]承接[runAct自訂系統結算協助獎勵]，依中文使用旗標與答對前送出次數，以全額／半額（paramRewardSecondTryRatio）／無 結算 coins。
@@ -223,12 +230,14 @@ STATE -->|"🎚️paramRestMinutes=`10`"| SYS
     * paramStorageKey=`luminara-princess-english-adv`
     * paramSaveMarker=`LUMINARA_SAVE_JSON`
     * paramAccountIndexKey=`luminara-princess-english-accounts`
-    * paramPlayMinutes=`10`
-    * paramRestMinutes=`10`
+    * paramPlayMinutes=`15`
+    * paramRestMinutes=`15`
   * [etyCfg自訂modContent組態]
     * paramDefaultArea=`castle`
     * paramDefaultCharacter=`lumi`
     * paramPlayableCharacters=`lumi,yumi,sol,rosa`
+    * paramProfileColorPalette=`16 preset colors`
+    * paramDefaultProfileColors=`lumi:red,yumi:blue,sol:yellow,rosa:green`
     * paramDefaultVoiceProfile=`default`
   * [etyCfg自訂modScene組態]
     * paramChineseAudioLang=`zh-TW`
@@ -272,6 +281,26 @@ erDiagram
     string version
     string buildDateTime
     string summaryZh
+  }
+```
+
+* [datIntf自訂玩家公主識別設定]：目前帳號的公主外觀、名字與識別色之單一狀態來源，供 [modShell模組] 渲染公主選單、帳號卡與人物資訊欄，並供 [modMap模組] 渲染地圖公主 token 光暈。profileColor 必須來自 16 色 palette；缺漏時依 activeCharacterId 對應的預設色補齊。
+
+```mermaid
+erDiagram
+  PLAYER_PROFILE ||--|| PLAYABLE_CHARACTER : selects
+  PLAYER_PROFILE {
+    string accountId
+    string activeCharacterId
+    string playerName
+    string profileColor
+    datetime lastPlayedAt
+  }
+  PLAYABLE_CHARACTER {
+    string characterId
+    string displayName
+    string baseAssetPath
+    string defaultProfileColor
   }
 ```
 
@@ -406,9 +435,9 @@ erDiagram
 * 既有基底：intTest#01。
 * 新增項目：[sysGame系統]之選角命名行為。
 * 步驟：
-  1. 於選角畫面選定外觀並輸入名字後確認。
+  1. 於選角畫面選定外觀、輸入名字並選擇識別色後確認。
 * 預期結果：
-  1. activeCharacterId 與 playerName 更新，遊戲內稱呼隨之改變，且 Lumi、Yumi、Sol、Rosa 四位可玩公主在選角畫面可辨識。
+  1. activeCharacterId、playerName 與 profileColor 更新，遊戲內稱呼與人物資訊隨之改變，且 Lumi、Yumi、Sol、Rosa 四位可玩公主在選角畫面可辨識並各有不同預設背景色。
 
 #### intTest#11-驗證 [runAct自訂系統保存進度]
 
@@ -424,9 +453,9 @@ erDiagram
 * 既有基底：intTest#11。
 * 新增項目：[sysGame系統]之缺漏正規化行為。
 * 步驟：
-  1. 載入缺少 activeCharacterId 或含未知 item 的存檔。
+  1. 載入缺少 activeCharacterId、profileColor 或含未知 item 的存檔。
 * 預期結果：
-  1. 缺漏欄位回退預設值，狀態不變量（coins 非負、裝備指向已擁有物）成立。
+  1. 缺漏欄位回退預設值；缺 profileColor 時依 activeCharacterId 補入角色預設色，狀態不變量（coins 非負、裝備指向已擁有物）成立。
 
 #### intTest#13-驗證 [runAct自訂玩家選擇帳號]
 
@@ -435,7 +464,7 @@ erDiagram
 * 步驟：
   1. 在已有至少一個帳號的狀態下啟動遊戲，於帳號選擇畫面選定一個帳號。
 * 預期結果：
-  1. 載入該帳號進度並進入遊戲，coins、穿搭與所在位置與該帳號一致。
+  1. 帳號卡顯示該帳號頭胸部大頭照、背景識別色、最近遊玩時間、coins 與可玩／休息狀態；選定後載入該帳號進度並進入遊戲，coins、穿搭、所在位置與 profileColor 與該帳號一致。
 
 #### intTest#14-驗證 [runAct自訂玩家新增帳號]
 
@@ -462,8 +491,9 @@ erDiagram
 * 既有基底：intTest#13。
 * 新增項目：[sysGame系統]之遊玩／休息時長設定與持久化。
 * 步驟：
-  1. 以一個帳號進入遊戲，於設定將每次遊玩與休息時長改為非預設值並儲存。
-  2. 重新整理頁面並以同一帳號進入。
+  1. 以一個帳號進入遊戲，確認每次遊玩與休息時長預設各為 15 分鐘。
+  2. 於設定將每次遊玩與休息時長改為非預設值並儲存。
+  3. 重新整理頁面並以同一帳號進入。
 * 預期結果：
   1. 設定值套用且重整後仍保留，僅作用於該帳號，其他帳號維持各自設定。
 
@@ -475,7 +505,7 @@ erDiagram
   1. 將每次遊玩時長設為極短測試值後進入遊戲並停留於遊玩畫面。
   2. 等待設定時長經過。
 * 預期結果：
-  1. 該帳號的遊玩時間預算（energy）隨真實經過時間遞減至 0。
+  1. 該帳號的遊玩時間預算隨真實經過時間遞減至 0，人物資訊欄以本次開始時間與剩餘可玩時間呈現，不以百分比作為主要資訊。
 
 #### intTest#18-驗證 [runAct自訂系統時間到結算]
 
@@ -484,7 +514,7 @@ erDiagram
 * 步驟：
   1. 接續 intTest#17，待遊玩時間預算遞減至 0。
 * 預期結果：
-  1. 自動顯示本回合成果結算畫面，含本回合獲得金錢、答題數與答題正確度。
+  1. 自動顯示本回合成果結算畫面，含本回合獲得金錢、答題數與答題正確度，並提供返回初始帳號／公主選單的按鈕。
 
 #### intTest#19-驗證 [runAct自訂系統休息鎖定]
 
@@ -492,10 +522,12 @@ erDiagram
 * 新增項目：[sysGame系統]之休息鎖定與屆滿解鎖行為。
 * 步驟：
   1. 接續 intTest#18 結算後，於休息時長屆滿前嘗試續玩。
-  2. 等待休息時長屆滿後再次嘗試續玩。
+  2. 於休息時長屆滿前按返回初始選單，再選回同一帳號。
+  3. 等待休息時長屆滿後再次嘗試續玩。
 * 預期結果：
   1. 休息時長屆滿前遊玩入口被鎖定、不可續玩。
-  2. 休息時長屆滿後解鎖，可重新開始遊玩。
+  2. 返回初始選單不會清除 restUntil；選回同一帳號仍維持休息鎖定。
+  3. 休息時長屆滿後解鎖，可重新開始遊玩。
 
 #### intTest#20-驗證 [runAct自訂玩家取用中文協助]
 
@@ -564,7 +596,7 @@ erDiagram
 * 步驟：
   1. 依序進入世界地圖、城堡地圖與各地區地圖（urban／rural／wild）。
 * 預期結果：
-  1. 每張地圖皆出現可見的公主頭像，定位於該地圖目前玩家位置（世界地圖定位於目前目的地），且套用一致的辨識樣式。
+  1. 每張地圖皆出現可見的公主頭像，定位於該地圖目前玩家位置（世界地圖定位於目前目的地），且套用目前帳號 profileColor 作為光暈識別樣式。
 
 #### intTest#27-驗證 世界地圖走到再進入與途中略過
 
@@ -614,6 +646,32 @@ erDiagram
   2. 舊存檔的 `lumi`、`yumi`、`sol` 均正常載入，不因 roster 增加 `rosa` 而重置。
   3. `playableVoiceById` 對四個 id 皆能解析，缺瀏覽器 voice 時依既有規則降級。
 
+#### intTest#31-驗證 公主識別色與大頭照一致渲染
+
+* 既有基底：intTest#10、intTest#13、intTest#26。
+* 新增項目：[sysGame系統]之 profileColor、16 色 palette、頭胸部大頭照共用渲染與地圖光暈。
+* 步驟：
+  1. 於選角命名畫面逐一檢視 Lumi、Yumi、Sol、Rosa 的預設背景色。
+  2. 將其中一位公主改為 palette 中另一個識別色並確認。
+  3. 進入帳號選擇、遊戲人物資訊欄與世界地圖。
+* 預期結果：
+  1. 四位公主預設色彼此不同，且 palette 提供約 16 種可選色。
+  2. 公主選單、帳號卡與人物資訊欄皆以同一頭胸部裁切呈現大頭照，不顯示全身紙娃娃。
+  3. 大頭照背景與地圖公主 token 光暈皆使用該帳號 profileColor。
+
+#### intTest#32-驗證 遊戲內返回初始選單
+
+* 既有基底：intTest#13、intTest#16。
+* 新增項目：[sysGame系統]之遊戲內回到初始帳號／公主選單行為。
+* 步驟：
+  1. 以一個帳號進入遊戲並改變 coins 或位置。
+  2. 按遊戲內返回初始選單按鈕。
+  3. 在初始選單改選另一帳號，再切回原帳號。
+* 預期結果：
+  1. 返回初始選單前會保存目前帳號進度與 lastPlayedAt。
+  2. 可從初始選單切換帳號或調整公主設定。
+  3. 切回原帳號時進度未重置，且休息鎖定狀態仍依該帳號獨立計算。
+
 ## E. 方案層級：文件程式化測試
 
 #### docProgTest#01-productReadme 承接 [solStory#1-短回合英文練習]
@@ -654,9 +712,9 @@ erDiagram
 #### docProgTest#06-productReadme 承接 [solStory#6-選角與命名]
 
 * productReadme 要求：
-  1. 說明首次選角與命名、Lumi／Yumi／Sol／Rosa 四位可玩公主方向，以及之後重選與改名的方式。
+  1. 說明首次選角、命名與識別色設定、Lumi／Yumi／Sol／Rosa 四位可玩公主方向與不同預設色，以及之後重選、改名與改色的方式。
 * 通過判定：
-  1. 讀者可依 productReadme 完成四角色選角與命名，並理解既有 `lumi`／`yumi`／`sol` 存檔仍相容。
+  1. 讀者可依 productReadme 完成四角色選角、命名與改色，並理解既有 `lumi`／`yumi`／`sol` 存檔仍相容。
 
 #### docProgTest#07-productReadme 承接 [solStory#7-部署擴充與移除]
 
@@ -675,16 +733,16 @@ erDiagram
 #### docProgTest#09-productReadme 承接 [solStory#9-多帳號選擇與管理]
 
 * productReadme 要求：
-  1. 說明進入遊戲時如何選擇帳號，以及如何新增與刪除帳號，與刪除使用中／最後帳號後的表現。
+  1. 說明進入遊戲時如何依帳號卡資訊選擇帳號、如何新增與刪除帳號、刪除使用中／最後帳號後的表現，以及遊戲內如何返回初始選單切換帳號或調整公主設定。
 * 通過判定：
-  1. 讀者可依 productReadme 新增、選擇與刪除帳號，且不同帳號進度互不混用。
+  1. 讀者可依 productReadme 新增、選擇、刪除與切換帳號，且不同帳號進度、識別色與休息狀態互不混用。
 
 #### docProgTest#10-productReadme 承接 [solStory#10-遊玩時間限制與護眼休息]
 
 * productReadme 要求：
-  1. 說明連續遊玩會逐步用盡遊玩時間、時間到的本回合結算、休息等待後才可續玩，以及如何於設定調整每次遊玩與休息時長（各帳號各自）。
+  1. 說明連續遊玩會逐步用盡遊玩時間、預設遊玩與休息各 15 分鐘、人物資訊欄顯示本次開始時間與剩餘可玩時間、時間到的本回合結算、休息等待後才可續玩，以及如何於設定調整每次遊玩與休息時長（各帳號各自）。
 * 通過判定：
-  1. 讀者可依 productReadme 預期玩到時間上限後進入休息，並能於設定調整時長。
+  1. 讀者可依 productReadme 預期玩到時間上限後進入休息，知道返回初始選單不會繞過休息鎖定，並能於設定調整時長。
 
 #### docProgTest#11-productReadme 承接 [solStory#11-中文雙語協助與獎勵階梯]
 
@@ -729,23 +787,23 @@ erDiagram
 
 #### e2eTest#03-依 productReadme 驗測部署與首次進入
 
-* 依據：docProgTest#07、docProgTest#06、[solCase#7.1]、[solCase#6.1]。
+* 依據：docProgTest#07、docProgTest#06、[solCase#7.1]、[solCase#6.1]、[solCase#6.2]。
 * 步驟：
   1. 依 productReadme 將網站包部署至 GitHub Pages。
-  2. 以全新瀏覽器開啟部署 URL，完成選角與命名。
+  2. 以全新瀏覽器開啟部署 URL，完成選角、命名與識別色設定。
 * 預期結果：
-  1. 首次進入顯示選角命名畫面，命名後進入遊戲且 ES module 無 404。
+  1. 首次進入顯示選角命名畫面，命名與改色後進入遊戲且 ES module 無 404。
 
-#### e2eTest#04-依 productReadme 驗測多帳號隔離與刪除
+#### e2eTest#04-依 productReadme 驗測多帳號隔離、辨識與刪除
 
-* 依據：docProgTest#09、[solCase#9.1]、[solCase#9.2]、[solCase#9.3]。
+* 依據：docProgTest#09、[solCase#9.1]、[solCase#9.2]、[solCase#9.3]、[solCase#9.4]。
 * 步驟：
-  1. 依 productReadme 新增兩個帳號，分別遊玩產生不同 coins 與穿搭。
-  2. 依 productReadme 在帳號選擇切換到另一帳號。
+  1. 依 productReadme 新增兩個帳號，分別設定不同公主、名字與識別色，並遊玩產生不同 coins 與穿搭。
+  2. 依 productReadme 從遊戲內返回初始選單，再在帳號選擇切換到另一帳號。
   3. 依 productReadme 刪除目前使用中帳號。
 * 預期結果：
-  1. 兩帳號進度互不混用，各自顯示自己的 coins、穿搭與位置。
-  2. 切換後顯示對應帳號進度。
+  1. 兩帳號進度互不混用，帳號卡各自顯示頭胸部大頭照、背景識別色、最近遊玩時間、coins 與可玩／休息狀態。
+  2. 切換後顯示對應帳號進度，人物資訊欄使用同一大頭照裁切與 profileColor。
   3. 刪除使用中帳號後回到帳號選擇；刪除最後一個帳號顯示僅可新增的空狀態。
 
 #### e2eTest#05-依 productReadme 驗測遊玩時間限制與休息
@@ -753,11 +811,12 @@ erDiagram
 * 依據：docProgTest#10、[solCase#10.1]、[solCase#10.2]、[solCase#10.3]。
 * 步驟：
   1. 依 productReadme 於設定將每次遊玩時長設為極短測試值並開始遊玩至用盡。
-  2. 觀察時間到的結算與其後的休息鎖定。
-  3. 等待休息時長屆滿後依 productReadme 續玩。
+  2. 觀察人物資訊欄的本次開始時間與剩餘可玩時間，以及時間到的結算與其後的休息鎖定。
+  3. 於休息期間返回初始帳號／公主選單再選回同一帳號。
+  4. 等待休息時長屆滿後依 productReadme 續玩。
 * 預期結果：
   1. 時間到顯示本回合成果結算（金錢、答題數、答題正確度）。
-  2. 休息期間遊玩入口被鎖定、不可續玩。
+  2. 休息期間遊玩入口被鎖定、不可續玩；返回初始選單不會繞過同一帳號的休息鎖定。
   3. 休息屆滿後可續玩；切換至另一帳號時其遊玩時間與休息獨立計算。
 
 #### e2eTest#06-依 productReadme 驗測中文協助與獎勵階梯
@@ -803,17 +862,17 @@ erDiagram
 * 預期結果：
   1. About 頁籤顯示版權宣告，並以中文短主旨列出歷次版本（至少最近 10 版或現有全部）。
 
-#### e2eTest#10-依 productReadme 驗測四角色選角與換裝分層
+#### e2eTest#10-依 productReadme 驗測四角色選角、識別色與換裝分層
 
-* 依據：docProgTest#03、docProgTest#06、docProgTest#07、[solCase#3.2]、[solCase#6.1]、[solCase#7.2]。
+* 依據：docProgTest#03、docProgTest#06、docProgTest#07、[solCase#3.2]、[solCase#6.1]、[solCase#6.2]、[solCase#7.2]。
 * 步驟：
-  1. 依 productReadme 建立新帳號，於選角畫面逐一檢視 Lumi、Yumi、Sol、Rosa。
-  2. 選擇一位公主進入遊戲，確認 baked-in 短髮 playwear base 顯示正常，並於衣櫃切換其他 wardrobe layer。
-  3. 載入 activeCharacterId 為 `lumi`、`yumi`、`sol` 的舊存檔。
+  1. 依 productReadme 建立新帳號，於選角畫面逐一檢視 Lumi、Yumi、Sol、Rosa 的頭胸部大頭照與預設背景色。
+  2. 選擇一位公主並改為 palette 中另一識別色後進入遊戲，確認 baked-in 短髮 playwear base 顯示正常，並於衣櫃切換其他 wardrobe layer。
+  3. 載入 activeCharacterId 為 `lumi`、`yumi`、`sol` 且缺 profileColor 的舊存檔。
 * 預期結果：
-  1. 四位公主在選角畫面可辨識，Rosa 以棕髮甜美系呈現，Yumi 與 Sol 重製方向不再同質。
+  1. 四位公主在選角畫面可辨識，Rosa 以棕髮甜美系呈現，Yumi 與 Sol 重製方向不再同質，且四者預設背景色不同。
   2. 四張新 base 無黑底且對位正確，預設與舊存檔 starter 外觀不會重複疊圖。
-  3. 舊存檔仍載入對應公主，不因新增 Rosa 而回退預設。
+  3. 舊存檔仍載入對應公主，不因新增 Rosa 而回退預設；缺 profileColor 時會依角色預設色補齊。
 
 # IV. 部署成效
 
@@ -824,7 +883,7 @@ erDiagram
 * **productReadme 來源**：`README.md`（本 repo 根目錄產品手冊；尚未採 buildStage 目錄慣例）
 * **部署方式**：靜態網站包，依 [techStackStaticWeb]；預設直推 GitHub Pages（Deploy from a branch，repository root 為站根，保留 .nojekyll），可選後置標準 static-serve Helm chart。namespace、release、主機與網域由部署者於實際部署時決定並記錄。
 * **建置指令**：無打包（no-op，直接收集靜態檔）；本機預覽 `python -m http.server 4173`，或 `node server.mjs`（預設 `http://127.0.0.1:4174/`）。
-* **測試指令**：型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=data-audit`／`?selftest=save-load`／`?selftest=monkey`／`?selftest=chinese-reward`／`?selftest=visual-qa&surface=<id>`；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`。
+* **測試指令**：型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=data-audit`／`?selftest=save-load`／`?selftest=accounts`／`?selftest=playtimer`／`?selftest=profile-color`／`?selftest=map-avatar`／`?selftest=monkey`／`?selftest=chinese-reward`／`?selftest=visual-qa&surface=<id>`；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`。
 * **部署指令**：GitHub Pages「Deploy from a branch」，站根為 repository root，保留 `.nojekyll`；可選後置 static-serve Helm chart。
 
 ## B. 成效追蹤
@@ -842,20 +901,20 @@ erDiagram
   * 評估方式：觀察「答題→購買→換裝」是否在單次遊玩內成環。
   * 觀察項目：單次遊玩完成閉環的比例。
 * **spec#5-可保存並還原玩家進度**
-  * 評估方式：以匯出再匯入比對狀態一致性。
-  * 觀察項目：還原欄位完整度、重整後狀態保留率。
+  * 評估方式：以匯出再匯入比對狀態一致性，並驗證舊存檔缺識別色時可正規化。
+  * 觀察項目：還原欄位完整度、profileColor 補齊正確率、重整後狀態保留率。
 * **spec#6-可選擇與命名自己的公主**
-  * 評估方式：觀察選角命名完成率、改名後稱呼一致性、四位公主辨識度與舊存檔相容。
-  * 觀察項目：選角完成率、稱呼動態化正確率、Lumi／Yumi／Sol／Rosa 辨識正確率、舊 `lumi`／`yumi`／`sol` 存檔載入成功率。
+  * 評估方式：觀察選角命名與識別色設定完成率、改名後稱呼一致性、四位公主辨識度與舊存檔相容。
+  * 觀察項目：選角完成率、profileColor 設定成功率、稱呼動態化正確率、Lumi／Yumi／Sol／Rosa 辨識正確率、舊 `lumi`／`yumi`／`sol` 存檔載入成功率。
 * **spec#7-可用純靜態網站方式部署並模組化擴充內容**
   * 評估方式：以全新環境依 productReadme 完成部署與內容擴充，並驗證可玩公主與衣物 layer 可獨立擴充。
   * 觀察項目：部署成功率、新增內容包後既有功能未回歸、可玩公主新增／替換成功率、同一衣物 layer 跨角色對位成功率。
 * **spec#8-可用本機多帳號分離不同玩家進度**
-  * 評估方式：以多個帳號分別遊玩後比對各自進度是否互不混用。
-  * 觀察項目：帳號間進度隔離正確率、刪除帳號後狀態一致性。
+  * 評估方式：以多個帳號分別遊玩後比對各自進度、識別色、最近遊玩時間與休息狀態是否互不混用，並觀察是否能於遊戲內返回初始選單切換。
+  * 觀察項目：帳號間進度隔離正確率、帳號卡摘要正確率、返回初始選單成功率、刪除帳號後狀態一致性。
 * **spec#9-可限制每次遊玩時長並強制休息以護眼**
-  * 評估方式：觀察單次連續遊玩是否於設定時長後進入結算與休息，且休息屆滿前無法續玩。
-  * 觀察項目：達上限後休息遵守率、本回合結算呈現正確率、時長設定調整生效率。
+  * 評估方式：觀察單次連續遊玩是否於設定時長後進入結算與休息，休息屆滿前是否無法續玩，以及返回初始選單是否不會繞過同帳號鎖定。
+  * 觀察項目：達上限後休息遵守率、本回合結算呈現正確率、剩餘可玩時間呈現正確率、返回初始選單後鎖定維持率、時長設定調整生效率。
 * **spec#10-可查看作品版權與版本沿革**
   * 評估方式：觀察玩家／家長是否能於 About 頁籤找到版權宣告與版本沿革。
   * 觀察項目：About 頁籤開啟率、版本沿革顯示完整度（中文短主旨涵蓋版本數）、版權宣告呈現正確率。

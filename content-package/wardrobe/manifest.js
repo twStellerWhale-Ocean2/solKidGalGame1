@@ -1,9 +1,12 @@
 import { categories } from "./_shared/categories.js";
 import {
   characterRegistry,
+  defaultProfileColorFor,
   defaultActiveCharacterId,
   paperDollBaseLayer,
   isPlayableCharacterId,
+  normalizeProfileColor,
+  profileColorPalette,
   playableCharacterById
 } from "./_shared/paper-doll-assets.js";
 import { outfitSlots, paperDollLayerOrder } from "./_shared/rules.js";
@@ -26,11 +29,14 @@ export {
   categories,
   characterRegistry,
   defaultActiveCharacterId,
+  defaultProfileColorFor,
   outfitSlots,
   paperDollBaseLayer,
   paperDollLayerOrder,
   isPlayableCharacterId,
-  playableCharacterById
+  normalizeProfileColor,
+  playableCharacterById,
+  profileColorPalette
 };
 //#endregion 匯出共用規則
 

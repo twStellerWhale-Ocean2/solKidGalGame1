@@ -8,11 +8,14 @@ export {
   categories,
   characterRegistry,
   defaultActiveCharacterId,
+  defaultProfileColorFor,
   outfitSlots,
   paperDollBaseLayer,
   paperDollLayerOrder,
   playableCharacterById,
   isPlayableCharacterId,
+  normalizeProfileColor,
+  profileColorPalette,
   shopItems
 } from "../../content-package/wardrobe/manifest.js";
 export {

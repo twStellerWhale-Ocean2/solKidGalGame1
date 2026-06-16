@@ -5,12 +5,23 @@ import {
   characterAssetVersion,
   characterRegistry,
   defaultActiveCharacterId,
+  defaultProfileColorFor,
   isPlayableCharacterId,
-  playableCharacterById
+  normalizeProfileColor,
+  playableCharacterById,
+  profileColorPalette
 } from "../../characters/manifest.js";
 
 export const dollAssetVersion = characterAssetVersion;
-export { characterRegistry, defaultActiveCharacterId, isPlayableCharacterId, playableCharacterById };
+export {
+  characterRegistry,
+  defaultActiveCharacterId,
+  defaultProfileColorFor,
+  isPlayableCharacterId,
+  normalizeProfileColor,
+  playableCharacterById,
+  profileColorPalette
+};
 
 export const characterAsset = (name, characterId = defaultActiveCharacterId) => registryCharacterAsset(characterId, name);
 export const paperDollBaseLayer = playableCharacterById(defaultActiveCharacterId).baseLayer;

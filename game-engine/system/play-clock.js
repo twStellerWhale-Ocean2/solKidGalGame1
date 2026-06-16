@@ -16,7 +16,7 @@ function emptyCycle() {
 }
 
 export function defaultPlayLimit() {
-  return { playMinutes: 10, restMinutes: 10, sessionEndsAt: 0, restEndsAt: 0, cycle: emptyCycle() };
+  return { playMinutes: 15, restMinutes: 15, sessionEndsAt: 0, restEndsAt: 0, cycle: emptyCycle() };
 }
 
 function toMinutes(value, fallback) {

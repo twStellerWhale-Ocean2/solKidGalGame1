@@ -24,13 +24,16 @@ import {
   characterScaleContract,
   characterRegistry,
   defaultActiveCharacterId,
+  defaultProfileColorFor,
   difficultyConfig,
   playableCharacterById,
+  normalizeProfileColor,
   mapImageSize,
   mapNodes,
   paperDollBaseLayer,
   paperDollLayerOrder,
   playableVoiceById,
+  profileColorPalette,
   questTemplates,
   sceneConfigs,
   shopItems,
@@ -120,7 +123,9 @@ let worldTravelTargetId = null;
 let worldTravelTimer = null;
 const WORLD_TRAVEL_MS = 620; // 走到目的地時長；與 .world-player.traveling 之 CSS transition 對齊
 let pendingCharacterId = state.activeCharacterId;
+let pendingProfileColor = state.profileColor || defaultProfileColorFor(state.activeCharacterId);
 let playerNameEdited = false;
+let profileColorEdited = false;
 let testClockOffset = 0;   // 測試用合成時鐘偏移（ms）；正式遊玩恆為 0，由 selftest hook 注入。
 let playClockTimer = 0;     // setInterval id（0 = 未啟動）
 let playBreakShown = false; // 結算／休息 overlay 是否顯示中
@@ -162,6 +167,7 @@ const saveLoadController = createSaveLoadController({
 
 function persist() {
   persistState(state);
+  syncActiveAccountMeta({ touched: true });
 }
 
 // ---- 遊玩時間限制與護眼休息（issue #6 / spec#9）：ticker、HUD 與結算／休息 overlay ----
@@ -182,23 +188,97 @@ function formatClock(ms) {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
 }
 
-function updateEnergyHud(percent) {
-  state.energy = percent;
-  if (elements.energyValue) elements.energyValue.textContent = `${percent}%`;
-  if (elements.energyMeterFill) elements.energyMeterFill.style.width = `${percent}%`;
+function formatTimeOfDay(timestamp) {
+  if (!timestamp) return "Not started";
+  return new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-// 更新 HUD 的遊玩時間預算顯示（energy %），不套用狀態轉換；供 render() 呼叫。
+function profileColorFor(characterId = state.activeCharacterId, color = state.profileColor) {
+  return normalizeProfileColor(color, characterId);
+}
+
+function profileAvatarStyle(characterId, color) {
+  const character = playableCharacterById(characterId);
+  const portraitUrl = new URL(domAssetUrl(character.baseLayer), document.baseURI).href;
+  return {
+    character,
+    color: profileColorFor(character.id, color),
+    portrait: `url("${portraitUrl.replaceAll('"', "%22")}")`
+  };
+}
+
+function applyProfileAvatar(element, characterId, color) {
+  if (!element) return;
+  const style = profileAvatarStyle(characterId, color);
+  element.style.setProperty("--character-portrait", style.portrait);
+  element.style.setProperty("--profile-color", style.color);
+  element.setAttribute("aria-label", style.character.label);
+}
+
+function updateEnergyHud({ percent, label }) {
+  const clamped = Math.min(100, Math.max(0, Math.round(Number(percent) || 0)));
+  state.energy = clamped;
+  if (elements.energyValue) elements.energyValue.textContent = label || `${clamped}%`;
+  if (elements.energyMeterFill) elements.energyMeterFill.style.width = `${clamped}%`;
+}
+
+function playClockHudText(status, now) {
+  if (status.phase === "rest") return `Rest ${formatClock(status.restRemainingMs)}`;
+  if (status.phase === "play") {
+    const startedAt = Math.max(0, (state.playLimit?.sessionEndsAt || 0) - (state.playLimit?.playMinutes || 0) * 60000);
+    return `${formatTimeOfDay(startedAt)} · ${formatClock(status.playRemainingMs)}`;
+  }
+  return `Ready ${formatTimeOfDay(now)}`;
+}
+
+function updateEnergyHudFromStatus(status, now = clockNow()) {
+  updateEnergyHud({
+    percent: status.phase === "rest" ? 0 : status.energyPercent,
+    label: playClockHudText(status, now)
+  });
+}
+
+function updateProfileColorChrome() {
+  const color = profileColorFor();
+  document.documentElement.style.setProperty("--active-profile-color", color);
+  applyProfileAvatar(elements.sideProfileAvatar, state.activeCharacterId, color);
+  [elements.castlePlayerToken, elements.playerToken, elements.worldPlayerToken].forEach((token) => {
+    token?.style.setProperty("--profile-color", color);
+  });
+}
+
+function syncActiveAccountMeta({ touched = false } = {}) {
+  const activeAccountId = getActiveAccountId();
+  if (!activeAccountId) return;
+  updateAccountMeta(activeAccountId, {
+    name: state.playerName,
+    characterId: state.activeCharacterId,
+    profileColor: profileColorFor(),
+    lastPlayedAt: touched ? Date.now() : undefined
+  });
+}
+
+function returnToInitialSelect() {
+  syncActiveAccountMeta({ touched: true });
+  persist();
+  hidePlayBreak();
+  closeSystemMenu();
+  openAccountSelect({ mustChoose: false });
+}
+
+// 更新 HUD 的遊玩時間預算顯示，不套用狀態轉換；供 render() 呼叫。
 function renderPlayClock() {
-  const status = playStatus(state, clockNow());
-  updateEnergyHud(status.phase === "rest" ? 0 : status.energyPercent);
+  const now = clockNow();
+  const status = playStatus(state, now);
+  updateEnergyHudFromStatus(status, now);
 }
 
 // 每秒一拍：依真實時間推進，時間到顯示結算並進入休息，休息屆滿開放續玩。
 function tickPlayClock() {
   if (!playClockActive()) return;
-  const ev = tickPlayLimit(state, clockNow());
-  updateEnergyHud(ev.energyPercent);
+  const now = clockNow();
+  const ev = tickPlayLimit(state, now);
+  updateEnergyHudFromStatus(ev, now);
   if (ev.justExpired) {
     showPlayBreak(ev.settlement, ev.restRemainingMs, false);
     persist();
@@ -479,6 +559,7 @@ function setExpressions(princess = "normal", npc = "normal") {
 function render() {
   renderStatus();
   renderIdentity();
+  updateProfileColorChrome();
   renderAreaNav();
   renderPaperDolls();
   renderHome();
@@ -536,10 +617,13 @@ function renderIdentity() {
 
 function openCharacterSelect({ forced = false } = {}) {
   pendingCharacterId = state.activeCharacterId;
+  pendingProfileColor = profileColorFor(state.activeCharacterId, state.profileColor);
+  profileColorEdited = profileColorFor(state.activeCharacterId, state.profileColor) !== defaultProfileColorFor(state.activeCharacterId);
   // 既有的自訂名字（與目前角色預設名不同）視為玩家已輸入，切換外觀時不覆蓋。
   const activeDefaultName = playableCharacterById(state.activeCharacterId)?.defaultName;
   playerNameEdited = Boolean(state.playerName) && state.playerName !== activeDefaultName;
   buildCharacterCards();
+  buildProfileColorChoices();
   elements.playerNameInput.value = state.playerName || playableCharacterById(pendingCharacterId)?.defaultName || "";
   elements.characterSelect.classList.toggle("first-run", forced);
   elements.characterSelect.classList.add("show");
@@ -565,8 +649,7 @@ function buildCharacterCards() {
     card.setAttribute("aria-checked", String(character.id === pendingCharacterId));
     const portrait = document.createElement("span");
     portrait.className = "character-portrait";
-    const portraitUrl = new URL(domAssetUrl(character.baseLayer), document.baseURI).href;
-    portrait.style.setProperty("--character-portrait", `url("${portraitUrl.replaceAll('"', "%22")}")`);
+    applyProfileAvatar(portrait, character.id, character.id === pendingCharacterId ? pendingProfileColor : character.defaultProfileColor);
     portrait.setAttribute("aria-hidden", "true");
     const label = document.createElement("span");
     label.textContent = character.label;
@@ -579,12 +662,38 @@ function buildCharacterCards() {
 function selectPendingCharacter(characterId) {
   if (!characterRegistry[characterId]) return;
   pendingCharacterId = characterId;
+  if (!profileColorEdited) pendingProfileColor = defaultProfileColorFor(characterId);
   [...elements.characterGrid.querySelectorAll(".character-card")].forEach((card) => {
     card.setAttribute("aria-checked", String(card.dataset.characterId === characterId));
+    const portrait = card.querySelector(".character-portrait");
+    const color = card.dataset.characterId === characterId ? pendingProfileColor : defaultProfileColorFor(card.dataset.characterId);
+    applyProfileAvatar(portrait, card.dataset.characterId, color);
   });
+  buildProfileColorChoices();
   if (!playerNameEdited) {
     elements.playerNameInput.value = playableCharacterById(characterId)?.defaultName || "";
   }
+}
+
+function buildProfileColorChoices() {
+  if (!elements.profileColorGrid) return;
+  elements.profileColorGrid.innerHTML = "";
+  profileColorPalette.forEach((color) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "profile-color-swatch";
+    button.style.setProperty("--profile-color", color);
+    button.setAttribute("role", "radio");
+    button.setAttribute("aria-label", `Use profile color ${color}`);
+    button.setAttribute("aria-checked", String(color === pendingProfileColor));
+    button.addEventListener("click", () => {
+      pendingProfileColor = color;
+      profileColorEdited = true;
+      buildProfileColorChoices();
+      buildCharacterCards();
+    });
+    elements.profileColorGrid.appendChild(button);
+  });
 }
 
 function isStarterWardrobeItem(itemId, type) {
@@ -606,10 +715,11 @@ function confirmCharacterSelect() {
   const character = playableCharacterById(pendingCharacterId);
   state.activeCharacterId = character.id;
   applyCharacterStarterOutfit(character);
+  state.profileColor = profileColorFor(character.id, pendingProfileColor);
   state.playerName = sanitizePlayerName(elements.playerNameInput.value) || character.defaultName;
   persist();
   const activeAccountId = getActiveAccountId();
-  if (activeAccountId) updateAccountMeta(activeAccountId, { name: state.playerName, characterId: state.activeCharacterId });
+  if (activeAccountId) syncActiveAccountMeta({ touched: true });
   closeCharacterSelect();
   render();
   elements.statusMessage.textContent = `${princessName()} is ready. Choose a place to start.`;
@@ -635,6 +745,34 @@ function closeAccountSelect() {
   document.body.classList.remove("account-select-open");
 }
 
+function formatLastPlayed(timestamp) {
+  if (!timestamp) return "Not played yet";
+  const date = new Date(timestamp);
+  return `Last played ${date.toLocaleDateString([], { month: "short", day: "numeric" })} ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+function accountPlayStatusText(accountState) {
+  const status = playStatus(accountState, clockNow());
+  if (status.phase === "rest" && !status.restDone) return `Rest ${formatClock(status.restRemainingMs)}`;
+  if (status.phase === "rest" && status.restDone) return "Ready";
+  if (status.phase === "play") return `Play ${formatClock(status.playRemainingMs)}`;
+  return "Ready";
+}
+
+function accountSummary(account) {
+  const accountState = loadAccountState(account.id);
+  return {
+    state: accountState,
+    name: accountState.playerName || account.name || playableCharacterById(accountState.activeCharacterId)?.defaultName || "Princess",
+    characterId: accountState.activeCharacterId || account.characterId || defaultActiveCharacterId,
+    characterLabel: playableCharacterById(accountState.activeCharacterId || account.characterId)?.label || "Princess",
+    color: profileColorFor(accountState.activeCharacterId, accountState.profileColor || account.profileColor),
+    coins: Math.max(0, Number(accountState.coins) || 0),
+    lastPlayedAt: account.lastPlayedAt || account.createdAt || 0,
+    playStatus: accountPlayStatusText(accountState)
+  };
+}
+
 function buildAccountList() {
   const accounts = listAccounts();
   const activeId = getActiveAccountId();
@@ -642,8 +780,7 @@ function buildAccountList() {
   if (elements.accountEmpty) elements.accountEmpty.hidden = accounts.length > 0;
   if (elements.accountBack) elements.accountBack.hidden = accountSelectMustChoose || !activeId;
   accounts.forEach((account) => {
-    const label = account.name || playableCharacterById(account.characterId)?.defaultName || "Princess";
-    const characterLabel = playableCharacterById(account.characterId)?.label || "Princess";
+    const summary = accountSummary(account);
     const row = document.createElement("div");
     row.className = `account-row${account.id === activeId ? " active" : ""}`;
     row.setAttribute("role", "listitem");
@@ -651,21 +788,34 @@ function buildAccountList() {
     pick.type = "button";
     pick.className = "account-pick";
     pick.dataset.accountId = account.id;
+    pick.style.setProperty("--profile-color", summary.color);
+    const avatar = document.createElement("span");
+    avatar.className = "profile-avatar account-avatar";
+    applyProfileAvatar(avatar, summary.characterId, summary.color);
     const nameEl = document.createElement("strong");
-    nameEl.textContent = label;
+    nameEl.textContent = summary.name;
     const charEl = document.createElement("small");
-    charEl.textContent = characterLabel;
-    pick.append(nameEl, charEl);
+    charEl.textContent = summary.characterLabel;
+    const metaEl = document.createElement("small");
+    metaEl.className = "account-meta-line";
+    metaEl.textContent = `${summary.coins} coins · ${formatLastPlayed(summary.lastPlayedAt)}`;
+    const statusEl = document.createElement("span");
+    statusEl.className = "account-status";
+    statusEl.textContent = summary.playStatus;
+    const text = document.createElement("span");
+    text.className = "account-text";
+    text.append(nameEl, charEl, metaEl);
+    pick.append(avatar, text, statusEl);
     pick.addEventListener("click", () => selectAccount(account.id));
     const remove = document.createElement("button");
     remove.type = "button";
     remove.className = "account-delete";
     remove.dataset.accountId = account.id;
-    remove.setAttribute("aria-label", `Delete ${label}`);
-    remove.textContent = "🗑";
+    remove.setAttribute("aria-label", `Delete ${summary.name}`);
+    remove.textContent = "×";
     remove.addEventListener("click", (event) => {
       event.stopPropagation();
-      handleDeleteAccount(account.id, label);
+      handleDeleteAccount(account.id, summary.name);
     });
     row.append(pick, remove);
     elements.accountList.appendChild(row);
@@ -675,6 +825,8 @@ function buildAccountList() {
 function selectAccount(accountId) {
   setActiveAccountId(accountId);
   state = loadAccountState(accountId);
+  syncActiveAccountMeta({ touched: true });
+  persist();
   accountSelectMustChoose = false; // 已完成本次進入的帳號選擇
   closeAccountSelect();
   render();
@@ -684,11 +836,13 @@ function selectAccount(accountId) {
     return;
   }
   elements.statusMessage.textContent = `Welcome back, ${princessName()}. Choose a place to start.`;
+  tickPlayClock();
 }
 
 function createNewAccount() {
   const account = createFreshAccount();
   state = loadAccountState(account.id);
+  syncActiveAccountMeta({ touched: true });
   accountSelectMustChoose = false;
   closeAccountSelect();
   render();
@@ -2784,6 +2938,7 @@ function bindEvents() {
   elements.tabs.forEach((tab) => tab.addEventListener("click", () => changeView(tab.dataset.view)));
   window.addEventListener("hashchange", () => changeView(location.hash ? location.hash.slice(1) : "home"));
   elements.systemMenuButton.addEventListener("click", () => openSystemMenu(systemMenuPanel || "diary"));
+  elements.switchPlayerQuickButton?.addEventListener("click", returnToInitialSelect);
   elements.changeCharacterButton?.addEventListener("click", () => openCharacterSelect({ forced: false }));
   elements.characterConfirm?.addEventListener("click", confirmCharacterSelect);
   elements.characterCancel?.addEventListener("click", closeCharacterSelect);
@@ -2803,8 +2958,7 @@ function bindEvents() {
     if (event.target.matches("[data-account-cancel]")) closeAccountSelect();
   });
   elements.switchAccountButton?.addEventListener("click", () => {
-    closeSystemMenu();
-    openAccountSelect({ mustChoose: false });
+    returnToInitialSelect();
   });
   elements.systemMenuClose.addEventListener("click", closeSystemMenu);
   elements.systemMenu.addEventListener("click", (event) => {
@@ -2834,6 +2988,7 @@ function bindEvents() {
     renderSettings();
   });
   elements.playBreakResume?.addEventListener("click", resumePlayFromBreak);
+  elements.playBreakMenuButton?.addEventListener("click", returnToInitialSelect);
   elements.playLimitForm?.addEventListener("submit", (event) => {
     event.preventDefault();
     applyPlayLimitSettings();
@@ -3107,6 +3262,13 @@ installTestingHooks({
     },
     loadState: (accountId) => loadAccountState(accountId)
   },
+  syncActiveAccountMeta,
+  openAccountSelect,
+  closeAccountSelect,
+  returnToInitialSelect,
+  profileColorPalette,
+  defaultProfileColorFor,
+  normalizeProfileColor,
   // 遊玩時間限制與護眼休息（issue #6 / spec#9）測試介面：以注入時鐘驅動，不需真實等待。
   playClock: {
     now: () => clockNow(),

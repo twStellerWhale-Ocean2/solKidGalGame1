@@ -2,6 +2,7 @@ import {
   areaRegistry,
   defaultActiveCharacterId,
   difficultyConfig,
+  normalizeProfileColor,
   outfitSlots,
   playableCharacterById,
   questTemplates,
@@ -104,6 +105,7 @@ export function normalizeState(candidate = {}) {
   const merged = { ...base, ...candidate };
   const activeCharacter = playableCharacterById(candidate.activeCharacterId);
   merged.activeCharacterId = activeCharacter?.id || defaultActiveCharacterId;
+  merged.profileColor = normalizeProfileColor(candidate.profileColor, merged.activeCharacterId);
   merged.playerName = sanitizePlayerName(candidate.playerName)
     || activeCharacter?.defaultName
     || base.playerName;
@@ -331,6 +333,7 @@ export function buildSaveMarkdown(state) {
 - Coins: ${state.coins}
 - Name: ${state.playerName}
 - Character: ${playableCharacterById(state.activeCharacterId)?.label || state.activeCharacterId}
+- Profile color: ${state.profileColor}
 - Quests completed: ${questRows.length}
 - Outfit: ${outfitSummary(state)}
 - Learned words: ${state.learnedWords.join(", ") || "-"}
