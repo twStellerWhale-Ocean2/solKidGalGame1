@@ -4,8 +4,8 @@
 // 角色（NPC 與可玩公主）以 voice:{gender,age,personality} 宣告其特性；
 // 任一維度缺漏或不在枚舉時，該維度貢獻 0，整體降級回 DEFAULT_VOICE_PROFILE（不丟錯）。
 //
-// 設計取捨（design.md ＜II＞ 已記）：瀏覽器 Web Speech API 實際只能可靠調 pitch／rate，
-// 故「性別／年齡」承擔主要辨識度、「性格」僅作小幅修飾；具名 voice 屬平台相依，不在此硬選。
+// 設計取捨（design.md ＜II＞ 已記）：瀏覽器 Web Speech API 的具名 voice 屬平台相依，
+// 目錄只提供 voiceHint 與 fallbackPolicy；實際 voice 由 speechManager 依 getVoices() 語言優先挑選。
 
 export const voiceCatalogVersion = "issue93-character-voice-r1";
 
@@ -14,7 +14,14 @@ const PITCH_RANGE = Object.freeze({ min: 0.1, max: 2 });
 const RATE_RANGE = Object.freeze({ min: 0.6, max: 1.4 });
 
 // 基準（即 `default` 降級項，rate 沿用 issue #73 既有單一嗓音 0.86）。
-export const DEFAULT_VOICE_PROFILE = Object.freeze({ profileId: "default", lang: "en-US", pitch: 1, rate: 0.86 });
+export const DEFAULT_VOICE_PROFILE = Object.freeze({
+  profileId: "default",
+  lang: "en-US",
+  pitch: 1,
+  rate: 0.86,
+  voiceHint: "",
+  fallbackPolicy: "lang-first"
+});
 
 // 各維度對 pitch／rate 的增量貢獻；未列之值貢獻 0（降級包容）。
 const GENDER_DELTA = Object.freeze({
@@ -58,7 +65,14 @@ export function composeVoiceProfile(dims) {
   const pitch = clampTo(DEFAULT_VOICE_PROFILE.pitch + g.pitch + a.pitch + p.pitch, PITCH_RANGE);
   const rate = clampTo(DEFAULT_VOICE_PROFILE.rate + g.rate + a.rate + p.rate, RATE_RANGE);
   const profileId = [dims.gender, dims.age, dims.personality].filter(Boolean).join("-") || "default";
-  return Object.freeze({ profileId, lang: dims.lang || DEFAULT_VOICE_PROFILE.lang, pitch: round2(pitch), rate: round2(rate) });
+  return Object.freeze({
+    profileId,
+    lang: dims.lang || DEFAULT_VOICE_PROFILE.lang,
+    pitch: round2(pitch),
+    rate: round2(rate),
+    voiceHint: dims.voiceHint || dims.gender || "",
+    fallbackPolicy: dims.fallbackPolicy || "lang-first"
+  });
 }
 
 // 由角色宣告（voice 欄位）解析音色；無宣告即降級為 default。

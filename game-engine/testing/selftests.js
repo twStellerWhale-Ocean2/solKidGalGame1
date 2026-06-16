@@ -460,6 +460,7 @@ function runCharacterVoiceSelfTest(api) {
     if (typeof api.speechRateScale !== "number" || typeof api.effectiveSpeechRate !== "function") {
       errors.push("speechRateScale／effectiveSpeechRate hook 缺失");
     } else {
+      if (Math.abs(api.speechRateScale - 0.8) > 0.001) errors.push(`語速倍率應為 0.8，實際 ${api.speechRateScale}`);
       const fast = compose({ gender: "female", age: "child", personality: "cheerful" });   // 較快童聲
       const slow = compose({ gender: "male", age: "elderly", personality: "melancholy" });  // 較慢長者
       const fastEff = api.effectiveSpeechRate(fast.rate);
@@ -469,6 +470,8 @@ function runCharacterVoiceSelfTest(api) {
       if (!(fastEff < fast.rate)) errors.push("套用倍率後語速未變慢");
       if ((fast.rate > slow.rate) !== (fastEff > slowEff)) errors.push("套用倍率後相對快慢順序改變");
     }
+    if (api.speechQueueMode !== "replace-last") errors.push(`語音佇列策略應為 replace-last，實際 ${api.speechQueueMode}`);
+    if (typeof api.speechDebounceMs !== "number" || api.speechDebounceMs < 80) errors.push("語音 debounce 設定缺失或過低");
 
     // 跨地區覆蓋（castle/urban/rural/wild）：所有 area NPC 應解析音色；
     // 僅刻意未宣告者（如告示牌 *Sign）可降級 default。
@@ -517,6 +520,87 @@ function runCharacterVoiceSelfTest(api) {
       } finally {
         synth.speak = origSpeak;
         synth.cancel = origCancel;
+      }
+    }
+
+    // intTest#33-35：Web Speech API voice 載入／fallback、cancel 策略與診斷錯誤紀錄。
+    if ("speechSynthesis" in window && api.speakForTest && api.selectSpeechVoice && api.getSpeechDiagnostics) {
+      const synth = window.speechSynthesis;
+      const origSpeak = synth.speak.bind(synth);
+      const origCancel = synth.cancel.bind(synth);
+      const origGetVoices = typeof synth.getVoices === "function" ? synth.getVoices.bind(synth) : null;
+      const spoken = [];
+      let cancelCount = 0;
+      const makeVoice = (name, lang, isDefault = false) => ({ name, lang, default: isDefault, voiceURI: `${name}-${lang}` });
+      try {
+        synth.getVoices = () => [
+          makeVoice("Taiwan Female", "zh-TW"),
+          makeVoice("Mandarin Generic", "zh-CN"),
+          makeVoice("US Female", "en-US"),
+          makeVoice("English Generic", "en-GB"),
+          makeVoice("Default English", "en-US", true)
+        ];
+        api.refreshSpeechVoices?.();
+        const zhExact = api.selectSpeechVoice({ lang: "zh-TW", voiceHint: "female" });
+        if (zhExact.voice?.lang !== "zh-TW") errors.push(`zh-TW voice 未優先選取，實際 ${zhExact.voice?.lang || "none"}`);
+        const enExact = api.selectSpeechVoice({ lang: "en-US" });
+        if (enExact.voice?.lang !== "en-US") errors.push(`en-US voice 未優先選取，實際 ${enExact.voice?.lang || "none"}`);
+
+        synth.getVoices = () => [makeVoice("Mandarin Generic", "zh-CN"), makeVoice("Default English", "en-US", true)];
+        api.refreshSpeechVoices?.();
+        const zhPrimary = api.selectSpeechVoice({ lang: "zh-TW" });
+        if (zhPrimary.voice?.lang !== "zh-CN" || zhPrimary.fallbackReason !== "fallback-zh") {
+          errors.push(`zh primary fallback 未生效，實際 ${zhPrimary.voice?.lang || "none"}／${zhPrimary.fallbackReason}`);
+        }
+
+        synth.getVoices = () => [makeVoice("Default English", "en-US", true)];
+        api.refreshSpeechVoices?.();
+        const zhDefault = api.selectSpeechVoice({ lang: "zh-TW" });
+        if (zhDefault.voice?.lang !== "en-US" || zhDefault.fallbackReason !== "language-unavailable") {
+          errors.push(`缺中文 voice 時未記錄 language-unavailable，實際 ${zhDefault.voice?.lang || "none"}／${zhDefault.fallbackReason}`);
+        }
+
+        synth.getVoices = () => [makeVoice("US Female", "en-US", true), makeVoice("Taiwan Female", "zh-TW")];
+        api.refreshSpeechVoices?.();
+        synth.cancel = () => { cancelCount += 1; };
+        synth.speak = (utterance) => {
+          spoken.push({
+            text: utterance.text,
+            lang: utterance.lang,
+            pitch: utterance.pitch,
+            rate: utterance.rate,
+            voice: utterance.voice?.name || ""
+          });
+          utterance.dispatchEvent(new Event("start"));
+          utterance.dispatchEvent(new Event("end"));
+        };
+        api.resetSpeechDiagnostics?.();
+        api.speakForTest("Hello", "en-US", { source: "selftest-en", replayKey: "en-hello" });
+        api.speakForTest("你好", "zh-TW", { source: "selftest-zh", replayKey: "zh-nihao" });
+        if (cancelCount !== 0) errors.push(`不同語音連續播放不應無條件 cancel，實際 ${cancelCount}`);
+        const diagnostics = api.getSpeechDiagnostics();
+        if (spoken.length < 2 || diagnostics.length < 2) errors.push("語音 speak 或診斷紀錄未產生");
+        if (!diagnostics.some((item) => item.source === "selftest-zh" && item.actualVoiceLang === "zh-TW")) errors.push("中文診斷未記錄 actualVoiceLang=zh-TW");
+        if (!diagnostics.every((item) => item.queueAction && Array.isArray(item.events))) errors.push("診斷紀錄缺 queueAction 或 events");
+
+        api.speakForTest("Replay", "en-US", { source: "selftest-replay", replayKey: "same-replay" });
+        api.speakForTest("Replay", "en-US", { source: "selftest-replay", replayKey: "same-replay" });
+        if (cancelCount < 1) errors.push("同一語音重播未使用 replace-last/cancel 邊界策略");
+
+        api.resetSpeechDiagnostics?.();
+        synth.speak = (utterance) => {
+          const event = new Event("error");
+          Object.defineProperty(event, "error", { value: "voice-unavailable" });
+          utterance.dispatchEvent(event);
+        };
+        api.speakForTest("Broken voice", "en-US", { source: "selftest-error", replayKey: "error-case" });
+        const errorDiagnostic = api.getSpeechDiagnostics()[0];
+        if (errorDiagnostic?.errorCode !== "voice-unavailable") errors.push(`語音錯誤未記錄 voice-unavailable，實際 ${errorDiagnostic?.errorCode || "none"}`);
+      } finally {
+        synth.speak = origSpeak;
+        synth.cancel = origCancel;
+        if (origGetVoices) synth.getVoices = origGetVoices;
+        api.refreshSpeechVoices?.();
       }
     }
   } catch (error) {

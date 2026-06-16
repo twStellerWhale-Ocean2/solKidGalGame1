@@ -99,7 +99,7 @@ node server.mjs
 
 ## 角色聲音
 
-> 本節為 2plan 初稿，行為細節（各角色音色、語音清楚度與可辨識程度）待 dev／opr 校準。
+> 本節已於 dev（issue #109）實作 Web Speech API 穩定播放與診斷；實機聽感仍待 opr 終驗。
 
 為了讓角色更有臨場感，不同人物會用**貼合自己角色的聲音**說話，而不是全部同一個語調：
 
@@ -160,7 +160,7 @@ area、角色、可玩公主與衣物都是 `content-package/` 下的**模組化
 
 ## 變更紀錄
 
-- 2026-06-16（issue #109）：規劃 Web Speech API 語音品質改善。中英文語音目標改為約 80% 語速、首字清楚；新增 voice 載入與 `voiceschanged` fallback、語音佇列／replace-last、避免無條件 `cancel()` 截斷、autoplay/user activation 與錯誤碼降級處理，以及語音診斷紀錄，待 dev／opr 依實機聽測校準。
+- 2026-06-16（issue #109）：已實作 Web Speech API 語音品質改善。中英文語音目標改為約 80% 語速；新增 voice 載入與 `voiceschanged` fallback、語音佇列／replace-last、避免無條件 `cancel()` 截斷、autoplay/user activation 與錯誤碼降級處理，以及語音診斷紀錄；已以 `?selftest=voice` 驗證，待 opr 依實機聽測校準首字清楚度與角色可辨識度。
 - 2026-06-16（issue #126）：已實作兒童休息與帳號／公主辨識流程修訂。遊玩與休息預設改為各 15 分鐘；人物資訊欄顯示本次開始時間與剩餘可玩時間；休息／結算與遊戲內提供返回初始帳號／公主選單的入口但不得繞過休息鎖定；公主選單、帳號卡與人物資訊欄共用頭胸部大頭照與 profileColor，四位公主有不同預設色且可由玩家從 16 色色票調整，地圖公主光暈同步使用該識別色。已以 `?selftest=profile-color`、`?selftest=playtimer`、`?selftest=accounts`、`?selftest=map-avatar` 驗證。
 - 2026-06-16（issue #123）：依使用者提供的四張 PNG 重製四位可玩公主 base，轉為透明 WebP 並縮放對位到 `shared-512x768-v1`；選角畫面直接裁切 `base.webp` 頭胸部特寫，不再使用角色 `thumb.webp`；新 base 採 baked-in 短髮、粉紅短袖上衣與紅短褲，預設 starter 髮型／服裝不再額外疊圖，保留 `lumi`／`yumi`／`sol`／`rosa` id 相容。待 opr 終驗。
 - 2026-06-15（issue #110）：設定選單新增 About 頁籤，集中呈現作品版權宣告（`carlton0521@gmail.com, copyright reserved, 2026`）與歷次版本的中文短主旨（預設最近 10 版）；既有版本與建置時間併入 About，Settings 不再另列版本卡。本項為 2plan 初稿，待 dev／opr 校準。
