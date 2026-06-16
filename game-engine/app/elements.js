@@ -21,12 +21,15 @@ export function createElements() {
     outfitSummary: $("#outfitSummary"),
     statusMessage: $("#statusMessage"),
     princessNameTitle: $("#princessNameTitle"),
+    sideProfileAvatar: $("#sideProfileAvatar"),
+    switchPlayerQuickButton: $("#switchPlayerQuickButton"),
     changeCharacterButton: $("#changeCharacterButton"),
     characterSelect: $("#characterSelect"),
     characterSelectCard: $(".character-select-card"),
     characterGrid: $("#characterGrid"),
     characterNameForm: $("#characterNameForm"),
     playerNameInput: $("#playerNameInput"),
+    profileColorGrid: $("#profileColorGrid"),
     characterConfirm: $("#characterConfirm"),
     characterCancel: $("#characterCancel"),
     accountSelect: $("#accountSelect"),
@@ -96,6 +99,7 @@ export function createElements() {
     playBreak: $("#playBreak"),
     playBreakStats: $("#playBreakStats"),
     playBreakCountdown: $("#playBreakCountdown"),
+    playBreakMenuButton: $("#playBreakMenuButton"),
     playBreakResume: $("#playBreakResume")
   };
 }

@@ -1,7 +1,7 @@
 import { accountIndexKey, accountStateKey, storageKey } from "./storage.js";
 
 // 本機多帳號（issue #63）：同一瀏覽器內以多份存檔分離不同玩家進度。
-// 帳號索引結構：{ accounts: [{ id, name, characterId, createdAt }], activeId }
+// 帳號索引結構：{ accounts: [{ id, name, characterId, profileColor, createdAt, lastPlayedAt }], activeId }
 // 每個帳號的完整遊戲進度另存於 accountStateKey(id)。本模組僅依賴 storage.js（避免與 game-state.js 循環相依）。
 
 function newAccountId() {
@@ -24,7 +24,9 @@ export function loadAccountIndex() {
           id: account.id,
           name: typeof account.name === "string" ? account.name : "",
           characterId: typeof account.characterId === "string" ? account.characterId : "",
-          createdAt: Number(account.createdAt) || 0
+          profileColor: typeof account.profileColor === "string" ? account.profileColor : "",
+          createdAt: Number(account.createdAt) || 0,
+          lastPlayedAt: Number(account.lastPlayedAt) || 0
         }))
       : [];
     const activeId = accounts.some((account) => account.id === parsed?.activeId) ? parsed.activeId : null;
@@ -70,18 +72,20 @@ export function createAccount({ name = "", characterId = "", initialStateJson } 
   if (typeof initialStateJson === "string") {
     localStorage.setItem(accountStateKey(id), initialStateJson);
   }
-  index.accounts.push({ id, name, characterId, createdAt: Date.now() });
+  index.accounts.push({ id, name, characterId, profileColor: "", createdAt: Date.now(), lastPlayedAt: 0 });
   index.activeId = id;
   persistAccountIndex(index);
   return { id, name, characterId };
 }
 
-export function updateAccountMeta(id, { name, characterId } = {}) {
+export function updateAccountMeta(id, { name, characterId, profileColor, lastPlayedAt } = {}) {
   const index = loadAccountIndex();
   const account = index.accounts.find((item) => item.id === id);
   if (!account) return;
   if (typeof name === "string") account.name = name;
   if (typeof characterId === "string") account.characterId = characterId;
+  if (typeof profileColor === "string") account.profileColor = profileColor;
+  if (typeof lastPlayedAt === "number" && Number.isFinite(lastPlayedAt)) account.lastPlayedAt = lastPlayedAt;
   persistAccountIndex(index);
 }
 
@@ -115,7 +119,7 @@ export function migrateLegacyAccount() {
   const id = newAccountId();
   localStorage.setItem(accountStateKey(id), legacy);
   localStorage.removeItem(storageKey);
-  const migrated = { accounts: [{ id, name, characterId, createdAt: Date.now() }], activeId: id };
+  const migrated = { accounts: [{ id, name, characterId, profileColor: "", createdAt: Date.now(), lastPlayedAt: 0 }], activeId: id };
   persistAccountIndex(migrated);
   return migrated;
 }

@@ -13,7 +13,7 @@
         <aside class="side-panel" aria-label="Princess status">
           <button class="system-menu-button" id="systemMenuButton" type="button" aria-label="Open Lumi Diary and Settings" aria-controls="systemMenu" aria-haspopup="dialog">⚙</button>
           <div class="mini-doll-frame">
-            <div class="paper-doll side-doll" data-doll="side"></div>
+            <div class="profile-avatar side-avatar" id="sideProfileAvatar" aria-hidden="true"></div>
           </div>
           <h1 id="princessNameTitle">Princess Lumi</h1>
             <p class="subtitle">A little princess who learns English, earns coins, and dresses up.</p>
@@ -29,6 +29,7 @@
           <div class="notice-box" id="statusMessage" aria-live="polite">
                 Choose a place, help someone, then dress your princess with the reward.
           </div>
+          <button class="soft-button switch-player-quick" id="switchPlayerQuickButton" type="button">Switch player</button>
         </aside>
 
         <section class="view-stack">
@@ -131,10 +132,10 @@
                 <p>Each player has their own limit. When play time runs out, the game shows this round's score and rests the eyes before playing again.</p>
                 <div class="play-limit-fields">
                   <label for="playMinutesInput">Play minutes
-                    <input id="playMinutesInput" type="number" min="1" max="120" inputmode="numeric" value="10" />
+                    <input id="playMinutesInput" type="number" min="1" max="120" inputmode="numeric" value="15" />
                   </label>
                   <label for="restMinutesInput">Rest minutes
-                    <input id="restMinutesInput" type="number" min="1" max="120" inputmode="numeric" value="10" />
+                    <input id="restMinutesInput" type="number" min="1" max="120" inputmode="numeric" value="15" />
                   </label>
                 </div>
                 <div class="settings-actions">
@@ -228,6 +229,10 @@
         <form class="character-name-form" id="characterNameForm" autocomplete="off">
           <label for="playerNameInput">Princess name</label>
           <input id="playerNameInput" type="text" maxlength="16" autocomplete="off" placeholder="Lumi" />
+          <fieldset class="character-color-field">
+            <legend>Profile color</legend>
+            <div class="profile-color-grid" id="profileColorGrid" role="radiogroup" aria-label="Profile color"></div>
+          </fieldset>
         </form>
         <div class="character-select-actions">
           <button class="soft-button character-select-cancel" id="characterCancel" type="button">Back</button>
@@ -246,6 +251,7 @@
         <div class="play-break-stats" id="playBreakStats" aria-label="This round's score"></div>
         <p class="play-break-countdown" id="playBreakCountdown" aria-live="polite">Resting…</p>
         <div class="play-break-actions">
+          <button class="soft-button" id="playBreakMenuButton" type="button">Choose player</button>
           <button class="primary-button" id="playBreakResume" type="button" disabled>Play again</button>
         </div>
       </div>

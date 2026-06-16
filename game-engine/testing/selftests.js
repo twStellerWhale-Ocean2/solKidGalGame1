@@ -49,6 +49,7 @@ export function installTestingHooks(api) {
   runMonkeyTest(api);
   runAccountSelfTest(api);
   runPlayTimerSelfTest(api);
+  runProfileColorSelfTest(api);
   runChineseRewardSelfTest(api);
   runCharacterVoiceSelfTest(api);
   runMapAvatarSelfTest(api);
@@ -159,6 +160,9 @@ function runPlayTimerSelfTest(api) {
     if (!clock) throw new Error("playClock testing hook missing");
     const baseline = accounts.list().length;
     createdId = accounts.create().id;
+    if (clock.limit.playMinutes !== 15 || clock.limit.restMinutes !== 15) {
+      errors.push(`default play/rest = ${clock.limit.playMinutes}/${clock.limit.restMinutes}, expected 15/15`);
+    }
     clock.setOffset(0);
     clock.setDurations(2, 1); // 2 分鐘遊玩、1 分鐘休息（以注入時鐘加速，不需真實等待）
     api.state.coins = 100;
@@ -218,6 +222,65 @@ function runPlayTimerSelfTest(api) {
   result.id = "playTimerTestResult";
   result.textContent = JSON.stringify({
     test: "playtimer",
+    passed: errors.length === 0,
+    errors: errors.slice(0, 10)
+  });
+  document.body.prepend(result);
+}
+
+// issue #126：驗證 profileColor、共用頭胸部大頭照、帳號摘要、地圖光暈與返回初始選單。
+function runProfileColorSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "profile-color") return;
+  const errors = [];
+  let account = null;
+  try {
+    if (!api.profileColorPalette || api.profileColorPalette.length !== 16) {
+      errors.push(`profile color palette size ${api.profileColorPalette?.length || 0}, expected 16`);
+    }
+    const characters = Object.values(api.characterRegistry || {});
+    const defaults = characters.map((character) => character.defaultProfileColor);
+    if (new Set(defaults).size !== characters.length) errors.push("playable princess default profile colors are not distinct");
+
+    account = api.accounts.create();
+    api.state.activeCharacterId = "yumi";
+    api.state.playerName = "Blue Kid";
+    api.state.profileColor = api.profileColorPalette[8];
+    api.state.coins = 321;
+    api.persist();
+    api.syncActiveAccountMeta({ touched: true });
+    api.render();
+
+    const sideAvatar = api.elements.sideProfileAvatar;
+    if (!sideAvatar || getComputedStyle(sideAvatar).backgroundImage === "none") errors.push("side profile avatar did not render a portrait");
+    if (sideAvatar?.style.getPropertyValue("--profile-color") !== api.state.profileColor) errors.push("side avatar profile color does not match state");
+
+    api.openAccountSelect({ mustChoose: false });
+    const accountPick = api.elements.accountList.querySelector(`[data-account-id="${account.id}"]`);
+    if (!accountPick) errors.push("account card missing created account");
+    if (!accountPick?.querySelector(".account-avatar")) errors.push("account card missing avatar");
+    const listText = api.elements.accountList.textContent || "";
+    if (!listText.includes("321 coins")) errors.push("account card missing coins summary");
+    if (!listText.includes("Last played")) errors.push("account card missing last played summary");
+
+    api.closeAccountSelect();
+    api.openWorldMap();
+    api.renderWorldMap();
+    const mapColor = api.elements.worldPlayerToken?.style.getPropertyValue("--profile-color") || "";
+    if (mapColor !== api.state.profileColor) errors.push(`world token color ${mapColor}, expected ${api.state.profileColor}`);
+
+    api.returnToInitialSelect();
+    if (!api.elements.accountSelect?.classList.contains("show")) errors.push("return to initial select did not open account select");
+    if (api.state.coins !== 321) errors.push("return to initial select changed current progress");
+  } catch (error) {
+    errors.push(error.message);
+  } finally {
+    if (account?.id) api.accounts.remove(account.id);
+  }
+  const result = document.createElement("pre");
+  result.id = "profileColorTestResult";
+  result.textContent = JSON.stringify({
+    test: "profile-color",
     passed: errors.length === 0,
     errors: errors.slice(0, 10)
   });

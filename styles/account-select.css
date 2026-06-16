@@ -21,7 +21,7 @@
 
 .account-select-card {
   position: relative;
-  width: min(480px, 100%);
+  width: min(560px, 100%);
   max-height: calc(100vh - 36px);
   overflow-y: auto;
   display: flex;
@@ -58,16 +58,29 @@
 .account-pick {
   flex: 1;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  padding: 12px 14px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
   border-radius: var(--radius);
   border: 2px solid var(--line);
   background: #fff;
   color: var(--ink);
   cursor: pointer;
   text-align: left;
+}
+
+.account-avatar {
+  flex: 0 0 58px;
+  width: 58px;
+  max-width: 58px;
+}
+
+.account-text {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .account-pick:hover {
@@ -85,6 +98,25 @@
 
 .account-pick small {
   color: var(--muted);
+}
+
+.account-meta-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-status {
+  flex: 0 0 auto;
+  align-self: center;
+  min-width: 74px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--profile-color, #d8678c) 18%, #fff);
+  color: var(--rose-dark);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-align: center;
 }
 
 .account-delete {
