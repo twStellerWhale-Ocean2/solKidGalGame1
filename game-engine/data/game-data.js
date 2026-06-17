@@ -16,6 +16,8 @@ export {
   isPlayableCharacterId,
   normalizeProfileColor,
   profileColorPalette,
+  backgroundPatternIds,
+  normalizeBackgroundPattern,
   shopItems
 } from "../../content-package/wardrobe/manifest.js";
 export {

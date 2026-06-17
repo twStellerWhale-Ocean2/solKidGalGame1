@@ -28,6 +28,8 @@ import {
   difficultyConfig,
   playableCharacterById,
   normalizeProfileColor,
+  backgroundPatternIds,
+  normalizeBackgroundPattern,
   mapImageSize,
   mapNodes,
   paperDollBaseLayer,
@@ -134,6 +136,8 @@ let worldTravelTimer = null;
 const WORLD_TRAVEL_MS = 620; // 走到目的地時長；與 .world-player.traveling 之 CSS transition 對齊
 let pendingCharacterId = state.activeCharacterId;
 let pendingProfileColor = state.profileColor || defaultProfileColorFor(state.activeCharacterId);
+// issue #131：選角流程進行中的背景花紋（per-account 視覺主題，spec#6）。
+let pendingBackgroundPattern = normalizeBackgroundPattern(state.backgroundPattern);
 let playerNameEdited = false;
 let profileColorEdited = false;
 let testClockOffset = 0;   // 測試用合成時鐘偏移（ms）；正式遊玩恆為 0，由 selftest hook 注入。
@@ -204,13 +208,23 @@ function profileColorFor(characterId = state.activeCharacterId, color = state.pr
 
 // 單一頭胸 bust 渲染（issue #132，sysCase#5.2）：側欄、帳號卡與選角卡共用「同一個」頭胸渲染——
 // 同一紙娃娃層合成（bustMarkupFor）＋同一 .bust-doll 裁切，不另維護第二套裁切邏輯。
-function renderBustInto(frameEl, characterId, outfitState, color) {
+function renderBustInto(frameEl, characterId, outfitState, color, pattern = "none") {
   if (!frameEl) return;
   frameEl.innerHTML = `<span class="paper-doll bust-doll">${bustMarkupFor(characterId, outfitState)}</span>`;
   if (color != null) {
     frameEl.style.setProperty("--active-profile-color", color);
     frameEl.style.setProperty("--profile-color", color);
   }
+  // issue #131：背景花紋（spec#6）以 data-pattern 套用於識別卡半透明背版（CSS 圖樣，疊於識別色底色之上、bust 之下）。
+  applyCardPattern(frameEl, pattern);
+}
+
+// 將背景花紋套用至卡片框（"none" 或未知則移除花紋）。
+function applyCardPattern(frameEl, pattern) {
+  if (!frameEl) return;
+  const normalized = normalizeBackgroundPattern(pattern);
+  if (normalized === "none") frameEl.removeAttribute("data-pattern");
+  else frameEl.dataset.pattern = normalized;
 }
 
 // 組裝「可玩時間額度」顯示（spec#9 / sysCase#7.5）：基礎分鐘數；生活聊天延長時把增加量以 +N😄 清楚標示。
@@ -240,8 +254,9 @@ function updateEnergyHudFromStatus(status, now = clockNow()) {
 function updateProfileColorChrome() {
   const color = profileColorFor();
   document.documentElement.style.setProperty("--active-profile-color", color);
-  // 資訊欄大頭照已改為即時穿搭紙娃娃 bust（由 renderPaperDolls 填層）；此處僅同步識別色。
+  // 資訊欄大頭照已改為即時穿搭紙娃娃 bust（由 renderPaperDolls 填層）；此處僅同步識別色與背景花紋。
   elements.sideProfileAvatar?.style.setProperty("--profile-color", color);
+  applyCardPattern(elements.sideProfileFrame, state.backgroundPattern);
   [elements.castlePlayerToken, elements.playerToken, elements.worldPlayerToken].forEach((token) => {
     token?.style.setProperty("--profile-color", color);
   });
@@ -619,12 +634,14 @@ function renderIdentity() {
 function openCharacterSelect({ forced = false } = {}) {
   pendingCharacterId = state.activeCharacterId;
   pendingProfileColor = profileColorFor(state.activeCharacterId, state.profileColor);
+  pendingBackgroundPattern = normalizeBackgroundPattern(state.backgroundPattern);
   profileColorEdited = profileColorFor(state.activeCharacterId, state.profileColor) !== defaultProfileColorFor(state.activeCharacterId);
   // 既有的自訂名字（與目前角色預設名不同）視為玩家已輸入，切換外觀時不覆蓋。
   const activeDefaultName = playableCharacterById(state.activeCharacterId)?.defaultName;
   playerNameEdited = Boolean(state.playerName) && state.playerName !== activeDefaultName;
   buildCharacterCards();
   buildProfileColorChoices();
+  buildBackgroundPatternChoices();
   elements.playerNameInput.value = state.playerName || playableCharacterById(pendingCharacterId)?.defaultName || "";
   elements.characterSelect.classList.toggle("first-run", forced);
   elements.characterSelect.classList.add("show");
@@ -651,7 +668,7 @@ function buildCharacterCards() {
     const portrait = document.createElement("span");
     portrait.className = "character-portrait";
     // 選角當下尚未套衣櫥 → 以空 outfit 渲染各候選公主的基本造型（與側欄/帳號卡同一 bust 機制）。
-    renderBustInto(portrait, character.id, {}, character.id === pendingCharacterId ? pendingProfileColor : character.defaultProfileColor);
+    renderBustInto(portrait, character.id, {}, character.id === pendingCharacterId ? pendingProfileColor : character.defaultProfileColor, character.id === pendingCharacterId ? pendingBackgroundPattern : "none");
     portrait.setAttribute("aria-hidden", "true");
     const label = document.createElement("span");
     label.textContent = character.label;
@@ -669,9 +686,10 @@ function selectPendingCharacter(characterId) {
     card.setAttribute("aria-checked", String(card.dataset.characterId === characterId));
     const portrait = card.querySelector(".character-portrait");
     const color = card.dataset.characterId === characterId ? pendingProfileColor : defaultProfileColorFor(card.dataset.characterId);
-    // 切換選取只需更新識別底色；基本造型 bust 層不隨色變，毋須重渲染。
+    // 切換選取只需更新識別底色與花紋；基本造型 bust 層不隨色變，毋須重渲染。
     portrait?.style.setProperty("--active-profile-color", color);
     portrait?.style.setProperty("--profile-color", color);
+    applyCardPattern(portrait, card.dataset.characterId === characterId ? pendingBackgroundPattern : "none");
   });
   buildProfileColorChoices();
   if (!playerNameEdited) {
@@ -698,6 +716,42 @@ function buildProfileColorChoices() {
     });
     elements.profileColorGrid.appendChild(button);
   });
+  // issue #131：調色器自訂色入口（spec#6）。色盤外的任一色由此設定，並標記為作用中。
+  if (elements.profileColorPicker) {
+    const customActive = !profileColorPalette.includes(pendingProfileColor);
+    elements.profileColorPicker.value = /^#[0-9a-fA-F]{6}$/.test(pendingProfileColor) ? pendingProfileColor : defaultProfileColorFor(pendingCharacterId);
+    elements.profileColorPicker.closest(".profile-color-custom")?.classList.toggle("is-active", customActive);
+    elements.profileColorPicker.oninput = (event) => {
+      pendingProfileColor = event.target.value;
+      profileColorEdited = true;
+      buildProfileColorChoices();
+      buildCharacterCards();
+    };
+  }
+}
+
+// issue #131：背景花紋選擇器（spec#6）。每個花紋一個預覽 swatch；選定即更新 pendingBackgroundPattern 並反映於選角卡。
+function buildBackgroundPatternChoices() {
+  if (!elements.backgroundPatternGrid) return;
+  elements.backgroundPatternGrid.innerHTML = "";
+  backgroundPatternIds.forEach((pattern) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "background-pattern-swatch";
+    if (pattern !== "none") button.dataset.pattern = pattern;
+    button.style.setProperty("--active-profile-color", pendingProfileColor);
+    button.style.setProperty("--profile-color", pendingProfileColor);
+    button.setAttribute("role", "radio");
+    button.setAttribute("aria-label", pattern === "none" ? "No pattern" : `Use background pattern ${pattern}`);
+    button.setAttribute("aria-checked", String(pattern === pendingBackgroundPattern));
+    if (pattern === "none") button.textContent = "—";
+    button.addEventListener("click", () => {
+      pendingBackgroundPattern = pattern;
+      buildBackgroundPatternChoices();
+      buildCharacterCards();
+    });
+    elements.backgroundPatternGrid.appendChild(button);
+  });
 }
 
 function isStarterWardrobeItem(itemId, type) {
@@ -720,6 +774,7 @@ function confirmCharacterSelect() {
   state.activeCharacterId = character.id;
   applyCharacterStarterOutfit(character);
   state.profileColor = profileColorFor(character.id, pendingProfileColor);
+  state.backgroundPattern = normalizeBackgroundPattern(pendingBackgroundPattern);
   state.playerName = sanitizePlayerName(elements.playerNameInput.value) || character.defaultName;
   persist();
   const activeAccountId = getActiveAccountId();
@@ -771,6 +826,7 @@ function accountSummary(account) {
     characterId: accountState.activeCharacterId || account.characterId || defaultActiveCharacterId,
     characterLabel: playableCharacterById(accountState.activeCharacterId || account.characterId)?.label || "Princess",
     color: profileColorFor(accountState.activeCharacterId, accountState.profileColor || account.profileColor),
+    backgroundPattern: normalizeBackgroundPattern(accountState.backgroundPattern),
     coins: Math.max(0, Number(accountState.coins) || 0),
     lastPlayedAt: account.lastPlayedAt || account.createdAt || 0,
     playStatus: accountPlayStatusText(accountState)
@@ -795,7 +851,7 @@ function buildAccountList() {
     pick.style.setProperty("--profile-color", summary.color);
     const avatar = document.createElement("span");
     avatar.className = "account-avatar bust-frame";
-    renderBustInto(avatar, summary.characterId, summary.state.outfit, summary.color);
+    renderBustInto(avatar, summary.characterId, summary.state.outfit, summary.color, summary.backgroundPattern);
     const nameEl = document.createElement("strong");
     nameEl.textContent = summary.name;
     const charEl = document.createElement("small");
@@ -3560,12 +3616,15 @@ installTestingHooks({
     loadState: (accountId) => loadAccountState(accountId)
   },
   syncActiveAccountMeta,
+  openCharacterSelect,
   openAccountSelect,
   closeAccountSelect,
   returnToInitialSelect,
   profileColorPalette,
   defaultProfileColorFor,
   normalizeProfileColor,
+  backgroundPatternIds,
+  normalizeBackgroundPattern,
   // 遊玩時間限制與護眼休息（issue #6 / spec#9）測試介面：以注入時鐘驅動，不需真實等待。
   playClock: {
     now: () => clockNow(),

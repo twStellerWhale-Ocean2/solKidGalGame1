@@ -9,7 +9,9 @@ import {
   isPlayableCharacterId,
   normalizeProfileColor,
   playableCharacterById,
-  profileColorPalette
+  profileColorPalette,
+  backgroundPatternIds,
+  normalizeBackgroundPattern
 } from "../../characters/manifest.js";
 
 export const dollAssetVersion = characterAssetVersion;
@@ -20,7 +22,9 @@ export {
   isPlayableCharacterId,
   normalizeProfileColor,
   playableCharacterById,
-  profileColorPalette
+  profileColorPalette,
+  backgroundPatternIds,
+  normalizeBackgroundPattern
 };
 
 export const characterAsset = (name, characterId = defaultActiveCharacterId) => registryCharacterAsset(characterId, name);

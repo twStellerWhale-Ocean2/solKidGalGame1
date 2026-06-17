@@ -79,7 +79,8 @@
   aspect-ratio: 1 / 1;
   display: block;
   overflow: hidden;
-  background-color: var(--active-profile-color, var(--profile-color, #fff6f9));
+  /* issue #131：卡片底色改用識別色半透明鋪底，避免過重色塊（spec#8）。alpha 名目 0.30 經 visual-qa 調為 0.45 以維持多帳號辨識。 */
+  background-color: color-mix(in srgb, var(--active-profile-color, var(--profile-color, #fff6f9)) 45%, transparent);
   border-radius: var(--radius);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.64);
 }
@@ -138,6 +139,77 @@
 }
 
 .profile-color-swatch[aria-checked="true"] {
+  box-shadow:
+    0 0 0 2px var(--rose-dark),
+    0 4px 10px rgba(80, 56, 70, 0.18);
+}
+
+/* issue #131：調色器自訂色入口（spec#6）。 */
+.profile-color-custom {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  cursor: pointer;
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.profile-color-custom input[type="color"] {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px rgba(80, 56, 70, 0.22);
+  background: none;
+  cursor: pointer;
+}
+
+.profile-color-custom.is-active input[type="color"] {
+  box-shadow:
+    0 0 0 2px var(--rose-dark),
+    0 4px 10px rgba(80, 56, 70, 0.18);
+}
+
+.profile-color-custom-label {
+  font-size: 0.86rem;
+}
+
+/* issue #131：背景花紋選擇器（spec#6）。 */
+.character-pattern-field {
+  margin: 12px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.character-pattern-field legend {
+  margin-bottom: 8px;
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.background-pattern-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
+  gap: 8px;
+}
+
+.background-pattern-swatch {
+  aspect-ratio: 1 / 1;
+  min-width: 30px;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  border-radius: 10px;
+  background-color: color-mix(in srgb, var(--active-profile-color, #fff6f9) 60%, #fff);
+  box-shadow: 0 0 0 1px rgba(80, 56, 70, 0.22);
+  color: var(--muted);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.background-pattern-swatch[aria-checked="true"] {
   box-shadow:
     0 0 0 2px var(--rose-dark),
     0 4px 10px rgba(80, 56, 70, 0.18);
