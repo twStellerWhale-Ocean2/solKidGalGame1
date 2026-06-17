@@ -661,9 +661,15 @@ function runCharacterVoiceSelfTest(api) {
           const btn = [...api.elements.choiceList.querySelectorAll("button")].find((b) => b.dataset.choice === lesson.answer);
           if (!btn) errors.push("integration: 找不到正解按鈕");
           else api.answerLesson(btn, lesson.answer);
-          const princessSpoke = spoken.slice(before).find((s) => s.text === lesson.answer);
+          const princessSpoke = spoken.slice(before).find((s) => s.text.trimStart() === lesson.answer);
           if (!princessSpoke) errors.push("公主未朗讀所選正解");
           else if (!(princessSpoke.pitch > 1)) errors.push(`公主朗讀音高(${princessSpoke.pitch})未高於基準`);
+          // intTest#42：送入 utterance 的文字開頭含前置留白（畫面顯示原文不受影響）。
+          if (typeof api.speechLeadingPad === "string" && api.speechLeadingPad.length) {
+            if (princessSpoke && !princessSpoke.text.startsWith(api.speechLeadingPad)) errors.push("送入 utterance 文字未加首字前置留白");
+            const npcOpening = spoken.slice(0, before).find((s) => typeof s.pitch === "number" && s.pitch < 1);
+            if (npcOpening && !npcOpening.text.startsWith(api.speechLeadingPad)) errors.push("NPC 開場語音未加首字前置留白");
+          }
           // intTest#27（端對端）：實際 utterance.rate 已套用全域朗讀語速倍率
           if (princessSpoke && typeof api.effectiveSpeechRate === "function") {
             const expectedRate = api.effectiveSpeechRate(api.playerVoiceProfile().rate);
@@ -714,6 +720,47 @@ function runCharacterVoiceSelfTest(api) {
         const zhDefault = api.selectSpeechVoice({ lang: "zh-TW" });
         if (zhDefault.voice?.lang !== "en-US" || zhDefault.fallbackReason !== "language-unavailable") {
           errors.push(`缺中文 voice 時未記錄 language-unavailable，實際 ${zhDefault.voice?.lang || "none"}／${zhDefault.fallbackReason}`);
+        }
+
+        // intTest#41：使用者語音指定（覆蓋層）、性別繼承與缺 voice 降級（issue #134）。
+        if (api.setVoiceAssignment && api.clearVoiceAssignments && api.getVoiceAssignments) {
+          synth.getVoices = () => [
+            makeVoice("Microsoft David", "en-US"),
+            makeVoice("Microsoft Zira", "en-US", true),
+            makeVoice("Microsoft Mark", "en-US")
+          ];
+          api.refreshSpeechVoices?.();
+          api.clearVoiceAssignments();
+          api.setVoiceAssignment("male", "bold", "Microsoft David");
+          const maleBold = api.selectSpeechVoice({ lang: "en-US", gender: "male", personality: "bold" });
+          if (maleBold.voice?.name !== "Microsoft David") errors.push(`語音指定未生效，實際 ${maleBold.voice?.name || "none"}`);
+          if (maleBold.fallbackReason !== "user-assigned") errors.push(`指定語音未標記 user-assigned，實際 ${maleBold.fallbackReason}`);
+          if (api.voiceAssignmentKey && typeof localStorage !== "undefined") {
+            const stored = localStorage.getItem(api.voiceAssignmentKey);
+            if (!stored || !stored.includes("Microsoft David")) errors.push("語音指定未持久化至 voiceAssignmentKey");
+          }
+          api.setVoiceAssignment("male", "", "Microsoft Mark");
+          const maleGrace = api.selectSpeechVoice({ lang: "en-US", gender: "male", personality: "graceful" });
+          if (maleGrace.voice?.name !== "Microsoft Mark") errors.push(`未繼承性別預設語音，實際 ${maleGrace.voice?.name || "none"}`);
+          api.setVoiceAssignment("female", "cheerful", "NoSuchVoiceXYZ");
+          const femMissing = api.selectSpeechVoice({ lang: "en-US", gender: "female", personality: "cheerful" });
+          if (!femMissing.voice) errors.push("指定 voice 缺失時未降級發聲");
+          if (femMissing.fallbackReason !== "assigned-voice-missing") errors.push(`缺指定 voice 未記 assigned-voice-missing，實際 ${femMissing.fallbackReason}`);
+          const noGender = api.selectSpeechVoice({ lang: "en-US" });
+          if (noGender.fallbackReason === "user-assigned") errors.push("無性別 profile 不應套用語音指定");
+
+          // sysCase#9.5 設定 UI：設定面板逐桶渲染下拉（含性別預設列、列出可用 voice）。
+          if (api.renderSettings && api.usedVoiceBuckets && api.elements?.voiceAssignList) {
+            api.setVoiceAssignment("female", "cheerful", "");
+            api.renderSettings();
+            const rows = api.elements.voiceAssignList.querySelectorAll(".voice-assign-row");
+            const expectedBuckets = api.usedVoiceBuckets().length;
+            if (rows.length !== expectedBuckets) errors.push(`語音設定列數(${rows.length})與桶數(${expectedBuckets})不符`);
+            const firstSelect = api.elements.voiceAssignList.querySelector(".voice-assign-select");
+            if (!firstSelect || firstSelect.querySelectorAll("option").length < 4) errors.push("語音設定下拉未列出可用 voice 選項");
+            if (!api.elements.voiceAssignList.querySelector(".voice-assign-default")) errors.push("語音設定缺性別預設列");
+          }
+          api.clearVoiceAssignments();
         }
 
         synth.getVoices = () => [makeVoice("US Female", "en-US", true), makeVoice("Taiwan Female", "zh-TW")];
@@ -1571,7 +1618,29 @@ function runVisualQa(api) {
     return;
   }
 
-  if (["diary", "settings", "english", "save", "about"].includes(surface)) {
+  // issue #134：設定頁角色語音區視覺 QA。headless 無平台 voice，注入代表性 mock voices 與示範指定使截圖具決定性。
+  if (surface === "settings") {
+    if (params.get("mockvoices") !== "0" && "speechSynthesis" in window) {
+      const synth = window.speechSynthesis;
+      synth.getVoices = () => [
+        { name: "Microsoft Zira - English (United States)", lang: "en-US", default: true, voiceURI: "zira" },
+        { name: "Microsoft David - English (United States)", lang: "en-US", default: false, voiceURI: "david" },
+        { name: "Microsoft Mark - English (United States)", lang: "en-US", default: false, voiceURI: "mark" },
+        { name: "Google US English", lang: "en-US", default: false, voiceURI: "google-us" },
+        { name: "Microsoft HanHan - Chinese (Taiwan)", lang: "zh-TW", default: false, voiceURI: "hanhan" }
+      ];
+      api.refreshSpeechVoices?.();
+      api.clearVoiceAssignments?.();
+      api.setVoiceAssignment?.("male", "", "Microsoft David - English (United States)");
+      api.setVoiceAssignment?.("female", "", "Microsoft Zira - English (United States)");
+      api.setVoiceAssignment?.("male", "bold", "Microsoft Mark - English (United States)");
+    }
+    api.render();
+    api.openSystemMenu("settings");
+    return;
+  }
+
+  if (["diary", "english", "save", "about"].includes(surface)) {
     api.render();
     api.openSystemMenu(surface);
     return;

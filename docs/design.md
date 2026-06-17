@@ -15,7 +15,7 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 ## B. 設計目的
 
 * **spec#1-可用短回合低挫折方式練習英文**：方案須讓年幼學習者以「聽情境句、從少量選項選出正確英文、立即對錯回饋」的短回合循環接觸英文，遇困難時可取得提示（含題目與各選項的中文理解協助），降低挫折；英文與中文語音協助須播放開頭清楚、語速適合兒童理解，並以獎勵高低鼓勵先嘗試英文——未借助中文且越早答對者獎勵越高、曾借助中文者該題無獎勵，維持以英文為主、中文為輔的學習動機。練習內容須依地區英文等級分級、句型由單句逐級進階至較複雜句並補齊各級缺口，且以貼近兒童日常的功能性生活對話為主、避免與生活脫節的描述句與超現實選項；每道題目（含題組開場白／結語外框與干擾選項）須歸屬特定場景並與該場景主體相符，不採跨場景可互換的換名詞樣板，亦不得出現指涉「英文字／英文單字」之 meta 敘述（如「需要一個英文字」）。
-* **spec#2-可用角色陪伴與場景探索維持遊玩意願**：方案須以公主角色陪伴、王國地圖與多地區場景探索及地點互動，提高兒童反覆遊玩意願；並讓不同場景人物與玩家公主各具貼合其角色的聲音表現（含玩家公主以其聲音朗讀所選作答），使陪伴與場景更具辨識度與臨場沉浸，而非一律同一語音；受瀏覽器語音能力限制時須明確降級且不中斷遊戲。
+* **spec#2-可用角色陪伴與場景探索維持遊玩意願**：方案須以公主角色陪伴、王國地圖與多地區場景探索及地點互動，提高兒童反覆遊玩意願；並讓不同場景人物與玩家公主各具貼合其角色的聲音表現（含玩家公主以其聲音朗讀所選作答），使陪伴與場景更具辨識度與臨場沉浸，而非一律同一語音；玩家或家長並可於設定依角色的性別與性格類型，為各類角色指定實際採用的語音，使不同人物聲線可被真正區分，未指定之類型由系統自動選用合適語音；語音播放開頭須清楚，且受瀏覽器語音能力限制時須明確降級且不中斷遊戲。
 * **spec#3-可把學習成果轉為看得見的外觀獎勵**：方案須讓答對所得 coins 能兌換為角色外觀（髮型、衣物、鞋帽、配件、outfit set）等可見變化，使成就可見而非僅顯示分數；目前可玩公主 base 依使用者指定採 baked-in 短髮 playwear，仍不得烘入長髮、長袖、睡衣、禮服、皇冠或背景，且預設 starter 項不得造成重複疊圖。
 * **spec#4-可形成練英文獲獎勵換裝的正向閉環**：方案須使英文練習、獎勵取得與換裝回饋構成同一個可重複的正向循環。
 * **spec#5-可保存並還原玩家進度**：方案須讓每個帳號各自的 coins、學習紀錄、擁有與穿搭、所在位置、所選角色、名字與識別色可被保存並於再次遊玩時還原。
@@ -109,6 +109,7 @@ HOST -->|"🎚️paramDeployBranch=`main`"| SYS
   * **solCase#12.2**：[sysGame系統]執行[runAct自訂系統公主朗讀作答]，於玩家選定選項時，以目前玩家公主的聲音朗讀所選的選項文字。
   * **solCase#12.3**：[sysGame系統]執行[runAct自訂系統穩定語音播放]，以瀏覽器 Web Speech API 播放英文、中文、NPC 與公主語音時，先完成使用者啟動、voice 載入、語言 fallback、佇列或替換策略與錯誤降級，避免快速連點或無條件取消造成首字被截斷。
   * **solCase#12.4**：[sysGame系統]執行[runAct自訂系統記錄語音診斷]，記錄每次語音播放之文字摘要、語言、voice、pitch、rate、queue 動作、事件時間與錯誤代碼，供維護者判斷工程品質與瀏覽器限制。
+  * **solCase#12.5**：[etyCfg通用兒童玩家]執行[runAct自訂玩家設定角色語音]，於設定為各角色類型（依性別與性格）自瀏覽器可用語音中指定該類型採用的語音，未指定之類型沿用系統自動選用之語音。
 * **solStory#13-關於與版本沿革**：
   * **solCase#13.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家檢視關於資訊]，於設定選單 About 頁籤檢視作品版權宣告與歷次版本的中文短主旨。
 * **solStory#14-場景互動分流與雙回饋**：
@@ -228,10 +229,11 @@ CONTENT -->|"🎚️paramDefaultProfileColors=`lumi,yumi,sol,rosa`"| SYS
   * **sysCase#8.1**：[modScene模組]承接[runAct自訂玩家取用中文協助]，以瀏覽器語音依 `zh-TW` 撥放題目或選項的中文（題庫含中文欄位；缺中文時降級為僅英文撥放）；可用 voice 清單載入後，中文優先選取 `zh-TW` voice，其次 `zh` voice，再降級 default voice，且降級須寫入語音診斷紀錄。
   * **sysCase#8.2**：[modScene模組]承接[runAct自訂系統結算協助獎勵]，依中文使用旗標與答對前送出次數，以全額／半額（paramRewardSecondTryRatio）／無 結算 coins。
 * **sysStory#9-承接角色差異化配音**：
-  * **sysCase#9.1**：[modScene模組]承接[runAct自訂系統角色配音]，依說話者宣告的角色特性查 [modContent模組] 的 [datIntf自訂角色音色目錄] 取得音頻參數（pitch／rate／偏好 voice）套用發聲，且所有經 [modScene模組] 之語音發聲（含角色配音、公主朗讀作答與中文協助）最終語速均另乘全域 paramSpeechRateScale 倍率以利兒童聽辨；特性缺漏、不在目錄或瀏覽器無合適 voice 時降級為 paramDefaultVoiceProfile 之預設嗓音，並保留角色 profile 與實際 voice 採用結果。
+  * **sysCase#9.1**：[modScene模組]承接[runAct自訂系統角色配音]，依說話者宣告的角色特性查 [modContent模組] 的 [datIntf自訂角色音色目錄] 取得音頻參數（pitch／rate，年齡主要於此表現）套用發聲，並依說話者（性別×性格）類型解析實際 voice——優先採使用者於設定指定之語音，未指定則繼承其性別類型，再依 paramSpeechPreferredVoices 之語言優先 fallback 選取；所有經 [modScene模組] 之語音發聲（含角色配音、公主朗讀作答與中文協助）最終語速均另乘全域 paramSpeechRateScale 倍率以利兒童聽辨；特性缺漏、不在目錄、使用者未指定且瀏覽器無合適 voice 時降級為 paramDefaultVoiceProfile 之預設嗓音，並保留角色 profile 與實際 voice 採用結果。
   * **sysCase#9.2**：[modScene模組]承接[runAct自訂系統公主朗讀作答]，於玩家選定選項時以目前玩家公主之音色朗讀所選選項文字；`playableVoiceById` 須覆蓋 `lumi`、`yumi`、`sol`、`rosa`，並沿用既有語音開關（關閉時不發聲）。
-  * **sysCase#9.3**：[modScene模組]承接[runAct自訂系統穩定語音播放]，以單一 `speechManager` 包裝 `SpeechSynthesisUtterance`；啟動時先讀 `getVoices()` 並監聽 `voiceschanged`，發聲前依 `lang` 與 voice hint 選取 voice；`speak()` 採佇列或 replace-last 策略，不得每次無條件 `speechSynthesis.cancel()`；`cancel()` 僅用於使用者明確停止、切換語音或同一語音重播。
+  * **sysCase#9.3**：[modScene模組]承接[runAct自訂系統穩定語音播放]，以單一 `speechManager` 包裝 `SpeechSynthesisUtterance`；啟動時先讀 `getVoices()` 並監聽 `voiceschanged`，發聲前先採使用者為該（性別×性格）類型指定之 voice（未指定則繼承性別類型），再依 `lang` 與 voice hint 之語言優先 fallback 選取 voice，並於送入 utterance 之文字開頭加入固定前置留白（paramSpeechLeadingPad）以延後首字出聲、改善開頭清楚度；`speak()` 採佇列或 replace-last 策略，不得每次無條件 `speechSynthesis.cancel()`；`cancel()` 僅用於使用者明確停止、切換語音或同一語音重播。
   * **sysCase#9.4**：[modScene模組]承接[runAct自訂系統記錄語音診斷]，監聽 utterance `start`、`end`、`error`、`boundary` 事件，記錄 queue 動作、voice 載入狀態、實際語音參數、錯誤代碼與是否因 autoplay/user activation、audio-busy、voice-unavailable、language-unavailable、interrupted 或 canceled 降級。
+  * **sysCase#9.5**：[modScene模組]承接[runAct自訂玩家設定角色語音]，提供各角色類型（性別×性格，僅列實際有角色採用之類型）之瀏覽器可用語音清單供設定選單選取，並將使用者指定持久化（[datIntf自訂角色音色目錄] 之使用者語音指定，存於 paramVoiceAssignmentKey）；指定之 voice 於本機 `getVoices()` 不存在時，依繼承（性別類型）或語言優先 fallback 解析並寫入語音診斷紀錄。
 * **sysStory#10-承接關於與版本沿革**：
   * **sysCase#10.1**：[modShell模組]承接[runAct自訂玩家檢視關於資訊]，於系統選單新增 About 頁籤，渲染作品版權宣告與最近 10 個版本的中文短主旨；當前版本資訊併入此頁籤，由 [datIntf自訂版本沿革目錄] 之首筆導出，Settings 不再另列版本卡。
 * **sysStory#11-承接場景互動分流與雙回饋**：
@@ -251,6 +253,7 @@ CONTENT -->|"🎚️paramDefaultProfileColors=`lumi,yumi,sol,rosa`"| SYS
     * paramStorageKey=`luminara-princess-english-adv`
     * paramSaveMarker=`LUMINARA_SAVE_JSON`
     * paramAccountIndexKey=`luminara-princess-english-accounts`
+    * paramVoiceAssignmentKey=`luminara-princess-english-voice`
     * paramPlayMinutes=`15`
     * paramRestMinutes=`15`
     * paramPlayMaxMinutes=`20`
@@ -276,16 +279,19 @@ CONTENT -->|"🎚️paramDefaultProfileColors=`lumi,yumi,sol,rosa`"| SYS
     * paramSpeechDebounceMs=`120`
     * paramSpeechWarmupEnabled=`true`
     * paramSpeechDiagnosticsEnabled=`true`
-    * paramSpeechPreferredVoices=`lang-first`
+    * paramSpeechPreferredVoices=`user-assigned,lang-first`
+    * paramSpeechLeadingPad=`4 spaces`
+    * paramVoiceBucketDimensions=`gender,personality`
 
 ## C. 補充設計(選配)
 
-* [datIntf自訂角色音色目錄]：角色特性維度與其音頻參數對照之單一資料來源，供 [modScene模組] 查表配音；維度（如性別、年齡、性格）相互組合為音色項，每項對應 pitch／rate／語言與 voice hint，並含 `default` 降級項。角色（NPC 與可玩公主）以其特性宣告對應至一個音色項；實際播放時仍須依目前瀏覽器 `getVoices()` 結果做語言優先 fallback，不得硬綁單一 voice name。
+* [datIntf自訂角色音色目錄]：角色特性維度與其音頻參數對照，併同使用者語音指定之單一資料來源，供 [modScene模組] 查表配音。維度（如性別、年齡、性格）相互組合為音色項，每項對應 pitch／rate／語言與 voice hint，並含 `default` 降級項；pitch／rate 由維度合成（年齡主要於此表現）。角色（NPC 與可玩公主）以其特性宣告對應至一個音色項。實際播放之 voice 解析優先序為：使用者於設定為該（性別×性格）類型指定之語音 → 同性別類型之指定（繼承）→ 依目前瀏覽器 `getVoices()` 之語言優先 fallback；系統不硬編單一 voice name——使用者未指定時一律以語言優先選取以維持跨平台可攜，指定之 voice 於本機不存在時亦依上述順序降級。
 
 ```mermaid
 erDiagram
   VOICE_CATALOG ||--o{ VOICE_PROFILE : contains
   CHARACTER ||--|| VOICE_PROFILE : resolves
+  VOICE_PROFILE ||--o| VOICE_ASSIGNMENT : overrides
   VOICE_PROFILE {
     string profileId
     string lang
@@ -302,6 +308,11 @@ erDiagram
     string gender
     string age
     string personality
+  }
+  VOICE_ASSIGNMENT {
+    string gender
+    string personality
+    string assignedVoiceName
   }
 ```
 
@@ -625,7 +636,7 @@ erDiagram
   1. 進入兩個角色特性宣告不同的場景，分別觸發其對白或場景開場語音。
 * 預期結果：
   1. 各角色之語音以 [datIntf自訂角色音色目錄] 中其特性對應之音頻參數（pitch／rate／voice hint）建構，兩者 profile 參數不相同。
-  2. [datIntf自訂語音診斷紀錄] 登記每次實際採用 voice name/lang、pitch、rate、queue action 與 fallback reason；若瀏覽器不支援差異 voice，測試仍須揭露「profile 不同但 actual voice 相同」的降級事實。
+  2. [datIntf自訂語音診斷紀錄] 登記每次實際採用 voice name/lang、pitch、rate、queue action 與 fallback reason；未指定使用者語音且瀏覽器不支援差異 voice 時，測試仍須揭露「profile 不同但 actual voice 相同」的降級事實；若已為對應（性別×性格）類型指定語音，actual voice 應依指定而不同。
 
 #### intTest#23-驗證 [runAct自訂系統公主朗讀作答]
 
@@ -831,6 +842,31 @@ erDiagram
   2. 舊存檔之既有 profileColor 相容保留，不因改用粉彩色盤而被重置為角色預設色。
   3. 舊存檔缺 backgroundPattern 時回退無花紋預設，流程不報錯。
 
+#### intTest#41-驗證 [runAct自訂玩家設定角色語音] 指定、繼承與缺 voice 降級
+
+* 既有基底：intTest#22。
+* 新增項目：[sysGame系統]之使用者語音指定、性別繼承與指定 voice 缺失降級行為。
+* 步驟：
+  1. 以 mock 之 `getVoices()` 提供多個具名 voice（如 `David`、`Zira`、`Mark`），於設定為某（性別×性格）類型指定其一並儲存。
+  2. 對同性別但未指定的另一性格類型觸發配音。
+  3. 重新整理頁面後再觸發步驟 1 之類型配音。
+  4. 將步驟 1 指定之 voice 自 `getVoices()` 移除後再觸發其配音。
+* 預期結果：
+  1. 指定之類型以指定的 voice 發聲（actual voice name 與指定一致）。
+  2. 同性別未指定之類型繼承該性別之指定 voice。
+  3. 指定經 paramVoiceAssignmentKey 持久化，重整後仍生效。
+  4. 指定 voice 於本機不存在時，依繼承（性別類型）或語言優先 fallback 降級發聲，不丟例外，並於 [datIntf自訂語音診斷紀錄] 登記 fallback reason。
+
+#### intTest#42-驗證 語音首字前置留白
+
+* 既有基底：intTest#34。
+* 新增項目：[sysGame系統]之送入 `SpeechSynthesisUtterance` 文字開頭固定前置留白行為。
+* 步驟：
+  1. 對英文題目、中文協助與角色配音各觸發一次發聲，攔截實際送入 utterance 的文字。
+* 預期結果：
+  1. 送入 utterance 之文字開頭含 paramSpeechLeadingPad 之固定前置留白；顯示於畫面之原文不受影響。
+  2. 前置留白套用於所有經 speechManager 之發聲路徑，不改變後續字元與語意。
+
 ## E. 方案層級：文件程式化測試
 
 #### docProgTest#01-productReadme 承接 [solStory#1-短回合英文練習]
@@ -917,9 +953,11 @@ erDiagram
 * productReadme 要求：
   1. 說明不同場景人物會以各自的聲音說話、玩家公主會以其聲音唸出所選的答案，以及這些語音受既有 Voice 開關控制。
   2. 說明 #109 語音品質規劃：語速基準約 80%、首字清楚度、voice fallback、佇列／重播策略，以及維護者可用診斷紀錄判斷實際採用 voice 與錯誤。
+  3. 說明玩家／家長可於設定依角色類型（性別×性格）指定瀏覽器可用語音、未指定時系統自動選用並可繼承同性別之指定，以及語音開頭以前置留白改善清楚度。
 * 通過判定：
   1. 讀者可依 productReadme 預期不同角色的聲音差異與公主朗讀作答，並知道如何開關語音。
   2. 維護者可依 productReadme 理解 Web Speech API 限制與本案採用的降級、診斷與 QA 重點。
+  3. 讀者可依 productReadme 於設定為某角色類型指定語音、聽出指定後的聲線差異，並理解未指定時的自動選用與裝置缺 voice 時的降級。
 
 #### docProgTest#13-productReadme 承接 [solStory#13-關於與版本沿革]
 
@@ -1052,11 +1090,12 @@ erDiagram
   1. 以手機尺寸與桌機瀏覽器各進行一次答題，依序撥放題目英文、題目中文、選項英文與選項中文。
   2. 連續快速點擊兩個不同語音鈕，再對同一語音鈕重播一次。
   3. 聽測 NPC 開場、國王／王后／孩童或其他差異角色對白，以及玩家公主作答朗讀。
-  4. 檢查語音診斷紀錄中的 actualVoiceName、actualVoiceLang、rate、queue action、cancelCalled、start/end/error 事件與 fallback reason。
+  4. 於設定為某角色類型（性別×性格）指定一個不同的瀏覽器 voice 後，再聽測該類型角色的配音。
+  5. 檢查語音診斷紀錄中的 actualVoiceName、actualVoiceLang、rate、queue action、cancelCalled、start/end/error 事件與 fallback reason。
 * 預期結果：
-  1. 中英文語音首字可聽見且不明顯悶掉，語速約為基準 80%，兒童可理解。
+  1. 中英文語音首字可聽見且不明顯悶掉（含開頭前置留白生效），語速約為基準 80%，兒童可理解。
   2. 快速連點不造成後一段或前一段語音首字靜默截斷；需要替換時診斷紀錄顯示 replace-last 或 stop 原因。
-  3. 主要角色類型具可聽辨差異；若平台 voice 限制造成差異不足，診斷紀錄與 QA 結果明確標示，不視為未揭露成功。
+  3. 經設定為角色類型指定不同瀏覽器 voice 後，該類型角色聲線可真正被區分；未指定且平台 voice 限制造成差異不足時，診斷紀錄與 QA 結果明確標示，不視為未揭露成功。
 
 #### e2eTest#12-依 productReadme 驗測聊天延長時間與打工賺幣
 
@@ -1086,8 +1125,8 @@ erDiagram
   * 評估方式：觀察兒童完成單題所需時間、重試次數與中文協助使用情形，並抽查題庫的句型分級與場景相符性。
   * 觀察項目：單回合時長、答對率、提示與中文協助使用比例、全額／半額／無獎勵各層級分佈、中英文語音首字清楚度、語音錯誤與 fallback 發生率、各地區句型分級涵蓋度、題目（含題組外框與干擾選項）與所屬場景主體相符率、生活化對話（非描述句／超現實選項、無指涉英文字之 meta 旁白）比例。
 * **spec#2-可用角色陪伴與場景探索維持遊玩意願**
-  * 評估方式：觀察單次遊玩探索的地點數與回訪次數，以及角色配音的覆蓋與降級情形。
-  * 觀察項目：到訪地點數、連續遊玩回合數、已宣告音色特性的角色比例、缺特性降級發生率、actual voice 差異覆蓋率、角色聲音真人可辨識率。
+  * 評估方式：觀察單次遊玩探索的地點數與回訪次數，以及角色配音的覆蓋、使用者語音指定採用與降級情形。
+  * 觀察項目：到訪地點數、連續遊玩回合數、已宣告音色特性的角色比例、缺特性降級發生率、actual voice 差異覆蓋率、使用者語音指定（性別×性格）設定採用率、指定後角色聲線真人可辨識率、指定 voice 於裝置缺失之降級率、語音首字清楚度。
 * **spec#3-可把學習成果轉為看得見的外觀獎勵**
   * 評估方式：觀察 coins 兌換為外觀的比例，並以素材 QA 確認 baked-in base 無黑底、對位正確且 starter 預設外觀不重複疊圖。
   * 觀察項目：購買件數、換裝次數、coins 留存、base 對位錯誤率、starter 預設外觀重疊率。
