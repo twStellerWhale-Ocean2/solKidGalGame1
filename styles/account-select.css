@@ -151,8 +151,10 @@
   border-radius: var(--radius);
 }
 
+/* issue #132：Back 與 Add player 等寬並撐滿選單寬度——格線等欄保證精準等寬；Back 隱藏(display:none)時自動只剩一欄、Add player 獨佔整列。 */
 .account-select-actions {
-  display: flex;
-  justify-content: flex-end;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   gap: 10px;
 }
