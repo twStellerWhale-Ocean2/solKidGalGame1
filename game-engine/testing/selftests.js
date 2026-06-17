@@ -144,6 +144,14 @@ function runAboutSelfTest(api) {
   if (settingsView?.querySelector(".version-card")) errors.push("Settings 仍殘留版本卡（應併入 About）");
   if (!aboutView?.querySelector(".version-card")) errors.push("About 缺少版本卡");
 
+  // issue #134 後續：Settings 不得殘留「Switch player」按鈕；按「Change princess」須先關閉系統選單再開選角。
+  if (settingsView?.querySelector("#switchAccountButton")) errors.push("Settings 仍殘留 Switch player 按鈕（應移除）");
+  if (!api.accounts?.activeId?.()) api.accounts?.create?.();
+  api.openSystemMenu("settings");
+  api.openCharacterSelect({ forced: false });
+  if (document.getElementById("systemMenu")?.classList.contains("show")) errors.push("開啟選角後系統選單未關閉（殘留於背景）");
+  if (!api.elements.characterSelect?.classList.contains("show")) errors.push("Change princess 未開啟選角畫面");
+
   const passed = errors.length === 0;
   const result = document.createElement("pre");
   result.id = "aboutResult";

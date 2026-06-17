@@ -635,6 +635,8 @@ function renderIdentity() {
 }
 
 function openCharacterSelect({ forced = false } = {}) {
+  // issue #134 後續：選角為全幅覆蓋層，開啟前先關閉系統選單（含設定頁），避免設定選單殘留於背景。
+  closeSystemMenu();
   pendingCharacterId = state.activeCharacterId;
   pendingProfileColor = profileColorFor(state.activeCharacterId, state.profileColor);
   pendingBackgroundPattern = normalizeBackgroundPattern(state.backgroundPattern);
@@ -3409,9 +3411,6 @@ function bindEvents() {
   elements.accountBack?.addEventListener("click", closeAccountSelect);
   elements.accountSelect?.addEventListener("click", (event) => {
     if (event.target.matches("[data-account-cancel]")) closeAccountSelect();
-  });
-  elements.switchAccountButton?.addEventListener("click", () => {
-    returnToInitialSelect();
   });
   elements.systemMenuClose.addEventListener("click", closeSystemMenu);
   elements.systemMenu.addEventListener("click", (event) => {
