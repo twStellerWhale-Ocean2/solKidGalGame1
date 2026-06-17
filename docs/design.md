@@ -14,7 +14,7 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 
 ## B. 設計目的
 
-* **spec#1-可用短回合低挫折方式練習英文**：方案須讓年幼學習者以「聽情境句、從少量選項選出正確英文、立即對錯回饋」的短回合循環接觸英文，遇困難時可取得提示（含題目與各選項的中文理解協助），降低挫折；英文與中文語音協助須播放開頭清楚、語速適合兒童理解，並以獎勵高低鼓勵先嘗試英文——未借助中文且越早答對者獎勵越高、曾借助中文者該題無獎勵，維持以英文為主、中文為輔的學習動機。
+* **spec#1-可用短回合低挫折方式練習英文**：方案須讓年幼學習者以「聽情境句、從少量選項選出正確英文、立即對錯回饋」的短回合循環接觸英文，遇困難時可取得提示（含題目與各選項的中文理解協助），降低挫折；英文與中文語音協助須播放開頭清楚、語速適合兒童理解，並以獎勵高低鼓勵先嘗試英文——未借助中文且越早答對者獎勵越高、曾借助中文者該題無獎勵，維持以英文為主、中文為輔的學習動機。練習內容須依地區英文等級分級、句型由單句逐級進階至較複雜句並補齊各級缺口，且以貼近兒童日常的功能性生活對話為主、避免與生活脫節的描述句與超現實選項；每道題目須歸屬特定場景並與該場景主體相符，不採跨場景可互換的換名詞樣板。
 * **spec#2-可用角色陪伴與場景探索維持遊玩意願**：方案須以公主角色陪伴、王國地圖與多地區場景探索及地點互動，提高兒童反覆遊玩意願；並讓不同場景人物與玩家公主各具貼合其角色的聲音表現（含玩家公主以其聲音朗讀所選作答），使陪伴與場景更具辨識度與臨場沉浸，而非一律同一語音；受瀏覽器語音能力限制時須明確降級且不中斷遊戲。
 * **spec#3-可把學習成果轉為看得見的外觀獎勵**：方案須讓答對所得 coins 能兌換為角色外觀（髮型、衣物、鞋帽、配件、outfit set）等可見變化，使成就可見而非僅顯示分數；目前可玩公主 base 依使用者指定採 baked-in 短髮 playwear，仍不得烘入長髮、長袖、睡衣、禮服、皇冠或背景，且預設 starter 項不得造成重複疊圖。
 * **spec#4-可形成練英文獲獎勵換裝的正向閉環**：方案須使英文練習、獎勵取得與換裝回饋構成同一個可重複的正向循環。
@@ -24,6 +24,7 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 * **spec#8-可用本機多帳號分離不同玩家進度**：方案須讓同一裝置上多位玩家各自擁有獨立帳號，每次進入遊戲先選擇要使用的帳號，並可新增與刪除帳號；帳號選擇與遊戲內人物資訊須以同一套頭胸部大頭照、背景識別色、最近遊玩時間、coins 與可遊玩／休息狀態輔助辨識，使不同玩家的進度與換裝成果互不混用；多帳號僅限同一瀏覽器本機，不含網路登入、密碼或雲端同步。
 * **spec#9-可限制每次遊玩時長並強制休息以護眼**：方案須在兒童連續遊玩達設定時長後自動結算本回合成果並進入強制休息，休息時間結束前不可續玩，以保護兒童視力；每次遊玩與休息的預設時長各 15 分鐘，且可由玩家於設定調整並以各帳號各自計算。遊戲內須顯示本次開始時間與剩餘可玩時間，休息／結算畫面須允許回到初始帳號／公主選單但不得繞過休息鎖定；地圖上公主 token 光暈須使用同一個帳號／公主識別色。
 * **spec#10-可查看作品版權與版本沿革**：方案須在設定選單提供 About 頁籤，呈現作品版權宣告，並以中文短主旨列出歷次版本的主要變更，使玩家與家長能識別作品來源並了解版本演進。
+* **spec#11-可依場景情境分流生活聊天與打工任務並給予不同回饋**：方案須讓各場景可依情境提供「生活聊天」「逛店」「打工任務」三種互動，且可只開啟其中部分；生活聊天為日常寒暄對話，答對提升心情並在護眼時長上限內延長當次可玩時間，使兒童體會社交是滿足自我需求而非期待他人回饋；打工任務為切合該場景主體的任務、可結合簡易數學與生活常識，以 coins 回饋體現勞動所得；逛店沿用既有以 coins 購買外觀之機制；藉此使人際互動的精神回饋與勞動所得的金錢回饋明確分流。
 
 # II. 設計分析
 
@@ -69,7 +70,7 @@ HOST -->|"🎚️paramDeployBranch=`main`"| SYS
 ### (C) 運作個案
 
 * **solStory#1-短回合英文練習**：
-  * **solCase#1.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家答英文題]，於場景聽情境句並從選項選出正確英文，取得即時對錯回饋與獎勵。
+  * **solCase#1.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家答英文題]，於場景聽情境句並從選項選出正確英文，取得即時對錯回饋與獎勵；題目依該場景主體與地區英文等級（句型分級、生活化）設計。
 * **solStory#2-地圖探索與角色陪伴**：
   * **solCase#2.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家地圖導航]，以可見的公主頭像在世界地圖、城堡地圖與各地區地圖一致地移動並進入地點場景（世界地圖採移動到目的地後再進入的探索式進入）。
 * **solStory#3-換裝獎勵**：
@@ -109,6 +110,10 @@ HOST -->|"🎚️paramDeployBranch=`main`"| SYS
   * **solCase#12.4**：[sysGame系統]執行[runAct自訂系統記錄語音診斷]，記錄每次語音播放之文字摘要、語言、voice、pitch、rate、queue 動作、事件時間與錯誤代碼，供維護者判斷工程品質與瀏覽器限制。
 * **solStory#13-關於與版本沿革**：
   * **solCase#13.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家檢視關於資訊]，於設定選單 About 頁籤檢視作品版權宣告與歷次版本的中文短主旨。
+* **solStory#14-場景互動分流與雙回饋**：
+  * **solCase#14.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家生活聊天]，於開啟生活聊天的場景進行日常寒暄對話，答對提升心情並在護眼時長上限內延長當次可玩時間。
+  * **solCase#14.2**：[etyCfg通用兒童玩家]執行[runAct自訂玩家打工任務]，於開啟打工任務的場景完成切合該場景主體的任務（可結合簡易數學與生活常識），以 coins 回饋。
+  * **solCase#14.3**：[etyCfg通用家長維護者]執行[setAct自訂維護者擴充內容]，以單一場景模板為各場景選擇性開啟生活聊天、逛店與打工任務模組及其題組。
 
 ### (D) 重點組態
 
@@ -178,6 +183,9 @@ CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
 CONTENT -->|"🎚️paramDefaultVoiceProfile=`default`"| SYS
 STATE -->|"🎚️paramPlayMinutes=`15`"| SYS
 STATE -->|"🎚️paramRestMinutes=`15`"| SYS
+STATE -->|"🎚️paramPlayMaxMinutes=`20`"| SYS
+STATE -->|"🎚️paramMoodMinutesPerPoint=`1`"| SYS
+SCENE -->|"🎚️paramChatMoodReward=`1`"| SYS
 CONTENT -->|"🎚️paramProfileColorPalette=`16 colors`"| SYS
 CONTENT -->|"🎚️paramDefaultProfileColors=`lumi,yumi,sol,rosa`"| SYS
 ```
@@ -185,7 +193,7 @@ CONTENT -->|"🎚️paramDefaultProfileColors=`lumi,yumi,sol,rosa`"| SYS
 ### (C) 運作個案
 
 * **sysStory#1-承接英文練習**：
-  * **sysCase#1.1**：[modScene模組]承接[runAct自訂玩家答英文題]，載入題庫、比對選項並以 coins 回饋獎勵（答題獎勵單一為 coins，不另計其他屬性）。
+  * **sysCase#1.1**：[modScene模組]承接[runAct自訂玩家答英文題]，載入該場景題庫（依場景主體與地區英文等級分級、生活化）、比對選項並判定正確性；正確性判定為各互動模式共用，獎勵型別（coins 或心情）由所屬模式決定。
 * **sysStory#2-承接地圖導航**：
   * **sysCase#2.1**：[modMap模組]承接[runAct自訂玩家地圖導航]，以單一玩家頭像機制在世界、城堡與地區地圖一致渲染、定位與移動公主（鍵盤方向鍵自由走動）。
   * **sysCase#2.2**：[modMap模組]承接[runAct自訂玩家地圖導航]，於世界地圖點選目的地時先令公主頭像移動至該目的地座標後再進入，移動途中再次點選即略過位移直接進入。
@@ -222,6 +230,11 @@ CONTENT -->|"🎚️paramDefaultProfileColors=`lumi,yumi,sol,rosa`"| SYS
   * **sysCase#9.4**：[modScene模組]承接[runAct自訂系統記錄語音診斷]，監聽 utterance `start`、`end`、`error`、`boundary` 事件，記錄 queue 動作、voice 載入狀態、實際語音參數、錯誤代碼與是否因 autoplay/user activation、audio-busy、voice-unavailable、language-unavailable、interrupted 或 canceled 降級。
 * **sysStory#10-承接關於與版本沿革**：
   * **sysCase#10.1**：[modShell模組]承接[runAct自訂玩家檢視關於資訊]，於系統選單新增 About 頁籤，渲染作品版權宣告與最近 10 個版本的中文短主旨；當前版本資訊併入此頁籤，由 [datIntf自訂版本沿革目錄] 之首筆導出，Settings 不再另列版本卡。
+* **sysStory#11-承接場景互動分流與雙回饋**：
+  * **sysCase#11.1**：[modScene模組]承接[runAct自訂玩家生活聊天]，載入該場景生活聊天題組，答對時依 paramChatMoodReward 累加心情值並請求 [modState模組] 延長當次遊玩時間。
+  * **sysCase#11.2**：[modScene模組]承接[runAct自訂玩家打工任務]，載入該場景打工任務題組（可含簡易數學與生活常識），答對時沿用既有獎勵階梯以 coins 回饋。
+  * **sysCase#11.3**：[modState模組]承接[runAct自訂系統心情延長遊玩]，依心情值與 paramMoodMinutesPerPoint 換算延長目前帳號當次遊玩時間預算，且延長後不超過 paramPlayMaxMinutes 護眼上限。
+  * **sysCase#11.4**：[modContent模組]承接[setAct自訂維護者擴充內容]，以單一場景設定宣告各場景啟用之生活聊天／逛店／打工任務模組與對應題組，不再以商店為特例。
 
 ### (D) 重點組態
 
@@ -236,6 +249,8 @@ CONTENT -->|"🎚️paramDefaultProfileColors=`lumi,yumi,sol,rosa`"| SYS
     * paramAccountIndexKey=`luminara-princess-english-accounts`
     * paramPlayMinutes=`15`
     * paramRestMinutes=`15`
+    * paramPlayMaxMinutes=`20`
+    * paramMoodMinutesPerPoint=`1`
   * [etyCfg自訂modContent組態]
     * paramDefaultArea=`castle`
     * paramDefaultCharacter=`lumi`
@@ -246,6 +261,7 @@ CONTENT -->|"🎚️paramDefaultProfileColors=`lumi,yumi,sol,rosa`"| SYS
   * [etyCfg自訂modScene組態]
     * paramChineseAudioLang=`zh-TW`
     * paramRewardSecondTryRatio=`0.5`
+    * paramChatMoodReward=`1`
     * paramSpeechRateScale=`0.8`
     * paramSpeechQueueMode=`replace-last`
     * paramSpeechDebounceMs=`120`
@@ -750,6 +766,44 @@ erDiagram
   2. `not-allowed`／autoplay 類錯誤會要求下一次使用者 click／tap 後再啟動語音，不依賴頁面載入自動發聲。
   3. 所有錯誤均記錄 error code、utterance source、requested text summary、language、actual voice、fallback action 與是否可重試。
 
+#### intTest#36-驗證 [runAct自訂玩家生活聊天]
+
+* 既有基底：intTest#05。
+* 新增項目：[sysGame系統]之生活聊天答題與心情累加行為。
+* 步驟：
+  1. 進入有開啟生活聊天模組的場景，進行生活聊天並答對一題。
+* 預期結果：
+  1. 顯示答對回饋，心情值依 paramChatMoodReward 增加，且該題不發放 coins。
+
+#### intTest#37-驗證 [runAct自訂系統心情延長遊玩]
+
+* 既有基底：intTest#36、intTest#17。
+* 新增項目：[sysGame系統]之心情換算延長當次遊玩時間且受護眼上限限制行為。
+* 步驟：
+  1. 以接近 paramPlayMaxMinutes 的遊玩時間預算進入有生活聊天的場景，連續聊天答對多題。
+* 預期結果：
+  1. 當次遊玩時間預算依心情值與 paramMoodMinutesPerPoint 延長，但不超過 paramPlayMaxMinutes 護眼上限；達上限後再答對不再延長。
+
+#### intTest#38-驗證 [runAct自訂玩家打工任務]
+
+* 既有基底：intTest#05。
+* 新增項目：[sysGame系統]之打工任務答題與 coins 回饋行為。
+* 步驟：
+  1. 進入有開啟打工任務模組的場景，完成一題切合場景、含簡易數學或生活常識的任務並答對。
+* 預期結果：
+  1. 顯示答對回饋並依既有獎勵階梯發放 coins，且題目內容與該場景主體相符。
+
+#### intTest#39-驗證 場景模組選擇性開啟
+
+* 既有基底：intTest#02。
+* 新增項目：[sysGame系統]之單一場景模板選擇性開啟生活聊天／逛店／打工任務模組。
+* 步驟：
+  1. 載入分別只開啟不同模組組合的場景設定（例如僅聊天、聊天＋打工、聊天＋逛店＋打工）。
+  2. 進入各場景。
+* 預期結果：
+  1. 各場景僅顯示其已開啟模組的互動入口，未開啟者不出現。
+  2. 原商店場景的購買行為由 shop 模組旗標承接，無 kind:"shop" 特例殘留。
+
 ## E. 方案層級：文件程式化測試
 
 #### docProgTest#01-productReadme 承接 [solStory#1-短回合英文練習]
@@ -846,6 +900,13 @@ erDiagram
   1. 說明如何於設定選單開啟 About 頁籤，檢視作品版權宣告與歷次版本的中文短主旨。
 * 通過判定：
   1. 讀者可依 productReadme 開啟 About 頁籤並讀到版權宣告與版本沿革。
+
+#### docProgTest#14-productReadme 承接 [solStory#14-場景互動分流與雙回饋]
+
+* productReadme 要求：
+  1. 說明場景可提供生活聊天、逛店與打工任務三種互動；生活聊天答對可提升心情並在護眼上限內延長可玩時間（社交為滿足自我需求），打工任務則完成切合場景的任務賺取 coins。
+* 通過判定：
+  1. 讀者可依 productReadme 區分三種互動，並理解聊天延長時間與打工賺 coins 的回饋差異。
 
 ## F. 方案層級：文件端對端測試
 
@@ -970,6 +1031,16 @@ erDiagram
   2. 快速連點不造成後一段或前一段語音首字靜默截斷；需要替換時診斷紀錄顯示 replace-last 或 stop 原因。
   3. 主要角色類型具可聽辨差異；若平台 voice 限制造成差異不足，診斷紀錄與 QA 結果明確標示，不視為未揭露成功。
 
+#### e2eTest#12-依 productReadme 驗測聊天延長時間與打工賺幣
+
+* 依據：docProgTest#14、[solCase#14.1]、[solCase#14.2]。
+* 步驟：
+  1. 依 productReadme 進入有生活聊天的場景，聊天答對數題，觀察心情與剩餘可玩時間。
+  2. 依 productReadme 進入有打工任務的場景，完成任務並答對，觀察 coins。
+* 預期結果：
+  1. 聊天答對提升心情並延長當次可玩時間，但不超過護眼上限。
+  2. 打工答對獲得 coins；兩種互動的回饋型別不同（心情 vs coins）。
+
 # IV. 部署成效
 
 ## A. 部署組態
@@ -985,8 +1056,8 @@ erDiagram
 ## B. 成效追蹤
 
 * **spec#1-可用短回合低挫折方式練習英文**
-  * 評估方式：觀察兒童完成單題所需時間、重試次數與中文協助使用情形。
-  * 觀察項目：單回合時長、答對率、提示與中文協助使用比例、全額／半額／無獎勵各層級分佈、中英文語音首字清楚度、語音錯誤與 fallback 發生率。
+  * 評估方式：觀察兒童完成單題所需時間、重試次數與中文協助使用情形，並抽查題庫的句型分級與場景相符性。
+  * 觀察項目：單回合時長、答對率、提示與中文協助使用比例、全額／半額／無獎勵各層級分佈、中英文語音首字清楚度、語音錯誤與 fallback 發生率、各地區句型分級涵蓋度、題目與所屬場景主體相符率、生活化對話（非描述句／超現實選項）比例。
 * **spec#2-可用角色陪伴與場景探索維持遊玩意願**
   * 評估方式：觀察單次遊玩探索的地點數與回訪次數，以及角色配音的覆蓋與降級情形。
   * 觀察項目：到訪地點數、連續遊玩回合數、已宣告音色特性的角色比例、缺特性降級發生率、actual voice 差異覆蓋率、角色聲音真人可辨識率。
@@ -1014,3 +1085,6 @@ erDiagram
 * **spec#10-可查看作品版權與版本沿革**
   * 評估方式：觀察玩家／家長是否能於 About 頁籤找到版權宣告與版本沿革。
   * 觀察項目：About 頁籤開啟率、版本沿革顯示完整度（中文短主旨涵蓋版本數）、版權宣告呈現正確率。
+* **spec#11-可依場景情境分流生活聊天與打工任務並給予不同回饋**
+  * 評估方式：觀察各場景啟用模組的分布，以及生活聊天延長時間、打工任務 coins 回饋是否如設計分流。
+  * 觀察項目：開啟各模組（聊天／逛店／打工）的場景比例、聊天答對後心情累加與當次可玩時間延長正確率（不逾護眼上限）、打工任務 coins 發放正確率、聊天與打工回饋型別未混用率。
