@@ -222,8 +222,53 @@ p {
   aspect-ratio: 1 / 1;
   overflow: hidden;
   border-radius: var(--radius);
-  background: var(--active-profile-color, #fff5f8);
+  /* issue #131：資訊欄大頭照底色改識別色半透明（spec#8）。alpha 名目 0.30 經 visual-qa 調為 0.45 以維持辨識。 */
+  background-color: color-mix(in srgb, var(--active-profile-color, #fff5f8) 45%, transparent);
   border: 1px solid var(--line);
+}
+
+/* issue #131：公主視覺主題背景花紋（spec#6）。以白色半透明圖樣（background-image）疊在識別色半透明底色之上、bust 之下；
+   套用於識別卡背版（.character-portrait／.info-portrait／.account-avatar）與選擇器 swatch。"none" 不設 data-pattern。 */
+[data-pattern] { background-repeat: repeat; }
+[data-pattern="wave"] {
+  background-image: radial-gradient(circle at 50% 120%, transparent 9px, rgba(255, 255, 255, 0.5) 10px 11px, transparent 12px);
+  background-size: 24px 16px;
+}
+[data-pattern="bubble"] {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.55) 24%, transparent 26%);
+  background-size: 26px 26px;
+}
+[data-pattern="grid"] {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.5) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.5) 1.5px, transparent 1.5px);
+  background-size: 18px 18px;
+}
+[data-pattern="dots"] {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.6) 2.5px, transparent 3px);
+  background-size: 14px 14px;
+}
+[data-pattern="stripes"] {
+  background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.45) 0 6px, transparent 6px 14px);
+}
+[data-pattern="checks"] {
+  background-image:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.4) 25%, transparent 25% 75%, rgba(255, 255, 255, 0.4) 75%),
+    linear-gradient(45deg, rgba(255, 255, 255, 0.4) 25%, transparent 25% 75%, rgba(255, 255, 255, 0.4) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
+[data-pattern="diamonds"] {
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.42) 0 1.5px, transparent 1.5px 14px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.42) 0 1.5px, transparent 1.5px 14px);
+}
+[data-pattern="confetti"] {
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.6) 2px, transparent 3px),
+    radial-gradient(circle at 70% 55%, rgba(255, 255, 255, 0.5) 2px, transparent 3px),
+    radial-gradient(circle at 45% 85%, rgba(255, 255, 255, 0.55) 2px, transparent 3px);
+  background-size: 32px 32px;
 }
 
 .info-actions {

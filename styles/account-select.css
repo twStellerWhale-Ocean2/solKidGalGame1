@@ -78,7 +78,8 @@
   position: relative;
   overflow: hidden;
   border-radius: var(--radius);
-  background: var(--active-profile-color, #fff5f8);
+  /* issue #131：帳號卡大頭照底色改識別色半透明，收斂與選角/資訊欄同一作法（spec#8）。alpha 名目 0.30 經 visual-qa 調為 0.45。 */
+  background-color: color-mix(in srgb, var(--active-profile-color, #fff5f8) 45%, transparent);
   border: 1px solid var(--line);
 }
 

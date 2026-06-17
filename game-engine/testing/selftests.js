@@ -368,24 +368,38 @@ function runChatSelfTest(api) {
   document.body.prepend(result);
 }
 
-// issue #126：驗證 profileColor、共用頭胸部大頭照、帳號摘要、地圖光暈與返回初始選單。
+// issue #126/#131：驗證 profileColor、粉彩色盤、調色器自訂色、舊存檔相容、背景花紋、共用頭胸大頭照、帳號摘要、地圖橢圓背版與返回初始選單。
 function runProfileColorSelfTest(api) {
   const params = new URLSearchParams(location.search);
   if (params.get("selftest") !== "profile-color") return;
   const errors = [];
   let account = null;
   try {
-    if (!api.profileColorPalette || api.profileColorPalette.length !== 16) {
-      errors.push(`profile color palette size ${api.profileColorPalette?.length || 0}, expected 16`);
+    // issue #131：色盤改為 8 種粉彩色（spec#6）。
+    if (!api.profileColorPalette || api.profileColorPalette.length !== 8) {
+      errors.push(`profile color palette size ${api.profileColorPalette?.length || 0}, expected 8`);
     }
     const characters = Object.values(api.characterRegistry || {});
     const defaults = characters.map((character) => character.defaultProfileColor);
     if (new Set(defaults).size !== characters.length) errors.push("playable princess default profile colors are not distinct");
 
+    // issue #131 (intTest#31/#40)：normalizeProfileColor 放寬為格式驗證——調色器自訂色與舊存檔色值（不在新色盤內）皆原值保留，僅非法/缺漏才回退預設。
+    const customHex = "#123abc";
+    if (api.normalizeProfileColor(customHex, "lumi") !== customHex) errors.push("custom hex color was not preserved by normalizeProfileColor");
+    const legacyHex = "#ef4444"; // 舊 16 色盤的紅，已不在新粉彩色盤內
+    if (api.normalizeProfileColor(legacyHex, "lumi") !== legacyHex) errors.push("legacy save profile color was reset (expected preserved)");
+    if (api.normalizeProfileColor("not-a-color", "lumi") !== api.defaultProfileColorFor("lumi")) errors.push("invalid profile color did not fall back to character default");
+
+    // issue #131 (intTest#40)：背景花紋集（none + 8）與 normalize。
+    if (!Array.isArray(api.backgroundPatternIds) || api.backgroundPatternIds.length < 9) errors.push(`background pattern set size ${api.backgroundPatternIds?.length || 0}, expected >= 9 (none + 8)`);
+    if (api.normalizeBackgroundPattern("bubble") !== "bubble") errors.push("valid background pattern was not preserved");
+    if (api.normalizeBackgroundPattern("bogus-pattern") !== "none") errors.push("unknown background pattern did not fall back to none");
+
     account = api.accounts.create();
     api.state.activeCharacterId = "yumi";
     api.state.playerName = "Blue Kid";
-    api.state.profileColor = api.profileColorPalette[8];
+    api.state.profileColor = customHex; // 自訂色（不在色盤內）：驗證可流經 render 不被重置
+    api.state.backgroundPattern = "bubble";
     api.state.coins = 321;
     api.persist();
     api.syncActiveAccountMeta({ touched: true });
@@ -393,7 +407,9 @@ function runProfileColorSelfTest(api) {
 
     const sideAvatar = api.elements.sideProfileAvatar;
     if (!sideAvatar || sideAvatar.querySelectorAll(".paper-doll-layer").length === 0) errors.push("side profile avatar did not render outfit layers");
-    if (sideAvatar?.style.getPropertyValue("--profile-color") !== api.state.profileColor) errors.push("side avatar profile color does not match state");
+    if (sideAvatar?.style.getPropertyValue("--profile-color") !== api.state.profileColor) errors.push("side avatar profile color does not match state (custom color reset?)");
+    // issue #131：背景花紋以 data-pattern 套用於資訊欄識別卡背版。
+    if (api.elements.sideProfileFrame?.dataset.pattern !== "bubble") errors.push(`info-bar card pattern ${api.elements.sideProfileFrame?.dataset.pattern || "(none)"}, expected bubble`);
 
     api.openAccountSelect({ mustChoose: false });
     const accountPick = api.elements.accountList.querySelector(`[data-account-id="${account.id}"]`);
@@ -1386,11 +1402,30 @@ function runVisualQa(api) {
       }
     });
   }
+  // issue #131：視覺 QA 可指定識別色與背景花紋，使截圖具決定性。
+  const patternParam = params.get("pattern");
+  if (patternParam) api.state.backgroundPattern = api.normalizeBackgroundPattern(patternParam);
+  const colorParam = params.get("color");
+  if (colorParam) api.state.profileColor = api.normalizeProfileColor(colorParam, api.state.activeCharacterId);
 
   if (surface === "world-map") {
     api.render();
     api.openWorldMap();
     if (params.get("destination")) api.focusWorld(params.get("destination"));
+    return;
+  }
+
+  // issue #131：選角畫面（粉彩色盤＋調色器＋背景花紋選擇器＋選角卡半透明識別底色）視覺 QA surface。
+  if (surface === "character-select") {
+    api.render();
+    api.openCharacterSelect({ forced: false });
+    return;
+  }
+
+  // issue #131：帳號選擇畫面（帳號卡半透明識別底色＋花紋）視覺 QA surface。
+  if (surface === "account-select") {
+    api.render();
+    api.openAccountSelect({ mustChoose: false });
     return;
   }
 

@@ -7,7 +7,9 @@ import {
   isPlayableCharacterId,
   normalizeProfileColor,
   profileColorPalette,
-  playableCharacterById
+  playableCharacterById,
+  backgroundPatternIds,
+  normalizeBackgroundPattern
 } from "./_shared/paper-doll-assets.js";
 import { outfitSlots, paperDollLayerOrder } from "./_shared/rules.js";
 import { castleRoyalCloakRoomItems } from "./castle-royal-cloak-room/manifest.js";
@@ -36,7 +38,9 @@ export {
   isPlayableCharacterId,
   normalizeProfileColor,
   playableCharacterById,
-  profileColorPalette
+  profileColorPalette,
+  backgroundPatternIds,
+  normalizeBackgroundPattern
 };
 //#endregion 匯出共用規則
 

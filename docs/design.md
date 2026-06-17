@@ -262,7 +262,7 @@ CONTENT -->|"🎚️paramDefaultProfileColors=`lumi,yumi,sol,rosa`"| SYS
     * paramProfileColorPalette=`8 pastel preset colors`
     * paramProfileColorCustomEnabled=`true`
     * paramBackgroundPatterns=`8 (wave,bubble,grid,...)`
-    * paramCardBackgroundAlpha=`0.30`
+    * paramCardBackgroundAlpha=`0.45`
     * paramDefaultProfileColors=`lumi:rose,yumi:sky,sol:amber,rosa:mint`
     * paramDefaultVoiceProfile=`default`
   * [etyCfg自訂modScene組態]

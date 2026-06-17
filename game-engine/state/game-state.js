@@ -3,6 +3,7 @@ import {
   defaultActiveCharacterId,
   difficultyConfig,
   normalizeProfileColor,
+  normalizeBackgroundPattern,
   outfitSlots,
   playableCharacterById,
   questTemplates,
@@ -106,6 +107,7 @@ export function normalizeState(candidate = {}) {
   const activeCharacter = playableCharacterById(candidate.activeCharacterId);
   merged.activeCharacterId = activeCharacter?.id || defaultActiveCharacterId;
   merged.profileColor = normalizeProfileColor(candidate.profileColor, merged.activeCharacterId);
+  merged.backgroundPattern = normalizeBackgroundPattern(candidate.backgroundPattern);
   merged.playerName = sanitizePlayerName(candidate.playerName)
     || activeCharacter?.defaultName
     || base.playerName;

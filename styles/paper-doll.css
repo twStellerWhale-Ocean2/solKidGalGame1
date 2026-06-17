@@ -6,8 +6,30 @@
 }
 
 .map-doll {
+  position: relative;
   width: 54px;
   height: 70px;
+}
+
+/* issue #131：地圖公主 token 改用半透明識別色橢圓背版標示（取代 #126 的 drop-shadow 光暈，避免邊緣糊化；spec#9）。
+   橢圓置於腳下、識別色低 alpha 漸層，位於 doll 層之下（z-index 0）。 */
+.map-doll::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 1%;
+  transform: translateX(-50%);
+  width: 96%;
+  height: 58%;
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--profile-color, #ffd166) 60%, transparent) 0%,
+    color-mix(in srgb, var(--profile-color, #ffd166) 32%, transparent) 55%,
+    transparent 76%
+  );
 }
 
 .adv-doll {
@@ -60,13 +82,13 @@
 .paper-doll-layer-faceEyes,
 .paper-doll-layer-faceMask { z-index: 8; }
 
-/* issue #126：各地圖公主頭像維持白色描邊，外層光暈改用目前帳號 profileColor。 */
+/* issue #131：移除 #126 的識別色光暈 drop-shadow（糊化）；識別色改由 .map-doll::before 橢圓背版承載（spec#9）。
+   此處僅保留深色投影與白描邊維持頭像清晰銳利。 */
 .map-doll .paper-doll-layer {
   background-position: center bottom;
   filter:
     drop-shadow(0 3px 4px rgba(58, 37, 46, 0.28))
-    drop-shadow(0 0 4px rgba(255, 255, 255, 0.95))
-    drop-shadow(0 0 8px var(--profile-color, rgba(255, 209, 102, 0.75)));
+    drop-shadow(0 0 4px rgba(255, 255, 255, 0.95));
 }
 
 .adv-doll.try-on-active {
