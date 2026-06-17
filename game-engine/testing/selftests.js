@@ -760,9 +760,11 @@ function runCharacterVoiceSelfTest(api) {
 async function runDataAudit(api) {
   const params = new URLSearchParams(location.search);
   if (params.get("selftest") !== "data-audit") return;
+  // issue #138：商店改以 shopCategories 旗標辨識，不再依賴 kind:"shop"。
+  const isShopLocation = (hotspot) => Array.isArray(hotspot?.shopCategories) && hotspot.shopCategories.length > 0;
   const shopLocations = Object.values(api.areaRegistry)
     .flatMap((area) => area.locations || [])
-    .filter((hotspot) => hotspot.kind === "shop");
+    .filter(isShopLocation);
   const shopIds = new Set(shopLocations.map((hotspot) => hotspot.id));
   const categoryCounts = Object.fromEntries(api.categories.map((category) => [
     category.id,
@@ -784,7 +786,23 @@ async function runDataAudit(api) {
     if (item.type === "room") errors.push(`${item.id} is a removed room/furniture item`);
   });
   const market = api.hotspotById("market");
-  if (market?.kind === "shop") errors.push("market is still a shop");
+  if (isShopLocation(market)) errors.push("market is still a shop");
+  // issue #138：消除 kind:"shop" 特例——確認 manifests 無殘留的 kind:"shop"。
+  Object.values(api.areaRegistry).forEach((area) => {
+    (area.locations || []).forEach((hotspot) => {
+      if (hotspot.kind === "shop") errors.push(`${area.id}/${hotspot.id} still uses kind:"shop"`);
+    });
+  });
+  // issue #138：生活聊天全場景化——每個可互動場景（非 room／gate）皆須具備 chatLesson 題組（含商店）。
+  Object.values(api.areaRegistry).forEach((area) => {
+    (area.locations || []).forEach((hotspot) => {
+      if (hotspot.kind === "gate" || hotspot.kind === "room") return;
+      const config = api.sceneConfigFor(hotspot);
+      if (!config.chatLesson?.questions?.length) {
+        errors.push(`${area.id}/${hotspot.id} has no chatLesson (chat should be available in every interactive scene)`);
+      }
+    });
+  });
   Object.values(api.areaRegistry).forEach((area) => {
     (area.locations || []).forEach((hotspot) => {
       if (hotspot.kind === "gate" || hotspot.kind === "room") return;

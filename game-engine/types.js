@@ -14,7 +14,7 @@
  * @property {string} label
  * @property {string} node
  * @property {string=} area
- * @property {"gate"|"room"|"shop"|"future"|string=} kind
+ * @property {"gate"|"room"|"future"|string=} kind
  * @property {string=} icon
  * @property {string=} hint
  * @property {string[]=} shopCategories

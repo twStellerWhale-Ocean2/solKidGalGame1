@@ -45,7 +45,7 @@ import {
   DEFAULT_VOICE_PROFILE
 } from "./data/game-data.js";
 import { createAdvControls } from "./flow/adv-controls.js";
-import { firstLayerActionsFor, sceneActionLabel } from "./flow/scene-actions.js";
+import { firstLayerActionsFor, sceneActionLabel, isShopHotspot } from "./flow/scene-actions.js";
 import { FLOW_STAGE_LABELS } from "./flow/stages.js";
 import { createMapActorRuntime, mapActorMotionTypes } from "./map/actors.js";
 import { updateMarkerEdgeVisibility } from "./map/marker-visibility.js";
@@ -106,6 +106,8 @@ const CHINESE_AUDIO_LANG = "zh-TW";     // design paramChineseAudioLang
 const REWARD_SECOND_TRY_RATIO = 0.5;    // design paramRewardSecondTryRatio
 const CHAT_MOOD_REWARD = 1;             // issue #135 design paramChatMoodReward：每次生活聊天答對增加的心情值
 const MOOD_MINUTES_PER_POINT = 1;       // issue #135 design paramMoodMinutesPerPoint：每點心情換算延長的遊玩分鐘數
+const CHAT_CHOICE_COUNT = 2;            // issue #138 design paramChatChoiceCount：生活聊天每題呈現選項數（輕鬆寒暄）
+const JOB_CHOICE_COUNT = 4;             // issue #138 design paramJobChoiceCount：打工任務每題呈現選項數
 const SPEECH_RATE_SCALE = 0.8;          // issue #109 design paramSpeechRateScale：全域朗讀語速倍率（套用於所有發聲）
 const SPEECH_QUEUE_MODE = "replace-last";
 const SPEECH_DEBOUNCE_MS = 120;
@@ -1577,7 +1579,7 @@ function renderDestinationPicker() {
   const areaId = activeTravelMapArea();
   elements.destinationList.innerHTML = "";
   locationsForArea(areaId).filter((hotspot) => hotspot.kind !== "room").forEach((hotspot) => {
-    const isShop = hotspot.kind === "shop";
+    const isShop = isShopHotspot(hotspot);
     const button = document.createElement("button");
     button.type = "button";
     button.className = `destination-card${isShop ? " shop" : ""}`;
@@ -1597,7 +1599,7 @@ function renderDestinationPicker() {
 
 function destinationActionText(hotspot) {
   if (hasLessonsForPlace(hotspot.id)) return `${sceneConfigFor(hotspot).npc} has a local English task.`;
-  if (hotspot.kind === "shop") {
+  if (isShopHotspot(hotspot)) {
     const categoriesText = allowedShopCategories(hotspot).map(categoryLabel).join(" / ");
     return `Try ${categoriesText.toLowerCase()} rewards.`;
   }
@@ -1721,7 +1723,7 @@ function renderHotspots(metrics = mapCoverMetrics(), areaId = activeTravelMapAre
     const marker = document.createElement("button");
     const isPortal = hotspot.kind === "gate" || hotspot.markerStyle === "portal";
     marker.type = "button";
-    marker.className = `map-marker hotspot${hotspot.kind === "shop" ? " shop" : ""}${isPortal ? " portal" : ""}`;
+    marker.className = `map-marker hotspot${isShopHotspot(hotspot) ? " shop" : ""}${isPortal ? " portal" : ""}`;
     marker.dataset.hotspotId = hotspot.id;
     marker.dataset.label = hotspot.label;
     marker.setAttribute("aria-label", `${hotspot.label}. ${travelActionLabel(hotspot)}.`);
@@ -1761,7 +1763,7 @@ function travelActionLabel(hotspot) {
   }
   if (hotspot.kind === "future") return "Soon";
   if (hasLessonsForPlace(hotspot.id)) return "Practice";
-  if (hotspot.kind === "shop") return "Shop";
+  if (isShopHotspot(hotspot)) return "Shop";
   return sceneConfigFor(hotspot).travelAction || "Visit";
 }
 
@@ -2003,11 +2005,23 @@ function openQuestAdv(hotspot, opts = {}) {
   elements.advPrompt.textContent = `${quest.title}: ${activeLesson.prompt}`;
   updatePromptAudioButtons();
   const zhByChoice = Array.isArray(activeLesson.choicesZh) ? activeLesson.choicesZh : [];
-  const options = activeLesson.choices.map((choice, i) => ({ choice, zh: zhByChoice[i] || "" }));
+  const allOptions = activeLesson.choices.map((choice, i) => ({ choice, zh: zhByChoice[i] || "" }));
+  // issue #138：依互動模式裁切選項數（生活聊天＝2 輕鬆、打工任務＝4），永遠保留正解。
+  const optionCount = activeLessonMode === "chat" ? CHAT_CHOICE_COUNT : JOB_CHOICE_COUNT;
+  const options = limitChoiceOptions(allOptions, activeLesson.answer, optionCount);
   shuffled(options).forEach((option, index) => addChoiceRow(option.choice, option.zh, index + 1));
   addAdvOption("↩ Leave", closeAdv, { leave: true });
   scheduleAdvFocus(0);
   speak(quest.opening, npcVoiceFor(hotspot), { source: "npc-quest-opening" });
+}
+
+// issue #138：依互動模式裁切選項數，永遠保留正解；選項數不足時原樣返回。
+function limitChoiceOptions(options, answer, count) {
+  if (!Number.isInteger(count) || count <= 0 || options.length <= count) return options;
+  const answerOption = options.find((option) => option.choice === answer);
+  const distractors = options.filter((option) => option.choice !== answer);
+  const kept = answerOption ? [answerOption, ...distractors] : distractors;
+  return kept.slice(0, count);
 }
 
 // issue #73：題目（advLine）的中文撥放鈕僅在有中文時顯示。
@@ -2654,7 +2668,7 @@ function answerLesson(button, choice) {
   elements.advLine.textContent = quest.ending;
   // 完成提示文案對齊實際可用動作：商店場景可逛商店，其餘僅返回／離開；聊天完成用較輕鬆的措辭。
   const doneLead = isChat ? "Nice chat." : "Practice complete.";
-  elements.advPrompt.textContent = completedHotspot?.kind === "shop"
+  elements.advPrompt.textContent = isShopHotspot(completedHotspot)
     ? `${doneLead} Visit the shop, or go back to ${princessName()}'s room.`
     : `${doneLead} Go back to ${princessName()}'s room, or leave.`;
   elements.advFeedback.textContent = feedbackText;

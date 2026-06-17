@@ -33,12 +33,17 @@ const NPC_ACTIONS = Object.freeze([
 ]);
 
 // issue #135：場景動作改為模組驅動且加法相容——生活聊天(chat) 於有 chatLesson 時加在最前；
-// 打工任務沿用既有 practice（有 lesson 時）；逛店沿用 kind:"shop"。未開啟之模組不出現。
+// 打工任務沿用既有 practice（有 lesson 時）。
+// issue #138：逛店改由 shopCategories 旗標承接（isShopHotspot），不再以 kind:"shop" 特例判斷。未開啟之模組不出現。
+export function isShopHotspot(hotspot) {
+  return Array.isArray(hotspot?.shopCategories) && hotspot.shopCategories.length > 0;
+}
+
 export function firstLayerActionsFor(hotspot, options = {}) {
   if (hotspot?.kind === "room") return ROOM_ACTIONS;
   const chat = options.hasChat ? [chatAction()] : [];
   const practice = options.hasLessons ? [practiceAction()] : [];
-  if (hotspot?.kind === "shop") {
+  if (isShopHotspot(hotspot)) {
     return Object.freeze([
       ...chat,
       ...practice,
