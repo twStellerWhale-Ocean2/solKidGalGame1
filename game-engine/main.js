@@ -200,22 +200,15 @@ function profileColorFor(characterId = state.activeCharacterId, color = state.pr
   return normalizeProfileColor(color, characterId);
 }
 
-function profileAvatarStyle(characterId, color) {
-  const character = playableCharacterById(characterId);
-  const portraitUrl = new URL(domAssetUrl(character.baseLayer), document.baseURI).href;
-  return {
-    character,
-    color: profileColorFor(character.id, color),
-    portrait: `url("${portraitUrl.replaceAll('"', "%22")}")`
-  };
-}
-
-function applyProfileAvatar(element, characterId, color) {
-  if (!element) return;
-  const style = profileAvatarStyle(characterId, color);
-  element.style.setProperty("--character-portrait", style.portrait);
-  element.style.setProperty("--profile-color", style.color);
-  element.setAttribute("aria-label", style.character.label);
+// 單一頭胸 bust 渲染（issue #132，sysCase#5.2）：側欄、帳號卡與選角卡共用「同一個」頭胸渲染——
+// 同一紙娃娃層合成（bustMarkupFor）＋同一 .bust-doll 裁切，不另維護第二套裁切邏輯。
+function renderBustInto(frameEl, characterId, outfitState, color) {
+  if (!frameEl) return;
+  frameEl.innerHTML = `<span class="paper-doll bust-doll">${bustMarkupFor(characterId, outfitState)}</span>`;
+  if (color != null) {
+    frameEl.style.setProperty("--active-profile-color", color);
+    frameEl.style.setProperty("--profile-color", color);
+  }
 }
 
 // 組裝「可玩時間額度」顯示（spec#9 / sysCase#7.5）：基礎分鐘數；生活聊天延長時把增加量以 +N😄 清楚標示。
@@ -655,7 +648,8 @@ function buildCharacterCards() {
     card.setAttribute("aria-checked", String(character.id === pendingCharacterId));
     const portrait = document.createElement("span");
     portrait.className = "character-portrait";
-    applyProfileAvatar(portrait, character.id, character.id === pendingCharacterId ? pendingProfileColor : character.defaultProfileColor);
+    // 選角當下尚未套衣櫥 → 以空 outfit 渲染各候選公主的基本造型（與側欄/帳號卡同一 bust 機制）。
+    renderBustInto(portrait, character.id, {}, character.id === pendingCharacterId ? pendingProfileColor : character.defaultProfileColor);
     portrait.setAttribute("aria-hidden", "true");
     const label = document.createElement("span");
     label.textContent = character.label;
@@ -673,7 +667,9 @@ function selectPendingCharacter(characterId) {
     card.setAttribute("aria-checked", String(card.dataset.characterId === characterId));
     const portrait = card.querySelector(".character-portrait");
     const color = card.dataset.characterId === characterId ? pendingProfileColor : defaultProfileColorFor(card.dataset.characterId);
-    applyProfileAvatar(portrait, card.dataset.characterId, color);
+    // 切換選取只需更新識別底色；基本造型 bust 層不隨色變，毋須重渲染。
+    portrait?.style.setProperty("--active-profile-color", color);
+    portrait?.style.setProperty("--profile-color", color);
   });
   buildProfileColorChoices();
   if (!playerNameEdited) {
@@ -797,12 +793,7 @@ function buildAccountList() {
     pick.style.setProperty("--profile-color", summary.color);
     const avatar = document.createElement("span");
     avatar.className = "account-avatar bust-frame";
-    avatar.style.setProperty("--active-profile-color", summary.color);
-    avatar.style.setProperty("--profile-color", summary.color);
-    const avatarDoll = document.createElement("span");
-    avatarDoll.className = "paper-doll bust-doll";
-    avatarDoll.innerHTML = bustMarkupFor(summary.characterId, summary.state.outfit);
-    avatar.append(avatarDoll);
+    renderBustInto(avatar, summary.characterId, summary.state.outfit, summary.color);
     const nameEl = document.createElement("strong");
     nameEl.textContent = summary.name;
     const charEl = document.createElement("small");

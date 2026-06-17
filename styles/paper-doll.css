@@ -91,7 +91,7 @@
   display: none;
 }
 
-/* 與選角卡／公主選單頭像（styles/character-select.css 之 .profile-avatar/.character-portrait）同一套頭胸裁切參數，確保三處框法一致。 */
+/* issue #132：側欄、帳號卡與選角卡共用此唯一頭胸裁切（.bust-doll 為單一裁切邏輯，各處外框僅負責方框與底色）。 */
 .bust-doll .paper-doll-layer {
   background-size: 245% auto;
   background-position: 50% 47%;
