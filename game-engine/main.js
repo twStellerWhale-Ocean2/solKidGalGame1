@@ -86,6 +86,7 @@ import { createSaveLoadController } from "./system/save-load.js";
 import {
   MAX_LIMIT_MINUTES,
   MIN_LIMIT_MINUTES,
+  extendSession,
   playStatus,
   recordAnswer as recordCycleAnswer,
   resumeFromRest,
@@ -3500,6 +3501,7 @@ installTestingHooks({
     status: () => playStatus(state, clockNow()),
     resume: () => resumeFromRest(state, clockNow()),
     recordAnswer: (correct) => recordCycleAnswer(state, correct),
+    extend: (minutes) => extendSession(state, clockNow(), minutes),
     get limit() { return state.playLimit; },
     setDurations: (playMinutes, restMinutes) => {
       state.playLimit.playMinutes = playMinutes;

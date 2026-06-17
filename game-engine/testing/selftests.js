@@ -49,6 +49,7 @@ export function installTestingHooks(api) {
   runMonkeyTest(api);
   runAccountSelfTest(api);
   runPlayTimerSelfTest(api);
+  runMoodExtendSelfTest(api);
   runProfileColorSelfTest(api);
   runChineseRewardSelfTest(api);
   runCharacterVoiceSelfTest(api);
@@ -222,6 +223,76 @@ function runPlayTimerSelfTest(api) {
   result.id = "playTimerTestResult";
   result.textContent = JSON.stringify({
     test: "playtimer",
+    passed: errors.length === 0,
+    errors: errors.slice(0, 10)
+  });
+  document.body.prepend(result);
+}
+
+// issue #135 / spec#11：驗證「生活聊天答對 → 在護眼上限內延長當次可玩時間」(extendSession)。
+// 以注入時鐘驗證：基礎護眼上限預設、延長累加、達上限後夾住、休息中不可延長。
+function runMoodExtendSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "mood-extend") return;
+  const errors = [];
+  const clock = api.playClock;
+  const accounts = api.accounts;
+  let createdId = null;
+  const MIN = 60000;
+  try {
+    if (!clock) throw new Error("playClock testing hook missing");
+    if (typeof clock.extend !== "function") throw new Error("playClock.extend hook missing");
+    const baseline = accounts.list().length;
+    createdId = accounts.create().id;
+
+    // 1) 護眼上限預設為 20 分鐘（spec#11 paramPlayMaxMinutes）。
+    if (clock.limit.playMaxMinutes !== 20) errors.push(`default playMaxMinutes=${clock.limit.playMaxMinutes}, expected 20`);
+
+    // 設定：基礎遊玩 2 分鐘、休息 1 分鐘、護眼上限 4 分鐘（可延長 2 分鐘）。
+    clock.setOffset(0);
+    clock.setDurations(2, 1);
+    clock.limit.playMaxMinutes = 4;
+
+    // 2) 起拍開始回合：sessionEndsAt=+2min、sessionMaxEndsAt=+4min。
+    let ev = clock.tick();
+    if (ev.phase !== "play" || !ev.justStarted) errors.push(`first tick phase=${ev.phase} justStarted=${ev.justStarted}, expected play/started`);
+    const baseEnd = clock.limit.sessionEndsAt;
+    const capEnd = clock.limit.sessionMaxEndsAt;
+    if (Math.abs((capEnd - baseEnd) - 2 * MIN) > 5) errors.push(`cap-base gap = ${capEnd - baseEnd}ms, expected ${2 * MIN}`);
+
+    // 3) 聊天答對延長 1 分鐘：實際延長 1 分鐘。
+    const a1 = clock.extend(1);
+    if (Math.abs(a1 - MIN) > 5) errors.push(`extend(1) added=${a1}ms, expected ${MIN}`);
+
+    // 4) 再延長 5 分鐘：夾在護眼上限，只加到 cap（再 +1 分鐘），且 sessionEndsAt==sessionMaxEndsAt。
+    const a2 = clock.extend(5);
+    if (Math.abs(a2 - MIN) > 5) errors.push(`extend(5) added=${a2}ms, expected clamp to ${MIN}`);
+    if (clock.limit.sessionEndsAt !== clock.limit.sessionMaxEndsAt) errors.push("sessionEndsAt not clamped to sessionMaxEndsAt at cap");
+
+    // 5) 已達上限：再延長為 0（護眼不可被突破）。
+    const a3 = clock.extend(5);
+    if (a3 !== 0) errors.push(`extend at cap added=${a3}, expected 0 (eye-rest cap not bypassed)`);
+
+    // 6) 進入休息後不可延長（phase!=play）。
+    clock.advance(5 * MIN);
+    ev = clock.tick();
+    if (ev.phase !== "rest") errors.push(`after advance phase=${ev.phase}, expected rest`);
+    const a4 = clock.extend(1);
+    if (a4 !== 0) errors.push(`extend during rest added=${a4}, expected 0`);
+
+    accounts.remove(createdId);
+    createdId = null;
+    if (accounts.list().length !== baseline) errors.push(`account count after cleanup = ${accounts.list().length}, expected ${baseline}`);
+  } catch (error) {
+    errors.push(error.message);
+  } finally {
+    if (createdId) accounts.remove(createdId);
+    clock?.setOffset(0);
+  }
+  const result = document.createElement("pre");
+  result.id = "moodExtendTestResult";
+  result.textContent = JSON.stringify({
+    test: "mood-extend",
     passed: errors.length === 0,
     errors: errors.slice(0, 10)
   });
