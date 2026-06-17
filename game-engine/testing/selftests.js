@@ -759,6 +759,16 @@ function runCharacterVoiceSelfTest(api) {
             const firstSelect = api.elements.voiceAssignList.querySelector(".voice-assign-select");
             if (!firstSelect || firstSelect.querySelectorAll("option").length < 4) errors.push("語音設定下拉未列出可用 voice 選項");
             if (!api.elements.voiceAssignList.querySelector(".voice-assign-default")) errors.push("語音設定缺性別預設列");
+
+            // getVoices() 初次回空 → 設定顯示空狀態；voiceschanged 載入後須即時重渲染出選擇器（不必重開）。
+            synth.getVoices = () => [];
+            api.refreshSpeechVoices?.();
+            api.renderSettings();
+            const wasEmpty = !!api.elements.voiceAssignList.querySelector(".voice-assign-empty");
+            synth.getVoices = () => [makeVoice("Microsoft David", "en-US", true), makeVoice("Microsoft Zira", "en-US")];
+            synth.dispatchEvent?.(new Event("voiceschanged"));
+            const rowsAfterChange = api.elements.voiceAssignList.querySelectorAll(".voice-assign-row").length;
+            if (wasEmpty && rowsAfterChange < 1) errors.push("voiceschanged 後語音設定未即時重渲染（仍卡空狀態）");
           }
           api.clearVoiceAssignments();
         }
