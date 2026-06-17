@@ -72,7 +72,13 @@
 .account-avatar {
   flex: 0 0 58px;
   width: 58px;
+  height: 58px;
   max-width: 58px;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--active-profile-color, #fff5f8);
+  border: 1px solid var(--line);
 }
 
 .account-text {

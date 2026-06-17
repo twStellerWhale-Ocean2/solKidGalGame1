@@ -1291,8 +1291,8 @@ body {
     overflow: hidden;
   }
 
-  .side-panel {
-    /* issue #103 專家會審: 桌機式側欄改為手機慣用的精簡常駐 HUD 橫列（金幣/遊玩時間優先），降低人物 chrome */
+  /* issue #132：窄版人物資訊欄＝三欄橫列（左大頭照佔兩列｜中 2×2 欄位｜右系統雙鈕直放）的常駐 HUD，浮於場景之上。 */
+  .info-bar {
     position: absolute;
     left: 10px;
     right: 10px;
@@ -1302,15 +1302,15 @@ body {
     height: auto;
     max-height: none;
     margin: 0;
-    padding: 7px 48px 7px 12px;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    padding: 8px 10px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "portrait fields actions";
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     overflow: hidden;
-    /* issue #103 專家會審: 半透明常駐 HUD（毛玻璃），浮於場景/商店之上、coins 隨時可見 */
-    background: rgba(255, 250, 246, 0.62);
+    /* 半透明常駐 HUD（毛玻璃），浮於場景/商店之上、資訊隨時可見（沿 issue #103 鏡頭） */
+    background: rgba(255, 250, 246, 0.82);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border-color: rgba(255, 255, 255, 0.6);
@@ -1325,69 +1325,48 @@ body {
     display: none;
   }
 
-  .mini-doll-frame {
-    display: block;
-    flex: 0 0 38px;
-    width: 38px;
-    height: 38px;
-    border-radius: 8px;
+  .info-bar .info-portrait {
+    grid-area: portrait;
+    width: 58px;
+    max-width: none;
   }
 
-  .side-avatar {
-    width: 100%;
-    height: 100%;
-    background-size: 220% auto;
-    background-position: 50% 44%;
+  .info-bar .info-fields {
+    grid-area: fields;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 2px 12px;
   }
 
-  .side-panel h1 {
-    margin: 0;
-    align-self: center;
-    flex: 0 1 auto;
-    min-width: 0;
-    max-width: 22vw;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    font-size: 0.92rem;
+  .info-bar .info-field {
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
   }
 
-  .subtitle,
-  .equipped-box,
-  .notice-box,
-  .energy-meter {
-    display: none;
+  .info-bar .info-label {
+    font-size: 0.5rem;
   }
 
-  .status-grid {
-    order: 2;
-    flex: 1 0 100%;
-    display: flex;
-    justify-content: stretch;
-    gap: 7px;
-    margin: 0;
-  }
-
-  .switch-player-quick {
-    flex: 0 0 auto;
-    width: auto;
-    margin-top: 0;
-    padding: 7px 9px;
-    white-space: nowrap;
-  }
-
-  .stat {
-    flex: 1 1 0;
-    min-width: 0;
-    padding: 4px 9px;
-  }
-
-  .stat span {
-    font-size: 0.52rem;
-  }
-
-  .stat strong {
+  .info-bar .info-value {
     font-size: 0.86rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .info-bar .info-actions {
+    grid-area: actions;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .info-bar .info-icon-button {
+    width: 28px;
+    height: 28px;
+    font-size: 0.92rem;
   }
 
   .topbar {

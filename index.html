@@ -10,27 +10,22 @@
   <body>
     <div class="app-shell">
       <main class="game-layout">
-        <aside class="side-panel" aria-label="Princess status">
-          <button class="system-menu-button" id="systemMenuButton" type="button" aria-label="Open Lumi Diary and Settings" aria-controls="systemMenu" aria-haspopup="dialog">⚙</button>
-          <div class="mini-doll-frame">
-            <div class="profile-avatar side-avatar" id="sideProfileAvatar" aria-hidden="true"></div>
+        <aside class="side-panel info-bar" aria-label="Princess status">
+          <h1 class="visually-hidden" id="princessNameTitle">Lumi</h1>
+          <div class="info-portrait" id="sideProfileFrame">
+            <span class="paper-doll bust-doll" data-doll="side-bust" id="sideProfileAvatar" aria-hidden="true"></span>
           </div>
-          <h1 id="princessNameTitle">Princess Lumi</h1>
-            <p class="subtitle">A little princess who learns English, earns coins, and dresses up.</p>
-          <div class="status-grid">
-            <div class="stat"><span>Coins</span><strong id="coinValue">0</strong></div>
-            <div class="stat mood-stat"><span>Mood</span><strong id="moodValue">0</strong></div>
-            <div class="stat play-time-stat"><span>Play time</span><strong id="energyValue">100%</strong></div>
+          <div class="info-fields">
+            <div class="info-field"><span class="info-label">Player</span><strong class="info-value" id="playerNameValue">Lumi</strong></div>
+            <div class="info-field"><span class="info-label">Coins</span><strong class="info-value" id="coinValue">0</strong></div>
+            <div class="info-field"><span class="info-label">Play time</span><strong class="info-value" id="playTimeValue">15 min</strong></div>
+            <div class="info-field"><span class="info-label">Time left</span><strong class="info-value" id="timeLeftValue">15:00</strong></div>
           </div>
-          <div class="energy-meter" aria-hidden="true"><div class="energy-meter-fill" id="energyMeterFill" style="width:100%"></div></div>
-          <div class="equipped-box">
-            <h2>Equipped</h2>
-            <p id="outfitSummary">Pink academy dress</p>
+          <div class="info-actions">
+            <button class="info-icon-button" id="systemMenuButton" type="button" aria-label="Open Lumi Diary and Settings" aria-controls="systemMenu" aria-haspopup="dialog"><span aria-hidden="true">⚙</span></button>
+            <button class="info-icon-button" id="switchPlayerQuickButton" type="button" aria-label="Switch player"><span aria-hidden="true">⟳</span></button>
           </div>
-          <div class="notice-box" id="statusMessage" aria-live="polite">
-                Choose a place, help someone, then dress your princess with the reward.
-          </div>
-          <button class="soft-button switch-player-quick" id="switchPlayerQuickButton" type="button">Switch player</button>
+          <p class="visually-hidden" id="statusMessage" aria-live="polite">Choose a place, help someone, then dress your princess with the reward.</p>
         </aside>
 
         <section class="view-stack">

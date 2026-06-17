@@ -392,7 +392,7 @@ function runProfileColorSelfTest(api) {
     api.render();
 
     const sideAvatar = api.elements.sideProfileAvatar;
-    if (!sideAvatar || getComputedStyle(sideAvatar).backgroundImage === "none") errors.push("side profile avatar did not render a portrait");
+    if (!sideAvatar || sideAvatar.querySelectorAll(".paper-doll-layer").length === 0) errors.push("side profile avatar did not render outfit layers");
     if (sideAvatar?.style.getPropertyValue("--profile-color") !== api.state.profileColor) errors.push("side avatar profile color does not match state");
 
     api.openAccountSelect({ mustChoose: false });

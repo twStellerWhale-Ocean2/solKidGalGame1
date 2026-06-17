@@ -78,3 +78,21 @@
 .adv-doll.try-on-active {
   filter: drop-shadow(0 0 14px rgba(255, 214, 80, 0.62));
 }
+
+/* issue #132：資訊欄與帳號卡共用頭胸 bust——以同一套紙娃娃層裁切顯示頭與胸口的即時穿搭。 */
+.bust-doll {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.bust-doll .avatar-shadow {
+  display: none;
+}
+
+.bust-doll .paper-doll-layer {
+  background-size: 188% auto;
+  background-position: 50% 40%;
+  filter: drop-shadow(0 8px 12px rgba(58, 37, 46, 0.14));
+}

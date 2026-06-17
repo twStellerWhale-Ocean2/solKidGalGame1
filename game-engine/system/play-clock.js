@@ -96,6 +96,21 @@ export function extendSession(state, now, minutes) {
   return added;
 }
 
+// 本回合「可玩時間額度」（spec#9 顯示用）：基礎時長 + 已賺得的生活聊天延長（spec#11）。
+// 回傳 { baseMinutes, bonusMinutes, totalMinutes }；未開始（idle/rest，sessionEndsAt<=0）時 bonus=0、total=base。
+// 由既有時戳推導，不需新增 state 欄位：sessionStart = sessionMaxEndsAt - maxMinutes，延長量 = (sessionEndsAt - sessionStart) - base。
+export function playAllowance(state) {
+  const pl = state.playLimit || defaultPlayLimit();
+  const baseMinutes = toMinutes(pl.playMinutes, 15);
+  if (!(pl.sessionEndsAt > 0) || !(pl.sessionMaxEndsAt > 0)) {
+    return { baseMinutes, bonusMinutes: 0, totalMinutes: baseMinutes };
+  }
+  const maxMinutes = Math.max(baseMinutes, toMinutes(pl.playMaxMinutes, baseMinutes));
+  const sessionStart = pl.sessionMaxEndsAt - maxMinutes * MINUTE_MS;
+  const totalMinutes = clamp(Math.round((pl.sessionEndsAt - sessionStart) / MINUTE_MS), baseMinutes, maxMinutes);
+  return { baseMinutes, bonusMinutes: Math.max(0, totalMinutes - baseMinutes), totalMinutes };
+}
+
 // 進入強制休息：鎖定遊玩到 restEndsAt。
 export function enterRest(state, now) {
   const pl = state.playLimit;
