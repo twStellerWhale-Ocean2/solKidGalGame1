@@ -66,113 +66,210 @@ export const ruralArea = Object.freeze({
 });
 //#endregion 地圖與地點設定
 
-//#region 場景自帶題庫（issue #96）
-// ruralLessonBank：以 place 為鍵的手寫固定題庫，每題自帶中文（promptZh／choicesZh）；由 mergeLessons 併入 sceneConfigs 對應條目。
+//#region 場景自帶題庫（issue #96 結構；issue #135 內容研改）
+// ruralLessonBank：以 place 為鍵的「打工任務」題庫（答對得 coins＝勞動所得）。
+// issue #135 句型分級：Cambridge Movers——補齊過去式缺口（was/were、規則與常見不規則：found/sold/
+//   caught/made/dug/cut）／because 原因子句（首見複句）／比較級（-er than）／going to·will 未來式／
+//   have to·must／時間介系詞（before·after）。題材切合各生產場景，並結合 Movers 程度的加減法應用題。
+// 生活化：選項皆為合理但情境不符的日常句（非超現實、非換名詞樣板）；干擾項聚焦時態／數量／原因之常見錯誤。
+const jobReward = { coins: 500 };
 const ruralLessonBank = Object.freeze({
   mine: {
-    theme: "mining",
+    theme: "mining work",
     title: "Help at the Mine",
-    opening: "Miner Gemma checks the sparkling mine carts.",
-    openingZh: "礦工 Gemma 檢查閃亮的礦車。",
-    ending: "The bright stones are sorted safely.",
+    opening: "Miner Gemma needs help digging, counting, and sorting the bright stones.",
+    openingZh: "礦工 Gemma 需要有人幫忙挖礦、數數和分類亮晶晶的石頭。",
+    ending: "The carts are sorted and safe. Great work down here!",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick the best sentence for the mine.", promptZh: "選出最適合礦坑的句子。", answer: "The miner is carrying stones.", choices: ["The miner is carrying stones.","The miner is carrying clouds.","The castle is carrying stones.","The river is reading a book."], choicesZh: ["礦工正在搬運石頭。","礦工正在搬運雲朵。","城堡正在搬運石頭。","河流在讀一本書。"], words: ["carrying","stones","miner"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the sentence about the cart.", promptZh: "選出關於推車的句子。", answer: "The cart is ready before lunch.", choices: ["The cart is ready before lunch.","The cart is sleeping under lunch.","The cart can wear a ribbon.","The cart is afraid of bread."], choicesZh: ["推車在午餐前準備好了。","推車睡在午餐底下。","推車會戴緞帶。","推車害怕麵包。"], words: ["cart","ready","before","lunch"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick what Lumi asks politely.", promptZh: "選出 Lumi 有禮貌的問法。", answer: "Could I help you sort stones?", choices: ["Could I help you sort stones?","Could I eat your road?","Could the cart fly home?","Could you put soup in the map?"], choicesZh: ["我可以幫你分類石頭嗎？","我可以吃你的路嗎？","推車可以飛回家嗎？","你可以把湯放進地圖裡嗎？"], words: ["could","help","sort stones"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the useful description.", promptZh: "選出有用的描述。", answer: "This mine is rocky and busy.", choices: ["This mine is rocky and busy.","This mine is sleepy and wet inside.","My shoe is rocky and busy.","The moon works at the mine."], choicesZh: ["這個礦坑多石又忙碌。","這個礦坑裡面又想睡又濕。","我的鞋子多石又忙碌。","月亮在這個礦坑工作。"], words: ["this","mine","rocky","busy"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the safe work sentence.", promptZh: "選出安全工作的句子。", answer: "We should work slowly and carefully.", choices: ["We should work slowly and carefully.","We should run quickly with tools.","We should hide the stones.","We should shout at the animals."], choicesZh: ["我們應該慢慢地、小心地工作。","我們應該帶著工具快快跑。","我們應該把石頭藏起來。","我們應該對動物大叫。"], words: ["should","work","slowly","carefully"], reward: { coins: 500 } }
+      { questionType: "sentence-choice", prompt: "Tell Gemma what you did this morning. Pick the past sentence.", promptZh: "告訴 Gemma 你早上做了什麼。選出過去式句子。", answer: "I found six stones.", choices: ["I found six stones.","I find six stones.","I will find six stones.","I found six socks."], choicesZh: ["我找到了六顆石頭。","我找到六顆石頭（現在式）。","我將會找到六顆石頭。","我找到了六隻襪子。"], words: ["I","found","six","stones"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Gemma had ten stones and sold four. How many are left?", promptZh: "Gemma 有十顆石頭，賣掉四顆。還剩幾顆？", answer: "Six stones are left.", choices: ["Six stones are left.","Fourteen stones are left.","Four stones are left.","Six carts are left."], choicesZh: ["還剩六顆石頭。","還剩十四顆石頭。","還剩四顆石頭。","還剩六台礦車。"], words: ["six","stones","are","left"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Gemma is pushing the heavy cart now. Pick that sentence.", promptZh: "Gemma 正在推沉重的礦車。選出這個句子。", answer: "Gemma is pushing the cart.", choices: ["Gemma is pushing the cart.","Gemma is painting the cart.","Gemma is selling the cart.","Gemma is eating the cart."], choicesZh: ["Gemma 正在推礦車。","Gemma 正在油漆礦車。","Gemma 正在賣礦車。","Gemma 正在吃礦車。"], words: ["is","pushing","the","cart"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Why must we wear a hard hat here? Pick the reason.", promptZh: "為什麼這裡一定要戴安全帽？選出原因。", answer: "Because stones can fall.", choices: ["Because stones can fall.","Because the cart is hungry.","Because we want to swim.","Because the hat is tasty."], choicesZh: ["因為石頭可能會掉下來。","因為礦車餓了。","因為我們想游泳。","因為帽子很好吃。"], words: ["because","stones","can","fall"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Compare two stones. Pick the correct comparative sentence.", promptZh: "比較兩顆石頭。選出正確的比較級句子。", answer: "This stone is bigger than that one.", choices: ["This stone is bigger than that one.","This stone is big than that one.","This stone is more big than that one.","This stone is the bigger one than that."], choicesZh: ["這顆石頭比那顆大。","這顆石頭比那顆「big than」（錯誤）。","這顆石頭比那顆「more big」（錯誤）。","這顆石頭是「the bigger one than」（錯誤）。"], words: ["bigger","than","that","one"], reward: jobReward }
     ]
   },
   loggingCamp: {
-    theme: "logging",
+    theme: "logging work",
     title: "Help at the Logging Camp",
-    opening: "Logger Rowan stacks clean wood beside the cabin.",
-    openingZh: "伐木工 Rowan 在小木屋旁堆放乾淨的木材。",
-    ending: "The logs are stacked neatly.",
+    opening: "Logger Rowan needs help cutting, counting, and stacking the wood safely.",
+    openingZh: "伐木工 Rowan 需要有人幫忙鋸木、數數和安全地堆木材。",
+    ending: "The logs are stacked neatly and safely. Well done!",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick the best sentence for the camp.", promptZh: "選出最適合營地的句子。", answer: "The logger is carrying wood.", choices: ["The logger is carrying wood.","The logger is carrying clouds.","The castle is carrying wood.","The river is reading a book."], choicesZh: ["伐木工正在搬運木材。","伐木工正在搬運雲朵。","城堡正在搬運木材。","河流在讀一本書。"], words: ["carrying","wood","logger"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the sentence about the log.", promptZh: "選出關於木頭的句子。", answer: "The log is ready before lunch.", choices: ["The log is ready before lunch.","The log is sleeping under lunch.","The log can wear a ribbon.","The log is afraid of bread."], choicesZh: ["木頭在午餐前準備好了。","木頭睡在午餐底下。","木頭會戴緞帶。","木頭害怕麵包。"], words: ["log","ready","before","lunch"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick what Lumi asks politely.", promptZh: "選出 Lumi 有禮貌的問法。", answer: "Could I help you stack wood?", choices: ["Could I help you stack wood?","Could I eat your road?","Could the log fly home?","Could you put soup in the map?"], choicesZh: ["我可以幫你堆木材嗎？","我可以吃你的路嗎？","木頭可以飛回家嗎？","你可以把湯放進地圖裡嗎？"], words: ["could","help","stack wood"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the useful description.", promptZh: "選出有用的描述。", answer: "This camp is quiet and busy.", choices: ["This camp is quiet and busy.","This camp is sleepy and wet inside.","My shoe is quiet and busy.","The moon works at the camp."], choicesZh: ["這個營地安靜又忙碌。","這個營地裡面又想睡又濕。","我的鞋子安靜又忙碌。","月亮在這個營地工作。"], words: ["this","camp","quiet","busy"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the safe work sentence.", promptZh: "選出安全工作的句子。", answer: "We should work slowly and carefully.", choices: ["We should work slowly and carefully.","We should run quickly with tools.","We should hide the wood.","We should shout at the animals."], choicesZh: ["我們應該慢慢地、小心地工作。","我們應該帶著工具快快跑。","我們應該把木材藏起來。","我們應該對動物大叫。"], words: ["should","work","slowly","carefully"], reward: { coins: 500 } }
+      { questionType: "sentence-choice", prompt: "Tell Rowan what happened. Pick the past sentence.", promptZh: "告訴 Rowan 發生了什麼。選出過去式句子。", answer: "We cut ten logs today.", choices: ["We cut ten logs today.","We cut ten clouds today.","We will cut ten logs today.","We cuts ten logs today."], choicesZh: ["我們今天鋸了十根木頭。","我們今天鋸了十朵雲。","我們今天將會鋸十根木頭。","我們今天「cuts」十根木頭（錯誤）。"], words: ["we","cut","ten","logs"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Rowan cut three logs, then four more. How many logs?", promptZh: "Rowan 鋸了三根木頭，又鋸了四根。一共幾根？", answer: "He cut seven logs.", choices: ["He cut seven logs.","He cut twelve logs.","He cut one log.","He cut seven nets."], choicesZh: ["他鋸了七根木頭。","他鋸了十二根木頭。","他鋸了一根木頭。","他鋸了七張漁網。"], words: ["seven","logs","cut"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Compare two logs. Pick the correct comparative sentence.", promptZh: "比較兩根木頭。選出正確的比較級句子。", answer: "This log is longer than that one.", choices: ["This log is longer than that one.","This log is long than that one.","This log is more long than that one.","This log is longest than that one."], choicesZh: ["這根木頭比那根長。","這根木頭比那根「long than」（錯誤）。","這根木頭比那根「more long」（錯誤）。","這根木頭比那根「longest than」（錯誤）。"], words: ["longer","than","that","log"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Why do we lift the wood carefully? Pick the reason.", promptZh: "為什麼我們要小心地搬木頭？選出原因。", answer: "Because the logs are heavy.", choices: ["Because the logs are heavy.","Because the logs are funny.","Because we want to dance.","Because the trees are blue."], choicesZh: ["因為木頭很重。","因為木頭很好笑。","因為我們想跳舞。","因為樹是藍色的。"], words: ["because","logs","are","heavy"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Rowan is tying the logs together now. Pick that sentence.", promptZh: "Rowan 正在把木頭綁在一起。選出這個句子。", answer: "Rowan is tying the logs.", choices: ["Rowan is tying the logs.","Rowan is reading the logs.","Rowan is cooking the logs.","Rowan is washing the logs."], choicesZh: ["Rowan 正在綁木頭。","Rowan 正在讀木頭。","Rowan 正在煮木頭。","Rowan 正在洗木頭。"], words: ["is","tying","the","logs"], reward: jobReward }
     ]
   },
   fishingShore: {
-    theme: "fishing",
+    theme: "fishing work",
     title: "Help at the Fishing Shore",
-    opening: "Fisher Nami pulls a net near the shore.",
-    openingZh: "漁夫 Nami 在海邊拉起漁網。",
-    ending: "The small fish are counted carefully.",
+    opening: "Fisher Nami needs help pulling nets, counting fish, and keeping the dock safe.",
+    openingZh: "漁夫 Nami 需要有人幫忙拉網、數魚，並保持碼頭安全。",
+    ending: "The fish are counted and the nets are dry. Nice work!",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick the best sentence for the shore.", promptZh: "選出最適合海邊的句子。", answer: "The fisher is carrying fish.", choices: ["The fisher is carrying fish.","The fisher is carrying clouds.","The castle is carrying fish.","The river is reading a book."], choicesZh: ["漁夫正在搬運魚。","漁夫正在搬運雲朵。","城堡正在搬運魚。","河流在讀一本書。"], words: ["carrying","fish","fisher"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the sentence about the net.", promptZh: "選出關於漁網的句子。", answer: "The net is ready before lunch.", choices: ["The net is ready before lunch.","The net is sleeping under lunch.","The net can wear a ribbon.","The net is afraid of bread."], choicesZh: ["漁網在午餐前準備好了。","漁網睡在午餐底下。","漁網會戴緞帶。","漁網害怕麵包。"], words: ["net","ready","before","lunch"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick what Lumi asks politely.", promptZh: "選出 Lumi 有禮貌的問法。", answer: "Could I help you pull the net?", choices: ["Could I help you pull the net?","Could I eat your road?","Could the net fly home?","Could you put soup in the map?"], choicesZh: ["我可以幫你拉漁網嗎？","我可以吃你的路嗎？","漁網可以飛回家嗎？","你可以把湯放進地圖裡嗎？"], words: ["could","help","pull the net"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the useful description.", promptZh: "選出有用的描述。", answer: "This shore is windy and busy.", choices: ["This shore is windy and busy.","This shore is sleepy and wet inside.","My shoe is windy and busy.","The moon works at the shore."], choicesZh: ["這個海邊有風又忙碌。","這個海邊裡面又想睡又濕。","我的鞋子有風又忙碌。","月亮在這個海邊工作。"], words: ["this","shore","windy","busy"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the safe work sentence.", promptZh: "選出安全工作的句子。", answer: "We should work slowly and carefully.", choices: ["We should work slowly and carefully.","We should run quickly with tools.","We should hide the fish.","We should shout at the animals."], choicesZh: ["我們應該慢慢地、小心地工作。","我們應該帶著工具快快跑。","我們應該把魚藏起來。","我們應該對動物大叫。"], words: ["should","work","slowly","carefully"], reward: { coins: 500 } }
+      { questionType: "sentence-choice", prompt: "Tell Nami about the catch. Pick the past sentence.", promptZh: "告訴 Nami 今天的漁獲。選出過去式句子。", answer: "We caught eight fish.", choices: ["We caught eight fish.","We catch eight fish.","We will catch eight fish.","We caught eight hats."], choicesZh: ["我們抓到了八條魚。","我們抓八條魚（現在式）。","我們將會抓八條魚。","我們抓到了八頂帽子。"], words: ["we","caught","eight","fish"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "One net had five fish, the other had five. How many fish?", promptZh: "一張網有五條魚，另一張也有五條。一共幾條？", answer: "There are ten fish.", choices: ["There are ten fish.","There are five fish.","There are twenty fish.","There are ten boats."], choicesZh: ["一共有十條魚。","一共有五條魚。","一共有二十條魚。","一共有十艘船。"], words: ["there","are","ten","fish"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Nami is washing the wet net now. Pick that sentence.", promptZh: "Nami 正在清洗濕漁網。選出這個句子。", answer: "Nami is washing the net.", choices: ["Nami is washing the net.","Nami is eating the net.","Nami is driving the net.","Nami is planting the net."], choicesZh: ["Nami 正在清洗漁網。","Nami 正在吃漁網。","Nami 正在駕駛漁網。","Nami 正在種漁網。"], words: ["is","washing","the","net"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Why do we walk slowly on the dock? Pick the reason.", promptZh: "為什麼我們在碼頭要慢慢走？選出原因。", answer: "Because the dock is wet and slippery.", choices: ["Because the dock is wet and slippery.","Because the dock is sleepy.","Because we want to sing.","Because the fish are reading."], choicesZh: ["因為碼頭又濕又滑。","因為碼頭想睡覺。","因為我們想唱歌。","因為魚在看書。"], words: ["because","dock","wet","slippery"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Tomorrow's plan. Pick the future sentence.", promptZh: "明天的計畫。選出未來式句子。", answer: "We are going to fish again tomorrow.", choices: ["We are going to fish again tomorrow.","We fished again tomorrow.","We are going to fish again yesterday.","We are go to fish tomorrow."], choicesZh: ["我們明天要再去釣魚。","我們明天釣了魚（時態錯誤）。","我們昨天要去釣魚（時間錯誤）。","我們「are go to」釣魚（錯誤）。"], words: ["going","to","fish","tomorrow"], reward: jobReward }
     ]
   },
   pasture: {
-    theme: "pasture",
+    theme: "pasture work",
     title: "Help at the Pasture",
-    opening: "Farmer Theo counts sheep and cows.",
-    openingZh: "農夫 Theo 數著羊和牛。",
-    ending: "The animals are calm in the pasture.",
+    opening: "Farmer Theo needs help counting the animals and carrying fresh hay.",
+    openingZh: "農夫 Theo 需要有人幫忙數動物、搬新鮮的乾草。",
+    ending: "Every animal is fed and counted. Thank you!",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick the best sentence for the pasture.", promptZh: "選出最適合牧場的句子。", answer: "The farmer is carrying hay.", choices: ["The farmer is carrying hay.","The farmer is carrying clouds.","The castle is carrying hay.","The river is reading a book."], choicesZh: ["農夫正在搬運乾草。","農夫正在搬運雲朵。","城堡正在搬運乾草。","河流在讀一本書。"], words: ["carrying","hay","farmer"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the sentence about the sheep.", promptZh: "選出關於羊的句子。", answer: "The sheep is ready before lunch.", choices: ["The sheep is ready before lunch.","The sheep is sleeping under lunch.","The sheep can wear a ribbon.","The sheep is afraid of bread."], choicesZh: ["羊在午餐前準備好了。","羊睡在午餐底下。","羊會戴緞帶。","羊害怕麵包。"], words: ["sheep","ready","before","lunch"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick what Lumi asks politely.", promptZh: "選出 Lumi 有禮貌的問法。", answer: "Could I help you feed the animals?", choices: ["Could I help you feed the animals?","Could I eat your road?","Could the sheep fly home?","Could you put soup in the map?"], choicesZh: ["我可以幫你餵動物嗎？","我可以吃你的路嗎？","羊可以飛回家嗎？","你可以把湯放進地圖裡嗎？"], words: ["could","help","feed the animals"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the useful description.", promptZh: "選出有用的描述。", answer: "This pasture is green and busy.", choices: ["This pasture is green and busy.","This pasture is sleepy and wet inside.","My shoe is green and busy.","The moon works at the pasture."], choicesZh: ["這個牧場翠綠又忙碌。","這個牧場裡面又想睡又濕。","我的鞋子翠綠又忙碌。","月亮在這個牧場工作。"], words: ["this","pasture","green","busy"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the safe work sentence.", promptZh: "選出安全工作的句子。", answer: "We should work slowly and carefully.", choices: ["We should work slowly and carefully.","We should run quickly with tools.","We should hide the hay.","We should shout at the animals."], choicesZh: ["我們應該慢慢地、小心地工作。","我們應該帶著工具快快跑。","我們應該把乾草藏起來。","我們應該對動物大叫。"], words: ["should","work","slowly","carefully"], reward: { coins: 500 } }
+      { questionType: "sentence-choice", prompt: "Tell Theo what you saw. Pick the past sentence.", promptZh: "告訴 Theo 你看到了什麼。選出過去式句子。", answer: "I saw six sheep.", choices: ["I saw six sheep.","I see six sheep.","I will see six sheep.","I saw six ships."], choicesZh: ["我看到了六隻羊。","我看到六隻羊（現在式）。","我將會看到六隻羊。","我看到了六艘船。"], words: ["I","saw","six","sheep"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "There were six sheep. Four more came. How many now?", promptZh: "原本有六隻羊，又來了四隻。現在有幾隻？", answer: "Now there are ten sheep.", choices: ["Now there are ten sheep.","Now there are two sheep.","Now there are six sheep.","Now there are ten cows."], choicesZh: ["現在有十隻羊。","現在有兩隻羊。","現在有六隻羊。","現在有十隻牛。"], words: ["ten","sheep","now"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Compare a cow and a sheep. Pick the correct sentence.", promptZh: "比較牛和羊。選出正確的句子。", answer: "The cow is bigger than the sheep.", choices: ["The cow is bigger than the sheep.","The cow is big than the sheep.","The cow is more big than the sheep.","The cow is bigger then the sheep."], choicesZh: ["牛比羊大。","牛比羊「big than」（錯誤）。","牛比羊「more big」（錯誤）。","牛比羊大（then 拼錯）。"], words: ["bigger","than","cow","sheep"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Why do we bring the hay now? Pick the reason.", promptZh: "為什麼我們現在要送乾草來？選出原因。", answer: "Because the animals are hungry.", choices: ["Because the animals are hungry.","Because the animals are purple.","Because we want to fly.","Because the hay is angry."], choicesZh: ["因為動物餓了。","因為動物是紫色的。","因為我們想飛。","因為乾草在生氣。"], words: ["because","animals","are","hungry"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Theo is feeding the calm cows now. Pick that sentence.", promptZh: "Theo 正在餵溫馴的牛。選出這個句子。", answer: "Theo is feeding the cows.", choices: ["Theo is feeding the cows.","Theo is reading the cows.","Theo is driving the cows.","Theo is painting the cows."], choicesZh: ["Theo 正在餵牛。","Theo 正在讀牛。","Theo 正在駕駛牛。","Theo 正在油漆牛。"], words: ["is","feeding","the","cows"], reward: jobReward }
     ]
   },
   farm: {
-    theme: "farm fields",
+    theme: "farm work",
     title: "Help at the Farm",
-    opening: "Auntie Pom waters the vegetables.",
-    openingZh: "Pom 阿姨為蔬菜澆水。",
-    ending: "The farm rows look healthy.",
+    opening: "Auntie Pom needs help picking vegetables and watering the long rows.",
+    openingZh: "Pom 阿姨需要有人幫忙採蔬菜、為長長的菜畦澆水。",
+    ending: "The rows are watered and the baskets are full. Good work!",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick the best sentence for the farm.", promptZh: "選出最適合農場的句子。", answer: "The farmer is carrying vegetables.", choices: ["The farmer is carrying vegetables.","The farmer is carrying clouds.","The castle is carrying vegetables.","The river is reading a book."], choicesZh: ["農夫正在搬運蔬菜。","農夫正在搬運雲朵。","城堡正在搬運蔬菜。","河流在讀一本書。"], words: ["carrying","vegetables","farmer"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the sentence about the field.", promptZh: "選出關於田地的句子。", answer: "The field is ready before lunch.", choices: ["The field is ready before lunch.","The field is sleeping under lunch.","The field can wear a ribbon.","The field is afraid of bread."], choicesZh: ["田地在午餐前準備好了。","田地睡在午餐底下。","田地會戴緞帶。","田地害怕麵包。"], words: ["field","ready","before","lunch"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick what Lumi asks politely.", promptZh: "選出 Lumi 有禮貌的問法。", answer: "Could I help you water the field?", choices: ["Could I help you water the field?","Could I eat your road?","Could the field fly home?","Could you put soup in the map?"], choicesZh: ["我可以幫你澆田嗎？","我可以吃你的路嗎？","田地可以飛回家嗎？","你可以把湯放進地圖裡嗎？"], words: ["could","help","water the field"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the useful description.", promptZh: "選出有用的描述。", answer: "This farm is sunny and busy.", choices: ["This farm is sunny and busy.","This farm is sleepy and wet inside.","My shoe is sunny and busy.","The moon works at the farm."], choicesZh: ["這個農場晴朗又忙碌。","這個農場裡面又想睡又濕。","我的鞋子晴朗又忙碌。","月亮在這個農場工作。"], words: ["this","farm","sunny","busy"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the safe work sentence.", promptZh: "選出安全工作的句子。", answer: "We should work slowly and carefully.", choices: ["We should work slowly and carefully.","We should run quickly with tools.","We should hide the vegetables.","We should shout at the animals."], choicesZh: ["我們應該慢慢地、小心地工作。","我們應該帶著工具快快跑。","我們應該把蔬菜藏起來。","我們應該對動物大叫。"], words: ["should","work","slowly","carefully"], reward: { coins: 500 } }
+      { questionType: "sentence-choice", prompt: "Tell Pom about the harvest. Pick the past sentence.", promptZh: "告訴 Pom 採收的情況。選出過去式句子。", answer: "I picked nine carrots.", choices: ["I picked nine carrots.","I pick nine carrots.","I will pick nine carrots.","I picked nine clouds."], choicesZh: ["我採了九根紅蘿蔔。","我採九根紅蘿蔔（現在式）。","我將會採九根紅蘿蔔。","我採了九朵雲。"], words: ["I","picked","nine","carrots"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Pom had twelve carrots and gave five away. How many left?", promptZh: "Pom 有十二根紅蘿蔔，送出五根。還剩幾根？", answer: "Seven carrots are left.", choices: ["Seven carrots are left.","Seventeen carrots are left.","Five carrots are left.","Seven baskets are left."], choicesZh: ["還剩七根紅蘿蔔。","還剩十七根紅蘿蔔。","還剩五根紅蘿蔔。","還剩七個籃子。"], words: ["seven","carrots","are","left"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "The plan for the dry rows. Pick the future sentence.", promptZh: "對乾燥菜畦的計畫。選出未來式句子。", answer: "I am going to water the rows.", choices: ["I am going to water the rows.","I watered the rows tomorrow.","I am going to water the rows yesterday.","I am go to water the rows."], choicesZh: ["我要去幫菜畦澆水。","我明天澆了菜畦（時態錯誤）。","我昨天要去澆菜畦（時間錯誤）。","我「am go to」澆菜畦（錯誤）。"], words: ["going","to","water","rows"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Why do we water the plants? Pick the reason.", promptZh: "為什麼我們要為植物澆水？選出原因。", answer: "Because the plants are thirsty.", choices: ["Because the plants are thirsty.","Because the plants are loud.","Because we want to nap.","Because the carrots are cold."], choicesZh: ["因為植物渴了。","因為植物很吵。","因為我們想睡午覺。","因為紅蘿蔔很冷。"], words: ["because","plants","are","thirsty"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Pom is filling a big basket now. Pick that sentence.", promptZh: "Pom 正在裝滿一個大籃子。選出這個句子。", answer: "Pom is filling the basket.", choices: ["Pom is filling the basket.","Pom is reading the basket.","Pom is driving the basket.","Pom is washing the basket."], choicesZh: ["Pom 正在裝滿籃子。","Pom 正在讀籃子。","Pom 正在駕駛籃子。","Pom 正在洗籃子。"], words: ["is","filling","the","basket"], reward: jobReward }
     ]
   },
   mill: {
-    theme: "windmill",
+    theme: "mill work",
     title: "Help at the Mill",
-    opening: "Miller Bell carries flour sacks by the windmill.",
-    openingZh: "磨坊主 Bell 在風車旁搬運麵粉袋。",
-    ending: "The flour sacks are ready for bread.",
+    opening: "Miller Bell needs help carrying flour sacks and keeping the floor safe.",
+    openingZh: "磨坊主 Bell 需要有人幫忙搬麵粉袋、保持地板安全。",
+    ending: "The sacks are stacked and the floor is clean. Well done!",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick the best sentence for the mill.", promptZh: "選出最適合磨坊的句子。", answer: "The miller is carrying flour.", choices: ["The miller is carrying flour.","The miller is carrying clouds.","The castle is carrying flour.","The river is reading a book."], choicesZh: ["磨坊主正在搬運麵粉。","磨坊主正在搬運雲朵。","城堡正在搬運麵粉。","河流在讀一本書。"], words: ["carrying","flour","miller"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the sentence about the sack.", promptZh: "選出關於袋子的句子。", answer: "The sack is ready before lunch.", choices: ["The sack is ready before lunch.","The sack is sleeping under lunch.","The sack can wear a ribbon.","The sack is afraid of bread."], choicesZh: ["袋子在午餐前準備好了。","袋子睡在午餐底下。","袋子會戴緞帶。","袋子害怕麵包。"], words: ["sack","ready","before","lunch"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick what Lumi asks politely.", promptZh: "選出 Lumi 有禮貌的問法。", answer: "Could I help you carry flour?", choices: ["Could I help you carry flour?","Could I eat your road?","Could the sack fly home?","Could you put soup in the map?"], choicesZh: ["我可以幫你搬麵粉嗎？","我可以吃你的路嗎？","袋子可以飛回家嗎？","你可以把湯放進地圖裡嗎？"], words: ["could","help","carry flour"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the useful description.", promptZh: "選出有用的描述。", answer: "This mill is windy and busy.", choices: ["This mill is windy and busy.","This mill is sleepy and wet inside.","My shoe is windy and busy.","The moon works at the mill."], choicesZh: ["這個磨坊有風又忙碌。","這個磨坊裡面又想睡又濕。","我的鞋子有風又忙碌。","月亮在這個磨坊工作。"], words: ["this","mill","windy","busy"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the safe work sentence.", promptZh: "選出安全工作的句子。", answer: "We should work slowly and carefully.", choices: ["We should work slowly and carefully.","We should run quickly with tools.","We should hide the flour.","We should shout at the animals."], choicesZh: ["我們應該慢慢地、小心地工作。","我們應該帶著工具快快跑。","我們應該把麵粉藏起來。","我們應該對動物大叫。"], words: ["should","work","slowly","carefully"], reward: { coins: 500 } }
+      { questionType: "sentence-choice", prompt: "Tell Bell what you did. Pick the past sentence.", promptZh: "告訴 Bell 你做了什麼。選出過去式句子。", answer: "I carried four sacks.", choices: ["I carried four sacks.","I carry four sacks.","I will carry four sacks.","I carried four songs."], choicesZh: ["我搬了四袋。","我搬四袋（現在式）。","我將會搬四袋。","我搬了四首歌。"], words: ["I","carried","four","sacks"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "There were eight sacks. The cart took three. How many left?", promptZh: "原本有八袋，馬車載走三袋。還剩幾袋？", answer: "Five sacks are left.", choices: ["Five sacks are left.","Eleven sacks are left.","Three sacks are left.","Five mills are left."], choicesZh: ["還剩五袋。","還剩十一袋。","還剩三袋。","還剩五座磨坊。"], words: ["five","sacks","are","left"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Compare two sacks. Pick the correct comparative sentence.", promptZh: "比較兩袋麵粉。選出正確的比較級句子。", answer: "This sack is heavier than that one.", choices: ["This sack is heavier than that one.","This sack is heavy than that one.","This sack is more heavy than that one.","This sack is heavier then that one."], choicesZh: ["這袋比那袋重。","這袋比那袋「heavy than」（錯誤）。","這袋比那袋「more heavy」（錯誤）。","這袋比那袋重（then 拼錯）。"], words: ["heavier","than","that","sack"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Why do we sweep the floor? Pick the reason.", promptZh: "為什麼我們要掃地？選出原因。", answer: "Because the flour is slippery.", choices: ["Because the flour is slippery.","Because the flour is sleepy.","Because we want to run.","Because the sacks are happy."], choicesZh: ["因為麵粉很滑。","因為麵粉想睡覺。","因為我們想跑步。","因為麵粉袋很開心。"], words: ["because","flour","is","slippery"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Bell is grinding the grain now. Pick that sentence.", promptZh: "Bell 正在磨穀子。選出這個句子。", answer: "Bell is grinding the grain.", choices: ["Bell is grinding the grain.","Bell is reading the grain.","Bell is driving the grain.","Bell is painting the grain."], choicesZh: ["Bell 正在磨穀子。","Bell 正在讀穀子。","Bell 正在駕駛穀子。","Bell 正在油漆穀子。"], words: ["is","grinding","the","grain"], reward: jobReward }
     ]
   },
   villageHome: {
-    theme: "village home",
+    theme: "village home work",
     title: "Help at the Village Home",
-    opening: "Grandma Fina sets a basket on the porch.",
-    openingZh: "Fina 奶奶把籃子放在門廊上。",
-    ending: "The home feels warm and tidy.",
+    opening: "Grandma Fina needs help tidying the porch and sorting baskets of apples.",
+    openingZh: "Fina 奶奶需要有人幫忙整理門廊、分裝一籃籃的蘋果。",
+    ending: "The porch is tidy and the apples are sorted. Thank you, dear!",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick the best sentence for the home.", promptZh: "選出最適合家的句子。", answer: "The grandma is carrying fruit.", choices: ["The grandma is carrying fruit.","The grandma is carrying clouds.","The castle is carrying fruit.","The river is reading a book."], choicesZh: ["奶奶正在搬運水果。","奶奶正在搬運雲朵。","城堡正在搬運水果。","河流在讀一本書。"], words: ["carrying","fruit","grandma"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the sentence about the basket.", promptZh: "選出關於籃子的句子。", answer: "The basket is ready before lunch.", choices: ["The basket is ready before lunch.","The basket is sleeping under lunch.","The basket can wear a ribbon.","The basket is afraid of bread."], choicesZh: ["籃子在午餐前準備好了。","籃子睡在午餐底下。","籃子會戴緞帶。","籃子害怕麵包。"], words: ["basket","ready","before","lunch"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick what Lumi asks politely.", promptZh: "選出 Lumi 有禮貌的問法。", answer: "Could I help you tidy the porch?", choices: ["Could I help you tidy the porch?","Could I eat your road?","Could the basket fly home?","Could you put soup in the map?"], choicesZh: ["我可以幫你整理門廊嗎？","我可以吃你的路嗎？","籃子可以飛回家嗎？","你可以把湯放進地圖裡嗎？"], words: ["could","help","tidy the porch"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the useful description.", promptZh: "選出有用的描述。", answer: "This home is warm and busy.", choices: ["This home is warm and busy.","This home is sleepy and wet inside.","My shoe is warm and busy.","The moon works at the home."], choicesZh: ["這個家溫暖又忙碌。","這個家裡面又想睡又濕。","我的鞋子溫暖又忙碌。","月亮在這個家工作。"], words: ["this","home","warm","busy"], reward: { coins: 500 } },
-      { questionType: "sentence-choice", prompt: "Pick the safe work sentence.", promptZh: "選出安全工作的句子。", answer: "We should work slowly and carefully.", choices: ["We should work slowly and carefully.","We should run quickly with tools.","We should hide the fruit.","We should shout at the animals."], choicesZh: ["我們應該慢慢地、小心地工作。","我們應該帶著工具快快跑。","我們應該把水果藏起來。","我們應該對動物大叫。"], words: ["should","work","slowly","carefully"], reward: { coins: 500 } }
+      { questionType: "sentence-choice", prompt: "Tell Grandma what she did. Pick the past sentence.", promptZh: "告訴大家奶奶做了什麼。選出過去式句子。", answer: "Grandma made apple jam.", choices: ["Grandma made apple jam.","Grandma makes apple jam.","Grandma will make apple jam.","Grandma made apple maps."], choicesZh: ["奶奶做了蘋果果醬。","奶奶做蘋果果醬（現在式）。","奶奶將會做蘋果果醬。","奶奶做了蘋果地圖。"], words: ["grandma","made","apple","jam"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "One basket had seven apples, another had two. How many?", promptZh: "一籃有七顆蘋果，另一籃有兩顆。一共幾顆？", answer: "There are nine apples.", choices: ["There are nine apples.","There are five apples.","There are nine baskets.","There are seven apples."], choicesZh: ["一共有九顆蘋果。","一共有五顆蘋果。","一共有九個籃子。","一共有七顆蘋果。"], words: ["there","are","nine","apples"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Why do we sweep the porch? Pick the reason.", promptZh: "為什麼我們要掃門廊？選出原因。", answer: "Because the porch is dusty.", choices: ["Because the porch is dusty.","Because the porch is funny.","Because we want to hide.","Because the apples are loud."], choicesZh: ["因為門廊很多灰塵。","因為門廊很好笑。","因為我們想躲起來。","因為蘋果很吵。"], words: ["because","porch","is","dusty"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Grandma is baking warm bread now. Pick that sentence.", promptZh: "奶奶正在烤溫熱的麵包。選出這個句子。", answer: "Grandma is baking bread.", choices: ["Grandma is baking bread.","Grandma is reading bread.","Grandma is driving bread.","Grandma is washing bread."], choicesZh: ["奶奶正在烤麵包。","奶奶正在讀麵包。","奶奶正在駕駛麵包。","奶奶正在洗麵包。"], words: ["is","baking","bread"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Offer to help after the work. Pick the polite future sentence.", promptZh: "工作後主動幫忙。選出有禮貌的未來式句子。", answer: "I will help you again tomorrow.", choices: ["I will help you again tomorrow.","I will help you again yesterday.","I helped you again tomorrow.","I will helps you tomorrow."], choicesZh: ["我明天會再來幫你。","我昨天會再幫你（時間錯誤）。","我明天幫了你（時態錯誤）。","我明天「will helps」（錯誤）。"], words: ["I","will","help","tomorrow"], reward: jobReward }
     ]
-  },
+  }
 });
 //#endregion 場景自帶題庫
 
+//#region 生活聊天題庫（issue #135 spec#11）
+// ruralChatLessonBank：各生產場景 NPC 的「生活聊天」題組（Movers 程度）——含 How was your day、
+//   because 原因、比較級與過去式回顧；答對提升心情並在護眼上限內延長可玩時間、不發 coins。
+const chatReward = { coins: 0 };
+const ruralChatLessonBank = Object.freeze({
+  mine: {
+    theme: "chatting with the miner",
+    title: "Chat at the Mine",
+    opening: "Miner Gemma wipes her hands and smiles hello.",
+    openingZh: "礦工 Gemma 擦擦手，微笑著打招呼。",
+    ending: "Gemma is glad you stopped for a chat.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Gemma asks how your day was. Pick a friendly answer.", promptZh: "Gemma 問你今天過得如何。選出友善的回答。", answer: "It was busy but good.", choices: ["It was busy but good.","It is a big rock.","No, you are wrong.","Go away, please."], choicesZh: ["很忙但很充實。","它是一塊大石頭。","不，你錯了。","請走開。"], words: ["it","was","busy","good"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "She looks tired. Pick the kind question to ask.", promptZh: "她看起來很累。選出親切的關心提問。", answer: "Are you tired today?", choices: ["Are you tired today?","Are you a stone today?","Go home now, please.","Give me your cart."], choicesZh: ["你今天累嗎？","你今天是石頭嗎？","現在請回家。","把你的礦車給我。"], words: ["are","you","tired","today"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the kind thing to say about her work.", promptZh: "選出稱讚她工作的好聽話。", answer: "You work very hard.", choices: ["You work very hard.","You work very lazy.","I do not like you.","Stop talking now."], choicesZh: ["你工作非常認真。","你工作很懶散。","我不喜歡你。","現在別說了。"], words: ["you","work","very","hard"], reward: chatReward }
+    ]
+  },
+  loggingCamp: {
+    theme: "chatting with the logger",
+    title: "Chat at the Logging Camp",
+    opening: "Logger Rowan leans on his axe and waves hello.",
+    openingZh: "伐木工 Rowan 靠著斧頭向你揮手問好。",
+    ending: "Rowan enjoyed the friendly chat.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the friendly hello for Rowan.", promptZh: "選出對 Rowan 親切的招呼。", answer: "Good morning, Rowan!", choices: ["Good morning, Rowan!","Go away, Rowan!","Where is my log?","Be quiet, Rowan!"], choicesZh: ["早安，Rowan！","走開，Rowan！","我的木頭在哪？","安靜，Rowan！"], words: ["good","morning","rowan"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Rowan asks why you came. Pick a kind answer.", promptZh: "Rowan 問你為什麼來。選出親切的回答。", answer: "Because I want to help.", choices: ["Because I want to help.","Because I am a tree.","No, I will not.","Give me the axe."], choicesZh: ["因為我想幫忙。","因為我是一棵樹。","不，我不要。","把斧頭給我。"], words: ["because","I","want","help"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the kind goodbye for Rowan.", promptZh: "選出對 Rowan 友善的道別。", answer: "See you again soon!", choices: ["See you again soon!","Go away fast!","That is wrong!","Give me wood!"], choicesZh: ["很快再見！","快走開！","那是錯的！","把木頭給我！"], words: ["see","you","again","soon"], reward: chatReward }
+    ]
+  },
+  fishingShore: {
+    theme: "chatting with the fisher",
+    title: "Chat at the Fishing Shore",
+    opening: "Fisher Nami sits by the boat and says hello.",
+    openingZh: "漁夫 Nami 坐在船邊向你打招呼。",
+    ending: "Nami is happy you came to chat.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the friendly hello for Nami.", promptZh: "選出對 Nami 親切的招呼。", answer: "Hello, Nami! How are you?", choices: ["Hello, Nami! How are you?","Go away, Nami!","Where is my net?","Be quiet, Nami!"], choicesZh: ["你好，Nami！你好嗎？","走開，Nami！","我的網子在哪？","安靜，Nami！"], words: ["hello","how","are","you"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Nami asks about your morning. Pick the past answer.", promptZh: "Nami 問你的早上。選出過去式回答。", answer: "I walked along the shore.", choices: ["I walked along the shore.","I walk along the shore.","I am a small boat.","Go home now, please."], choicesZh: ["我沿著海邊散步了。","我沿著海邊散步（現在式）。","我是一艘小船。","現在請回家。"], words: ["I","walked","the","shore"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the kind thing to say about the sea.", promptZh: "選出稱讚大海的好聽話。", answer: "The sea is calm and pretty.", choices: ["The sea is calm and pretty.","The sea is silly today.","I do not like the sea.","Throw the net away."], choicesZh: ["大海平靜又漂亮。","大海今天很笨。","我不喜歡大海。","把網子丟掉。"], words: ["the","sea","is","calm"], reward: chatReward }
+    ]
+  },
+  pasture: {
+    theme: "chatting with the farmer",
+    title: "Chat at the Pasture",
+    opening: "Farmer Theo rests by the fence and greets you.",
+    openingZh: "農夫 Theo 在圍欄邊休息，向你問候。",
+    ending: "Theo enjoyed the friendly chat.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the friendly hello for Theo.", promptZh: "選出對 Theo 親切的招呼。", answer: "Hi, Theo! Nice to see you.", choices: ["Hi, Theo! Nice to see you.","Go away, Theo!","Where is my cow?","Be quiet, Theo!"], choicesZh: ["嗨，Theo！很高興見到你。","走開，Theo！","我的牛在哪？","安靜，Theo！"], words: ["nice","to","see","you"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Theo asks why you like the pasture. Pick a kind answer.", promptZh: "Theo 問你為什麼喜歡牧場。選出親切的回答。", answer: "Because the animals are sweet.", choices: ["Because the animals are sweet.","Because I am a cow.","No, I do not.","Give me a sheep."], choicesZh: ["因為動物很可愛。","因為我是一頭牛。","不，我不喜歡。","給我一隻羊。"], words: ["because","animals","are","sweet"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the kind thing to say to Theo.", promptZh: "選出對 Theo 好聽的話。", answer: "Your pasture is so green.", choices: ["Your pasture is so green.","Your pasture is so bad.","I do not like grass.","Stop talking now."], choicesZh: ["你的牧場好翠綠。","你的牧場好糟。","我不喜歡草。","現在別說了。"], words: ["your","pasture","is","green"], reward: chatReward }
+    ]
+  },
+  farm: {
+    theme: "chatting at the farm",
+    title: "Chat at the Farm",
+    opening: "Auntie Pom looks up from the rows and smiles.",
+    openingZh: "Pom 阿姨從菜畦間抬起頭微笑。",
+    ending: "Auntie Pom is glad you stopped to chat.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the warm hello for Auntie Pom.", promptZh: "選出對 Pom 阿姨溫暖的招呼。", answer: "Hello, Auntie Pom!", choices: ["Hello, Auntie Pom!","Go away, Pom!","Where is my carrot?","Be quiet, Pom!"], choicesZh: ["你好，Pom 阿姨！","走開，Pom！","我的紅蘿蔔在哪？","安靜，Pom！"], words: ["hello","auntie","pom"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pom asks how you feel. Pick a friendly answer.", promptZh: "Pom 問你的感受。選出友善的回答。", answer: "I feel happy and warm.", choices: ["I feel happy and warm.","I feel like a carrot.","No, you do not.","Go home, Pom."], choicesZh: ["我覺得開心又溫暖。","我覺得自己像紅蘿蔔。","不，你才不是。","回家吧，Pom。"], words: ["I","feel","happy","warm"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the kind thing to say about her farm.", promptZh: "選出稱讚她農場的好聽話。", answer: "Your vegetables look fresh.", choices: ["Your vegetables look fresh.","Your vegetables look bad.","I do not like farms.","Throw them away."], choicesZh: ["你的蔬菜看起來很新鮮。","你的蔬菜看起來很糟。","我不喜歡農場。","把它們丟掉。"], words: ["vegetables","look","fresh"], reward: chatReward }
+    ]
+  },
+  mill: {
+    theme: "chatting with the miller",
+    title: "Chat at the Mill",
+    opening: "Miller Bell dusts off the flour and waves hello.",
+    openingZh: "磨坊主 Bell 拍掉麵粉，揮手問好。",
+    ending: "Bell enjoyed the friendly chat.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the friendly hello for Bell.", promptZh: "選出對 Bell 親切的招呼。", answer: "Good day, Bell!", choices: ["Good day, Bell!","Go away, Bell!","Where is my flour?","Be quiet, Bell!"], choicesZh: ["午安，Bell！","走開，Bell！","我的麵粉在哪？","安靜，Bell！"], words: ["good","day","bell"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Bell asks why the mill is your favourite. Pick a kind answer.", promptZh: "Bell 問你為什麼最喜歡磨坊。選出親切的回答。", answer: "Because the bread smells nice.", choices: ["Because the bread smells nice.","Because I am a sack.","No, it is not.","Give me the grain."], choicesZh: ["因為麵包聞起來很香。","因為我是一個麵粉袋。","不，才不是。","把穀子給我。"], words: ["because","bread","smells","nice"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the polite thank-you for Bell.", promptZh: "選出對 Bell 有禮貌的道謝。", answer: "Thank you for the warm bread.", choices: ["Thank you for the warm bread.","No, it is bad.","Give me more now.","I do not like it."], choicesZh: ["謝謝你的溫熱麵包。","不，它很糟。","現在再給我一些。","我不喜歡它。"], words: ["thank","you","warm","bread"], reward: chatReward }
+    ]
+  },
+  villageHome: {
+    theme: "chatting with grandma",
+    title: "Chat at the Village Home",
+    opening: "Grandma Fina pats the bench and asks you to sit.",
+    openingZh: "Fina 奶奶拍拍長椅，請你坐下。",
+    ending: "Grandma Fina loved your friendly visit.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the warm hello for Grandma Fina.", promptZh: "選出對 Fina 奶奶溫暖的招呼。", answer: "Hello, Grandma! How are you?", choices: ["Hello, Grandma! How are you?","Go away, Grandma!","Where is my apple?","Be quiet, Grandma!"], choicesZh: ["你好，奶奶！您好嗎？","走開，奶奶！","我的蘋果在哪？","安靜，奶奶！"], words: ["hello","how","are","you"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Grandma asks about your visit. Pick the past answer.", promptZh: "奶奶問起你的來訪。選出過去式回答。", answer: "I came to see you.", choices: ["I came to see you.","I come to see you.","I am a red apple.","Go home now, please."], choicesZh: ["我是來看您的。","我來看您（現在式）。","我是一顆紅蘋果。","現在請回家。"], words: ["I","came","to","see"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the kind thing to say to Grandma.", promptZh: "選出對奶奶好聽的話。", answer: "Your home is warm and cosy.", choices: ["Your home is warm and cosy.","Your home is cold and sad.","I do not like it here.","Give me your basket."], choicesZh: ["您的家溫暖又舒適。","您的家又冷又悲傷。","我不喜歡這裡。","把您的籃子給我。"], words: ["your","home","warm","cosy"], reward: chatReward }
+    ]
+  }
+});
+//#endregion 生活聊天題庫
+
 //#region 對話場景設定
 // 每個屬性名稱對應地點或節點，控制對話畫面的背景、NPC 與按鈕文案。
-export const ruralSceneConfigs = mergeLessons({
+export const ruralSceneConfigs = mergeLessons(mergeLessons({
   ruralExit: { ...ruralProductionArt("farm"), scene: "scene-rural-exit", npcClass: "npc-none", npc: "Rural Sign", travelAction: "World Map", travelLine: "The road returns to the kingdom world map." },
   mine: { ...ruralProductionArt("mine"), scene: "scene-rural-mine", npc: "Miner Gemma", npcImage: npcImage("miner-gemma"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Miner Gemma is sorting shiny stones." },
   loggingCamp: { ...ruralProductionArt("logging"), scene: "scene-rural-logging", npc: "Logger Rowan", npcImage: npcImage("logger-rowan"), npcNaturalHeightCm: 178, travelAction: "Visit", travelLine: "Logger Rowan stacks logs beside the cabin." },
@@ -183,6 +280,6 @@ export const ruralSceneConfigs = mergeLessons({
   workwearStall: { ...ruralShopArt("workwear-stall"), scene: "scene-rural-workwear-stall", npc: "Workwear Keeper", npcImage: npcImage("workwear-stall-keeper"), npcNaturalHeightCm: 168, travelAction: "Shop", travelLine: "The Workwear Keeper has sturdy tops and bottoms.", shopGreeting: "Welcome to the Workwear Stall. Pick tops or bottoms." },
   fieldCobbler: { ...ruralShopArt("field-cobbler"), scene: "scene-rural-field-cobbler", npc: "Field Cobbler", npcImage: npcImage("field-cobbler"), npcNaturalHeightCm: 165, travelAction: "Shop", travelLine: "The Field Cobbler has shoes and hats for country roads.", shopGreeting: "Welcome to the Field Cobbler. Pick shoes or hats." },
   villageHome: { ...ruralProductionArt("home"), scene: "scene-rural-home", npc: "Grandma Fina", npcImage: npcImage("grandma-fina"), npcNaturalHeightCm: 148, travelAction: "Visit", travelLine: "Grandma Fina tidies the warm village porch." }
-}, ruralLessonBank, { area: "rural", vocabProfile: ruralVocabularyProfile.id });
+}, ruralLessonBank, { area: "rural", vocabProfile: ruralVocabularyProfile.id }),
+  ruralChatLessonBank, { area: "rural", vocabProfile: ruralVocabularyProfile.id }, "chatLesson");
 //#endregion 對話場景設定
-

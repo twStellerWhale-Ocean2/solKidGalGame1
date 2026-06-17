@@ -16,6 +16,7 @@ export function createElements() {
     systemMenuTabs: $$(".system-menu-tab"),
     systemPanels: $$(".system-panel"),
     coinValue: $("#coinValue"),
+    moodValue: $("#moodValue"),
     energyValue: $("#energyValue"),
     energyMeterFill: $("#energyMeterFill"),
     outfitSummary: $("#outfitSummary"),

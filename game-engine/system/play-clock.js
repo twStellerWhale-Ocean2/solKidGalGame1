@@ -16,7 +16,9 @@ function emptyCycle() {
 }
 
 export function defaultPlayLimit() {
-  return { playMinutes: 15, restMinutes: 15, sessionEndsAt: 0, restEndsAt: 0, cycle: emptyCycle() };
+  // playMaxMinutes（spec#11）：本回合可玩時間的護眼硬上限；生活聊天答對可延長 sessionEndsAt，但不得超過此值。
+  // sessionMaxEndsAt：本回合延長的時戳上限（startSession 時依 playMaxMinutes 設定，0=尚未開始）。
+  return { playMinutes: 15, restMinutes: 15, playMaxMinutes: 20, sessionEndsAt: 0, restEndsAt: 0, sessionMaxEndsAt: 0, cycle: emptyCycle() };
 }
 
 function toMinutes(value, fallback) {
@@ -37,8 +39,10 @@ export function normalizePlayLimit(candidate = {}) {
   return {
     playMinutes: toMinutes(candidate.playMinutes, base.playMinutes),
     restMinutes: toMinutes(candidate.restMinutes, base.restMinutes),
+    playMaxMinutes: toMinutes(candidate.playMaxMinutes, base.playMaxMinutes),
     sessionEndsAt: toTimestamp(candidate.sessionEndsAt),
     restEndsAt: toTimestamp(candidate.restEndsAt),
+    sessionMaxEndsAt: toTimestamp(candidate.sessionMaxEndsAt),
     cycle: {
       coinsAtStart: Number(cycle.coinsAtStart) || 0,
       answered: Math.max(0, Math.trunc(Number(cycle.answered)) || 0),
@@ -71,8 +75,25 @@ export function playStatus(state, now) {
 export function startSession(state, now) {
   const pl = state.playLimit;
   pl.sessionEndsAt = now + pl.playMinutes * MINUTE_MS;
+  // 護眼上限不得低於基礎遊玩時長；延長至多到 sessionMaxEndsAt（spec#11）。
+  const maxMinutes = Math.max(pl.playMinutes, pl.playMaxMinutes || pl.playMinutes);
+  pl.sessionMaxEndsAt = now + maxMinutes * MINUTE_MS;
   pl.restEndsAt = 0;
   pl.cycle = { coinsAtStart: Number(state.coins) || 0, answered: 0, correct: 0 };
+}
+
+// 心情延長當次遊玩（spec#11，solCase#14.1／sysCase#11.3）：依心情換算的分鐘數延長 sessionEndsAt，
+// 但不得超過 sessionMaxEndsAt 護眼上限；僅於遊玩回合中（phase=play）有效。回傳實際延長的毫秒數。
+export function extendSession(state, now, minutes) {
+  const pl = state.playLimit;
+  if (!pl) return 0;
+  if (playStatus(state, now).phase !== "play") return 0;
+  const cap = pl.sessionMaxEndsAt > 0 ? pl.sessionMaxEndsAt : pl.sessionEndsAt;
+  const wanted = pl.sessionEndsAt + Math.max(0, Number(minutes) || 0) * MINUTE_MS;
+  const next = Math.min(wanted, cap);
+  const added = Math.max(0, next - pl.sessionEndsAt);
+  pl.sessionEndsAt = next;
+  return added;
 }
 
 // 進入強制休息：鎖定遊玩到 restEndsAt。

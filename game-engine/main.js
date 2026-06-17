@@ -86,6 +86,7 @@ import { createSaveLoadController } from "./system/save-load.js";
 import {
   MAX_LIMIT_MINUTES,
   MIN_LIMIT_MINUTES,
+  extendSession,
   playStatus,
   recordAnswer as recordCycleAnswer,
   resumeFromRest,
@@ -95,12 +96,15 @@ import {
 let state = loadLocalState();
 let activeHotspot = null;
 let activeLesson = null;
+let activeLessonMode = "job";   // issue #135：本次題目所屬互動模式 "job"（打工→coins）/"chat"（聊天→心情＋延長時間）
 let advMode = "closed";
 let advChineseUsed = false;   // issue #73：本題是否按過中文撥放（按過＝該題無獎勵）
 let advWrongAttempts = 0;          // issue #73：本題答錯次數（0→全額、1→半額、≥2→無）
 let activeOpeningZh = "";           // issue #73：本題題目（advLine）的中文，無則空字串
 const CHINESE_AUDIO_LANG = "zh-TW";     // design paramChineseAudioLang
 const REWARD_SECOND_TRY_RATIO = 0.5;    // design paramRewardSecondTryRatio
+const CHAT_MOOD_REWARD = 1;             // issue #135 design paramChatMoodReward：每次生活聊天答對增加的心情值
+const MOOD_MINUTES_PER_POINT = 1;       // issue #135 design paramMoodMinutesPerPoint：每點心情換算延長的遊玩分鐘數
 const SPEECH_RATE_SCALE = 0.8;          // issue #109 design paramSpeechRateScale：全域朗讀語速倍率（套用於所有發聲）
 const SPEECH_QUEUE_MODE = "replace-last";
 const SPEECH_DEBOUNCE_MS = 120;
@@ -576,6 +580,7 @@ function render() {
 
 function renderStatus() {
   elements.coinValue.textContent = state.coins;
+  if (elements.moodValue) elements.moodValue.textContent = Number(state.mood) || 0;
   elements.outfitSummary.textContent = outfitSummary();
 }
 
@@ -1880,7 +1885,7 @@ function openRoomScene(hotspot = hotspotById("princessRoom")) {
 }
 
 function renderFirstLayerSceneActions(hotspot) {
-  firstLayerActionsFor(hotspot, { hasLessons: hasLessonsForPlace(hotspot?.id) }).forEach((action) => {
+  firstLayerActionsFor(hotspot, { hasLessons: hasLessonsForPlace(hotspot?.id), hasChat: hasChatForPlace(hotspot?.id) }).forEach((action) => {
     addAdvOption(sceneActionLabel(action), () => handleFirstLayerSceneAction(action, hotspot), {
       leave: action.handlerKey === "leave",
       navigation: action.navigation && action.handlerKey !== "leave"
@@ -1895,6 +1900,9 @@ function handleFirstLayerSceneAction(action, hotspot) {
       return;
     case "practice":
       openPracticeAction(hotspot);
+      return;
+    case "chat":
+      openChatAction(hotspot);
       return;
     case "shop":
       openShopDetail(hotspot);
@@ -1916,6 +1924,15 @@ function openPracticeAction(hotspot) {
     return;
   }
   openHintAdv(hotspot, hotspot?.hint || "There is no English practice ready here.");
+}
+
+// issue #135：生活聊天入口——以 chatLesson 開啟對話題，答對加心情並在護眼上限內延長遊玩時間（不發 coins）。
+function openChatAction(hotspot) {
+  if (hasChatForPlace(hotspot?.id)) {
+    openQuestAdv(hotspot, { bankKey: "chatLesson", mode: "chat" });
+    return;
+  }
+  openHintAdv(hotspot, hotspot?.hint || "There is no chat ready here.");
 }
 
 function leaveScene(hotspot) {
@@ -1951,14 +1968,32 @@ function confirmAdvFocus() {
   return advControls.confirmFocus();
 }
 
-function openQuestAdv(hotspot) {
-  const lesson = pickLesson(hotspot.id);
+// issue #135：openQuestAdv 服務兩種互動——options.mode="job"（預設，題庫 lesson、答對發 coins）
+// 與 mode="chat"（題庫 chatLesson、答對加心情並延長遊玩時間、不發 coins）。無 options 時行為與既往相同。
+function createChatQuest(hotspot) {
+  const bank = sceneConfigs[hotspot.id]?.chatLesson || {};
+  return {
+    id: `${Date.now()}-${Math.random().toString(16).slice(2)}-${hotspot.id}Chat`,
+    place: hotspot.id,
+    title: bank.title || "Chat",
+    opening: bank.opening || "",
+    openingZh: bank.openingZh || "",
+    ending: bank.ending || "",
+    npc: sceneConfigFor(hotspot).npc
+  };
+}
+
+function openQuestAdv(hotspot, opts = {}) {
+  const bankKey = opts.bankKey || "lesson";
+  const mode = opts.mode || "job";
+  const lesson = pickLesson(hotspot.id, bankKey);
   if (!lesson) {
     openHintAdv(hotspot, "No English task is ready for this place yet.");
     return;
   }
-  const quest = createQuestForPlace(hotspot.id);
+  const quest = mode === "chat" ? createChatQuest(hotspot) : createQuestForPlace(hotspot.id);
   state.activeQuest = quest;
+  activeLessonMode = mode;
   openAdvBase(hotspot, "quest");
   addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
   activeLesson = localizeLesson(lesson);
@@ -2525,21 +2560,27 @@ function clearRewardBursts() {
 // issue #96：題庫改為「場景自帶、進場才取」——直接讀該場景物件的 lesson.questions，
 // 不再過濾全域 lessons 註冊表。回傳帶 place，並由地區常數導出 lessonId 與 vocabProfile，
 // 供 completedLessons 進度、徽章與日誌沿用（id 格式同重構前 `${area}-${place}-NN`）。
-function pickLesson(place) {
-  const lesson = sceneConfigs[place]?.lesson;
+// issue #135：bankKey 讓同一取題機制服務「打工(lesson)」與「生活聊天(chatLesson)」兩種題庫；預設 "lesson" 維持相容。
+function pickLesson(place, bankKey = "lesson") {
+  const lesson = sceneConfigs[place]?.[bankKey];
   const questions = lesson?.questions;
   if (!Array.isArray(questions) || !questions.length) return null;
   const index = Math.floor(Math.random() * questions.length);
+  const idPrefix = bankKey === "chatLesson" ? `${lesson.area}-${place}-chat` : `${lesson.area}-${place}`;
   return {
     ...questions[index],
     place,
-    id: `${lesson.area}-${place}-${String(index + 1).padStart(2, "0")}`,
+    id: `${idPrefix}-${String(index + 1).padStart(2, "0")}`,
     vocabProfile: lesson.vocabProfile
   };
 }
 
 function hasLessonsForPlace(place) {
   return Boolean(place && sceneConfigs[place]?.lesson?.questions?.length);
+}
+
+function hasChatForPlace(place) {
+  return Boolean(place && sceneConfigs[place]?.chatLesson?.questions?.length);
 }
 
 function answerLesson(button, choice) {
@@ -2559,48 +2600,68 @@ function answerLesson(button, choice) {
 
   const quest = state.activeQuest || createQuestForPlace(activeLesson.place);
   const completedHotspot = hotspotById(activeLesson.place);
-  const baseCoins = activeLesson.reward.coins || 0;
-  const rewardTier = helpRewardTier();   // issue #73 獎勵階梯：full／half／none
-  const coins = rewardTier === "full"
-    ? baseCoins
-    : rewardTier === "half"
-      ? Math.round(baseCoins * REWARD_SECOND_TRY_RATIO)
-      : 0;
-  const reward = { coins };
-  applyEffects(reward);
-  playTone("correct");
+  // issue #135：獎勵分流——生活聊天(chat) 加心情並在護眼上限內延長遊玩時間、不發 coins；打工(job) 沿用既有 coins 獎勵階梯。
+  const isChat = activeLessonMode === "chat";
+  let coins = 0;
+  let burstText;
+  let feedbackText;
+  let diaryType = "quest";
+  if (isChat) {
+    state.mood = (Number(state.mood) || 0) + CHAT_MOOD_REWARD;
+    const addedMin = Math.round(extendSession(state, clockNow(), CHAT_MOOD_REWARD * MOOD_MINUTES_PER_POINT) / 60000);
+    burstText = `+${CHAT_MOOD_REWARD} mood`;
+    feedbackText = addedMin > 0
+      ? `Nice chat! +${CHAT_MOOD_REWARD} mood, +${addedMin} min play time.`
+      : `Nice chat! +${CHAT_MOOD_REWARD} mood.`;
+    diaryType = "chat";
+    playTone("correct");
+  } else {
+    const baseCoins = activeLesson.reward.coins || 0;
+    const rewardTier = helpRewardTier();   // issue #73 獎勵階梯：full／half／none
+    coins = rewardTier === "full"
+      ? baseCoins
+      : rewardTier === "half"
+        ? Math.round(baseCoins * REWARD_SECOND_TRY_RATIO)
+        : 0;
+    applyEffects({ coins });
+    playTone("correct");
+    burstText = coins > 0 ? `+${coins} coins` : "No coins this time";
+    feedbackText = coins > 0
+      ? (rewardTier === "half" ? `${effectText({ coins })}. Half coins for the second try.` : `${effectText({ coins })}.`)
+      : advChineseUsed
+        ? "Nice learning with Chinese help! No coins this time."
+        : "No coins this time — try to answer sooner next time.";
+  }
   addUnique("completedLessons", [activeLesson.id]);
   addUnique("learnedWords", activeLesson.words);
   addUnique("metNpcs", [sceneConfigFor(completedHotspot).npc]);
   updateProgressBadges();
   setExpressions("happy", "happy");
   button.classList.add("correct");
-  showRewardBurst(coins > 0 ? `+${coins} coins` : "No coins this time");
+  showRewardBurst(burstText);
   elements.choiceList.querySelectorAll("button").forEach((item) => {
     item.disabled = true;
     if (item.dataset.choice === activeLesson.answer) item.classList.add("correct");
   });
   addDiary({
-    type: "quest",
+    type: diaryType,
     title: `${quest.title} at ${completedHotspot.label}`,
     body: `Sentence: "${activeLesson.answer}"`,
-    result: effectText(reward),
+    result: feedbackText,
     lessonId: activeLesson.id,
     words: activeLesson.words,
     vocabProfile: activeLesson.vocabProfile
   });
   elements.advLine.textContent = quest.ending;
-  // issue #100：完成提示文案對齊實際可用動作（已移除「選擇獎勵」導購）——商店場景可逛商店，其餘場景僅返回／離開。
+  // 完成提示文案對齊實際可用動作：商店場景可逛商店，其餘僅返回／離開；聊天完成用較輕鬆的措辭。
+  const doneLead = isChat ? "Nice chat." : "Practice complete.";
   elements.advPrompt.textContent = completedHotspot?.kind === "shop"
-    ? `Practice complete. Visit the shop, or go back to ${princessName()}'s room.`
-    : `Practice complete. Go back to ${princessName()}'s room, or leave.`;
-  elements.advFeedback.textContent = coins > 0
-    ? (rewardTier === "half" ? `${effectText(reward)}. Half coins for the second try.` : `${effectText(reward)}.`)
-    : advChineseUsed
-      ? "Nice learning with Chinese help! No coins this time."
-      : "No coins this time — try to answer sooner next time.";
+    ? `${doneLead} Visit the shop, or go back to ${princessName()}'s room.`
+    : `${doneLead} Go back to ${princessName()}'s room, or leave.`;
+  elements.advFeedback.textContent = feedbackText;
   state.activeQuest = null;
   activeLesson = null;
+  activeLessonMode = "job";
   advMode = "complete";
   elements.advScene.dataset.mode = "complete";
   elements.choiceList.innerHTML = "";
@@ -3500,6 +3561,7 @@ installTestingHooks({
     status: () => playStatus(state, clockNow()),
     resume: () => resumeFromRest(state, clockNow()),
     recordAnswer: (correct) => recordCycleAnswer(state, correct),
+    extend: (minutes) => extendSession(state, clockNow(), minutes),
     get limit() { return state.playLimit; },
     setDurations: (playMinutes, restMinutes) => {
       state.playLimit.playMinutes = playMinutes;

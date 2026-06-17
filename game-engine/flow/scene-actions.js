@@ -1,5 +1,6 @@
 export const SCENE_ACTION_TYPES = Object.freeze({
   PRACTICE: "practice",
+  CHAT: "chat",
   NAVIGATION: "navigation",
   REFUND: "refund",
   SHOP: "shop",
@@ -31,18 +32,22 @@ const NPC_ACTIONS = Object.freeze([
   leaveAction()
 ]);
 
+// issue #135：場景動作改為模組驅動且加法相容——生活聊天(chat) 於有 chatLesson 時加在最前；
+// 打工任務沿用既有 practice（有 lesson 時）；逛店沿用 kind:"shop"。未開啟之模組不出現。
 export function firstLayerActionsFor(hotspot, options = {}) {
   if (hotspot?.kind === "room") return ROOM_ACTIONS;
+  const chat = options.hasChat ? [chatAction()] : [];
   const practice = options.hasLessons ? [practiceAction()] : [];
   if (hotspot?.kind === "shop") {
     return Object.freeze([
+      ...chat,
       ...practice,
       { type: SCENE_ACTION_TYPES.SHOP, label: "Shop", icon: "🎁", handlerKey: "shop" },
       { type: SCENE_ACTION_TYPES.REFUND, label: "Refund", icon: "💱", handlerKey: "refund" },
       leaveAction()
     ]);
   }
-  return Object.freeze([...practice, leaveAction()]);
+  return Object.freeze([...chat, ...practice, leaveAction()]);
 }
 
 export function sceneActionLabel(action) {
@@ -60,7 +65,11 @@ function wardrobeAction(label, category, icon) {
 }
 
 function practiceAction() {
-  return { type: SCENE_ACTION_TYPES.PRACTICE, label: "Practice", icon: "📘", handlerKey: "practice" };
+  return { type: SCENE_ACTION_TYPES.PRACTICE, label: "Work", icon: "💼", handlerKey: "practice" };
+}
+
+function chatAction() {
+  return { type: SCENE_ACTION_TYPES.CHAT, label: "Chat", icon: "💬", handlerKey: "chat" };
 }
 
 function leaveAction() {

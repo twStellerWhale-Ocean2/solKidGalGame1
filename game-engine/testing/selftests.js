@@ -33,6 +33,7 @@ export function installTestingHooks(api) {
     },
     closeAdv: api.closeAdv,
     openQuest: (place = "kingHall") => api.openQuestAdv(api.hotspotById(place)),
+    openChat: (place = "kingHall") => api.openQuestAdv(api.hotspotById(place), { bankKey: "chatLesson", mode: "chat" }),
     buy: (itemId) => api.buyItemInAdv(api.itemById(itemId)),
     refund: (itemId) => api.refundItemInAdv(api.itemById(itemId)),
     focusCastle: api.focusCastle,
@@ -49,6 +50,8 @@ export function installTestingHooks(api) {
   runMonkeyTest(api);
   runAccountSelfTest(api);
   runPlayTimerSelfTest(api);
+  runMoodExtendSelfTest(api);
+  runChatSelfTest(api);
   runProfileColorSelfTest(api);
   runChineseRewardSelfTest(api);
   runCharacterVoiceSelfTest(api);
@@ -222,6 +225,143 @@ function runPlayTimerSelfTest(api) {
   result.id = "playTimerTestResult";
   result.textContent = JSON.stringify({
     test: "playtimer",
+    passed: errors.length === 0,
+    errors: errors.slice(0, 10)
+  });
+  document.body.prepend(result);
+}
+
+// issue #135 / spec#11：驗證「生活聊天答對 → 在護眼上限內延長當次可玩時間」(extendSession)。
+// 以注入時鐘驗證：基礎護眼上限預設、延長累加、達上限後夾住、休息中不可延長。
+function runMoodExtendSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "mood-extend") return;
+  const errors = [];
+  const clock = api.playClock;
+  const accounts = api.accounts;
+  let createdId = null;
+  const MIN = 60000;
+  try {
+    if (!clock) throw new Error("playClock testing hook missing");
+    if (typeof clock.extend !== "function") throw new Error("playClock.extend hook missing");
+    const baseline = accounts.list().length;
+    createdId = accounts.create().id;
+
+    // 1) 護眼上限預設為 20 分鐘（spec#11 paramPlayMaxMinutes）。
+    if (clock.limit.playMaxMinutes !== 20) errors.push(`default playMaxMinutes=${clock.limit.playMaxMinutes}, expected 20`);
+
+    // 設定：基礎遊玩 2 分鐘、休息 1 分鐘、護眼上限 4 分鐘（可延長 2 分鐘）。
+    clock.setOffset(0);
+    clock.setDurations(2, 1);
+    clock.limit.playMaxMinutes = 4;
+
+    // 2) 起拍開始回合：sessionEndsAt=+2min、sessionMaxEndsAt=+4min。
+    let ev = clock.tick();
+    if (ev.phase !== "play" || !ev.justStarted) errors.push(`first tick phase=${ev.phase} justStarted=${ev.justStarted}, expected play/started`);
+    const baseEnd = clock.limit.sessionEndsAt;
+    const capEnd = clock.limit.sessionMaxEndsAt;
+    if (Math.abs((capEnd - baseEnd) - 2 * MIN) > 5) errors.push(`cap-base gap = ${capEnd - baseEnd}ms, expected ${2 * MIN}`);
+
+    // 3) 聊天答對延長 1 分鐘：實際延長 1 分鐘。
+    const a1 = clock.extend(1);
+    if (Math.abs(a1 - MIN) > 5) errors.push(`extend(1) added=${a1}ms, expected ${MIN}`);
+
+    // 4) 再延長 5 分鐘：夾在護眼上限，只加到 cap（再 +1 分鐘），且 sessionEndsAt==sessionMaxEndsAt。
+    const a2 = clock.extend(5);
+    if (Math.abs(a2 - MIN) > 5) errors.push(`extend(5) added=${a2}ms, expected clamp to ${MIN}`);
+    if (clock.limit.sessionEndsAt !== clock.limit.sessionMaxEndsAt) errors.push("sessionEndsAt not clamped to sessionMaxEndsAt at cap");
+
+    // 5) 已達上限：再延長為 0（護眼不可被突破）。
+    const a3 = clock.extend(5);
+    if (a3 !== 0) errors.push(`extend at cap added=${a3}, expected 0 (eye-rest cap not bypassed)`);
+
+    // 6) 進入休息後不可延長（phase!=play）。
+    clock.advance(5 * MIN);
+    ev = clock.tick();
+    if (ev.phase !== "rest") errors.push(`after advance phase=${ev.phase}, expected rest`);
+    const a4 = clock.extend(1);
+    if (a4 !== 0) errors.push(`extend during rest added=${a4}, expected 0`);
+
+    accounts.remove(createdId);
+    createdId = null;
+    if (accounts.list().length !== baseline) errors.push(`account count after cleanup = ${accounts.list().length}, expected ${baseline}`);
+  } catch (error) {
+    errors.push(error.message);
+  } finally {
+    if (createdId) accounts.remove(createdId);
+    clock?.setOffset(0);
+  }
+  const result = document.createElement("pre");
+  result.id = "moodExtendTestResult";
+  result.textContent = JSON.stringify({
+    test: "mood-extend",
+    passed: errors.length === 0,
+    errors: errors.slice(0, 10)
+  });
+  document.body.prepend(result);
+}
+
+// issue #135 / spec#11：端對端驗證場景互動分流——生活聊天答對 → +心情、護眼上限內延長時間、不發 coins；
+// 打工答對 → 發 coins、不加心情。使用 castle kingHall（已備 chatLesson 與 lesson）。
+function runChatSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "chat") return;
+  const errors = [];
+  const clock = api.playClock;
+  const accounts = api.accounts;
+  let createdId = null;
+  const answerActive = () => {
+    const lesson = api.getActiveLesson();
+    if (!lesson) throw new Error("no active lesson after open");
+    const btn = [...api.elements.choiceList.querySelectorAll("button")].find((b) => b.dataset.choice === lesson.answer);
+    if (!btn) throw new Error("correct choice button not found");
+    api.answerLesson(btn, lesson.answer);
+  };
+  try {
+    if (!clock || typeof api.openQuestAdv !== "function") throw new Error("test hooks (playClock/openQuestAdv) missing");
+    const openChat = (place) => api.openQuestAdv(api.hotspotById(place), { bankKey: "chatLesson", mode: "chat" });
+    const openJob = (place) => api.openQuestAdv(api.hotspotById(place));
+    const baseline = accounts.list().length;
+    createdId = accounts.create().id;
+    clock.setOffset(0);
+    clock.setDurations(2, 1);
+    clock.tick(); // 由 idle 起拍開始遊玩回合（之後 extendSession 才有作用）
+    api.state.coins = 100;
+    api.state.mood = 0;
+
+    // 1) 生活聊天答對：+1 心情、延長約 1 分鐘、coins 不變。
+    const coins0 = api.state.coins;
+    const end0 = api.state.playLimit.sessionEndsAt;
+    openChat("kingHall");
+    if (!api.getActiveLesson()) errors.push("chat did not open at kingHall (chatLesson missing?)");
+    answerActive();
+    if (api.state.mood !== 1) errors.push(`mood after chat = ${api.state.mood}, expected 1`);
+    if (api.state.coins !== coins0) errors.push(`coins after chat = ${api.state.coins}, expected unchanged ${coins0}`);
+    const added = api.state.playLimit.sessionEndsAt - end0;
+    if (Math.abs(added - 60000) > 1500) errors.push(`session extended by ${added}ms, expected ~60000`);
+
+    // 2) 打工答對：發 coins（>原值）、心情不變。
+    const coinsBeforeJob = api.state.coins;
+    const moodBeforeJob = api.state.mood;
+    openJob("kingHall");
+    answerActive();
+    if (api.state.coins <= coinsBeforeJob) errors.push(`coins after job = ${api.state.coins}, expected > ${coinsBeforeJob}`);
+    if (api.state.mood !== moodBeforeJob) errors.push(`mood after job = ${api.state.mood}, expected unchanged ${moodBeforeJob}`);
+
+    api.closeAdv();
+    accounts.remove(createdId);
+    createdId = null;
+    if (accounts.list().length !== baseline) errors.push(`account count after cleanup = ${accounts.list().length}, expected ${baseline}`);
+  } catch (error) {
+    errors.push(error.message);
+  } finally {
+    if (createdId) accounts.remove(createdId);
+    clock?.setOffset(0);
+  }
+  const result = document.createElement("pre");
+  result.id = "chatTestResult";
+  result.textContent = JSON.stringify({
+    test: "chat",
     passed: errors.length === 0,
     errors: errors.slice(0, 10)
   });
@@ -727,6 +867,34 @@ async function runDataAudit(api) {
     if (!lessonAudit.byArea[id]) errors.push(`area ${id} has no lesson-bearing places`);
   });
 
+  // issue #135：生活聊天題庫（chatLesson）同採場景自帶題庫契約，納入結構與中文覆蓋一致性審查；
+  // 聊天為非交易性回饋，reward.coins 必須為 0（心情→延長遊玩、不發 coins）。
+  const chatAudit = { places: 0, questions: 0, byArea: {} };
+  Object.values(api.areaRegistry).forEach((area) => {
+    (area.locations || []).forEach((hotspot) => {
+      const chat = api.sceneConfigFor(hotspot).chatLesson;
+      if (!chat) return; // 未開啟聊天之場景不帶 chatLesson
+      chatAudit.places += 1;
+      chatAudit.byArea[area.id] = (chatAudit.byArea[area.id] || 0) + 1;
+      const at = `${area.id}/${hotspot.id}`;
+      if (!chat.title || !chat.opening || !chat.ending) errors.push(`${at} chatLesson missing title/opening/ending`);
+      if (!chat.openingZh) errors.push(`${at} chatLesson missing openingZh`);
+      if (!chat.area || !chat.vocabProfile) errors.push(`${at} chatLesson missing area/vocabProfile`);
+      if (!Array.isArray(chat.questions) || !chat.questions.length) { errors.push(`${at} chatLesson has no questions`); return; }
+      chat.questions.forEach((q, i) => {
+        chatAudit.questions += 1;
+        const where = `${at} chat#${i + 1}`;
+        if (!q.prompt || !q.answer || !Array.isArray(q.choices) || q.choices.length < 2) errors.push(`${where} missing prompt/answer/choices`);
+        else if (!q.choices.includes(q.answer)) errors.push(`${where} answer not in choices`);
+        if (!Array.isArray(q.words) || !q.words.length) errors.push(`${where} missing words`);
+        if (!q.reward || !Number.isFinite(q.reward.coins)) errors.push(`${where} missing reward.coins`);
+        else if (q.reward.coins !== 0) errors.push(`${where} chat reward.coins must be 0`);
+        if (!q.promptZh) errors.push(`${where} missing promptZh (中文協助所需)`);
+        if (!Array.isArray(q.choicesZh) || q.choicesZh.length !== q.choices.length || q.choicesZh.some((z) => !z)) errors.push(`${where} choicesZh incomplete (中文協助所需)`);
+      });
+    });
+  });
+
   const result = document.createElement("pre");
   result.id = "dataAuditResult";
   result.textContent = JSON.stringify({
@@ -741,6 +909,7 @@ async function runDataAudit(api) {
     characterRegistry,
     characterScale,
     lessonAudit,
+    chatAudit,
     supportedActorMotions: [...supportedActorMotions],
     shops: shopLocations.map((hotspot) => ({
       area: api.areaForHotspot(hotspot),
@@ -1262,6 +1431,13 @@ function runVisualQa(api) {
   if (surface === "quest") {
     api.render();
     api.openQuestAdv(hotspot);
+    return;
+  }
+
+  // issue #135：生活聊天題（chatLesson）視覺 QA surface，供逐頁審查截圖。
+  if (surface === "chat") {
+    api.render();
+    api.openQuestAdv(hotspot, { bankKey: "chatLesson", mode: "chat" });
     return;
   }
 

@@ -140,9 +140,78 @@ const castleLessonBank = Object.freeze({
 });
 //#endregion 場景自帶題庫
 
+//#region 生活聊天題庫（issue #135 spec#11）
+// castleChatLessonBank：每個場景的「生活聊天」題組——貼近生活的寒暄、感受與禮貌用語（Dolch 程度、單句）。
+// 與打工題庫分開：聊天答對提升心情並在護眼上限內延長可玩時間、不發 coins（reward.coins=0 僅為結構一致）。
+// 干擾項為合理但情境不符的簡單句（非超現實），由 mergeLessons 以 chatLesson 鍵併入對應場景。
+const chatReward = { coins: 0 };
+const castleChatLessonBank = Object.freeze({
+  kingHall: {
+    theme: "greeting the king",
+    title: "Chat in the King's Hall",
+    opening: "The king waves hello to you.",
+    openingZh: "國王向你揮手打招呼。",
+    ending: "The king smiles. What a nice chat.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the friendly hello for the king.", promptZh: "選出對國王親切的招呼。", answer: "Good morning, King.", choices: ["Good morning, King.","Go away now.","Sit down, King.","Not now, King."], choicesZh: ["國王早安。","現在走開。","國王坐下。","國王現在不行。"], words: ["good","morning","king"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the polite answer to \"How are you?\"", promptZh: "選出「你好嗎？」的有禮貌回答。", answer: "I am very well.", choices: ["I am very well.","No, you are not.","Stop right now.","Go to bed."], choicesZh: ["我很好。","不，你才不是。","現在停下。","去睡覺。"], words: ["I","am","very","well"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the kind goodbye.", promptZh: "選出親切的道別。", answer: "See you soon!", choices: ["See you soon!","Go away fast.","Give it to me.","Sit down now."], choicesZh: ["待會見！","快走開。","把它給我。","現在坐下。"], words: ["see","you","soon"], reward: chatReward }
+    ]
+  },
+  queenStudy: {
+    theme: "chatting about books",
+    title: "Chat in the Queen's Study",
+    opening: "The queen looks up from her book.",
+    openingZh: "皇后從書本中抬起頭。",
+    ending: "The queen is glad you talked with her.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick what you like to do.", promptZh: "選出你喜歡做的事。", answer: "I like to read.", choices: ["I like to read.","I do not care.","Be quiet now.","Go away please."], choicesZh: ["我喜歡看書。","我不在乎。","現在安靜。","請走開。"], words: ["I","like","to","read"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the polite thank-you.", promptZh: "選出有禮貌的道謝。", answer: "Thank you very much.", choices: ["Thank you very much.","No, not you.","Stop talking now.","Give me more."], choicesZh: ["非常謝謝你。","不，不是你。","現在別說了。","再給我一些。"], words: ["thank","you","very","much"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the friendly question.", promptZh: "選出親切的提問。", answer: "What is your book?", choices: ["What is your book?","Go to sleep.","Sit down now.","Do not look."], choicesZh: ["你的書是什麼？","去睡覺。","現在坐下。","不要看。"], words: ["what","is","your","book"], reward: chatReward }
+    ]
+  },
+  castleKitchen: {
+    theme: "chatting in the kitchen",
+    title: "Chat in the Castle Kitchen",
+    opening: "The cook stirs the pot and says hi.",
+    openingZh: "廚師一邊攪鍋一邊和你打招呼。",
+    ending: "The cook laughs. Lunch will be fun.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick how you feel before lunch.", promptZh: "選出午餐前你的感受。", answer: "I am hungry.", choices: ["I am hungry.","I am not here.","Do not eat.","Go to bed now."], choicesZh: ["我餓了。","我不在這裡。","不要吃。","現在去睡覺。"], words: ["I","am","hungry"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the polite request.", promptZh: "選出有禮貌的請求。", answer: "Some soup, please.", choices: ["Some soup, please.","Give it now.","No, not that.","Stop it now."], choicesZh: ["請給我一些湯。","現在給我。","不，不是那個。","現在停下。"], words: ["some","soup","please"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the kind thing to say.", promptZh: "選出親切的話。", answer: "It smells so good.", choices: ["It smells so good.","It is too bad.","I do not like it.","Throw it away."], choicesZh: ["聞起來真香。","真糟糕。","我不喜歡它。","把它丟掉。"], words: ["it","smells","so","good"], reward: chatReward }
+    ]
+  },
+  knightsRoom: {
+    theme: "cheering the knight",
+    title: "Chat in the Knights' Room",
+    opening: "The knight is happy to see you.",
+    openingZh: "騎士看到你很開心。",
+    ending: "The knight gives you a big thumbs up.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the friendly compliment.", promptZh: "選出親切的稱讚。", answer: "You are very strong.", choices: ["You are very strong.","You are too slow.","Go away now.","Sit down now."], choicesZh: ["你很強壯。","你太慢了。","現在走開。","現在坐下。"], words: ["you","are","very","strong"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the way to ask to play.", promptZh: "選出邀請一起玩的說法。", answer: "Let us play now.", choices: ["Let us play now.","Go to sleep.","Do not move.","Stop it now."], choicesZh: ["我們現在來玩吧。","去睡覺。","不要動。","現在停下。"], words: ["let","us","play","now"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the cheer.", promptZh: "選出加油打氣的話。", answer: "Good job, Theo!", choices: ["Good job, Theo!","That is bad.","Not now, Theo.","Go away fast."], choicesZh: ["做得好，Theo！","那很糟。","現在不行，Theo。","快走開。"], words: ["good","job"], reward: chatReward }
+    ]
+  },
+  maidsRoom: {
+    theme: "chatting with the maid",
+    title: "Chat in the Maid's Room",
+    opening: "The maid smiles and folds a towel.",
+    openingZh: "女僕微笑著摺毛巾。",
+    ending: "The maid is happy to chat with you.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the friendly hello.", promptZh: "選出親切的招呼。", answer: "Hello, how are you?", choices: ["Hello, how are you?","Go away now.","Be quiet now.","Sit down now."], choicesZh: ["你好，你好嗎？","現在走開。","現在安靜。","現在坐下。"], words: ["hello","how","are","you"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the kind offer to help.", promptZh: "選出親切的幫忙提議。", answer: "Can I help you?", choices: ["Can I help you?","Do it now.","Not my job.","Go away please."], choicesZh: ["我可以幫你嗎？","現在做。","不是我的事。","請走開。"], words: ["can","I","help","you"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the nice thing to say.", promptZh: "選出好聽的話。", answer: "The room looks nice.", choices: ["The room looks nice.","The room is bad.","I do not care.","Clean it now."], choicesZh: ["房間看起來很好。","房間很糟。","我不在乎。","現在打掃。"], words: ["the","room","looks","nice"], reward: chatReward }
+    ]
+  }
+});
+//#endregion 生活聊天題庫
+
 //#region 對話場景設定
 // 每個屬性名稱對應地點或節點，控制對話畫面的背景、NPC 與按鈕文案。
-export const castleSceneConfigs = mergeLessons({
+export const castleSceneConfigs = mergeLessons(mergeLessons({
   princessRoom: { ...princessRoomArt, scene: "scene-princess-room", npcClass: "npc-none", npc: "Lumi", travelAction: "Enter", travelLine: "Lumi's room is ready for hair, clothes, outerwear, shoes, and accessories." },
   kingHall: { ...castleSceneArt("king-hall"), scene: "scene-castle-king-hall", npc: "King Rowan", npcImage: npcImage("king-rowan"), npcNaturalHeightCm: 178, travelAction: "Visit", travelLine: "King Rowan is waiting in the bright royal hall." },
   queenStudy: { ...castleSceneArt("queen-study"), scene: "scene-castle-queen-study", npc: "Queen Mira", npcImage: npcImage("queen-mira"), npcNaturalHeightCm: 165, travelAction: "Visit", travelLine: "Queen Mira has opened her study book." },
@@ -152,6 +221,7 @@ export const castleSceneConfigs = mergeLessons({
   royalCloakRoom: { ...castleShopArt("royal-cloak-room"), scene: "scene-castle-royal-cloak-room", npc: "Cloak Keeper", npcImage: npcImage("royal-cloak-keeper"), npcNaturalHeightCm: 170, travelAction: "Shop", travelLine: "The Cloak Keeper has royal outerwear and hats.", shopGreeting: "Welcome to the Royal Cloak Room. Pick outerwear or hats." },
   castleSeamstress: { ...castleShopArt("castle-seamstress"), scene: "scene-castle-seamstress", npc: "Seamstress Bea", npcImage: npcImage("castle-seamstress"), npcNaturalHeightCm: 158, travelAction: "Shop", travelLine: "Seamstress Bea has castle tops and bottoms ready.", shopGreeting: "Welcome to the Castle Seamstress. Pick tops or bottoms." },
   castleGate: { ...gardenArt, scene: "scene-castle-gate", npcClass: "npc-garden", npc: "Gate Guard", travelAction: "World Map", travelLine: "The castle gate opens the kingdom world map." }
-}, castleLessonBank, { area: "castle", vocabProfile: castleVocabularyProfile.id });
+}, castleLessonBank, { area: "castle", vocabProfile: castleVocabularyProfile.id }),
+  castleChatLessonBank, { area: "castle", vocabProfile: castleVocabularyProfile.id }, "chatLesson");
 //#endregion 對話場景設定
 
