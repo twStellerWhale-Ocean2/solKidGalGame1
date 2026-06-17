@@ -33,6 +33,7 @@ export function installTestingHooks(api) {
     },
     closeAdv: api.closeAdv,
     openQuest: (place = "kingHall") => api.openQuestAdv(api.hotspotById(place)),
+    openChat: (place = "kingHall") => api.openQuestAdv(api.hotspotById(place), { bankKey: "chatLesson", mode: "chat" }),
     buy: (itemId) => api.buyItemInAdv(api.itemById(itemId)),
     refund: (itemId) => api.refundItemInAdv(api.itemById(itemId)),
     focusCastle: api.focusCastle,
@@ -50,6 +51,7 @@ export function installTestingHooks(api) {
   runAccountSelfTest(api);
   runPlayTimerSelfTest(api);
   runMoodExtendSelfTest(api);
+  runChatSelfTest(api);
   runProfileColorSelfTest(api);
   runChineseRewardSelfTest(api);
   runCharacterVoiceSelfTest(api);
@@ -293,6 +295,73 @@ function runMoodExtendSelfTest(api) {
   result.id = "moodExtendTestResult";
   result.textContent = JSON.stringify({
     test: "mood-extend",
+    passed: errors.length === 0,
+    errors: errors.slice(0, 10)
+  });
+  document.body.prepend(result);
+}
+
+// issue #135 / spec#11：端對端驗證場景互動分流——生活聊天答對 → +心情、護眼上限內延長時間、不發 coins；
+// 打工答對 → 發 coins、不加心情。使用 castle kingHall（已備 chatLesson 與 lesson）。
+function runChatSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "chat") return;
+  const errors = [];
+  const clock = api.playClock;
+  const accounts = api.accounts;
+  let createdId = null;
+  const answerActive = () => {
+    const lesson = api.getActiveLesson();
+    if (!lesson) throw new Error("no active lesson after open");
+    const btn = [...api.elements.choiceList.querySelectorAll("button")].find((b) => b.dataset.choice === lesson.answer);
+    if (!btn) throw new Error("correct choice button not found");
+    api.answerLesson(btn, lesson.answer);
+  };
+  try {
+    if (!clock || typeof api.openQuestAdv !== "function") throw new Error("test hooks (playClock/openQuestAdv) missing");
+    const openChat = (place) => api.openQuestAdv(api.hotspotById(place), { bankKey: "chatLesson", mode: "chat" });
+    const openJob = (place) => api.openQuestAdv(api.hotspotById(place));
+    const baseline = accounts.list().length;
+    createdId = accounts.create().id;
+    clock.setOffset(0);
+    clock.setDurations(2, 1);
+    clock.tick(); // 由 idle 起拍開始遊玩回合（之後 extendSession 才有作用）
+    api.state.coins = 100;
+    api.state.mood = 0;
+
+    // 1) 生活聊天答對：+1 心情、延長約 1 分鐘、coins 不變。
+    const coins0 = api.state.coins;
+    const end0 = api.state.playLimit.sessionEndsAt;
+    openChat("kingHall");
+    if (!api.getActiveLesson()) errors.push("chat did not open at kingHall (chatLesson missing?)");
+    answerActive();
+    if (api.state.mood !== 1) errors.push(`mood after chat = ${api.state.mood}, expected 1`);
+    if (api.state.coins !== coins0) errors.push(`coins after chat = ${api.state.coins}, expected unchanged ${coins0}`);
+    const added = api.state.playLimit.sessionEndsAt - end0;
+    if (Math.abs(added - 60000) > 1500) errors.push(`session extended by ${added}ms, expected ~60000`);
+
+    // 2) 打工答對：發 coins（>原值）、心情不變。
+    const coinsBeforeJob = api.state.coins;
+    const moodBeforeJob = api.state.mood;
+    openJob("kingHall");
+    answerActive();
+    if (api.state.coins <= coinsBeforeJob) errors.push(`coins after job = ${api.state.coins}, expected > ${coinsBeforeJob}`);
+    if (api.state.mood !== moodBeforeJob) errors.push(`mood after job = ${api.state.mood}, expected unchanged ${moodBeforeJob}`);
+
+    api.closeAdv();
+    accounts.remove(createdId);
+    createdId = null;
+    if (accounts.list().length !== baseline) errors.push(`account count after cleanup = ${accounts.list().length}, expected ${baseline}`);
+  } catch (error) {
+    errors.push(error.message);
+  } finally {
+    if (createdId) accounts.remove(createdId);
+    clock?.setOffset(0);
+  }
+  const result = document.createElement("pre");
+  result.id = "chatTestResult";
+  result.textContent = JSON.stringify({
+    test: "chat",
     passed: errors.length === 0,
     errors: errors.slice(0, 10)
   });
