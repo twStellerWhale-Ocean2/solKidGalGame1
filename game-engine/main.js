@@ -2071,7 +2071,8 @@ function openQuestAdv(hotspot, opts = {}) {
   const optionCount = activeLessonMode === "chat" ? CHAT_CHOICE_COUNT : JOB_CHOICE_COUNT;
   const options = limitChoiceOptions(allOptions, activeLesson.answer, optionCount);
   shuffled(options).forEach((option, index) => addChoiceRow(option.choice, option.zh, index + 1));
-  addAdvOption("↩ Leave", closeAdv, { leave: true });
+  // issue #143：第二層答題（聊天／打工）離開統一為 Back 回第一層場景選單，不直接跳出場景。
+  addAdvOption("↩ Back", () => openSceneAdv(hotspot), { navigation: true });
   scheduleAdvFocus(0);
   speak(quest.opening, npcVoiceFor(hotspot), { source: "npc-quest-opening" });
 }
@@ -2613,11 +2614,6 @@ function fallbackOwnedItemForSlot(type) {
   return ownedItems.find((item) => item.cost === 0)?.id || ownedItems[0]?.id || "none";
 }
 
-function closeAdvThenHome() {
-  closeAdv();
-  changeView("home");
-}
-
 function showRewardBurst(text) {
   clearRewardBursts();
   const burst = document.createElement("div");
@@ -2727,11 +2723,9 @@ function answerLesson(button, choice) {
     vocabProfile: activeLesson.vocabProfile
   });
   elements.advLine.textContent = quest.ending;
-  // 完成提示文案對齊實際可用動作：商店場景可逛商店，其餘僅返回／離開；聊天完成用較輕鬆的措辭。
+  // issue #143：完成後一律 Back 回第一層場景選單，提示文案對齊（不再分商店／非商店或提示 room／leave）。
   const doneLead = isChat ? "Nice chat." : "Practice complete.";
-  elements.advPrompt.textContent = isShopHotspot(completedHotspot)
-    ? `${doneLead} Visit the shop, or go back to ${princessName()}'s room.`
-    : `${doneLead} Go back to ${princessName()}'s room, or leave.`;
+  elements.advPrompt.textContent = `${doneLead} Go back to choose what to do next here.`;
   elements.advFeedback.textContent = feedbackText;
   state.activeQuest = null;
   activeLesson = null;
@@ -2740,13 +2734,9 @@ function answerLesson(button, choice) {
   elements.advScene.dataset.mode = "complete";
   elements.choiceList.innerHTML = "";
   elements.advActionFooter.innerHTML = "";
-  // issue #100：答對一律直接發 coins（已於上方結算）；商店場景額外提供購物入口，移除「選擇獎勵」導購分支。
-  // issue #138：商店改以 shopCategories 旗標辨識（isShopHotspot），與完成提示文案一致，避免聊天/打工結束後「請逛商店」卻無 Shop 鈕。
-  if (isShopHotspot(completedHotspot)) {
-    addAdvOption("🎁 Shop", () => openShopDetail(completedHotspot));
-  }
-  addAdvOption("🏰 Back to Room", closeAdvThenHome, { navigation: true });
-  addAdvOption("↩ Leave", closeAdv, { leave: true });
+  // issue #143：答題完成統一 Back 回第一層場景選單；自第一層可續選 Shop／再聊／Work，於第一層 Leave 才退出場景。
+  // 移除 #100/#138 完成畫面條件式「🎁 Shop」與「🏰 Back to Room」捷徑——兩層導覽一致後不再需要。
+  addAdvOption("↩ Back", () => openSceneAdv(completedHotspot), { navigation: true });
   elements.statusMessage.textContent = `Practice complete at ${completedHotspot.label}.`;
   persist();
   render();
@@ -3752,6 +3742,7 @@ installTestingHooks({
   answerLesson,
   openQuestAdv,
   getActiveLesson: () => activeLesson,
+  getAdvMode: () => advMode,
   buildSaveMarkdown,
   buyItemInAdv,
   castleMapNodes,
