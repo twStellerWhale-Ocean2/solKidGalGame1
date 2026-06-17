@@ -1618,7 +1618,29 @@ function runVisualQa(api) {
     return;
   }
 
-  if (["diary", "settings", "english", "save", "about"].includes(surface)) {
+  // issue #134：設定頁角色語音區視覺 QA。headless 無平台 voice，注入代表性 mock voices 與示範指定使截圖具決定性。
+  if (surface === "settings") {
+    if (params.get("mockvoices") !== "0" && "speechSynthesis" in window) {
+      const synth = window.speechSynthesis;
+      synth.getVoices = () => [
+        { name: "Microsoft Zira - English (United States)", lang: "en-US", default: true, voiceURI: "zira" },
+        { name: "Microsoft David - English (United States)", lang: "en-US", default: false, voiceURI: "david" },
+        { name: "Microsoft Mark - English (United States)", lang: "en-US", default: false, voiceURI: "mark" },
+        { name: "Google US English", lang: "en-US", default: false, voiceURI: "google-us" },
+        { name: "Microsoft HanHan - Chinese (Taiwan)", lang: "zh-TW", default: false, voiceURI: "hanhan" }
+      ];
+      api.refreshSpeechVoices?.();
+      api.clearVoiceAssignments?.();
+      api.setVoiceAssignment?.("male", "", "Microsoft David - English (United States)");
+      api.setVoiceAssignment?.("female", "", "Microsoft Zira - English (United States)");
+      api.setVoiceAssignment?.("male", "bold", "Microsoft Mark - English (United States)");
+    }
+    api.render();
+    api.openSystemMenu("settings");
+    return;
+  }
+
+  if (["diary", "english", "save", "about"].includes(surface)) {
     api.render();
     api.openSystemMenu(surface);
     return;

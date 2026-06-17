@@ -41,7 +41,8 @@ export function renderVoiceSettings(elements, { buckets = [], voices = [], assig
     for (const voice of voices) {
       const option = document.createElement("option");
       option.value = voice.name;
-      option.textContent = voice.lang ? `${voice.name} (${voice.lang})` : voice.name;
+      // 名稱多已含語言/地區（如「… - English (United States)」）；僅在名稱未帶括號時補語言碼，避免冗餘與截斷。
+      option.textContent = voice.lang && !/\(/.test(voice.name) ? `${voice.name} (${voice.lang})` : voice.name;
       select.appendChild(option);
     }
     select.value = assignments[key] || "";
