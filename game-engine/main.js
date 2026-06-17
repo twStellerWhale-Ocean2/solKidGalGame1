@@ -2680,7 +2680,8 @@ function answerLesson(button, choice) {
   elements.choiceList.innerHTML = "";
   elements.advActionFooter.innerHTML = "";
   // issue #100：答對一律直接發 coins（已於上方結算）；商店場景額外提供購物入口，移除「選擇獎勵」導購分支。
-  if (completedHotspot?.kind === "shop") {
+  // issue #138：商店改以 shopCategories 旗標辨識（isShopHotspot），與完成提示文案一致，避免聊天/打工結束後「請逛商店」卻無 Shop 鈕。
+  if (isShopHotspot(completedHotspot)) {
     addAdvOption("🎁 Shop", () => openShopDetail(completedHotspot));
   }
   addAdvOption("🏰 Back to Room", closeAdvThenHome, { navigation: true });
