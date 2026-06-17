@@ -55,8 +55,8 @@ export const ruralArea = Object.freeze({
     { id: "pasture", area: "rural", node: "pasture", label: "Pasture", icon: "🐄", npc: "Farmer Theo", scene: "scene-rural-pasture", npcImage: npcImage("farmer-theo"), hint: "The pasture has sheep, cows, and hay." },
     { id: "farm", area: "rural", node: "farm", label: "Farm", icon: "🥕", npc: "Auntie Pom", scene: "scene-rural-farm", npcImage: npcImage("auntie-pom"), hint: "The farm fields grow vegetables and wheat." },
     { id: "mill", area: "rural", node: "mill", label: "Mill", icon: "🌬", npc: "Miller Bell", scene: "scene-rural-mill", npcImage: npcImage("miller-bell"), hint: "The windmill turns grain into flour." },
-    { id: "workwearStall", area: "rural", node: "workwearStall", label: "Workwear Stall", icon: "👚", npc: "Workwear Keeper", scene: "scene-rural-workwear-stall", npcImage: npcImage("workwear-stall-keeper"), kind: "shop", shopCategories: ["tops", "bottoms"], defaultCategory: "tops", hint: "The Workwear Stall sells sturdy tops and bottoms." },
-    { id: "fieldCobbler", area: "rural", node: "fieldCobbler", label: "Field Cobbler", icon: "👞", npc: "Field Cobbler", scene: "scene-rural-field-cobbler", npcImage: npcImage("field-cobbler"), kind: "shop", shopCategories: ["shoes", "hats"], defaultCategory: "shoes", hint: "The Field Cobbler sells shoes and hats for country roads." },
+    { id: "workwearStall", area: "rural", node: "workwearStall", label: "Workwear Stall", icon: "👚", npc: "Workwear Keeper", scene: "scene-rural-workwear-stall", npcImage: npcImage("workwear-stall-keeper"), shopCategories: ["tops", "bottoms"], defaultCategory: "tops", hint: "The Workwear Stall sells sturdy tops and bottoms." },
+    { id: "fieldCobbler", area: "rural", node: "fieldCobbler", label: "Field Cobbler", icon: "👞", npc: "Field Cobbler", scene: "scene-rural-field-cobbler", npcImage: npcImage("field-cobbler"), shopCategories: ["shoes", "hats"], defaultCategory: "shoes", hint: "The Field Cobbler sells shoes and hats for country roads." },
     { id: "villageHome", area: "rural", node: "villageHome", label: "Village Home", icon: "🏡", npc: "Grandma Fina", scene: "scene-rural-home", npcImage: npcImage("grandma-fina"), hint: "The village home has a warm porch and garden." }
   ],
   // actors 是地圖上的動態環境效果，不是可點擊地點。
@@ -262,6 +262,30 @@ const ruralChatLessonBank = Object.freeze({
       { questionType: "sentence-choice", prompt: "Pick the warm hello for Grandma Fina.", promptZh: "選出對 Fina 奶奶溫暖的招呼。", answer: "Hello, Grandma! How are you?", choices: ["Hello, Grandma! How are you?","Go away, Grandma!","Where is my apple?","Be quiet, Grandma!"], choicesZh: ["你好，奶奶！您好嗎？","走開，奶奶！","我的蘋果在哪？","安靜，奶奶！"], words: ["hello","how","are","you"], reward: chatReward },
       { questionType: "sentence-choice", prompt: "Grandma asks about your visit. Pick the past answer.", promptZh: "奶奶問起你的來訪。選出過去式回答。", answer: "I came to see you.", choices: ["I came to see you.","I come to see you.","I am a red apple.","Go home now, please."], choicesZh: ["我是來看您的。","我來看您（現在式）。","我是一顆紅蘋果。","現在請回家。"], words: ["I","came","to","see"], reward: chatReward },
       { questionType: "sentence-choice", prompt: "Pick the kind thing to say to Grandma.", promptZh: "選出對奶奶好聽的話。", answer: "Your home is warm and cosy.", choices: ["Your home is warm and cosy.","Your home is cold and sad.","I do not like it here.","Give me your basket."], choicesZh: ["您的家溫暖又舒適。","您的家又冷又悲傷。","我不喜歡這裡。","把您的籃子給我。"], words: ["your","home","warm","cosy"], reward: chatReward }
+    ]
+  },
+  workwearStall: {
+    theme: "chatting at the workwear stall",
+    title: "Chat at the Workwear Stall",
+    opening: "The Workwear Keeper folds a shirt and says hello.",
+    openingZh: "工作服管理員摺著襯衫向你打招呼。",
+    ending: "The Keeper enjoyed the friendly chat.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the friendly hello.", promptZh: "選出親切的招呼。", answer: "Hello! How are you today?", choices: ["Hello! How are you today?","Go away, please.","Where is my hat?","Be quiet now."], choicesZh: ["你好！你今天好嗎？","請走開。","我的帽子在哪？","現在安靜。"], words: ["how","are","you","today"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the kind thing to say about the clothes.", promptZh: "選出稱讚衣服的好聽話。", answer: "These clothes look very strong.", choices: ["These clothes look very strong.","These clothes are ugly.","I do not like your stall.","Give me them for free."], choicesZh: ["這些衣服看起來很耐穿。","這些衣服很醜。","我不喜歡你的攤位。","免費給我。"], words: ["clothes","look","very","strong"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the polite thank-you.", promptZh: "選出有禮貌的道謝。", answer: "Thank you for your help.", choices: ["Thank you for your help.","No, you are no help.","Give me more now.","Go away, please."], choicesZh: ["謝謝你的幫忙。","不，你一點忙都幫不上。","現在再給我一些。","請走開。"], words: ["thank","you","for","help"], reward: chatReward }
+    ]
+  },
+  fieldCobbler: {
+    theme: "chatting with the cobbler",
+    title: "Chat with the Field Cobbler",
+    opening: "The Field Cobbler taps a shoe and waves hello.",
+    openingZh: "鄉野鞋匠敲敲鞋子，揮手問好。",
+    ending: "The Cobbler enjoyed the friendly chat.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the friendly hello.", promptZh: "選出親切的招呼。", answer: "Good morning! Nice to see you.", choices: ["Good morning! Nice to see you.","Go away from my shop.","Where are my socks?","Be quiet, please."], choicesZh: ["早安！很高興見到你。","從我的店走開。","我的襪子在哪？","請安靜。"], words: ["nice","to","see","you"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "He asks why you walk so much. Pick the reason.", promptZh: "他問你為什麼走那麼多路。選出原因。", answer: "I walk a lot because the roads are long.", choices: ["I walk a lot because the roads are long.","I walk a lot because I am very lazy.","I never walk anywhere at all.","Give me free shoes now."], choicesZh: ["我走很多路，因為路很長。","我走很多路，因為我很懶。","我從來都不走路。","現在免費給我鞋子。"], words: ["because","roads","are","long"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the kind thing to say about the shoes.", promptZh: "選出稱讚鞋子的好聽話。", answer: "These shoes look very strong.", choices: ["These shoes look very strong.","These shoes look terrible.","I do not like your shop.","Throw them away now."], choicesZh: ["這雙鞋看起來很耐穿。","這雙鞋看起來很糟。","我不喜歡你的店。","現在把它們丟掉。"], words: ["shoes","look","very","strong"], reward: chatReward }
     ]
   }
 });

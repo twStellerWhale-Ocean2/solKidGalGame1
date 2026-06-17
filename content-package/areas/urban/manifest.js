@@ -62,11 +62,11 @@ export const urbanArea = Object.freeze({
     { id: "market", area: "urban", node: "market", label: "Market Square", icon: "🥖", npc: "Auntie Pom", scene: "scene-market", npcImage: npcImage("auntie-pom-market"), hint: "The market has warm bread, fruit, and kind food words." },
     { id: "harbor", area: "urban", node: "harbor", label: "Fish Shop", icon: "🐟", npc: "Nami", scene: "scene-harbor", npcImage: npcImage("nami"), hint: "The fish shop has fresh fish for dinner." },
     { id: "port", area: "urban", node: "port", label: "Harbor Port", icon: "⚓", npc: "Dock Guide", scene: "scene-port", npcImage: npcImage("dock-guide"), hint: "The docks are ready for boats and sea trips." },
-    { id: "boutique", area: "urban", node: "boutique", label: "Dress Boutique", icon: "👗", npc: "Rena", scene: "scene-urban-dress-boutique", npcImage: npcImage("rena"), kind: "shop", shopCategories: ["dresses", "outfitSets"], defaultCategory: "dresses", hint: "Rena's boutique focuses on dresses and complete outfit sets." },
-    { id: "hairSalon", area: "urban", node: "hairSalon", label: "Hair Salon", icon: "💇", npc: "Stylist Lina", scene: "scene-urban-hair-salon", npcImage: npcImage("stylist-lina"), kind: "shop", shopCategories: ["hair"], defaultCategory: "hair", hint: "Stylist Lina keeps soft story hairstyles ready for Lumi." },
-    { id: "tailorStudio", area: "urban", node: "tailorStudio", label: "Tailor Studio", icon: "👚", npc: "Tailor Tess", scene: "scene-urban-tailor-studio", npcImage: npcImage("tailor-tess"), kind: "shop", shopCategories: ["tops", "bottoms"], defaultCategory: "tops", hint: "Tailor Tess sells tops and bottoms only." },
-    { id: "shoeShop", area: "urban", node: "shoeShop", label: "Shoe Shop", icon: "👞", npc: "Mina", scene: "scene-shoes", npcImage: npcImage("mina"), kind: "shop", shopCategories: ["shoes"], defaultCategory: "shoes", hint: "Mina shows shoes for long walks." },
-    { id: "accessoryShop", area: "urban", node: "accessoryShop", label: "Accessory Atelier", icon: "👑", npc: "Lili", scene: "scene-urban-accessory-atelier", npcImage: npcImage("lili"), kind: "shop", shopCategories: ["hats", "accessories"], defaultCategory: "hats", hint: "Lili sells hats and accessories only." },
+    { id: "boutique", area: "urban", node: "boutique", label: "Dress Boutique", icon: "👗", npc: "Rena", scene: "scene-urban-dress-boutique", npcImage: npcImage("rena"), shopCategories: ["dresses", "outfitSets"], defaultCategory: "dresses", hint: "Rena's boutique focuses on dresses and complete outfit sets." },
+    { id: "hairSalon", area: "urban", node: "hairSalon", label: "Hair Salon", icon: "💇", npc: "Stylist Lina", scene: "scene-urban-hair-salon", npcImage: npcImage("stylist-lina"), shopCategories: ["hair"], defaultCategory: "hair", hint: "Stylist Lina keeps soft story hairstyles ready for Lumi." },
+    { id: "tailorStudio", area: "urban", node: "tailorStudio", label: "Tailor Studio", icon: "👚", npc: "Tailor Tess", scene: "scene-urban-tailor-studio", npcImage: npcImage("tailor-tess"), shopCategories: ["tops", "bottoms"], defaultCategory: "tops", hint: "Tailor Tess sells tops and bottoms only." },
+    { id: "shoeShop", area: "urban", node: "shoeShop", label: "Shoe Shop", icon: "👞", npc: "Mina", scene: "scene-shoes", npcImage: npcImage("mina"), shopCategories: ["shoes"], defaultCategory: "shoes", hint: "Mina shows shoes for long walks." },
+    { id: "accessoryShop", area: "urban", node: "accessoryShop", label: "Accessory Atelier", icon: "👑", npc: "Lili", scene: "scene-urban-accessory-atelier", npcImage: npcImage("lili"), shopCategories: ["hats", "accessories"], defaultCategory: "hats", hint: "Lili sells hats and accessories only." },
     { id: "lighthouse", area: "urban", node: "lighthouse", label: "Lighthouse", icon: "🗼", npc: "Captain Sol", scene: "scene-lighthouse", npcImage: npcImage("captain-sol"), hint: "The lighthouse watches the sea before ships sail." }
   ],
   // actors 是地圖上的動態環境效果，不是可點擊地點。
@@ -394,6 +394,66 @@ const urbanChatLessonBank = Object.freeze({
       { questionType: "sentence-choice", prompt: "Pick the friendly hello for Captain Sol.", promptZh: "選出對 Sol 船長親切的招呼。", answer: "Hello, Captain Sol!", choices: ["Hello, Captain Sol!","Go away, Sol!","Where is my hat?","Be quiet, Sol!"], choicesZh: ["你好，Sol 船長！","走開，Sol！","我的帽子在哪？","安靜，Sol！"], words: ["hello","captain","sol"], reward: chatReward },
       { questionType: "sentence-choice", prompt: "Sol asks if you can see the sea. Pick a kind answer.", promptZh: "Sol 問你看不看得到海。選出親切的回答。", answer: "Yes, it is beautiful.", choices: ["Yes, it is beautiful.","Yes, it is a cake.","No, you cannot.","Go down now."], choicesZh: ["看得到，它好美。","對，它是一個蛋糕。","不，你不行。","現在下去。"], words: ["yes","it","is","beautiful"], reward: chatReward },
       { questionType: "sentence-choice", prompt: "Pick the kind goodbye for Captain Sol.", promptZh: "選出對 Sol 船長友善的道別。", answer: "Good night, Captain!", choices: ["Good night, Captain!","Give me the light!","Go away fast!","That is wrong!"], choicesZh: ["晚安，船長！","把燈給我！","快走開！","那是錯的！"], words: ["good","night","captain"], reward: chatReward }
+    ]
+  },
+  boutique: {
+    theme: "chatting at the boutique",
+    title: "Chat at the Dress Boutique",
+    opening: "Rena smiles beside the pretty dresses.",
+    openingZh: "Rena 在漂亮的洋裝旁微笑。",
+    ending: "Rena is glad you stopped to chat.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the friendly hello for Rena.", promptZh: "選出對 Rena 親切的招呼。", answer: "Hello, Rena! How are you?", choices: ["Hello, Rena! How are you?","Go away, Rena!","Where is my bus?","Be quiet, Rena!"], choicesZh: ["你好，Rena！你好嗎？","走開，Rena！","我的公車在哪？","安靜，Rena！"], words: ["hello","how","are","you"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Rena asks what you like. Pick a kind answer.", promptZh: "Rena 問你喜歡什麼。選出親切的回答。", answer: "I like the pink dress.", choices: ["I like the pink dress.","I do not care.","Give me your shoe.","No, not you."], choicesZh: ["我喜歡那件粉紅洋裝。","我不在乎。","把你的鞋子給我。","不，不是你。"], words: ["I","like","pink","dress"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the kind thing to say about her shop.", promptZh: "選出稱讚她店的好聽話。", answer: "Your shop is so pretty.", choices: ["Your shop is so pretty.","Your shop is so bad.","I do not like it.","Throw it away."], choicesZh: ["你的店好漂亮。","你的店好糟。","我不喜歡它。","把它丟掉。"], words: ["your","shop","is","pretty"], reward: chatReward }
+    ]
+  },
+  hairSalon: {
+    theme: "chatting at the salon",
+    title: "Chat at the Hair Salon",
+    opening: "Stylist Lina waves you to the mirror.",
+    openingZh: "造型師 Lina 招手請你到鏡子前。",
+    ending: "Lina is happy you came to chat.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the friendly hello for Lina.", promptZh: "選出對 Lina 親切的招呼。", answer: "Hi, Lina! Nice to see you.", choices: ["Hi, Lina! Nice to see you.","Go away, Lina!","Where is my hat?","Be quiet, Lina!"], choicesZh: ["嗨，Lina！很高興見到你。","走開，Lina！","我的帽子在哪？","安靜，Lina！"], words: ["nice","to","see","you"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Lina asks if you like it. Pick a kind answer.", promptZh: "Lina 問你喜不喜歡。選出親切的回答。", answer: "I like my new hair.", choices: ["I like my new hair.","I do not care.","Give me a brush.","No, not now."], choicesZh: ["我喜歡我的新髮型。","我不在乎。","給我一把梳子。","不，現在不行。"], words: ["I","like","new","hair"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the polite thank-you for Lina.", promptZh: "選出對 Lina 有禮貌的道謝。", answer: "Thank you very much!", choices: ["Thank you very much!","No, not you.","Stop it now.","Give me more."], choicesZh: ["非常謝謝你！","不，不是你。","現在停下。","再給我一些。"], words: ["thank","you","very","much"], reward: chatReward }
+    ]
+  },
+  tailorStudio: {
+    theme: "chatting at the tailor studio",
+    title: "Chat at the Tailor Studio",
+    opening: "Tailor Tess looks up from the soft cloth and smiles.",
+    openingZh: "裁縫師 Tess 從柔軟的布料中抬頭微笑。",
+    ending: "Tess enjoyed the friendly chat.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the friendly hello for Tess.", promptZh: "選出對 Tess 親切的招呼。", answer: "Good morning, Tess!", choices: ["Good morning, Tess!","Go away, Tess!","Where is my bag?","Be quiet, Tess!"], choicesZh: ["早安，Tess！","走開，Tess！","我的袋子在哪？","安靜，Tess！"], words: ["good","morning"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Tess asks what you like. Pick a kind answer.", promptZh: "Tess 問你喜歡什麼。選出親切的回答。", answer: "I like this blue top.", choices: ["I like this blue top.","I do not care.","Give me your pen.","No, not you."], choicesZh: ["我喜歡這件藍上衣。","我不在乎。","把你的筆給我。","不，不是你。"], words: ["I","like","blue","top"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the kind thing to say about her shop.", promptZh: "選出稱讚她店的好聽話。", answer: "Your shop is very tidy.", choices: ["Your shop is very tidy.","Your shop is very bad.","I do not like it.","Throw it away."], choicesZh: ["你的店很整齊。","你的店很糟。","我不喜歡它。","把它丟掉。"], words: ["your","shop","is","tidy"], reward: chatReward }
+    ]
+  },
+  shoeShop: {
+    theme: "chatting at the shoe shop",
+    title: "Chat at the Shoe Shop",
+    opening: "Mina smiles by the rows of shoes.",
+    openingZh: "Mina 在成排的鞋子旁微笑。",
+    ending: "Mina is glad you came to chat.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the friendly hello for Mina.", promptZh: "選出對 Mina 親切的招呼。", answer: "Hi, Mina! How are you?", choices: ["Hi, Mina! How are you?","Go away, Mina!","Where is my fish?","Be quiet, Mina!"], choicesZh: ["嗨，Mina！你好嗎？","走開，Mina！","我的魚在哪？","安靜，Mina！"], words: ["hi","how","are","you"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Mina asks what you like. Pick a kind answer.", promptZh: "Mina 問你喜歡什麼。選出親切的回答。", answer: "I like these red shoes.", choices: ["I like these red shoes.","I do not care.","Give me a boat.","No, not now."], choicesZh: ["我喜歡這雙紅鞋子。","我不在乎。","給我一艘船。","不，現在不行。"], words: ["I","like","red","shoes"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the polite thank-you for Mina.", promptZh: "選出對 Mina 有禮貌的道謝。", answer: "Thank you, they fit well.", choices: ["Thank you, they fit well.","No, they are bad.","Give me more now.","I do not like them."], choicesZh: ["謝謝，它們很合腳。","不，它們很糟。","現在再給我一些。","我不喜歡它們。"], words: ["thank","you","fit","well"], reward: chatReward }
+    ]
+  },
+  accessoryShop: {
+    theme: "chatting at the atelier",
+    title: "Chat at the Accessory Atelier",
+    opening: "Lili smiles beside the bright ribbons.",
+    openingZh: "Lili 在亮麗的緞帶旁微笑。",
+    ending: "Lili is happy you stopped to chat.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the friendly hello for Lili.", promptZh: "選出對 Lili 親切的招呼。", answer: "Hello, Lili! Nice to see you.", choices: ["Hello, Lili! Nice to see you.","Go away, Lili!","Where is my cup?","Be quiet, Lili!"], choicesZh: ["你好，Lili！很高興見到你。","走開，Lili！","我的杯子在哪？","安靜，Lili！"], words: ["nice","to","see","you"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Lili asks what you like. Pick a kind answer.", promptZh: "Lili 問你喜歡什麼。選出親切的回答。", answer: "I like this red ribbon.", choices: ["I like this red ribbon.","I do not care.","Give me your hat.","No, not you."], choicesZh: ["我喜歡這條紅緞帶。","我不在乎。","把你的帽子給我。","不，不是你。"], words: ["I","like","red","ribbon"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the kind thing to say about her hats.", promptZh: "選出稱讚她帽子的好聽話。", answer: "Your hats are so pretty.", choices: ["Your hats are so pretty.","Your hats are so bad.","I do not like them.","Throw them away."], choicesZh: ["你的帽子好漂亮。","你的帽子好糟。","我不喜歡它們。","把它們丟掉。"], words: ["your","hats","are","pretty"], reward: chatReward }
     ]
   }
 });

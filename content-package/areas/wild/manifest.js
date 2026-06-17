@@ -50,8 +50,8 @@ export const wildArea = Object.freeze({
   locations: [
     { id: "wildExit", area: "wild", node: "wildEntrance", label: "World Path", icon: "↩", npcClass: "npc-none", npc: "Wild Sign", kind: "gate", markerStyle: "portal", portalId: "entrance", hint: "The path returns to the kingdom world map." },
     { id: "elfGlade", area: "wild", node: "elfGlade", label: "Elf Glade", icon: "🧝", npc: "Elia", scene: "scene-wild-elf-glade", npcImage: npcImage("elia"), hint: "The elf glade glows with tiny flowers." },
-    { id: "fairyAtelier", area: "wild", node: "fairyAtelier", label: "Fairy Atelier", icon: "👗", npc: "Faye", scene: "scene-wild-fairy-atelier", npcImage: npcImage("fairy-atelier"), kind: "shop", shopCategories: ["dresses", "accessories"], defaultCategory: "dresses", hint: "Faye sells fairy dresses and accessories in the glade." },
-    { id: "dwarfCottage", area: "wild", node: "dwarfCottage", label: "Dwarf Cottage", icon: "🛖", npc: "Pip", scene: "scene-wild-dwarf-cottage", npcImage: npcImage("pip"), kind: "shop", shopCategories: ["outerwear", "shoes"], defaultCategory: "outerwear", hint: "Pip keeps handmade wild outerwear and shoes in a warm cottage." },
+    { id: "fairyAtelier", area: "wild", node: "fairyAtelier", label: "Fairy Atelier", icon: "👗", npc: "Faye", scene: "scene-wild-fairy-atelier", npcImage: npcImage("fairy-atelier"), shopCategories: ["dresses", "accessories"], defaultCategory: "dresses", hint: "Faye sells fairy dresses and accessories in the glade." },
+    { id: "dwarfCottage", area: "wild", node: "dwarfCottage", label: "Dwarf Cottage", icon: "🛖", npc: "Pip", scene: "scene-wild-dwarf-cottage", npcImage: npcImage("pip"), shopCategories: ["outerwear", "shoes"], defaultCategory: "outerwear", hint: "Pip keeps handmade wild outerwear and shoes in a warm cottage." },
     { id: "stoneGolemPass", area: "wild", node: "stoneGolemPass", label: "Stone Golem Pass", icon: "🪨", npc: "Goro", scene: "scene-wild-golem-pass", npcImage: npcImage("goro"), hint: "A friendly stone golem watches the mountain pass." },
     { id: "halflingVillage", area: "wild", node: "halflingVillage", label: "Halfling Village", icon: "🏘", npc: "Penny", scene: "scene-wild-halfling-village", npcImage: npcImage("penny"), hint: "Small round doors peek from the hill." },
     { id: "wizardHut", area: "wild", node: "wizardHut", label: "Wizard Hut", icon: "🪄", npc: "Wiz Beryl", scene: "scene-wild-wizard-hut", npcImage: npcImage("wiz-beryl"), hint: "A purple roof curls above jars and herbs." },
@@ -277,6 +277,30 @@ const wildChatLessonBank = Object.freeze({
       { questionType: "sentence-choice", prompt: "Pick the gentle greeting for Sylvie.", promptZh: "選出對 Sylvie 溫柔的招呼。", answer: "Hello Sylvie, how have you been?", choices: ["Hello Sylvie, how have you been?","Hello Sylvie, how you have been?","Hello Sylvie, how have you being?","Hello Sylvie, been how have you?"], choicesZh: ["你好 Sylvie，你最近好嗎？","語序錯誤。","「have you being」（錯）。","語序錯誤。"], words: ["how","have","you","been"], reward: chatReward },
       { questionType: "sentence-choice", prompt: "Sylvie asks about your day. Pick the past continuous answer.", promptZh: "Sylvie 問你今天如何。選出過去進行式的回答。", answer: "I was helping my friends all day.", choices: ["I was helping my friends all day.","I was help my friends all day.","I am helping my friends all day.","I helped while I was help."], choicesZh: ["我今天一整天都在幫朋友。","「was help」（動詞錯）。","現在進行式（時態不一致）。","「was help」（錯誤）。"], words: ["was","helping","friends","day"], reward: chatReward },
       { questionType: "sentence-choice", prompt: "Pick the grateful thing to say to Sylvie.", promptZh: "選出對 Sylvie 感謝的話。", answer: "Thank you for the peaceful grove.", choices: ["Thank you for the peaceful grove.","Thank you for the peaceful grove are.","Thank for the peaceful grove you.","Thank you of the peaceful grove."], choicesZh: ["謝謝你帶來這片寧靜的樹叢。","多餘的 are（錯）。","語序錯誤。","「thank you of」（介系詞錯）。"], words: ["thank","you","peaceful","grove"], reward: chatReward }
+    ]
+  },
+  fairyAtelier: {
+    theme: "chatting with the fairy",
+    title: "Chat at the Fairy Atelier",
+    opening: "Faye the fairy flutters over with a bright smile.",
+    openingZh: "仙子 Faye 帶著燦爛的笑容飛過來。",
+    ending: "Faye is delighted you stopped to chat.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the friendly greeting for Faye.", promptZh: "選出對 Faye 親切的招呼。", answer: "Hi Faye, how have you been?", choices: ["Hi Faye, how have you been?","Hi Faye, how you have been?","Hi Faye, how have you was?","Hi Faye, been how have you?"], choicesZh: ["嗨 Faye，你最近好嗎？","語序錯誤。","「how have you was」（錯）。","語序錯誤。"], words: ["how","have","you","been"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the kind compliment for a dress.", promptZh: "選出稱讚洋裝的好聽話。", answer: "The dress that sparkles is lovely.", choices: ["The dress that sparkles is lovely.","The dress who sparkles is lovely.","The dress that sparkle is lovely.","The dress sparkles that is lovely."], choicesZh: ["那件閃閃發亮的洋裝好美。","用 who 指物（錯）。","「that sparkle」（動詞未變化）。","語序錯誤。"], words: ["dress","that","sparkles","lovely"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Faye looks busy. Pick the kind offer.", promptZh: "Faye 看起來很忙。選出親切的提議。", answer: "If you are busy, I can wait.", choices: ["If you are busy, I can wait.","If you are busy, I waited.","If you were busy, I can wait.","If you busy are, I can wait."], choicesZh: ["如果你在忙，我可以等。","「I waited」（時態錯）。","「were busy」（時態錯）。","語序錯誤。"], words: ["if","busy","I","can","wait"], reward: chatReward }
+    ]
+  },
+  dwarfCottage: {
+    theme: "chatting with the dwarf",
+    title: "Chat at the Dwarf Cottage",
+    opening: "Pip the dwarf sets down a boot and grins hello.",
+    openingZh: "小矮人 Pip 放下一隻靴子，咧嘴打招呼。",
+    ending: "Pip enjoyed the warm chat.",
+    questions: [
+      { questionType: "sentence-choice", prompt: "Pick the friendly greeting for Pip.", promptZh: "選出對 Pip 親切的招呼。", answer: "Hello Pip, it is good to see you.", choices: ["Hello Pip, it is good to see you.","Hello Pip, it is good seeing you to.","Hello Pip, it good is to see you.","Hello Pip, good it is see you."], choicesZh: ["你好 Pip，很高興見到你。","語序錯誤。","語序錯誤。","語序錯誤。"], words: ["good","to","see","you"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pick the kind compliment for a coat.", promptZh: "選出稱讚外套的好聽話。", answer: "The coat that you made is warm.", choices: ["The coat that you made is warm.","The coat who you made is warm.","The coat that you make is warm.","The coat you made that is warm."], choicesZh: ["你做的那件外套很暖。","用 who 指物（錯）。","「you make」（時態錯）。","語序錯誤。"], words: ["coat","that","made","warm"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Pip looks tired. Pick the kind offer.", promptZh: "Pip 看起來累了。選出親切的提議。", answer: "If you are tired, I will help you.", choices: ["If you are tired, I will help you.","If you are tired, I helped you.","If you were tired, I will help you.","If you are tired, I will helped you."], choicesZh: ["如果你累了，我會幫你。","「I helped」（時態錯）。","「were tired」（時態錯）。","「will helped」（錯）。"], words: ["if","tired","will","help"], reward: chatReward }
     ]
   }
 });
