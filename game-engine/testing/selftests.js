@@ -144,6 +144,14 @@ function runAboutSelfTest(api) {
   if (settingsView?.querySelector(".version-card")) errors.push("Settings 仍殘留版本卡（應併入 About）");
   if (!aboutView?.querySelector(".version-card")) errors.push("About 缺少版本卡");
 
+  // issue #134 後續：Settings 不得殘留「Switch player」按鈕；按「Change princess」須先關閉系統選單再開選角。
+  if (settingsView?.querySelector("#switchAccountButton")) errors.push("Settings 仍殘留 Switch player 按鈕（應移除）");
+  if (!api.accounts?.activeId?.()) api.accounts?.create?.();
+  api.openSystemMenu("settings");
+  api.openCharacterSelect({ forced: false });
+  if (document.getElementById("systemMenu")?.classList.contains("show")) errors.push("開啟選角後系統選單未關閉（殘留於背景）");
+  if (!api.elements.characterSelect?.classList.contains("show")) errors.push("Change princess 未開啟選角畫面");
+
   const passed = errors.length === 0;
   const result = document.createElement("pre");
   result.id = "aboutResult";
@@ -759,6 +767,16 @@ function runCharacterVoiceSelfTest(api) {
             const firstSelect = api.elements.voiceAssignList.querySelector(".voice-assign-select");
             if (!firstSelect || firstSelect.querySelectorAll("option").length < 4) errors.push("語音設定下拉未列出可用 voice 選項");
             if (!api.elements.voiceAssignList.querySelector(".voice-assign-default")) errors.push("語音設定缺性別預設列");
+
+            // getVoices() 初次回空 → 設定顯示空狀態；voiceschanged 載入後須即時重渲染出選擇器（不必重開）。
+            synth.getVoices = () => [];
+            api.refreshSpeechVoices?.();
+            api.renderSettings();
+            const wasEmpty = !!api.elements.voiceAssignList.querySelector(".voice-assign-empty");
+            synth.getVoices = () => [makeVoice("Microsoft David", "en-US", true), makeVoice("Microsoft Zira", "en-US")];
+            synth.dispatchEvent?.(new Event("voiceschanged"));
+            const rowsAfterChange = api.elements.voiceAssignList.querySelectorAll(".voice-assign-row").length;
+            if (wasEmpty && rowsAfterChange < 1) errors.push("voiceschanged 後語音設定未即時重渲染（仍卡空狀態）");
           }
           api.clearVoiceAssignments();
         }

@@ -635,6 +635,8 @@ function renderIdentity() {
 }
 
 function openCharacterSelect({ forced = false } = {}) {
+  // issue #134 後續：選角為全幅覆蓋層，開啟前先關閉系統選單（含設定頁），避免設定選單殘留於背景。
+  closeSystemMenu();
   pendingCharacterId = state.activeCharacterId;
   pendingProfileColor = profileColorFor(state.activeCharacterId, state.profileColor);
   pendingBackgroundPattern = normalizeBackgroundPattern(state.backgroundPattern);
@@ -2807,6 +2809,12 @@ function renderSettings() {
   if (elements.restMinutesInput) elements.restMinutesInput.value = String(state.playLimit.restMinutes);
   renderBuildInfo(elements, buildInfo);
   renderAbout(elements, { copyright, versionHistory });
+  renderVoiceSettingsPanel();
+}
+
+// issue #134：以目前 voice 清單與指定重渲染設定的角色語音區；亦註冊為 voiceschanged 後的重渲染 handler，
+// 解決 getVoices() 初次回空、稍後 voiceschanged 才載入時設定清單卡在空狀態的問題。
+function renderVoiceSettingsPanel() {
   speechManager.init();
   renderVoiceSettings(elements, {
     buckets: usedVoiceBuckets(),
@@ -2818,6 +2826,8 @@ function renderSettings() {
 
 const speechDiagnostics = [];
 const speechManager = createSpeechManager();
+// issue #134：voice 清單於 voiceschanged 載入後，若設定面板已開著，立即重渲染語音選擇器（不必重開或整頁 render）。
+speechManager.onVoicesChanged(renderVoiceSettingsPanel);
 
 // issue #109：全域朗讀語速倍率——所有發聲（角色配音／公主朗讀／中文協助）最終語速＝音色 rate × SPEECH_RATE_SCALE，
 // 於發聲端套用（不改 composeVoiceProfile 合成層，保留角色相對快慢；rate 缺漏時以基準 0.86 再縮放）。
@@ -2882,6 +2892,8 @@ function createSpeechManager() {
   let lastReplayKey = "";
   // issue #134：使用者語音指定（覆蓋層）。鍵為 `${gender}:${personality}`，性別預設桶為 `${gender}:`；全機（非帳號）儲存。
   let voiceAssignments = {};
+  // issue #134：voice 清單（getVoices 初次常為空）於 voiceschanged 載入後，通知 UI 重渲染語音設定。
+  const voicesChangedHandlers = [];
   const assignmentBucketKey = (gender, personality) => `${gender || ""}:${personality || ""}`;
   const loadVoiceAssignments = () => {
     try {
@@ -2930,7 +2942,10 @@ function createSpeechManager() {
     loadVoiceAssignments();
     refreshVoices();
     try {
-      window.speechSynthesis?.addEventListener?.("voiceschanged", refreshVoices);
+      window.speechSynthesis?.addEventListener?.("voiceschanged", () => {
+        refreshVoices();
+        for (const handler of voicesChangedHandlers) { try { handler(); } catch {} }
+      });
     } catch {}
   };
 
@@ -3111,7 +3126,8 @@ function createSpeechManager() {
     clearVoiceAssignments: () => {
       voiceAssignments = {};
       saveVoiceAssignments();
-    }
+    },
+    onVoicesChanged: (handler) => { if (typeof handler === "function") voicesChangedHandlers.push(handler); }
   };
 }
 
@@ -3395,9 +3411,6 @@ function bindEvents() {
   elements.accountBack?.addEventListener("click", closeAccountSelect);
   elements.accountSelect?.addEventListener("click", (event) => {
     if (event.target.matches("[data-account-cancel]")) closeAccountSelect();
-  });
-  elements.switchAccountButton?.addEventListener("click", () => {
-    returnToInitialSelect();
   });
   elements.systemMenuClose.addEventListener("click", closeSystemMenu);
   elements.systemMenu.addEventListener("click", (event) => {
