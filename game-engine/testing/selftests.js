@@ -52,6 +52,7 @@ export function installTestingHooks(api) {
   runPlayTimerSelfTest(api);
   runMoodExtendSelfTest(api);
   runChatSelfTest(api);
+  runSceneNavSelfTest(api);
   runProfileColorSelfTest(api);
   runChineseRewardSelfTest(api);
   runCharacterVoiceSelfTest(api);
@@ -373,6 +374,81 @@ function runChatSelfTest(api) {
     passed: errors.length === 0,
     errors: errors.slice(0, 10)
   });
+  document.body.prepend(result);
+}
+
+// issue #143（intTest#43）：場景互動兩層導覽一致性——第二層各互動（聊天/打工答題、答題完成、逛店）之返回都回到第一層
+// 場景選單且冒險視窗維持開啟，僅第一層場景選單之離開關閉冒險視窗回地圖。以 castleSeamstress（shop+chat）跑全動線。
+function runSceneNavSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "scene-nav") return;
+  const errors = [];
+  const clock = api.playClock;
+  const accounts = api.accounts;
+  const place = "castleSeamstress";
+  let createdId = null;
+  const footerBtn = (text) => [...api.elements.advActionFooter.querySelectorAll("button")]
+    .find((b) => b.textContent.includes(text));
+  const choiceBtn = (text) => [...api.elements.choiceList.querySelectorAll("button")]
+    .find((b) => b.textContent.includes(text));
+  const answerActive = () => {
+    const lesson = api.getActiveLesson();
+    if (!lesson) throw new Error("no active lesson to answer");
+    const btn = [...api.elements.choiceList.querySelectorAll("button")].find((b) => b.dataset.choice === lesson.answer);
+    if (!btn) throw new Error("correct choice button not found");
+    api.answerLesson(btn, lesson.answer);
+  };
+  const click = (btn, label) => {
+    if (!btn) throw new Error(`button not found: ${label}`);
+    btn.click();
+  };
+  try {
+    if (!clock || typeof api.getAdvMode !== "function") throw new Error("test hooks (playClock/getAdvMode) missing");
+    createdId = accounts.create().id;
+    clock.setOffset(0);
+    clock.setDurations(2, 1);
+    clock.tick();
+
+    // 進入第一層場景選單。
+    api.openSceneAdv(api.hotspotById(place));
+    if (api.getAdvMode() !== "scene") errors.push(`first layer mode = ${api.getAdvMode()}, expected scene`);
+    if (!choiceBtn("Chat")) errors.push("first layer missing Chat button");
+    if (!choiceBtn("Shop")) errors.push("first layer missing Shop button");
+
+    // 聊天答題 → 完成 → Back 應回第一層（不關閉冒險視窗）。
+    click(choiceBtn("Chat"), "Chat");
+    if (api.getAdvMode() !== "quest") errors.push(`after Chat mode = ${api.getAdvMode()}, expected quest`);
+    answerActive();
+    if (api.getAdvMode() !== "complete") errors.push(`after answer mode = ${api.getAdvMode()}, expected complete`);
+    click(footerBtn("Back"), "Back(complete)");
+    if (api.getAdvMode() !== "scene") errors.push(`Back from complete mode = ${api.getAdvMode()}, expected scene (not closed)`);
+
+    // 聊天後接著逛店（同次造訪不被迫離場）→ 逛店 Back 應回第一層。
+    click(choiceBtn("Shop"), "Shop");
+    if (api.getAdvMode() !== "shop") errors.push(`after Shop mode = ${api.getAdvMode()}, expected shop`);
+    click(footerBtn("Back"), "Back(shop)");
+    if (api.getAdvMode() !== "scene") errors.push(`Back from shop mode = ${api.getAdvMode()}, expected scene`);
+
+    // 進入聊天但不作答即 Back（答題畫面 Back）→ 應回第一層。
+    click(choiceBtn("Chat"), "Chat#2");
+    if (api.getAdvMode() !== "quest") errors.push(`after Chat#2 mode = ${api.getAdvMode()}, expected quest`);
+    click(footerBtn("Back"), "Back(quest)");
+    if (api.getAdvMode() !== "scene") errors.push(`Back from quest mode = ${api.getAdvMode()}, expected scene`);
+    if (api.state.activeQuest) errors.push("activeQuest not cleared after backing out of unanswered quest (issue #143 regression)");
+
+    // 僅第一層場景選單之 Leave 才關閉冒險視窗回地圖。
+    click(footerBtn("Leave"), "Leave");
+    if (api.getAdvMode() !== "closed") errors.push(`Leave from first layer mode = ${api.getAdvMode()}, expected closed`);
+  } catch (error) {
+    errors.push(error.message);
+  } finally {
+    api.closeAdv();
+    if (createdId) accounts.remove(createdId);
+    clock?.setOffset(0);
+  }
+  const result = document.createElement("pre");
+  result.id = "sceneNavTestResult";
+  result.textContent = JSON.stringify({ test: "scene-nav", passed: errors.length === 0, errors: errors.slice(0, 10) });
   document.body.prepend(result);
 }
 
