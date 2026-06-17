@@ -17,6 +17,9 @@ const RATE_RANGE = Object.freeze({ min: 0.6, max: 1.4 });
 export const DEFAULT_VOICE_PROFILE = Object.freeze({
   profileId: "default",
   lang: "en-US",
+  gender: "",
+  age: "",
+  personality: "",
   pitch: 1,
   rate: 0.86,
   voiceHint: "",
@@ -68,6 +71,9 @@ export function composeVoiceProfile(dims) {
   return Object.freeze({
     profileId,
     lang: dims.lang || DEFAULT_VOICE_PROFILE.lang,
+    gender: dims.gender || "",
+    age: dims.age || "",
+    personality: dims.personality || "",
     pitch: round2(pitch),
     rate: round2(rate),
     voiceHint: dims.voiceHint || dims.gender || "",

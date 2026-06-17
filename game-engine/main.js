@@ -35,6 +35,7 @@ import {
   paperDollBaseLayer,
   paperDollLayerOrder,
   playableVoiceById,
+  npcVoiceByName,
   profileColorPalette,
   questTemplates,
   sceneConfigs,
@@ -113,6 +114,8 @@ const JOB_CHOICE_COUNT = 4;             // issue #138 design paramJobChoiceCount
 const SPEECH_RATE_SCALE = 0.8;          // issue #109 design paramSpeechRateScale：全域朗讀語速倍率（套用於所有發聲）
 const SPEECH_QUEUE_MODE = "replace-last";
 const SPEECH_DEBOUNCE_MS = 120;
+const SPEECH_LEADING_PAD = "    ";       // issue #134 design paramSpeechLeadingPad：送入 utterance 前於開頭加入前置留白，延後首字、改善開頭清楚度
+const VOICE_ASSIGNMENT_KEY = "luminara-princess-english-voice"; // issue #134 design paramVoiceAssignmentKey：使用者語音指定（gender×personality→voice name）之全機儲存鍵
 const SPEECH_DIAGNOSTICS_MAX = 80;
 let shopCategory = "dresses";
 let activeShopHotspot = null;
@@ -2870,6 +2873,31 @@ function createSpeechManager() {
   let voiceLoadState = "not-supported";
   let initialized = false;
   let lastReplayKey = "";
+  // issue #134：使用者語音指定（覆蓋層）。鍵為 `${gender}:${personality}`，性別預設桶為 `${gender}:`；全機（非帳號）儲存。
+  let voiceAssignments = {};
+  const assignmentBucketKey = (gender, personality) => `${gender || ""}:${personality || ""}`;
+  const loadVoiceAssignments = () => {
+    try {
+      const raw = typeof localStorage !== "undefined" ? localStorage.getItem(VOICE_ASSIGNMENT_KEY) : null;
+      const parsed = raw ? JSON.parse(raw) : null;
+      voiceAssignments = parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+    } catch {
+      voiceAssignments = {};
+    }
+    return voiceAssignments;
+  };
+  const saveVoiceAssignments = () => {
+    try {
+      if (typeof localStorage !== "undefined") localStorage.setItem(VOICE_ASSIGNMENT_KEY, JSON.stringify(voiceAssignments));
+    } catch {}
+  };
+  // 解析某 (gender×personality) 桶指定的 voice name：先取該桶，缺則繼承性別預設桶。
+  const assignedVoiceName = (gender, personality) => {
+    if (!gender) return "";
+    return voiceAssignments[assignmentBucketKey(gender, personality)]
+      || voiceAssignments[assignmentBucketKey(gender, "")]
+      || "";
+  };
 
   const hasSynth = () => typeof window !== "undefined" && "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
 
@@ -2892,6 +2920,7 @@ function createSpeechManager() {
   const init = () => {
     if (initialized) return;
     initialized = true;
+    loadVoiceAssignments();
     refreshVoices();
     try {
       window.speechSynthesis?.addEventListener?.("voiceschanged", refreshVoices);
@@ -2908,16 +2937,27 @@ function createSpeechManager() {
     if (!available.length) {
       return { voice: null, fallbackReason: "voices-empty", voiceLoadState };
     }
+    // issue #134：使用者語音指定（覆蓋層）最高優先——依 (gender×personality) 桶、缺則繼承性別桶；
+    // 指定 voice 於本機存在即採用並記 user-assigned；不存在則記 assigned-voice-missing，續走語言優先 fallback。
+    const wantName = assignedVoiceName(profile.gender, profile.personality);
+    let assignedMissing = false;
+    if (wantName) {
+      const want = String(wantName).toLowerCase();
+      const assignedVoice = available.find((voice) => String(voice.name || "").toLowerCase() === want);
+      if (assignedVoice) return { voice: assignedVoice, fallbackReason: "user-assigned", voiceLoadState };
+      assignedMissing = true;
+    }
+    const missTag = assignedMissing ? "assigned-voice-missing" : "";
     const langMatches = available.filter((voice) => normalizeLang(voice.lang) === target);
     const primaryMatches = available.filter((voice) => primaryLang(voice.lang) === primary);
     const defaultVoice = available.find((voice) => voice.default) || available[0] || null;
     const hintMatch = hint
       ? [...langMatches, ...primaryMatches].find((voice) => String(voice.name || "").toLowerCase().includes(hint))
       : null;
-    if (hintMatch) return { voice: hintMatch, fallbackReason: "", voiceLoadState };
-    if (langMatches[0]) return { voice: langMatches[0], fallbackReason: "", voiceLoadState };
-    if (primaryMatches[0]) return { voice: primaryMatches[0], fallbackReason: `fallback-${primary}`, voiceLoadState };
-    return { voice: defaultVoice, fallbackReason: "language-unavailable", voiceLoadState };
+    if (hintMatch) return { voice: hintMatch, fallbackReason: missTag, voiceLoadState };
+    if (langMatches[0]) return { voice: langMatches[0], fallbackReason: missTag, voiceLoadState };
+    if (primaryMatches[0]) return { voice: primaryMatches[0], fallbackReason: missTag || `fallback-${primary}`, voiceLoadState };
+    return { voice: defaultVoice, fallbackReason: missTag || "language-unavailable", voiceLoadState };
   };
 
   const buildProfile = (voiceOrLang) => typeof voiceOrLang === "string"
@@ -2978,7 +3018,8 @@ function createSpeechManager() {
     lastReplayKey = replayKey;
 
     const selection = selectVoice(profile);
-    const utterance = new SpeechSynthesisUtterance(text);
+    // issue #134：送入 utterance 前於開頭加入前置留白延後首字（畫面顯示與診斷紀錄仍用原文）。
+    const utterance = new SpeechSynthesisUtterance(SPEECH_LEADING_PAD + text);
     utterance.lang = profile.lang || "en-US";
     utterance.pitch = typeof profile.pitch === "number" ? profile.pitch : 1;
     utterance.rate = effectiveSpeechRate(profile.rate);
@@ -3045,7 +3086,25 @@ function createSpeechManager() {
     stop,
     diagnostics: () => speechDiagnostics.slice(),
     resetDiagnostics: () => { speechDiagnostics.length = 0; },
-    voiceLoadState: () => voiceLoadState
+    voiceLoadState: () => voiceLoadState,
+    // issue #134：使用者語音指定（覆蓋層）對外介面，供設定 UI 與 selftest 使用。
+    listVoices: () => (voices.length ? voices : refreshVoices()).map((voice) => ({
+      name: voice.name || "",
+      lang: voice.lang || "",
+      default: Boolean(voice.default)
+    })),
+    getVoiceAssignments: () => ({ ...voiceAssignments }),
+    setVoiceAssignment: (gender, personality, voiceName) => {
+      if (!gender) return;
+      const key = assignmentBucketKey(gender, personality);
+      if (voiceName) voiceAssignments[key] = String(voiceName);
+      else delete voiceAssignments[key];
+      saveVoiceAssignments();
+    },
+    clearVoiceAssignments: () => {
+      voiceAssignments = {};
+      saveVoiceAssignments();
+    }
   };
 }
 
@@ -3061,6 +3120,27 @@ function npcVoiceFor(hotspot) {
 }
 function playerVoiceProfile() {
   return voiceProfileForCharacterId(state.activeCharacterId);
+}
+
+// issue #134：列出實際有角色採用之語音桶——每個性別先一列「性別預設桶」(personality 空)，
+// 其下接該性別實際出現過的 (gender×personality) 桶；供設定 UI 讓使用者逐桶指定平台 voice。
+function usedVoiceBuckets() {
+  const declarations = [...Object.values(playableVoiceById), ...Object.values(npcVoiceByName)];
+  const genders = [];
+  const combos = new Map();
+  for (const decl of declarations) {
+    if (!decl || !decl.gender) continue;
+    if (!genders.includes(decl.gender)) genders.push(decl.gender);
+    if (decl.personality) combos.set(`${decl.gender}:${decl.personality}`, { gender: decl.gender, personality: decl.personality });
+  }
+  const buckets = [];
+  for (const gender of genders) {
+    buckets.push({ gender, personality: "", isGenderDefault: true });
+    for (const combo of combos.values()) {
+      if (combo.gender === gender) buckets.push({ gender: combo.gender, personality: combo.personality, isGenderDefault: false });
+    }
+  }
+  return buckets;
 }
 
 // issue #73 中文協助：撥放題目／選項語音。按中文（zh-TW）即標記本題已用中文協助，影響獎勵階梯。
@@ -3755,6 +3835,13 @@ installTestingHooks({
   getSpeechDiagnostics: () => speechManager.diagnostics(),
   resetSpeechDiagnostics: () => speechManager.resetDiagnostics(),
   refreshSpeechVoices: () => speechManager.refreshVoices(),
+  speechLeadingPad: SPEECH_LEADING_PAD,
+  voiceAssignmentKey: VOICE_ASSIGNMENT_KEY,
+  listSpeechVoices: () => speechManager.listVoices(),
+  getVoiceAssignments: () => speechManager.getVoiceAssignments(),
+  setVoiceAssignment: (gender, personality, voiceName) => speechManager.setVoiceAssignment(gender, personality, voiceName),
+  clearVoiceAssignments: () => speechManager.clearVoiceAssignments(),
+  usedVoiceBuckets,
   npcVoiceFor,
   playerVoiceProfile,
   setMapViewport: (areaId, viewport = {}) => {
