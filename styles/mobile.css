@@ -1317,13 +1317,6 @@ body {
     box-shadow: 0 8px 18px rgba(80, 56, 70, 0.16);
   }
 
-  /* issue #132：覆寫舊版固定 HUD 高度/底距（`.side-panel{height:108px}`、`padding-bottom:12px`），改為依內容自適應、消除底部空白。 */
-  .side-panel.info-bar {
-    height: auto;
-    max-height: none;
-    padding-bottom: 8px;
-  }
-
   /* 全螢幕 page 類覆蓋層（帳號/選角/選單/休息）開啟時隱藏 HUD；僅遊玩(地圖/場景/商店)時顯示 */
   body:has(.account-select-overlay.show) .side-panel,
   body:has(.character-select-overlay.show) .side-panel,
@@ -1939,11 +1932,6 @@ body {
   }
 }
 
-/* System menu overlay: keep family settings out of the default play surface. */
-.side-panel {
-  padding-bottom: 12px;
-}
-
 .system-menu-button {
   position: absolute;
   right: 10px;
@@ -2131,10 +2119,6 @@ body {
 }
 
 @media (max-width: 820px) {
-  .side-panel {
-    padding-right: 52px;
-  }
-
   .system-menu-button {
     right: 8px;
     top: 8px;
@@ -2406,15 +2390,6 @@ body {
 }
 
 @media (max-width: 820px) {
-  .side-panel {
-    height: 108px;
-    max-height: 108px;
-  }
-
-  .status-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
   .castle-stage,
   .map-stage {
     width: 100vw;
