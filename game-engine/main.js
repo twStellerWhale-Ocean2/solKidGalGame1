@@ -580,6 +580,7 @@ function render() {
 
 function renderStatus() {
   elements.coinValue.textContent = state.coins;
+  if (elements.moodValue) elements.moodValue.textContent = Number(state.mood) || 0;
   elements.outfitSummary.textContent = outfitSummary();
 }
 
