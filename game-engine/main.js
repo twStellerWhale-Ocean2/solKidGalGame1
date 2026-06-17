@@ -2002,6 +2002,15 @@ function leaveScene(hotspot) {
   if (hotspot?.kind === "room") openArea("castle");
 }
 
+// issue #143：自第二層答題（聊天／打工）或答題完成畫面 Back 回第一層場景選單前，先清除暫態任務狀態
+// （沿用舊 closeAdv 清理語意），避免未作答即返回時 state.activeQuest／activeLesson 殘留被持久化或匯出存檔。
+function backToSceneMenu(hotspot) {
+  state.activeQuest = null;
+  activeLesson = null;
+  persist();
+  openSceneAdv(hotspot);
+}
+
 function addAdvOption(label, onClick, options = {}) {
   return advControls.addOption(label, onClick, options);
 }
@@ -2072,7 +2081,7 @@ function openQuestAdv(hotspot, opts = {}) {
   const options = limitChoiceOptions(allOptions, activeLesson.answer, optionCount);
   shuffled(options).forEach((option, index) => addChoiceRow(option.choice, option.zh, index + 1));
   // issue #143：第二層答題（聊天／打工）離開統一為 Back 回第一層場景選單，不直接跳出場景。
-  addAdvOption("↩ Back", () => openSceneAdv(hotspot), { navigation: true });
+  addAdvOption("↩ Back", () => backToSceneMenu(hotspot), { navigation: true });
   scheduleAdvFocus(0);
   speak(quest.opening, npcVoiceFor(hotspot), { source: "npc-quest-opening" });
 }
@@ -2736,7 +2745,7 @@ function answerLesson(button, choice) {
   elements.advActionFooter.innerHTML = "";
   // issue #143：答題完成統一 Back 回第一層場景選單；自第一層可續選 Shop／再聊／Work，於第一層 Leave 才退出場景。
   // 移除 #100/#138 完成畫面條件式「🎁 Shop」與「🏰 Back to Room」捷徑——兩層導覽一致後不再需要。
-  addAdvOption("↩ Back", () => openSceneAdv(completedHotspot), { navigation: true });
+  addAdvOption("↩ Back", () => backToSceneMenu(completedHotspot), { navigation: true });
   elements.statusMessage.textContent = `Practice complete at ${completedHotspot.label}.`;
   persist();
   render();

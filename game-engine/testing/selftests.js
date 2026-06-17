@@ -434,6 +434,7 @@ function runSceneNavSelfTest(api) {
     if (api.getAdvMode() !== "quest") errors.push(`after Chat#2 mode = ${api.getAdvMode()}, expected quest`);
     click(footerBtn("Back"), "Back(quest)");
     if (api.getAdvMode() !== "scene") errors.push(`Back from quest mode = ${api.getAdvMode()}, expected scene`);
+    if (api.state.activeQuest) errors.push("activeQuest not cleared after backing out of unanswered quest (issue #143 regression)");
 
     // 僅第一層場景選單之 Leave 才關閉冒險視窗回地圖。
     click(footerBtn("Leave"), "Leave");
