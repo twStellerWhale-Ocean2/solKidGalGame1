@@ -55,7 +55,7 @@ import { updateMarkerEdgeVisibility } from "./map/marker-visibility.js";
 import { createAreaMapViewportController } from "./map/viewport.js";
 import { renderItemDetailPanel } from "./render/item-panel.js";
 import { createPaperDollRenderer } from "./render/paper-doll.js";
-import { renderBuildInfo, renderAbout } from "./render/settings.js";
+import { renderBuildInfo, renderAbout, renderVoiceSettings } from "./render/settings.js";
 import { applyAdvSceneArt } from "./scene/scene-art.js";
 import { saveMarkerEnd, saveMarkerStart } from "./state/storage.js";
 import {
@@ -2807,6 +2807,13 @@ function renderSettings() {
   if (elements.restMinutesInput) elements.restMinutesInput.value = String(state.playLimit.restMinutes);
   renderBuildInfo(elements, buildInfo);
   renderAbout(elements, { copyright, versionHistory });
+  speechManager.init();
+  renderVoiceSettings(elements, {
+    buckets: usedVoiceBuckets(),
+    voices: speechManager.listVoices(),
+    assignments: speechManager.getVoiceAssignments(),
+    onAssign: (gender, personality, voiceName) => speechManager.setVoiceAssignment(gender, personality, voiceName)
+  });
 }
 
 const speechDiagnostics = [];
@@ -3818,6 +3825,7 @@ installTestingHooks({
   renderWorldMap,
   renderCastleMap,
   render,
+  renderSettings,
   renderAdvShop,
   renderWardrobeDetail,
   renderRefundDetail,

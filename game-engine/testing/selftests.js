@@ -748,6 +748,18 @@ function runCharacterVoiceSelfTest(api) {
           if (femMissing.fallbackReason !== "assigned-voice-missing") errors.push(`缺指定 voice 未記 assigned-voice-missing，實際 ${femMissing.fallbackReason}`);
           const noGender = api.selectSpeechVoice({ lang: "en-US" });
           if (noGender.fallbackReason === "user-assigned") errors.push("無性別 profile 不應套用語音指定");
+
+          // sysCase#9.5 設定 UI：設定面板逐桶渲染下拉（含性別預設列、列出可用 voice）。
+          if (api.renderSettings && api.usedVoiceBuckets && api.elements?.voiceAssignList) {
+            api.setVoiceAssignment("female", "cheerful", "");
+            api.renderSettings();
+            const rows = api.elements.voiceAssignList.querySelectorAll(".voice-assign-row");
+            const expectedBuckets = api.usedVoiceBuckets().length;
+            if (rows.length !== expectedBuckets) errors.push(`語音設定列數(${rows.length})與桶數(${expectedBuckets})不符`);
+            const firstSelect = api.elements.voiceAssignList.querySelector(".voice-assign-select");
+            if (!firstSelect || firstSelect.querySelectorAll("option").length < 4) errors.push("語音設定下拉未列出可用 voice 選項");
+            if (!api.elements.voiceAssignList.querySelector(".voice-assign-default")) errors.push("語音設定缺性別預設列");
+          }
           api.clearVoiceAssignments();
         }
 

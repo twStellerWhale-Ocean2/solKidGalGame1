@@ -95,6 +95,55 @@
   margin-top: 16px;
 }
 
+/* issue #134：角色語音設定區（每個 gender×personality 桶一列下拉）。 */
+.voice-settings {
+  margin-top: 18px;
+  border-top: 1px solid rgba(216, 103, 140, 0.25);
+  padding-top: 14px;
+}
+
+.voice-settings h3 {
+  margin: 0 0 4px;
+  color: var(--rose-dark);
+}
+
+.voice-settings > p {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.84rem;
+}
+
+.voice-assign-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.voice-assign-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+
+.voice-assign-default {
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid rgba(216, 103, 140, 0.22);
+}
+
+.voice-assign-name {
+  font-weight: 800;
+  color: var(--rose-dark);
+}
+
+.voice-assign-empty {
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .version-card {
   margin-top: 18px;
   padding: 12px 14px;

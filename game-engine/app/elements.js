@@ -99,6 +99,8 @@ export function createElements() {
     playMinutesInput: $("#playMinutesInput"),
     restMinutesInput: $("#restMinutesInput"),
     playLimitForm: $("#playLimitForm"),
+    voiceSettings: $("#voiceSettings"),
+    voiceAssignList: $("#voiceAssignList"),
     playBreak: $("#playBreak"),
     playBreakStats: $("#playBreakStats"),
     playBreakCountdown: $("#playBreakCountdown"),
