@@ -106,48 +106,6 @@ body {
   backdrop-filter: blur(10px);
 }
 
-.mini-doll-frame {
-  height: 88px;
-}
-
-.side-doll {
-  width: 78px;
-  height: 104px;
-  margin-top: -6px;
-}
-
-.side-panel h1 {
-  margin-top: 6px;
-  font-size: 1rem;
-}
-
-.subtitle,
-.equipped-box {
-  display: none;
-}
-
-.status-grid {
-  grid-template-columns: repeat(3, 1fr);
-  gap: 5px;
-}
-
-.stat {
-  padding: 6px;
-}
-
-.stat span {
-  font-size: 0.56rem;
-}
-
-.stat strong {
-  font-size: 0.86rem;
-}
-
-.notice-box {
-  margin-top: 6px;
-  padding: 8px;
-  font-size: 0.78rem;
-}
 
 .view-stack,
 .view {
@@ -704,29 +662,9 @@ body {
 }
 
 @media (max-height: 760px) {
-  .mini-doll-frame {
-    height: 70px;
-  }
-
-  .side-doll {
-    width: 64px;
-    height: 88px;
-  }
-
-  .status-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
   .topbar {
     gap: 6px;
   }
-}
-
-/* Room refinement: one left command column, open wardrobe, and centered full paper-doll staging. */
-.side-panel {
-  height: calc(100% - 36px);
-  margin: 18px 14px;
-  padding-bottom: 174px;
 }
 
 .topbar {
@@ -848,10 +786,11 @@ body {
   grid-template-columns: clamp(218px, 22vw, 254px) minmax(0, 1fr);
 }
 
+/* issue #132：桌機側欄依內容自適應（不再滿欄、不留舊版 154px 底距）；於格線欄內靠頂對齊。 */
 .side-panel {
   margin: 12px 10px;
-  height: calc(100dvh - 24px);
-  padding: 9px 9px 154px;
+  align-self: start;
+  padding: 14px;
 }
 
 .topbar {
@@ -1932,31 +1871,6 @@ body {
   }
 }
 
-.system-menu-button {
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  z-index: 3;
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  border: 2px solid rgba(255, 255, 255, 0.86);
-  border-radius: 50%;
-  color: var(--rose-dark);
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 8px 16px rgba(80, 56, 70, 0.16);
-  font-size: 1.16rem;
-  font-weight: 900;
-}
-
-.system-menu-button:hover,
-.system-menu-button:focus-visible {
-  outline: none;
-  background: #fff8fb;
-  box-shadow: 0 0 0 4px rgba(216, 103, 140, 0.18), 0 8px 16px rgba(80, 56, 70, 0.16);
-}
-
 .system-menu-overlay {
   position: fixed;
   inset: 0;
@@ -2119,14 +2033,6 @@ body {
 }
 
 @media (max-width: 820px) {
-  .system-menu-button {
-    right: 8px;
-    top: 8px;
-    width: 38px;
-    height: 38px;
-    font-size: 1.08rem;
-  }
-
   .system-menu-book {
     width: calc(100vw - 16px);
     height: calc(100dvh - 16px);
@@ -2215,10 +2121,6 @@ body {
 /* 2026-05-31 area registry / scene layering overrides. */
 .view-stack {
   position: relative;
-}
-
-.status-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .castle-stage {

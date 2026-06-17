@@ -107,7 +107,6 @@ button:disabled {
 }
 
 .brand small,
-.subtitle,
 p {
   color: var(--muted);
   line-height: 1.38;

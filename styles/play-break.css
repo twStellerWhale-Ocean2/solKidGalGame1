@@ -1,22 +1,5 @@
 /* 遊玩時間限制與護眼休息（issue #6 / spec#9）：HUD 遊玩時間條、設定表單、時間到結算＋強制休息 overlay。沿用既有視覺語彙。 */
 
-/* HUD：遊玩時間預算條（energy 即剩餘遊玩時間 %） */
-.energy-meter {
-  height: 8px;
-  margin: 8px 0 2px;
-  border-radius: 999px;
-  background: var(--line);
-  overflow: hidden;
-}
-
-.energy-meter-fill {
-  height: 100%;
-  width: 100%;
-  border-radius: 999px;
-  background: var(--rose);
-  transition: width 0.4s ease;
-}
-
 /* 設定：每次遊玩／休息時長（各帳號各自） */
 .play-limit-form {
   display: flex;
