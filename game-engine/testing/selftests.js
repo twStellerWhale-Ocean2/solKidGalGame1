@@ -867,6 +867,34 @@ async function runDataAudit(api) {
     if (!lessonAudit.byArea[id]) errors.push(`area ${id} has no lesson-bearing places`);
   });
 
+  // issue #135：生活聊天題庫（chatLesson）同採場景自帶題庫契約，納入結構與中文覆蓋一致性審查；
+  // 聊天為非交易性回饋，reward.coins 必須為 0（心情→延長遊玩、不發 coins）。
+  const chatAudit = { places: 0, questions: 0, byArea: {} };
+  Object.values(api.areaRegistry).forEach((area) => {
+    (area.locations || []).forEach((hotspot) => {
+      const chat = api.sceneConfigFor(hotspot).chatLesson;
+      if (!chat) return; // 未開啟聊天之場景不帶 chatLesson
+      chatAudit.places += 1;
+      chatAudit.byArea[area.id] = (chatAudit.byArea[area.id] || 0) + 1;
+      const at = `${area.id}/${hotspot.id}`;
+      if (!chat.title || !chat.opening || !chat.ending) errors.push(`${at} chatLesson missing title/opening/ending`);
+      if (!chat.openingZh) errors.push(`${at} chatLesson missing openingZh`);
+      if (!chat.area || !chat.vocabProfile) errors.push(`${at} chatLesson missing area/vocabProfile`);
+      if (!Array.isArray(chat.questions) || !chat.questions.length) { errors.push(`${at} chatLesson has no questions`); return; }
+      chat.questions.forEach((q, i) => {
+        chatAudit.questions += 1;
+        const where = `${at} chat#${i + 1}`;
+        if (!q.prompt || !q.answer || !Array.isArray(q.choices) || q.choices.length < 2) errors.push(`${where} missing prompt/answer/choices`);
+        else if (!q.choices.includes(q.answer)) errors.push(`${where} answer not in choices`);
+        if (!Array.isArray(q.words) || !q.words.length) errors.push(`${where} missing words`);
+        if (!q.reward || !Number.isFinite(q.reward.coins)) errors.push(`${where} missing reward.coins`);
+        else if (q.reward.coins !== 0) errors.push(`${where} chat reward.coins must be 0`);
+        if (!q.promptZh) errors.push(`${where} missing promptZh (中文協助所需)`);
+        if (!Array.isArray(q.choicesZh) || q.choicesZh.length !== q.choices.length || q.choicesZh.some((z) => !z)) errors.push(`${where} choicesZh incomplete (中文協助所需)`);
+      });
+    });
+  });
+
   const result = document.createElement("pre");
   result.id = "dataAuditResult";
   result.textContent = JSON.stringify({
@@ -881,6 +909,7 @@ async function runDataAudit(api) {
     characterRegistry,
     characterScale,
     lessonAudit,
+    chatAudit,
     supportedActorMotions: [...supportedActorMotions],
     shops: shopLocations.map((hotspot) => ({
       area: api.areaForHotspot(hotspot),
@@ -1402,6 +1431,13 @@ function runVisualQa(api) {
   if (surface === "quest") {
     api.render();
     api.openQuestAdv(hotspot);
+    return;
+  }
+
+  // issue #135：生活聊天題（chatLesson）視覺 QA surface，供逐頁審查截圖。
+  if (surface === "chat") {
+    api.render();
+    api.openQuestAdv(hotspot, { bankKey: "chatLesson", mode: "chat" });
     return;
   }
 
