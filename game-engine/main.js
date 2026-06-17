@@ -87,6 +87,7 @@ import {
   MAX_LIMIT_MINUTES,
   MIN_LIMIT_MINUTES,
   extendSession,
+  playAllowance,
   playStatus,
   recordAnswer as recordCycleAnswer,
   resumeFromRest,
@@ -195,60 +196,50 @@ function formatClock(ms) {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
 }
 
-function formatTimeOfDay(timestamp) {
-  if (!timestamp) return "Not started";
-  return new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
 function profileColorFor(characterId = state.activeCharacterId, color = state.profileColor) {
   return normalizeProfileColor(color, characterId);
 }
 
-function profileAvatarStyle(characterId, color) {
-  const character = playableCharacterById(characterId);
-  const portraitUrl = new URL(domAssetUrl(character.baseLayer), document.baseURI).href;
-  return {
-    character,
-    color: profileColorFor(character.id, color),
-    portrait: `url("${portraitUrl.replaceAll('"', "%22")}")`
-  };
-}
-
-function applyProfileAvatar(element, characterId, color) {
-  if (!element) return;
-  const style = profileAvatarStyle(characterId, color);
-  element.style.setProperty("--character-portrait", style.portrait);
-  element.style.setProperty("--profile-color", style.color);
-  element.setAttribute("aria-label", style.character.label);
-}
-
-function updateEnergyHud({ percent, label }) {
-  const clamped = Math.min(100, Math.max(0, Math.round(Number(percent) || 0)));
-  state.energy = clamped;
-  if (elements.energyValue) elements.energyValue.textContent = label || `${clamped}%`;
-  if (elements.energyMeterFill) elements.energyMeterFill.style.width = `${clamped}%`;
-}
-
-function playClockHudText(status, now) {
-  if (status.phase === "rest") return `Rest ${formatClock(status.restRemainingMs)}`;
-  if (status.phase === "play") {
-    const startedAt = Math.max(0, (state.playLimit?.sessionEndsAt || 0) - (state.playLimit?.playMinutes || 0) * 60000);
-    return `${formatTimeOfDay(startedAt)} · ${formatClock(status.playRemainingMs)}`;
+// 單一頭胸 bust 渲染（issue #132，sysCase#5.2）：側欄、帳號卡與選角卡共用「同一個」頭胸渲染——
+// 同一紙娃娃層合成（bustMarkupFor）＋同一 .bust-doll 裁切，不另維護第二套裁切邏輯。
+function renderBustInto(frameEl, characterId, outfitState, color) {
+  if (!frameEl) return;
+  frameEl.innerHTML = `<span class="paper-doll bust-doll">${bustMarkupFor(characterId, outfitState)}</span>`;
+  if (color != null) {
+    frameEl.style.setProperty("--active-profile-color", color);
+    frameEl.style.setProperty("--profile-color", color);
   }
-  return `Ready ${formatTimeOfDay(now)}`;
 }
 
+// 組裝「可玩時間額度」顯示（spec#9 / sysCase#7.5）：基礎分鐘數；生活聊天延長時把增加量以 +N😄 清楚標示。
+function renderPlayTimeAllowance() {
+  if (!elements.playTimeValue) return;
+  const { baseMinutes, bonusMinutes } = playAllowance(state);
+  elements.playTimeValue.innerHTML = bonusMinutes > 0
+    ? `${baseMinutes} <span class="play-time-bonus">+${bonusMinutes}😄</span> min`
+    : `${baseMinutes} min`;
+}
+
+// 更新人物資訊欄時間顯示：可玩時間額度 + 剩餘可玩時間（不以百分比為主，sysCase#7.5）。
+// 接受 playStatus() 或 tick() 之結果（兩者皆帶 phase/energyPercent/playRemainingMs/restRemainingMs）。
 function updateEnergyHudFromStatus(status, now = clockNow()) {
-  updateEnergyHud({
-    percent: status.phase === "rest" ? 0 : status.energyPercent,
-    label: playClockHudText(status, now)
-  });
+  state.energy = status.phase === "rest" ? 0 : Math.min(100, Math.max(0, Math.round(Number(status.energyPercent) || 0)));
+  renderPlayTimeAllowance();
+  if (!elements.timeLeftValue) return;
+  if (status.phase === "rest") {
+    elements.timeLeftValue.textContent = `Rest ${formatClock(status.restRemainingMs)}`;
+  } else if (status.phase === "play") {
+    elements.timeLeftValue.textContent = formatClock(status.playRemainingMs);
+  } else {
+    elements.timeLeftValue.textContent = formatClock((state.playLimit?.playMinutes || 15) * 60000);
+  }
 }
 
 function updateProfileColorChrome() {
   const color = profileColorFor();
   document.documentElement.style.setProperty("--active-profile-color", color);
-  applyProfileAvatar(elements.sideProfileAvatar, state.activeCharacterId, color);
+  // 資訊欄大頭照已改為即時穿搭紙娃娃 bust（由 renderPaperDolls 填層）；此處僅同步識別色。
+  elements.sideProfileAvatar?.style.setProperty("--profile-color", color);
   [elements.castlePlayerToken, elements.playerToken, elements.worldPlayerToken].forEach((token) => {
     token?.style.setProperty("--profile-color", color);
   });
@@ -580,8 +571,6 @@ function render() {
 
 function renderStatus() {
   elements.coinValue.textContent = state.coins;
-  if (elements.moodValue) elements.moodValue.textContent = Number(state.mood) || 0;
-  elements.outfitSummary.textContent = outfitSummary();
 }
 
 // 玩家公主的名字為使用者設定；遊戲內稱呼一律取此值（世界觀／品牌名 Luminara 不在此列）。
@@ -610,7 +599,9 @@ function localizeLesson(lesson) {
 
 function renderIdentity() {
   const name = princessName();
-  if (elements.princessNameTitle) elements.princessNameTitle.textContent = `Princess ${name}`;
+  // 資訊欄顯示玩家名字（去除「Princess」綴字，issue #132）；保留 sr-only h1 供文件結構與輔助科技。
+  if (elements.princessNameTitle) elements.princessNameTitle.textContent = name;
+  if (elements.playerNameValue) elements.playerNameValue.textContent = name;
   const sideDollLabel = `Princess ${name}`;
   document.querySelector(".adv-princess")?.setAttribute("aria-label", sideDollLabel);
   elements.castlePlayerToken?.setAttribute("aria-label", `Princess ${name} in the castle`);
@@ -657,7 +648,8 @@ function buildCharacterCards() {
     card.setAttribute("aria-checked", String(character.id === pendingCharacterId));
     const portrait = document.createElement("span");
     portrait.className = "character-portrait";
-    applyProfileAvatar(portrait, character.id, character.id === pendingCharacterId ? pendingProfileColor : character.defaultProfileColor);
+    // 選角當下尚未套衣櫥 → 以空 outfit 渲染各候選公主的基本造型（與側欄/帳號卡同一 bust 機制）。
+    renderBustInto(portrait, character.id, {}, character.id === pendingCharacterId ? pendingProfileColor : character.defaultProfileColor);
     portrait.setAttribute("aria-hidden", "true");
     const label = document.createElement("span");
     label.textContent = character.label;
@@ -675,7 +667,9 @@ function selectPendingCharacter(characterId) {
     card.setAttribute("aria-checked", String(card.dataset.characterId === characterId));
     const portrait = card.querySelector(".character-portrait");
     const color = card.dataset.characterId === characterId ? pendingProfileColor : defaultProfileColorFor(card.dataset.characterId);
-    applyProfileAvatar(portrait, card.dataset.characterId, color);
+    // 切換選取只需更新識別底色；基本造型 bust 層不隨色變，毋須重渲染。
+    portrait?.style.setProperty("--active-profile-color", color);
+    portrait?.style.setProperty("--profile-color", color);
   });
   buildProfileColorChoices();
   if (!playerNameEdited) {
@@ -798,8 +792,8 @@ function buildAccountList() {
     pick.dataset.accountId = account.id;
     pick.style.setProperty("--profile-color", summary.color);
     const avatar = document.createElement("span");
-    avatar.className = "profile-avatar account-avatar";
-    applyProfileAvatar(avatar, summary.characterId, summary.color);
+    avatar.className = "account-avatar bust-frame";
+    renderBustInto(avatar, summary.characterId, summary.state.outfit, summary.color);
     const nameEl = document.createElement("strong");
     nameEl.textContent = summary.name;
     const charEl = document.createElement("small");
@@ -877,6 +871,11 @@ function renderPaperDolls() {
 
 function avatarMarkup(surface, outfitState = state.outfit) {
   return paperDollRenderer.avatarMarkup(surface, outfitState, activePaperDollCharacter());
+}
+
+// 頭胸 bust 紙娃娃層（issue #132）：供帳號卡以各帳號自己的角色＋穿搭渲染即時衣著（資訊欄則由 renderPaperDolls 以使用中狀態填層）。
+function bustMarkupFor(characterId, outfitState) {
+  return paperDollRenderer.avatarMarkup("side-bust", outfitState || {}, playableCharacterById(characterId));
 }
 
 function activePaperDollCharacter() {

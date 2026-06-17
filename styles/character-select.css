@@ -71,24 +71,17 @@
   box-shadow: 0 0 0 3px rgba(216, 103, 140, 0.22);
 }
 
-.profile-avatar,
+/* issue #132：選角卡頭像改用與側欄/帳號卡同一套 .bust-doll 渲染（紙娃娃層裁切）；此處僅為其方形外框。 */
 .character-portrait {
+  position: relative;
   width: 100%;
   max-width: 112px;
   aspect-ratio: 1 / 1;
   display: block;
   overflow: hidden;
-  background-color: var(--profile-color, #fff6f9);
-  background-image: var(--character-portrait);
-  background-repeat: no-repeat;
-  background-size: 245% auto;
-  background-position: 50% 47%;
+  background-color: var(--active-profile-color, var(--profile-color, #fff6f9));
   border-radius: var(--radius);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.64);
-}
-
-.side-avatar {
-  max-width: none;
 }
 
 .character-card span {

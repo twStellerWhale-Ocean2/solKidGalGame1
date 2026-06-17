@@ -107,7 +107,6 @@ button:disabled {
 }
 
 .brand small,
-.subtitle,
 p {
   color: var(--muted);
   line-height: 1.38;
@@ -198,93 +197,93 @@ p {
 
 .side-panel {
   min-height: 0;
-  padding: 12px;
+  padding: 14px;
   overflow: hidden;
 }
 
-.mini-doll-frame {
-  height: 178px;
+/* issue #132：人物資訊欄。寬版＝上排大頭照＋系統雙鈕，下方四欄位直向堆疊（窄版於 mobile.css 收斂為三欄橫列）。 */
+.info-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "portrait actions"
+    "fields fields";
+  align-items: start;
+  align-content: start;
+  gap: 12px;
+  padding: 14px;
+}
+
+.info-portrait {
+  grid-area: portrait;
   position: relative;
+  width: 100%;
+  max-width: 140px;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   border-radius: var(--radius);
   background: var(--active-profile-color, #fff5f8);
   border: 1px solid var(--line);
 }
 
-.side-avatar {
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  border-radius: 0;
-  background-size: 190% auto;
-  background-position: 50% 43%;
+.info-actions {
+  grid-area: actions;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.side-panel h1 {
-  margin: 10px 0 2px;
-  font-size: 1.42rem;
-}
-
-.subtitle {
-  margin: 0 0 10px;
-  font-size: 0.92rem;
-}
-
-.status-grid {
+.info-icon-button {
+  width: 42px;
+  height: 42px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 7px;
-  margin: 10px 0;
+  place-items: center;
+  color: var(--rose-dark);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  font-size: 1.18rem;
+  line-height: 1;
+  cursor: pointer;
 }
 
-.stat {
-  padding: 8px;
+.info-icon-button:hover,
+.info-icon-button:focus-visible {
+  background: #fff3f7;
+}
+
+.info-fields {
+  grid-area: fields;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-field {
+  padding: 7px 11px;
   background: #fff;
   border: 1px solid var(--line);
   border-radius: var(--radius);
 }
 
-.stat span {
+.info-label {
   display: block;
   color: var(--muted);
-  font-size: 0.66rem;
+  font-size: 0.62rem;
   font-weight: 900;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.stat strong {
+.info-value {
   display: block;
   color: var(--rose-dark);
-  font-size: 1.02rem;
-}
-
-.equipped-box,
-.notice-box {
-  padding: 10px;
-  background: #fff8eb;
-  border: 1px solid rgba(215, 166, 75, 0.28);
-  border-radius: var(--radius);
-}
-
-.switch-player-quick {
-  width: 100%;
-  margin-top: 10px;
-}
-
-.equipped-box h2,
-.equipped-box p {
-  margin: 0;
-}
-
-.equipped-box h2 {
-  font-size: 0.94rem;
-}
-
-.notice-box {
-  margin-top: 8px;
-  color: #6d4e26;
+  font-size: 1.04rem;
   font-weight: 800;
-  line-height: 1.35;
+}
+
+.play-time-bonus {
+  color: #2f9e6f;
 }
 
 .view-stack,
