@@ -280,7 +280,7 @@ CONTENT -->|"🎚️paramDefaultProfileColors=`lumi,yumi,sol,rosa`"| SYS
     * paramSpeechWarmupEnabled=`true`
     * paramSpeechDiagnosticsEnabled=`true`
     * paramSpeechPreferredVoices=`user-assigned,lang-first`
-    * paramSpeechLeadingPad=`4 spaces`
+    * paramSpeechLeadingPad=`8 full-width spaces`
     * paramVoiceBucketDimensions=`gender,personality`
 
 ## C. 補充設計(選配)
