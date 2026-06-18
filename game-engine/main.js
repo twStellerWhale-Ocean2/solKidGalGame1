@@ -116,13 +116,25 @@ const CHAT_ENDINGS = [
   { en: "See you soon, Princess!", zh: "待會見，公主！" },
   { en: "Take care, Princess!", zh: "公主，保重喔！" },
   { en: "Come and chat again soon!", zh: "要再來聊天喔！" },
-  { en: "Bye for now, Princess!", zh: "先這樣囉，公主，再見！" }
+  { en: "Bye for now, Princess!", zh: "先這樣囉，公主，再見！" },
+  { en: "It was lovely talking with you.", zh: "和你聊天真開心。" },
+  { en: "Thanks for stopping by, Princess!", zh: "謝謝你過來，公主！" },
+  { en: "Have a wonderful day!", zh: "祝你有美好的一天！" },
+  { en: "See you next time!", zh: "下次見！" },
+  { en: "I always enjoy our chats.", zh: "我每次都很喜歡和你聊天。" },
+  { en: "Take good care, and come back soon!", zh: "好好保重，要再來喔！" }
 ];
 const WORK_ENDINGS = [
   { en: "Good job! Thank you, Princess.", zh: "做得好！謝謝你，公主。" },
   { en: "Great work! Thank you so much.", zh: "做得很棒！非常謝謝你。" },
   { en: "Well done! Thank you for your help.", zh: "太好了！謝謝你的幫忙。" },
-  { en: "Wonderful! You helped me a lot.", zh: "太棒了！你幫了我大忙。" }
+  { en: "Wonderful! You helped me a lot.", zh: "太棒了！你幫了我大忙。" },
+  { en: "Perfect! I could not have done it without you.", zh: "完美！沒有你我做不到。" },
+  { en: "Amazing work, Princess! Thank you!", zh: "公主，做得太厲害了！謝謝你！" },
+  { en: "You did it! Thank you, Princess.", zh: "你做到了！謝謝你，公主。" },
+  { en: "Such a big help! Thank you!", zh: "真是幫了大忙！謝謝你！" },
+  { en: "Nicely done! I really appreciate it.", zh: "做得真好！我真的很感謝。" },
+  { en: "Brilliant! You are a great helper.", zh: "太棒了！你是很棒的小幫手。" }
 ];
 function pickEnding(isChat) {
   const pool = isChat ? CHAT_ENDINGS : WORK_ENDINGS;
