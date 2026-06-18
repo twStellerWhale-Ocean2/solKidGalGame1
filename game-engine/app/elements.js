@@ -72,6 +72,8 @@ export function createElements() {
     advModal: $("#advModal"),
     advScene: $("#advScene"),
     advTitle: $("#advTitle"),
+    advPlayerName: $("#advPlayerName"),
+    advNpcName: $("#advNpcName"),
     advNpcPortrait: $("#advNpcPortrait"),
     advSpeaker: $("#advSpeaker"),
     advLine: $("#advLine"),

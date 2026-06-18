@@ -571,7 +571,7 @@ function setExpressions(princess = "normal", npc = "normal") {
   document.querySelectorAll("[data-doll]").forEach((doll) => {
     doll.dataset.expression = princessExpression;
   });
-  elements.advNpcPortrait.dataset.expression = npcExpression;
+  // issue#150：移除 NPC 角落心情表情徽章後，npc 表情不再寫入 DOM（保留參數與狀態以維持答題回饋 API 對稱）。
 }
 
 function render() {
@@ -1905,11 +1905,14 @@ function openAdvBase(hotspot, mode) {
   elements.advScene.className = `adv-scene ${scene.scene || ""}`;
   elements.advScene.style.setProperty("--lumi-stage-scale", String(activePaperDollCharacter().stageScale || characterScaleContract.lumiStageScale));
   applyAdvSceneArt(elements.advScene, scene.sceneArt, { assetUrl: domAssetUrl });
+  // issue#150：場景角落標示——左上公主名、右上地點＋場景角色名。
+  // 場景角色即公主本人（如公主房）或無對話對象時，次行留空（CSS :empty 隱藏），避免與左上公主名重複。
   elements.advTitle.textContent = hotspot.label;
+  elements.advPlayerName.textContent = princessName();
+  elements.advNpcName.textContent = scene.npc && scene.npc !== princessName() ? scene.npc : "";
   const npcClass = scene.npcClass || (scene.npcImage ? "npc-image" : "npc-none");
   elements.advNpcPortrait.className = `portrait-card adv-npc ${npcClass}`;
   elements.advNpcPortrait.style.backgroundImage = scene.npcImage ? `url("${domAssetUrl(scene.npcImage)}")` : "";
-  elements.advNpcPortrait.dataset.expression = npcExpression;
   elements.advSpeaker.textContent = scene.npc;
   elements.choiceList.innerHTML = "";
   elements.advShopGrid.innerHTML = "";

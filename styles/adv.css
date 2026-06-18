@@ -38,20 +38,54 @@
   box-shadow: 0 28px 70px rgba(40, 24, 34, 0.45);
 }
 
-.adv-location {
+/* issue#150: 場景角落標示——左上公主名、右上地點＋場景角色名。
+   寬窄共用單一結構（承 #111/#120/#132 收斂「同元件、寬窄各自為政」版型債）。 */
+.adv-corner {
   position: absolute;
   top: 14px;
   z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-width: 44%;
+  pointer-events: none;
 }
 
-.adv-location {
+.adv-corner-left {
   left: 14px;
-  padding: 8px 13px;
+  align-items: flex-start;
+}
+
+.adv-corner-right {
+  right: 14px;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.adv-tag {
+  max-width: 100%;
+  padding: 7px 13px;
   color: #fff;
   background: rgba(69, 43, 51, 0.78);
   border-radius: 999px;
   font-size: 0.9rem;
   font-weight: 900;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adv-tag-player,
+.adv-tag-npc {
+  font-size: 0.82rem;
+  font-weight: 800;
+  background: rgba(69, 43, 51, 0.66);
+}
+
+/* 純場景無對話對象時，場景角色名留空即隱藏次行 */
+.adv-tag-npc:empty {
+  display: none;
 }
 
 .adv-portraits {
@@ -97,34 +131,8 @@
   display: none;
 }
 
-.adv-npc::after {
-  content: "";
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  background: rgba(255, 255, 255, 0.92);
-  border: 2px solid #fff;
-  border-radius: 50%;
-  font-size: 1.25rem;
-  line-height: 1;
-  box-shadow: 0 2px 6px rgba(82, 61, 37, 0.28);
-}
-
-.adv-npc[data-expression="normal"]::after {
-  content: "🙂";
-}
-
-.adv-npc[data-expression="happy"]::after {
-  content: "😄";
-}
-
-.adv-npc[data-expression="surprised"]::after {
-  content: "😮";
-}
+/* issue#150: 移除 NPC 角落心情表情徽章（.adv-npc::after 🙂/😄/😮，無互動功能）。
+   心情→可玩時間機制（state.mood，資訊欄 `15 +3😄 min`）與此無關、不受影響。 */
 
 .adv-box {
   grid-row: 2;
