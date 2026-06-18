@@ -89,8 +89,8 @@
 }
 
 .player {
-  width: 54px;
-  height: 70px;
+  width: 108px;
+  height: 140px;
   transition: left 0.24s ease, top 0.24s ease;
   z-index: 3;
   pointer-events: none;

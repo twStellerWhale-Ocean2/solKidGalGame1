@@ -291,9 +291,7 @@ function updateProfileColorChrome() {
   // 資訊欄大頭照已改為即時穿搭紙娃娃 bust（由 renderPaperDolls 填層）；此處僅同步識別色與背景花紋。
   elements.sideProfileAvatar?.style.setProperty("--profile-color", color);
   applyCardPattern(elements.sideProfileFrame, state.backgroundPattern);
-  [elements.castlePlayerToken, elements.playerToken, elements.worldPlayerToken].forEach((token) => {
-    token?.style.setProperty("--profile-color", color);
-  });
+  // issue #161：地圖公主 token 已移除識別色橢圓背板，不再於地圖 token 注入 --profile-color（識別色僅用於資訊欄與帳號卡）。
 }
 
 function syncActiveAccountMeta({ touched = false } = {}) {
