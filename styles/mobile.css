@@ -3090,14 +3090,6 @@ body {
     [data-mode="shop"],
     [data-mode="wardrobe"],
     [data-mode="refund"]
-  .adv-scene:is(
-    [data-mode="scene"],
-    [data-mode="hint"],
-    [data-mode="quest"],
-    [data-mode="complete"],
-    [data-mode="shop"],
-    [data-mode="wardrobe"],
-    [data-mode="refund"]
   ) .adv-npc {
     --adv-character-stage-height: calc(100% + 10px);
     width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
