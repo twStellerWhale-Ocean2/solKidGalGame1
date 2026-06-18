@@ -595,6 +595,27 @@ function runAccountSelfTest(api) {
     if (accounts.activeId() !== accC.id) errors.push(`cancel did not restore previous active account (active=${accounts.activeId()}, expected ${accC.id})`);
     if (api.state.playerName !== "KeepC") errors.push(`cancel did not restore previous account state (playerName=${api.state.playerName}, expected KeepC)`);
     accounts.remove(accC.id); // 清理基準帳號 C
+    // 9) issue #169：帳號選單之休息倒數須隨時鐘遞減（非開啟當下的凍結快照）——
+    //    refreshAccountStatuses 依現在時鐘重算卡片狀態文字。
+    if (api.playClock && typeof api.buildAccountList === "function" && typeof api.refreshAccountStatuses === "function") {
+      const accR = accounts.create();
+      api.playClock.setOffset(0);
+      api.state.playLimit.sessionEndsAt = 0;
+      api.state.playLimit.restEndsAt = api.playClock.now() + 5 * 60000; // 休息中（5 分鐘）
+      api.persist();
+      api.buildAccountList();
+      const cardStatus = () => document.querySelector(`.account-pick[data-account-id="${accR.id}"]`)
+        ?.closest(".account-row")?.querySelector(".account-status")?.textContent;
+      const before = cardStatus();
+      if (!before || !before.startsWith("Rest")) errors.push(`#169 ticker: card before=${before}, expected "Rest …"`);
+      api.playClock.advance(60000); // 過 1 分鐘
+      api.refreshAccountStatuses();
+      const after = cardStatus();
+      if (!after || !after.startsWith("Rest")) errors.push(`#169 ticker: card after=${after}, expected "Rest …"`);
+      if (before === after) errors.push(`#169 ticker: rest countdown frozen (before=after=${before}), expected to decrement`);
+      api.playClock.setOffset(0);
+      accounts.remove(accR.id);
+    }
     // 8) 帳號數回到 baseline（測試自我清理）。
     if (accounts.list().length !== baseline) errors.push(`account count after cleanup = ${accounts.list().length}, expected ${baseline}`);
   } catch (error) {
