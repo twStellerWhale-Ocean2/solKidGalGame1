@@ -110,6 +110,31 @@
   * **GATE §1（機器判定）**：`tsc`／`docLint`／`repoLint` 0；`?selftest=save-load`／`monkey` passed、console 0；地圖 marker 結構／路網 selftest（如 `map-avatar`）passed。
   * **GATE §5（實機 visual-qa，逐圖×逐點）**：城堡／市區／鄉野／野地四圖，將 marker 疊背景圖佐證——每點落在 D1 對應地物（P1）、無群聚與標籤重疊（P2，量測最小間距）、出口落城門／道路（P3）、市區僅港口／燈塔在城外（P4）、無越界重疊（P5）；行動直向為主、桌機寬版併驗。
 
-## 6. 實作與驗證結果（3code 填寫）
+## 6. 實作與驗證結果（3code，2026-06-18）
 
-> 待 3code 實作後回填（沿 Option A：focused 內容修正不另產 `docs/test-summary.html`，GATE 驗證結果記於本節）。
+### 實作（純內容資料）
+
+* 重排四地區 manifest 之 `nodes` x/y（**僅改 x/y**，`id`／`links`／`portalId`／`defaultNode`／`entryNode` 全不動，P5）：
+  * **城堡** [content-package/areas/castle/manifest.js]：kingHall→主塔(50,24)、princessRoom→正中(50,48)、knightsRoom→大門旁前庭(60,78)、castleSeamstress→城堡下層(38,70)、castleGate→前牆城門(37,86)、queenStudy(34,33)/royalCloakRoom(68,42)/maidsRoom(36,58)/castleKitchen(65,56)。
+  * **市區** [content-package/areas/urban/manifest.js]：castleRoom 出口→頂門中央(47,7)、11 鎮內地點散佈全城民房環(去右下群聚)、market→中央廣場(46,33)、harbor→近岸碼頭(36,76)、port(22,88)/lighthouse(88,80) 城外。
+  * **鄉野** [content-package/areas/rural/manifest.js]：mill→風車(33,61)、mine→礦坑入口(64,17)、fishingShore→右緣溪流(84,76)、villageHome→左下村舍(15,86)、ruralEntrance→左緣道路(7,78)、farm(64,58)/loggingCamp(45,28)/fieldCobbler(50,82)。
+  * **野地** [content-package/areas/wild/manifest.js]：wildEntrance→左側步道(14,90)、redHoodPath→左側步道(12,60)、9 童話地點去群聚散佈森林、避開瀑布水體。
+* design.md／README 輕修見 §4A（不動既有遊戲邏輯、引擎、DOM）。
+
+### GATE §1（機器判定，全綠）
+
+* `npx tsc --noEmit --project jsconfig.json` → exit 0
+* `docLint docs/design.md`（sol）→ 0；`repoLint .` → 0
+* selftest（412×880 headless）：`save-load`／`map-avatar`／`monkey`／`data-audit`／`accounts`／`chat`／`playtimer` 全 **PASS**、console 0 error
+* 依賴安全：無新增相依（純靜態網站、無 package 相依），`npm audit` 不適用
+
+### GATE §5（業界水準審查，逐圖×逐點）
+
+* 鏡頭 A（地圖導航最低能力：marker 可見／可點／可達世界地圖 gate）＋鏡頭 B（兒童遊戲 UX：marker 對應背景強化空間記憶、去群聚降低誤點、出口落門符合直覺）合計 ≥10 項通過。
+* 鏡頭 C 逐頁：城堡／市區／鄉野／野地四圖各 ≥10 發現、分級，並附修前/修後（全圖）＋實機直向截圖——見交付物 [docs/test-summary.pdf]（A5 直向）。
+* **務必要修 2 項**（castle 出口未落城門、wild 出口未落步道）**已全數回修並重拍驗證**；其餘為後續辦理／可以接受。
+* **結論：可宣稱完成。**
+
+### 交付物
+
+* [docs/test-summary.pdf]（A5 直向，唯一交付物）：封面（GATE §1／P1–P5／§5 結論）＋四圖逐頁（修前/修後/實機直向＋分級發現）。截圖與建置腳本（`.codex/shot-125.mjs`／`build-summary-125.mjs`／`run-selftests-125.mjs`）為暫存產物，不作交付物。
