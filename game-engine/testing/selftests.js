@@ -72,6 +72,19 @@ function runMapAvatarSelfTest(api) {
     if (!Number.isFinite(left) || !Number.isFinite(top)) errors.push(`${label} token 未定位（left/top 未設）`);
   };
 
+  // issue #166：可逛店（有 shopCategories）地點之地圖 marker 須帶 shop class（呈方形）；
+  // 守住 renderHotspots（區域）／renderCastleMap（城堡）兩 renderer 對商店 marker 的一致性。
+  const isShopLoc = (hotspot) => Array.isArray(hotspot?.shopCategories) && hotspot.shopCategories.length > 0;
+  const checkShopMarkers = (areaId, layerId) => {
+    const layer = document.getElementById(layerId);
+    if (!layer) { errors.push(`${areaId} marker layer (#${layerId}) 不存在`); return; }
+    (api.areaRegistry[areaId]?.locations || []).filter(isShopLoc).forEach((hotspot) => {
+      const marker = layer.querySelector(`.map-marker.hotspot[data-hotspot-id="${hotspot.id}"]`);
+      if (!marker) { errors.push(`${areaId}/${hotspot.id} 商店 marker 未渲染`); return; }
+      if (!marker.classList.contains("shop")) errors.push(`${areaId}/${hotspot.id} 商店 marker 缺 shop class`);
+    });
+  };
+
   // intTest#26：跨地圖公主頭像一致顯示（world / castle / urban / rural / wild）
   api.openWorldMap();
   api.renderWorldMap();
@@ -80,11 +93,13 @@ function runMapAvatarSelfTest(api) {
   api.openArea("castle");
   api.renderCastleMap();
   positioned(api.elements.castlePlayerToken, "castle");
+  checkShopMarkers("castle", "castleMarkerLayer");
 
   for (const areaId of ["urban", "rural", "wild"]) {
     api.openArea(areaId);
     api.renderMap();
     positioned(api.elements.playerToken, areaId);
+    checkShopMarkers(areaId, "hotspotLayer");
   }
 
   // intTest#26（issue #161）：地圖公主 token 放大（≈108×140，較原 54×70 加倍）且已移除識別色背板（.map-doll::before）。
