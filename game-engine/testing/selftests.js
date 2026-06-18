@@ -700,7 +700,7 @@ function runCharacterVoiceSelfTest(api) {
     if (typeof api.speechRateScale !== "number" || typeof api.effectiveSpeechRate !== "function") {
       errors.push("speechRateScale／effectiveSpeechRate hook 缺失");
     } else {
-      if (Math.abs(api.speechRateScale - 0.8) > 0.001) errors.push(`語速倍率應為 0.8，實際 ${api.speechRateScale}`);
+      if (Math.abs(api.speechRateScale - 0.9) > 0.001) errors.push(`語速倍率應為 0.9，實際 ${api.speechRateScale}`);
       const fast = compose({ gender: "female", age: "child", personality: "cheerful" });   // 較快童聲
       const slow = compose({ gender: "male", age: "elderly", personality: "melancholy" });  // 較慢長者
       const fastEff = api.effectiveSpeechRate(fast.rate);

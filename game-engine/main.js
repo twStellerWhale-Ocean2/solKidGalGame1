@@ -140,7 +140,7 @@ function pickEnding(isChat) {
   const pool = isChat ? CHAT_ENDINGS : WORK_ENDINGS;
   return pool[Math.floor(Math.random() * pool.length)];
 }
-const SPEECH_RATE_SCALE = 0.8;          // issue #109 design paramSpeechRateScale：全域朗讀語速倍率（套用於所有發聲）
+const SPEECH_RATE_SCALE = 0.9;          // issue #109 design paramSpeechRateScale：全域朗讀語速倍率（套用於所有發聲）；issue #149 調整 0.8→0.9
 const SPEECH_QUEUE_MODE = "replace-last";
 const SPEECH_DEBOUNCE_MS = 120;
 const SPEECH_LEADING_PAD = "　　　　　　　　"; // issue #134 design paramSpeechLeadingPad：送入 utterance 前於開頭加入前置留白，延後首字、改善開頭清楚度（8 個全形空白 U+3000）
