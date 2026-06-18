@@ -102,6 +102,19 @@ function runMapAvatarSelfTest(api) {
     checkShopMarkers(areaId, "hotspotLayer");
   }
 
+  // intTest#26（issue #161）：地圖公主 token 放大（≈108×140，較原 54×70 加倍）且已移除識別色背板（.map-doll::before）。
+  api.openWorldMap();
+  api.renderWorldMap();
+  const worldDoll = api.elements.worldPlayerToken?.querySelector(".map-doll");
+  if (!worldDoll) {
+    errors.push("world token 缺少 .map-doll");
+  } else {
+    const dollWidth = parseFloat(getComputedStyle(worldDoll).width);
+    if (!(dollWidth >= 100)) errors.push(`map-doll 寬度 ${dollWidth}px，預期放大後 ≈108px（較原 54px 加倍）`);
+    const beforeContent = getComputedStyle(worldDoll, "::before").content;
+    if (beforeContent && beforeContent !== "none") errors.push(`map-doll::before 仍渲染（content=${beforeContent}）；#161 應移除識別色背板`);
+  }
+
   // intTest#27（自由走動）：世界地圖鍵盤走動改變 world 座標
   api.openWorldMap();
   api.renderWorldMap();
@@ -489,7 +502,7 @@ function runSceneNavSelfTest(api) {
   document.body.prepend(result);
 }
 
-// issue #126/#131：驗證 profileColor、粉彩色盤、調色器自訂色、舊存檔相容、背景花紋、共用頭胸大頭照、帳號摘要、地圖橢圓背版與返回初始選單。
+// issue #126/#131/#161：驗證 profileColor、粉彩色盤、調色器自訂色、舊存檔相容、背景花紋、共用頭胸大頭照、帳號摘要與返回初始選單；#161 後地圖 token 不再承載識別色（改由 map-avatar 驗證放大且無背板）。
 function runProfileColorSelfTest(api) {
   const params = new URLSearchParams(location.search);
   if (params.get("selftest") !== "profile-color") return;
@@ -543,8 +556,9 @@ function runProfileColorSelfTest(api) {
     api.closeAccountSelect();
     api.openWorldMap();
     api.renderWorldMap();
-    const mapColor = api.elements.worldPlayerToken?.style.getPropertyValue("--profile-color") || "";
-    if (mapColor !== api.state.profileColor) errors.push(`world token color ${mapColor}, expected ${api.state.profileColor}`);
+    // issue #161：地圖公主 token 已移除識別色背板，不再注入 profileColor（識別色僅用於資訊欄與帳號卡）。
+    const mapTokenColor = api.elements.worldPlayerToken?.style.getPropertyValue("--profile-color") || "";
+    if (mapTokenColor) errors.push(`world token still carries --profile-color (${mapTokenColor}); expected none after #161`);
 
     api.returnToInitialSelect();
     if (!api.elements.accountSelect?.classList.contains("show")) errors.push("return to initial select did not open account select");
