@@ -7,6 +7,8 @@ import {
   outfitSlots,
   playableCharacterById,
   questTemplates,
+  randomProfileColor,
+  randomBackgroundPattern,
   shopItems
 } from "../data/game-data.js";
 import { defaultState } from "./default-state.js";
@@ -81,8 +83,12 @@ export function persistState(state) {
   }
 }
 
-export function freshState() {
+export function freshState({ randomizeTheme = true } = {}) {
   const stateCopy = JSON.parse(JSON.stringify(defaultState));
+  if (randomizeTheme) {
+    stateCopy.profileColor = randomProfileColor();
+    stateCopy.backgroundPattern = randomBackgroundPattern();
+  }
   return stateCopy;
 }
 
@@ -102,12 +108,16 @@ export function sanitizePlayerName(value) {
 }
 
 export function normalizeState(candidate = {}) {
-  const base = freshState();
+  const base = freshState({ randomizeTheme: false });
   const merged = { ...base, ...candidate };
   const activeCharacter = playableCharacterById(candidate.activeCharacterId);
   merged.activeCharacterId = activeCharacter?.id || defaultActiveCharacterId;
-  merged.profileColor = normalizeProfileColor(candidate.profileColor, merged.activeCharacterId);
-  merged.backgroundPattern = normalizeBackgroundPattern(candidate.backgroundPattern);
+  merged.profileColor = typeof candidate.profileColor === "string" && candidate.profileColor.trim()
+    ? normalizeProfileColor(candidate.profileColor, merged.activeCharacterId)
+    : randomProfileColor();
+  merged.backgroundPattern = typeof candidate.backgroundPattern === "string" && candidate.backgroundPattern.trim()
+    ? normalizeBackgroundPattern(candidate.backgroundPattern)
+    : randomBackgroundPattern();
   merged.playerName = sanitizePlayerName(candidate.playerName)
     || activeCharacter?.defaultName
     || base.playerName;

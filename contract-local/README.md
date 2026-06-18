@@ -22,4 +22,4 @@
 
 | 契約 | 分類 | 用途 |
 |---|---|---|
-| [hmiIntf自訂角色尺度與美術規範](hmiIntf自訂角色尺度與美術規範.md) | hmiIntf | 紙娃娃 rig、角色自然尺度與正式美術資產規範 |
+| [hmiIntf自訂角色尺度與美術規範](hmiIntf自訂角色尺度與美術規範.md) | hmiIntf | 紙娃娃 rig、角色自然尺度、可玩角色 base 分層與 GPT 童話手繪 raster 素材規範 |

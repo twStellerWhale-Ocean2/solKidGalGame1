@@ -9,7 +9,9 @@ import {
   profileColorPalette,
   playableCharacterById,
   backgroundPatternIds,
-  normalizeBackgroundPattern
+  normalizeBackgroundPattern,
+  randomProfileColor,
+  randomBackgroundPattern
 } from "./_shared/paper-doll-assets.js";
 import { outfitSlots, paperDollLayerOrder } from "./_shared/rules.js";
 import { castleRoyalCloakRoomItems } from "./castle-royal-cloak-room/manifest.js";
@@ -40,7 +42,9 @@ export {
   playableCharacterById,
   profileColorPalette,
   backgroundPatternIds,
-  normalizeBackgroundPattern
+  normalizeBackgroundPattern,
+  randomProfileColor,
+  randomBackgroundPattern
 };
 //#endregion 匯出共用規則
 

@@ -27,7 +27,7 @@ export const starterItems = [
     id: "solStarterHair",
     storeId: "starter",
     type: "hairstyle",
-    name: "Sol honey bob hair",
+    name: "Mary honey bob hair",
     cost: 0,
     icon: "Hair",
     image: paperDollBaseLayer,

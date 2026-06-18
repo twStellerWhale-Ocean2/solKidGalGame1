@@ -28,8 +28,10 @@ import {
   difficultyConfig,
   playableCharacterById,
   normalizeProfileColor,
+  randomProfileColor,
   backgroundPatternIds,
   normalizeBackgroundPattern,
+  randomBackgroundPattern,
   mapImageSize,
   mapNodes,
   paperDollBaseLayer,
@@ -3840,8 +3842,10 @@ installTestingHooks({
   profileColorPalette,
   defaultProfileColorFor,
   normalizeProfileColor,
+  randomProfileColor,
   backgroundPatternIds,
   normalizeBackgroundPattern,
+  randomBackgroundPattern,
   // 遊玩時間限制與護眼休息（issue #6 / spec#9）測試介面：以注入時鐘驅動，不需真實等待。
   playClock: {
     now: () => clockNow(),
