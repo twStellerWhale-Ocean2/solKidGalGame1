@@ -2793,11 +2793,11 @@ function answerLesson(button, choice) {
   let diaryType = "quest";
   if (isChat) {
     state.mood = (Number(state.mood) || 0) + CHAT_MOOD_REWARD;
-    const addedMin = Math.round(extendSession(state, clockNow(), CHAT_MOOD_REWARD * MOOD_MINUTES_PER_POINT) / 60000);
+    // issue #165：聊天延長遊玩時間仍生效（其延長量改由 HUD Play time 欄位呈現，sysCase#7.5），
+    // 完成回饋僅顯示心情加值、不再帶 "Nice chat!" 招呼語與遊玩時間提示。
+    extendSession(state, clockNow(), CHAT_MOOD_REWARD * MOOD_MINUTES_PER_POINT);
     burstText = `+${CHAT_MOOD_REWARD} mood`;
-    feedbackText = addedMin > 0
-      ? `Nice chat! +${CHAT_MOOD_REWARD} mood, +${addedMin} min play time.`
-      : `Nice chat! +${CHAT_MOOD_REWARD} mood.`;
+    feedbackText = `+${CHAT_MOOD_REWARD} mood`;
     diaryType = "chat";
     playTone("correct");
   } else {
