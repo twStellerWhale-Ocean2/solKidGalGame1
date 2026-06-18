@@ -64,6 +64,39 @@
   * **GATE §1（機器判定）**：`tsc`／`docLint`（sol 0）／`repoLint` 0；`?selftest=save-load`／`monkey`／`chat`／`accounts` passed、console 0。
   * **GATE §5（實機 visual-qa，寬＋窄、行動直向為主）**：對話場景角落——左上公主名、右上行 1 地點／行 2 場景角色名正確、NPC 表情徽章不殘留、名稱過長處理得當、與資訊欄／場景外框／識別色共存；逐頁 ≥10 發現＋截圖＋分級、must-fix 全修。
 
-## 6. 實作與驗證結果（3code，待填）
+## 6. 實作與驗證結果（3code，2026-06-18）
 
-> 沿 #101／#111／#120／#132：本焦點 UI 修正之 GATE 驗證結果於 code 階段回填本節。
+> 沿 #101／#111／#120／#132：本焦點 UI 修正之 GATE 驗證結果記於本節。design.md／README 未改（Option A）。
+
+### 實作（commit `89be2ac`）
+
+* [index.html]：場景 DOM 改為兩個角落容器——`.adv-corner-left`（`#advPlayerTag`＞`#advPlayerName`）與 `.adv-corner-right`（`#advTitle` 地名＋`#advNpcName` 場景角色名）；`#advTitle` 保留（selftest L1822、`elements.advTitle` 沿用）。
+* [styles/adv.css]：以 `.adv-corner`／`.adv-corner-left`／`.adv-corner-right`＋`.adv-tag` 取代舊 `.adv-location` 絕對定位（寬窄共用單一結構）；`.adv-tag-npc:empty` 隱藏空次行；**移除 `.adv-npc::after` 心情表情徽章**（🙂／😄／😮）全部規則。
+* [styles/mobile.css]：移除舊 `.adv-location` 之窄版 `right:58px` 單行避位（兩處）；窄版 `.adv-location` 深色重染改為 `.adv-tag`（三顆膠囊一致）；新增窄版 `.adv-scene .adv-corner { top: 80px }` 使角落標示避開頂部浮動 HUD（z:101、覆蓋場景頂緣約 71px）。
+* [game-engine/main.js]：`openAdvBase` 填入 `advPlayerName=princessName()`、`advNpcName=scene.npc`（場景角色＝公主本人或無對話對象時留空）；移除 `openAdvBase` 與 `setExpressions` 中對 NPC 角落 `data-expression` 之 DOM 寫入（徽章已無）；公主立繪 `princessExpression`（紙娃娃臉）不動。
+* [game-engine/app/elements.js]：新增 `advPlayerName`／`advNpcName`。
+
+### GATE §1（機器判定，全綠）
+
+* `npx -p typescript tsc --noEmit --project jsconfig.json` → exit 0
+* `node --check`（main.js／elements.js）→ OK
+* `docLint docs/design.md`（sol）→ 0；`repoLint .` → 0
+* selftest（412×880 headless）：`save-load`／`map-avatar`／`monkey`／`data-audit`／`accounts`／`chat`／`playtimer`／`profile-color` 全 PASS、console 0 error（`accounts` 單跑 PASS；併跑曾遇 transient `ERR_NO_BUFFER_SPACE`，非程式問題）。
+* 依賴安全：純靜態網站、無 package 相依，`npm audit` 不適用。
+
+### GATE §5（實機 visual-qa，寬版＋窄版；4 場景型別 × 2 斷點）
+
+| 場景（surface） | 窄版 412×880（行動直向） | 寬版 1280×900 |
+|---|---|---|
+| 打工（quest, kingHall） | ✅ 左上 Lumi／右上 King's Hall＋King Rowan，避開 HUD、無徽章 | ✅ 同左、頂緣清爽 |
+| 生活聊天（chat, kingHall） | ✅ 同 quest（同 render 路徑） | ✅ |
+| 商店（shop-scene, castleSeamstress） | ✅ 左上 Lumi／右上 Castle Seamst…（過長截斷 ellipsis）＋Seamstress Bea | ✅ 全名不截斷 |
+| 公主房（princess-room） | ✅ 左上 Lumi／右上僅 Princess Room（場景角色＝公主本人，次行隱藏、不重複） | ✅ |
+
+* 三鏡頭：A（場景對話最低能力：地點/角色可辨識、答題動線完整）＋B（兒童 UX：左右對位即「我是誰/對象是誰/在哪」、移除無功能徽章降干擾）＋C 逐頁（上表 4 頁，行動直向為主）。
+* `務必要修`：窄版角落標示原被頂部 HUD 遮蔽（z:101）、公主房左右重複顯示公主名——**均已回修**（窄版下移 80px 避 HUD；公主本人時隱藏次行）並重拍驗證。其餘為可接受（長地名 ellipsis 為設計內優雅降級）。
+* **結論：可宣稱完成。**
+
+### 交付物（test-summary.pdf 待 USR 裁決）
+
+* 沿 #101／#111／#120／#132 焦點 UI 修正慣例，本節即 GATE 報告；是否另產 A5 直向 [docs/test-summary.pdf]（逐頁≥10 發現）待 USR 裁決（見送審說明）。截圖／腳本（`.codex/shot-150.mjs`／`run-selftests-150.mjs`／`qa150/`）為暫存產物（`.codex/` 已 gitignore）、不作交付物。
