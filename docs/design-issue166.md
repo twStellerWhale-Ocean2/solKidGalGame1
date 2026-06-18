@@ -78,3 +78,39 @@
 * **3code 完成判定**：
   * **GATE §1（機器判定）**：`node --check`（main.js）／`docLint docs/design.md`（sol 0）／`repoLint .` 0；headless selftest（`map-avatar` 等）PASS、console 0 error。建議於 selftest 補可選斷言：所有 `isShopHotspot` 之地圖 marker（含 castle）皆帶 `shop` class，守住兩 renderer 一致性。
   * **GATE §5（實機 visual-qa，寬＋窄、四區含 castle）**：商店 marker 呈方形、與一般圓形地點及 portal 門形清楚有別；castle／urban／rural／wild 之商店一致變方形；target ♥／nearby／disabled 狀態與方形並存無衝突；童趣調性維持、寬窄一致。逐頁發現＋截圖＋分級，must-fix 全修。
+
+## 6. 實作與驗證結果（3code，2026-06-19）
+
+> 沿 #101／#111／#120／#132／#150／#153 焦點 UI 修正慣例：本焦點變更之 GATE 驗證結果記於本節。design.md 未改（Option A，docLint sol 0）。
+
+### 實作
+
+* **D1（[styles/map.css]）**：於 `.hotspot.portal` 之後新增 `.hotspot.shop { border-radius: 10px; }` 與 `.hotspot.shop .hotspot-icon { border-radius: 7px; }`——商店 marker 由圓形（`50%`）改為適度圓角方形，內 icon 板同步方角；保留既有 `.hotspot` 暖色漸層底（同族異形），與 `portal` 門形（`12px 12px 16px 16px`）及圓形地點有別；不覆寫 `.hotspot.target`／`.nearby`／`.disabled` 之高亮（僅改形狀、與其並存）。mobile.css 既有 `.hotspot` 覆寫未動 `border-radius`，方形於窄版自動沿用、無須另立分歧（D5）。
+* **D2（[game-engine/main.js] `renderCastleMap`）**：className 補 `` `${isShopHotspot(hotspot) ? " shop" : ""}` ``，使城堡內部地圖之商店（`royalCloakRoom`／`castleSeamstress`）一致取得 `shop` class；`renderHotspots`（區域地圖）既有 `shop` class 不動，接上 D1 之 CSS 後自動生效——兩 renderer 對「商店＝方形」達成一致，消除原「掛了沒接／castle 漏掛」之半完成 hook。
+* **回歸守門（[game-engine/testing/selftests.js] `map-avatar`）**：於既有跨地圖渲染自測補斷言——castle 與 urban／rural／wild 各區之所有 `isShopHotspot`（非空 `shopCategories`）地點，其地圖 marker 皆須帶 `shop` class（守住兩 renderer 一致性，正是本案修正之 castle 漏掛回歸點）。
+
+### GATE §1（機器判定，全綠）
+
+* `node --check`（`game-engine/main.js`／`game-engine/testing/selftests.js`）→ OK。
+* `docLint docs/design.md`（sol）→ **0**；`repoLint .` → **0**。
+* headless selftest（獨立 context）：`map-avatar`（含 #166 新增 shop-class 斷言）→ `passed:true`、`errors:[]`；`data-audit`（`shopCount:11`）→ `passed:true`、`errors:[]`；console **0 error**。
+* 依賴安全：純靜態網站、無 package 相依，`npm audit` 不適用。
+
+### GATE §5（實機 visual-qa，computed style 為準＋截圖佐證）
+
+| 地圖（surface） | 商店 marker | 一般地點 | 城門/傳送 |
+|---|---|---|---|
+| urban（寬版） | 5 商店 `border-radius:10px`（方）✅ | 9 地點 `50%`（圓）✅ | `luminaraCastle` 門形 ✅ |
+| **castle**（D2 修正點，寬版） | `royalCloakRoom`／`castleSeamstress` `10px`（方）✅ | 6 房間 `50%`（圓）✅ | `castleGate` 門形 ✅ |
+| rural（寬版） | `workwearStall`／`fieldCobbler` `10px`（方）✅ | 全 `50%`（圓）✅ | — |
+| wild（寬版） | `fairyAtelier`／`dwarfCottage` `10px`（方）✅ | 全 `50%`（圓）✅ | — |
+| urban（窄版 376px） | `boutique`／`shoeShop` `10px`（方，30×30）✅ | `library` `50%`（圓）✅ | `luminaraCastle` 門形 ✅ |
+
+* 全方案 **11/11 商店** marker 皆呈方形、各區（含 castle）一致；非商店地點維持圓形、portal 維持門形；窄版同樣方形（D5）。
+* 邊界案例：`harbor`（label「Fish Shop」）因無 `shopCategories`（屬打工/釣魚場景、不販售外觀商品）**正確維持圓形**——規則以 `isShopHotspot` 旗標為準、非依名稱，符合「場景有賣東西」之語意。
+* 三鏡頭：A（HMI 最低能力：可逛店地點於地圖可被辨識，達成）＋B（兒童 UX：方形一眼區分可購物場景）＋C 逐頁（上表 5 surface × 形狀對照、含 castle 與窄版）。`務必要修`：castle 商店原無方形（renderer 漏掛 shop class）——**已修**（D2，selftest 守門佐證）。其餘為可接受（方形採適度圓角延續童趣調性、與 portal 門形有別）。
+* **結論：可宣稱完成。**
+
+### 交付物（test-summary.pdf 待 USR 裁決）
+
+* 沿 #101／#111／#120／#132／#150／#153 焦點 UI 修正慣例，本節即 GATE 報告；是否另產 A5 直向 [docs/test-summary.pdf] 待 USR 裁決。QA 截圖為暫存產物、不作交付物。

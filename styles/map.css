@@ -207,6 +207,18 @@
   background: rgba(43, 82, 54, 0.84);
 }
 
+/* issue #166：有販售（可逛店）地點以方形圖示與一般地點（圓形）、城門（門形）區隔；
+   .shop 由 renderHotspots／renderCastleMap 依 isShopHotspot（shopCategories 旗標）掛上。
+   採適度圓角保留童趣、與 portal 門形有別；shop 與 portal 互斥（商店無 gate/portal），
+   且不覆寫 .hotspot.target／.nearby 之高亮（僅改形狀、與其並存）。 */
+.hotspot.shop {
+  border-radius: 10px;
+}
+
+.hotspot.shop .hotspot-icon {
+  border-radius: 7px;
+}
+
 .hotspot.disabled {
   cursor: not-allowed;
   filter: grayscale(0.35);
