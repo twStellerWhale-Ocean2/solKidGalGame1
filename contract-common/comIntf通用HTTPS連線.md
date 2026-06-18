@@ -17,7 +17,7 @@ description: 通用 HTTPS 通訊承載契約，供人員、瀏覽器、系統或
 
 * 用戶端與服務端應使用有效 TLS 憑證。
 * 服務端應支援必要的 HTTP method、header 與狀態碼。
-* 逾時、重試、身份驗證與授權細節由對應 apiIntf、runAct、etyCfg 或線上標示參數定義。
+* 逾時、重試、身份驗證與授權細節由對應 apiIntf、runWi、etyCfg 或線上標示參數定義。
 
 # IV. 備註紀錄
 

@@ -12,5 +12,4 @@
 |---|---|
 | [comIntf通用HTTPS連線](comIntf通用HTTPS連線.md) | 玩家、瀏覽器與外部服務之 TLS 連線承載 |
 | [apiIntf標準HTTP網站服務](apiIntf標準HTTP網站服務.md) | 靜態主機平台以 HTTP 交付網站包 |
-| [apiIntf標準OPENAI的API協定](apiIntf標準OPENAI的API協定.md) | Help 提示呼叫 OpenAI 的介面協定 |
 | [techStackStaticWeb](techStackStaticWeb.md) | 靜態類技術選型 Profile（無框架 HTML+JS+CSS） |
