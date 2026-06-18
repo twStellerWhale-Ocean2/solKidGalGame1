@@ -1942,10 +1942,8 @@ function openSceneAdv(hotspot) {
   openAdvBase(hotspot, "scene");
   addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
   const scene = sceneConfigFor(hotspot);
-  elements.advLine.textContent = scene.travelLine || hotspot.hint;
-  // issue #149：場景歡迎詞支援中文協助（中文鈕播 travelLineZh）。
-  activeOpeningZh = withPlayerName(scene.travelLineZh) || "";
-  updatePromptAudioButtons();
+  // issue #149：歡迎詞由角色第一人稱發話，並支援中文協助（中文鈕播 travelLineZh）。
+  setAdvLine(scene.travelLine || hotspot.hint, scene.travelLineZh);
   elements.advPrompt.textContent = "Choose what to do here.";
   renderFirstLayerSceneActions(hotspot);
   scheduleAdvFocus(0);
@@ -1954,7 +1952,7 @@ function openSceneAdv(hotspot) {
 
 function openRoomScene(hotspot = hotspotById("princessRoom")) {
   openAdvBase(hotspot, "scene");
-  elements.advLine.textContent = `${princessName()} is in her room. What should we change today?`;
+  setAdvLine(`${princessName()} is in her room. What should we change today?`);
   elements.advPrompt.textContent = "Choose a room action.";
   renderFirstLayerSceneActions(hotspot);
   scheduleAdvFocus(0);
@@ -2085,10 +2083,8 @@ function openQuestAdv(hotspot, opts = {}) {
   advChineseUsed = false;
   advWrongAttempts = 0;
   // issue #149：移除題組 opening 旁白；角色第一人稱台詞即 prompt——以 advLine 呈現、由 NPC 音色朗讀，中文鈕播 promptZh。
-  activeOpeningZh = activeLesson.promptZh || "";
-  elements.advLine.textContent = activeLesson.prompt;
+  setAdvLine(activeLesson.prompt, activeLesson.promptZh);
   elements.advPrompt.textContent = quest.title;
-  updatePromptAudioButtons();
   const zhByChoice = Array.isArray(activeLesson.choicesZh) ? activeLesson.choicesZh : [];
   const allOptions = activeLesson.choices.map((choice, i) => ({ choice, zh: zhByChoice[i] || "" }));
   // issue #138：依互動模式裁切選項數（生活聊天＝2 輕鬆、打工任務＝4），永遠保留正解。
@@ -2113,6 +2109,14 @@ function limitChoiceOptions(options, answer, count) {
 // issue #73：題目（advLine）的中文撥放鈕僅在有中文時顯示。
 function updatePromptAudioButtons() {
   if (elements.speakPromptButtonZh) elements.speakPromptButtonZh.hidden = !activeOpeningZh;
+}
+
+// issue #149：集中設定 advLine 文字與其對應中文（中文協助鈕播此中文）；無中文者一律清空，
+// 避免切換 ADV 模式（場景／商店／退款／衣櫥／提示／完成）時殘留前一畫面的中文（Codex P2）。
+function setAdvLine(text, zh = "") {
+  elements.advLine.textContent = text;
+  activeOpeningZh = zh ? (withPlayerName(zh) || "") : "";
+  updatePromptAudioButtons();
 }
 
 // issue #73：一列選項＝可作答的選項鈕＋英文撥放鈕＋（有中文時）中文撥放鈕。
@@ -2161,7 +2165,7 @@ function helpRewardTier() {
 function openHintAdv(hotspot, line = hotspot.hint) {
   openAdvBase(hotspot, "hint");
   setExpressions("thinking", "normal");
-  elements.advLine.textContent = line;
+  setAdvLine(line);
   elements.advPrompt.textContent = hasLessonsForPlace(hotspot?.id)
     ? "Choose Practice to start this place's English."
     : "This place is for travel or story only.";
@@ -2182,10 +2186,8 @@ function openShopDetail(hotspot) {
   const stockedCategories = availableShopCategories(hotspot);
   shopCategory = stockedCategories.includes(shopCategory) ? shopCategory : stockedCategories[0] || firstCategory;
   clearTryOnPreview({ renderDoll: false });
-  elements.advLine.textContent = shopGreeting(hotspot);
-  // issue #149：商店招呼支援中文協助（中文鈕播 shopGreetingZh）。
-  activeOpeningZh = withPlayerName(sceneConfigFor(hotspot).shopGreetingZh) || "";
-  updatePromptAudioButtons();
+  // issue #149：商店招呼由店家第一人稱發話，並支援中文協助（中文鈕播 shopGreetingZh）。
+  setAdvLine(shopGreeting(hotspot), sceneConfigFor(hotspot).shopGreetingZh);
   elements.advPrompt.textContent = "Tap to preview. BUY to keep.";
   elements.shopArea.classList.remove("wardrobe-detail", "refund-detail");
   elements.shopArea.classList.add("show");
@@ -2199,7 +2201,7 @@ function openRefundDetail(hotspot) {
   activeShopHotspot = hotspot;
   addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
   clearTryOnPreview({ renderDoll: false });
-  elements.advLine.textContent = `${sceneConfigFor(hotspot).npc} can help return treasures from this shop.`;
+  setAdvLine(`${sceneConfigFor(hotspot).npc} can help return treasures from this shop.`);
   elements.advPrompt.textContent = "Tap an owned treasure, then Refund.";
   elements.shopArea.classList.remove("wardrobe-detail");
   elements.shopArea.classList.add("show", "refund-detail");
@@ -2215,7 +2217,7 @@ function openWardrobeDetail(category = "dresses") {
   shopCategory = category;
   clearTryOnPreview({ renderDoll: false });
   elements.advScene.dataset.mode = "wardrobe";
-  elements.advLine.textContent = `Choose ${categoryLabel(category).toLowerCase()} for ${princessName()}.`;
+  setAdvLine(`Choose ${categoryLabel(category).toLowerCase()} for ${princessName()}.`);
   elements.advPrompt.textContent = "Tap to preview, then equip.";
   elements.shopArea.classList.remove("refund-detail");
   elements.shopArea.classList.add("show", "wardrobe-detail");
@@ -2464,7 +2466,7 @@ function tryOnFeedbackText(item, source) {
 function renderShopSoldOut() {
   elements.shopArea.querySelector(".shop-feature")?.remove();
   renderPaperDolls();
-  elements.advLine.textContent = "You found every treasure in this shop.";
+  setAdvLine("You found every treasure in this shop.");
   elements.advPrompt.textContent = "Visit the wardrobe to wear owned treasures.";
   elements.advFeedback.textContent = `${sceneConfigFor(activeShopHotspot).npc} smiles. ${princessName()} can wear owned treasures from the wardrobe.`;
 }
@@ -2503,7 +2505,7 @@ function buyItemInAdv(item) {
   updateProgressBadges();
   addDiary({ type: "shop", title: activeShopHotspot?.label || "Shop", body: `Bought ${item.name}.`, result: `-${item.cost} coins` });
   const feedbackText = item.type === "room" ? `${item.name} is in ${princessName()}'s room now.` : `${item.name} is on ${princessName()} now.`;
-  elements.advLine.textContent = `${item.name} is yours now. It looks wonderful.`;
+  setAdvLine(`${item.name} is yours now. It looks wonderful.`);
   elements.advFeedback.textContent = feedbackText;
   elements.statusMessage.textContent = feedbackText;
   showRewardBurst(`${item.name} ✦`);
@@ -2599,7 +2601,7 @@ function refundItemInAdv(item) {
   clearRemovedEquippedItems(removedOwnedIds);
   shopPreviewItemId = "";
   const feedbackText = `Refunded ${item.name} for ${amount} coins.`;
-  elements.advLine.textContent = feedbackText;
+  setAdvLine(feedbackText);
   elements.advFeedback.textContent = feedbackText;
   elements.statusMessage.textContent = feedbackText;
   addDiary({ type: "shop", title: activeShopHotspot?.label || "Refund", body: `Refunded ${item.name}.`, result: `+${amount} coins` });
@@ -2751,7 +2753,7 @@ function answerLesson(button, choice) {
   });
   // issue #149：題組不再帶 ending 旁白；無 ending 時以簡短收尾語替代（NPC 音色朗讀）。
   const doneLead = isChat ? "Nice chat!" : "Great work!";
-  elements.advLine.textContent = quest.ending || doneLead;
+  setAdvLine(quest.ending || doneLead);
   // issue #143：完成後一律 Back 回第一層場景選單，提示文案對齊（不再分商店／非商店或提示 room／leave）。
   elements.advPrompt.textContent = "Go back to choose what to do next here.";
   elements.advFeedback.textContent = feedbackText;
