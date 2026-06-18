@@ -110,7 +110,7 @@ const REWARD_SECOND_TRY_RATIO = 0.5;    // design paramRewardSecondTryRatio
 const CHAT_MOOD_REWARD = 1;             // issue #135 design paramChatMoodReward：每次生活聊天答對增加的心情值
 const MOOD_MINUTES_PER_POINT = 1;       // issue #135 design paramMoodMinutesPerPoint：每點心情換算延長的遊玩分鐘數
 const CHAT_CHOICE_COUNT = 2;            // issue #138 design paramChatChoiceCount：生活聊天每題呈現選項數（輕鬆寒暄）
-const JOB_CHOICE_COUNT = 4;             // issue #138 design paramJobChoiceCount：打工任務每題呈現選項數
+const JOB_CHOICE_COUNT = 3;             // issue #149 design paramJobChoiceCount：打工任務每題呈現選項數（#138 為 4、#149 收斂為 3）
 const SPEECH_RATE_SCALE = 0.8;          // issue #109 design paramSpeechRateScale：全域朗讀語速倍率（套用於所有發聲）
 const SPEECH_QUEUE_MODE = "replace-last";
 const SPEECH_DEBOUNCE_MS = 120;
@@ -604,6 +604,12 @@ function withPlayerName(text) {
   return typeof text === "string" ? text.replaceAll("Lumi", princessName()) : text;
 }
 
+// issue #149：題庫不再逐題手寫 words；缺 words 時由正解英文句導出（小寫、去標點、拆詞），供 learnedWords／日誌記錄。
+function deriveWordsFromAnswer(answer) {
+  if (typeof answer !== "string") return [];
+  return answer.toLowerCase().replace(/[^a-z'\s]/g, " ").split(/\s+/).filter(Boolean);
+}
+
 function localizeLesson(lesson) {
   if (!lesson) return lesson;
   return {
@@ -613,7 +619,9 @@ function localizeLesson(lesson) {
     answer: withPlayerName(lesson.answer),
     choices: Array.isArray(lesson.choices) ? lesson.choices.map(withPlayerName) : lesson.choices,
     choicesZh: Array.isArray(lesson.choicesZh) ? lesson.choicesZh.map(withPlayerName) : lesson.choicesZh,
-    words: Array.isArray(lesson.words) ? lesson.words.map(withPlayerName) : lesson.words
+    words: Array.isArray(lesson.words) && lesson.words.length
+      ? lesson.words.map(withPlayerName)
+      : deriveWordsFromAnswer(withPlayerName(lesson.answer))
   };
 }
 
@@ -1935,6 +1943,9 @@ function openSceneAdv(hotspot) {
   addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
   const scene = sceneConfigFor(hotspot);
   elements.advLine.textContent = scene.travelLine || hotspot.hint;
+  // issue #149：場景歡迎詞支援中文協助（中文鈕播 travelLineZh）。
+  activeOpeningZh = withPlayerName(scene.travelLineZh) || "";
+  updatePromptAudioButtons();
   elements.advPrompt.textContent = "Choose what to do here.";
   renderFirstLayerSceneActions(hotspot);
   scheduleAdvFocus(0);
@@ -2073,9 +2084,10 @@ function openQuestAdv(hotspot, opts = {}) {
   activeLesson = localizeLesson(lesson);
   advChineseUsed = false;
   advWrongAttempts = 0;
-  activeOpeningZh = withPlayerName(quest.openingZh) || "";
-  elements.advLine.textContent = quest.opening;
-  elements.advPrompt.textContent = `${quest.title}: ${activeLesson.prompt}`;
+  // issue #149：移除題組 opening 旁白；角色第一人稱台詞即 prompt——以 advLine 呈現、由 NPC 音色朗讀，中文鈕播 promptZh。
+  activeOpeningZh = activeLesson.promptZh || "";
+  elements.advLine.textContent = activeLesson.prompt;
+  elements.advPrompt.textContent = quest.title;
   updatePromptAudioButtons();
   const zhByChoice = Array.isArray(activeLesson.choicesZh) ? activeLesson.choicesZh : [];
   const allOptions = activeLesson.choices.map((choice, i) => ({ choice, zh: zhByChoice[i] || "" }));
@@ -2086,7 +2098,7 @@ function openQuestAdv(hotspot, opts = {}) {
   // issue #143：第二層答題（聊天／打工）離開統一為 Back 回第一層場景選單，不直接跳出場景。
   addAdvOption("↩ Back", () => backToSceneMenu(hotspot), { navigation: true });
   scheduleAdvFocus(0);
-  speak(quest.opening, npcVoiceFor(hotspot), { source: "npc-quest-opening" });
+  speak(activeLesson.prompt, npcVoiceFor(hotspot), { source: "npc-quest-prompt" });
 }
 
 // issue #138：依互動模式裁切選項數，永遠保留正解；選項數不足時原樣返回。
@@ -2171,6 +2183,9 @@ function openShopDetail(hotspot) {
   shopCategory = stockedCategories.includes(shopCategory) ? shopCategory : stockedCategories[0] || firstCategory;
   clearTryOnPreview({ renderDoll: false });
   elements.advLine.textContent = shopGreeting(hotspot);
+  // issue #149：商店招呼支援中文協助（中文鈕播 shopGreetingZh）。
+  activeOpeningZh = withPlayerName(sceneConfigFor(hotspot).shopGreetingZh) || "";
+  updatePromptAudioButtons();
   elements.advPrompt.textContent = "Tap to preview. BUY to keep.";
   elements.shopArea.classList.remove("wardrobe-detail", "refund-detail");
   elements.shopArea.classList.add("show");
@@ -2734,10 +2749,11 @@ function answerLesson(button, choice) {
     words: activeLesson.words,
     vocabProfile: activeLesson.vocabProfile
   });
-  elements.advLine.textContent = quest.ending;
+  // issue #149：題組不再帶 ending 旁白；無 ending 時以簡短收尾語替代（NPC 音色朗讀）。
+  const doneLead = isChat ? "Nice chat!" : "Great work!";
+  elements.advLine.textContent = quest.ending || doneLead;
   // issue #143：完成後一律 Back 回第一層場景選單，提示文案對齊（不再分商店／非商店或提示 room／leave）。
-  const doneLead = isChat ? "Nice chat." : "Practice complete.";
-  elements.advPrompt.textContent = `${doneLead} Go back to choose what to do next here.`;
+  elements.advPrompt.textContent = "Go back to choose what to do next here.";
   elements.advFeedback.textContent = feedbackText;
   state.activeQuest = null;
   activeLesson = null;

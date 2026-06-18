@@ -63,171 +63,106 @@ export const castleArea = Object.freeze({
 });
 //#endregion 地圖與地點設定
 
-//#region 場景自帶題庫（issue #96）
-// castleLessonBank：以 place 為鍵的手寫固定題庫，每題自帶中文（promptZh／choicesZh）；
-// 由 mergeLessons 併入 castleSceneConfigs 對應條目，使場景進場時就近取用。
+//#region 場景自帶題庫（issue #96 結構；issue #149 全量改寫：角色第一人稱、prompt 即台詞、選項即公主回應、無 opening/ending）
+// castleLessonBank：以 place 為鍵的「打工任務」題庫（答對得 coins＝勞動所得）。
+// issue #149：prompt＝場景角色第一人稱對公主之請求／任務；choices＝公主可說出的回應；每場景 3 題、每題 3 選項；words 由引擎自正解導出。
+const jobReward = { coins: 20 };
 const castleLessonBank = Object.freeze({
   kingHall: {
-    theme: "royal hall",
     title: "Help in the King's Hall",
-    opening: "The king smiles. A small job is here.",
-    openingZh: "國王笑了。這裡有一個小任務。",
-    ending: "Good work. The hall is bright.",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick the sentence for the king.", promptZh: "選出要對國王說的句子。", answer: "The king is here.", choices: ["The king is here.","The fish is here.","We go down.","It is red."], choicesZh: ["國王在這裡。","魚在這裡。","我們往下走。","它是紅色的。"], words: ["the","is","here","king"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick what Lumi can see.", promptZh: "選出 Lumi 看得到的東西。", answer: "I see the crown.", choices: ["I see the crown.","I see the door.","Go to sleep.","The cow can run."], choicesZh: ["我看到皇冠。","我看到門。","去睡覺。","牛會跑。"], words: ["I","see","the","crown"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick the polite help sentence.", promptZh: "選出有禮貌的幫忙句子。", answer: "Can I help?", choices: ["Can I help?","Can I jump?","I am away.","They are blue."], choicesZh: ["我可以幫忙嗎？","我可以跳嗎？","我不在。","它們是藍色的。"], words: ["can","I","help"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick the sentence about the hall.", promptZh: "選出關於大廳的句子。", answer: "This hall is big.", choices: ["This hall is big.","This hall is wet.","My hat is red.","She has a fish."], choicesZh: ["這個大廳很大。","這個大廳是濕的。","我的帽子是紅色的。","她有一條魚。"], words: ["this","is","big","hall"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick the happy sentence.", promptZh: "選出開心的句子。", answer: "We can go now.", choices: ["We can go now.","We can eat now.","They are not here.","Look at my shoe."], choicesZh: ["我們現在可以走了。","我們現在可以吃了。","他們不在這裡。","看看我的鞋子。"], words: ["we","can","go","now"], reward: { coins: 20 } }
+      { questionType: "sentence-choice", prompt: "Please look at the crown.", promptZh: "請看看王冠。", answer: "I see the crown.", choices: ["I see the crown.","I see the soup.","I see the fish."], choicesZh: ["我看到王冠。","我看到湯。","我看到魚。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Please stand by me.", promptZh: "請站在我旁邊。", answer: "I will stand by you.", choices: ["I will run.","I will stand by you.","I will read the note."], choicesZh: ["我要跑。","我會站在你旁邊。","我要讀便條。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "The hall is big. Can we go now?", promptZh: "大廳很大。我們可以走了嗎？", answer: "We can go now.", choices: ["The bread is under the bed.","The cat has a hat.","We can go now."], choicesZh: ["麵包在床底下。","貓有一頂帽子。","我們現在可以走了。"], reward: jobReward }
     ]
   },
   queenStudy: {
-    theme: "study room",
     title: "Help in the Queen's Study",
-    opening: "The queen has a book and a note.",
-    openingZh: "皇后有一本書和一張紙條。",
-    ending: "The study is neat now.",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick the sentence about the book.", promptZh: "選出關於書的句子。", answer: "I have a book.", choices: ["I have a book.","I have a cow.","You run fast.","It is under me."], choicesZh: ["我有一本書。","我有一頭牛。","你跑得很快。","它在我下面。"], words: ["I","have","a","book"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick what the queen can do.", promptZh: "選出皇后會做的事。", answer: "She can read.", choices: ["She can read.","She can run.","He can jump.","We see red."], choicesZh: ["她會讀書。","她會跑。","他會跳。","我們看到紅色。"], words: ["she","can","read"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick the sentence about the desk.", promptZh: "選出關於書桌的句子。", answer: "The desk is clean.", choices: ["The desk is clean.","The desk is blue.","A dog is clean.","I go up."], choicesZh: ["書桌很乾淨。","書桌是藍色的。","一隻狗很乾淨。","我往上走。"], words: ["the","is","clean","desk"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick the kind sentence.", promptZh: "選出親切的句子。", answer: "This is for you.", choices: ["This is for you.","This is away.","They came fast.","I am under it."], choicesZh: ["這是給你的。","這個離得很遠。","他們來得很快。","我在它下面。"], words: ["this","is","for","you"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick the sentence about flowers.", promptZh: "選出關於花的句子。", answer: "I see pretty flowers.", choices: ["I see pretty flowers.","I see pretty shoes.","The shoe is pretty.","Go by the tree."], choicesZh: ["我看到漂亮的花。","我看到漂亮的鞋子。","這隻鞋子很漂亮。","走到樹旁邊。"], words: ["I","see","pretty","flowers"], reward: { coins: 20 } }
+      { questionType: "sentence-choice", prompt: "Please put the book on the desk.", promptZh: "請把書放在書桌上。", answer: "I put the book on the desk.", choices: ["I put the book on the desk.","I put the soup on the bed.","I run in the room."], choicesZh: ["我把書放在書桌上。","我把湯放在床上。","我在房間裡跑。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Please give this note to me.", promptZh: "請把這張便條給我。", answer: "Here is the note.", choices: ["This is my hat.","Here is the note.","The fish is hot."], choicesZh: ["這是我的帽子。","便條在這裡。","魚很熱。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Can you read this page with me?", promptZh: "你可以和我一起讀這一頁嗎？", answer: "Yes, I can read with you.", choices: ["I see six fish.","Do not run.","Yes, I can read with you."], choicesZh: ["我看到六條魚。","不要跑。","好的，我可以和你一起讀。"], reward: jobReward }
     ]
   },
   castleKitchen: {
-    theme: "kitchen",
     title: "Help in the Castle Kitchen",
-    opening: "Cook Panna needs a hand stirring the soup and setting the table.",
-    openingZh: "Panna 廚師需要有人幫忙攪湯、擺好餐桌。",
-    ending: "The warm soup is ready.",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick the sentence about soup.", promptZh: "選出關於湯的句子。", answer: "The soup is hot.", choices: ["The soup is hot.","The soup is little.","The tree is hot.","I see a king."], choicesZh: ["湯很燙。","湯很少。","樹很熱。","我看到一位國王。"], words: ["the","is","hot","soup"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick what Lumi wants.", promptZh: "選出 Lumi 想要的東西。", answer: "I want some bread.", choices: ["I want some bread.","I want some rain.","You want my shoe.","They go away."], choicesZh: ["我想要一些麵包。","我想要一些雨。","你想要我的鞋子。","他們離開了。"], words: ["I","want","some","bread"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick the sentence about water.", promptZh: "選出關於水的句子。", answer: "Please get water.", choices: ["Please get water.","Please get a crown.","Please get bread.","She is not here."], choicesZh: ["請去拿水。","請去拿一頂皇冠。","請去拿麵包。","她不在這裡。"], words: ["please","get","water"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick the sentence about the table.", promptZh: "選出關於桌子的句子。", answer: "Put it on the table.", choices: ["Put it on the table.","Put it on the bed.","I like the table.","We came down."], choicesZh: ["把它放在桌上。","把它放在床上。","我喜歡桌子。","我們下來了。"], words: ["put","it","on","the","table"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick the safe kitchen sentence.", promptZh: "選出廚房裡安全的句子。", answer: "Do not run.", choices: ["Do not run.","Do not jump.","The pot is hot.","Look at me."], choicesZh: ["不要奔跑。","不要跳。","鍋子很燙。","看看我。"], words: ["do","not","run"], reward: { coins: 20 } }
+      { questionType: "sentence-choice", prompt: "Please put the bread on the table.", promptZh: "請把麵包放在餐桌上。", answer: "I put the bread on the table.", choices: ["I put the bread on the table.","I put the crown in the soup.","I see a big hall."], choicesZh: ["我把麵包放在餐桌上。","我把王冠放進湯裡。","我看到大廳很大。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Please get water for lunch.", promptZh: "請幫午餐拿水。", answer: "Here is the water.", choices: ["The towel is white.","Here is the water.","The knight can read."], choicesZh: ["毛巾是白色的。","水在這裡。","騎士會讀書。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "The kitchen is busy. Please be safe.", promptZh: "廚房很忙。請注意安全。", answer: "I will not run.", choices: ["I will run fast.","I will put soup on the floor.","I will not run."], choicesZh: ["我會跑很快。","我會把湯放在地上。","我不會跑。"], reward: jobReward }
     ]
   },
   knightsRoom: {
-    theme: "knights room",
     title: "Help in the Knights' Room",
-    opening: "The knight waves from the practice room.",
-    openingZh: "騎士從練習室向你揮手。",
-    ending: "The practice room is safe.",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick the sentence about the knight.", promptZh: "選出關於騎士的句子。", answer: "He can help.", choices: ["He can help.","He can sleep.","She can eat.","It is yellow."], choicesZh: ["他可以幫忙。","他可以睡覺。","她可以吃。","它是黃色的。"], words: ["he","can","help"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick the sentence about the shield.", promptZh: "選出關於盾牌的句子。", answer: "The shield is round.", choices: ["The shield is round.","The shield is wet.","My fish is round.","We like soup."], choicesZh: ["盾牌是圓的。","盾牌是濕的。","我的魚是圓的。","我們喜歡湯。"], words: ["the","is","round","shield"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick the action sentence.", promptZh: "選出表示動作的句子。", answer: "Stand by me.", choices: ["Stand by me.","Run by me.","Eat by me.","Read by me."], choicesZh: ["站在我旁邊。","從我旁邊跑過。","在我旁邊吃。","在我旁邊讀。"], words: ["stand","by","me"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick the sentence about a flag.", promptZh: "選出關於旗子的句子。", answer: "Look at the flag.", choices: ["Look at the flag.","Look at the soup.","The flag is red.","I am not big."], choicesZh: ["看看那面旗子。","看看那碗湯。","旗子是紅色的。","我不大。"], words: ["look","at","the","flag"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick the kind sentence.", promptZh: "選出親切的句子。", answer: "We are ready.", choices: ["We are ready.","We are little.","They are under.","You see bread."], choicesZh: ["我們準備好了。","我們很小。","他們在下面。","你看到麵包。"], words: ["we","are","ready"], reward: { coins: 20 } }
+      { questionType: "sentence-choice", prompt: "Please look at the shield.", promptZh: "請看看盾牌。", answer: "The shield is round.", choices: ["The shield is round.","The bread is cold.","The book is on the desk."], choicesZh: ["盾牌是圓的。","麵包是冷的。","書在書桌上。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Please stand by me.", promptZh: "請站在我旁邊。", answer: "I will stand by you.", choices: ["I will stand on the table.","I will stand by you.","I will stand near the door."], choicesZh: ["我會站在餐桌上。","我會站在你旁邊。","我會站在門旁邊。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Please look at the flag.", promptZh: "請看看旗子。", answer: "I see the flag.", choices: ["The towel is in the basket.","The fish is on ice.","I see the flag."], choicesZh: ["毛巾在籃子裡。","魚在冰上。","我看到旗子。"], reward: jobReward }
     ]
   },
   maidsRoom: {
-    theme: "maids room",
     title: "Help in the Maid's Room",
-    opening: "The maid is folding clean cloth.",
-    openingZh: "女僕正在摺乾淨的布。",
-    ending: "The room is tidy now.",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick the sentence about the room.", promptZh: "選出關於房間的句子。", answer: "The room is clean.", choices: ["The room is clean.","The room is red.","The fish is clean.","I go out."], choicesZh: ["房間很乾淨。","房間是紅色的。","魚很乾淨。","我出去。"], words: ["the","is","clean","room"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick the sentence about cloth.", promptZh: "選出關於布的句子。", answer: "This cloth is white.", choices: ["This cloth is white.","This cloth is wet.","The king is white.","We eat it."], choicesZh: ["這塊布是白色的。","這塊布是濕的。","國王是白色的。","我們把它吃掉。"], words: ["this","is","white","cloth"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick what Lumi can do.", promptZh: "選出 Lumi 會做的事。", answer: "I can fold it.", choices: ["I can fold it.","I can wash it.","You can hold it.","I can drop it."], choicesZh: ["我可以把它摺起來。","我可以把它洗乾淨。","你可以拿著它。","我可以把它放下。"], words: ["I","can","fold","it"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick the sentence about a basket.", promptZh: "選出關於籃子的句子。", answer: "Put it in the basket.", choices: ["Put it in the basket.","Put it on the shelf.","The basket is hot.","I like the basket."], choicesZh: ["把它放進籃子裡。","把它放到架上。","籃子很燙。","我喜歡這個籃子。"], words: ["put","it","in","the","basket"], reward: { coins: 20 } },
-      { questionType: "sentence-choice", prompt: "Pick the thank-you sentence.", promptZh: "選出道謝的句子。", answer: "Thank you for help.", choices: ["Thank you for help.","Thank you for fish.","They are not you.","Go up and away."], choicesZh: ["謝謝你的幫忙。","謝謝你的魚。","他們不是你。","往上飛走。"], words: ["thank","you","for","help"], reward: { coins: 20 } }
+      { questionType: "sentence-choice", prompt: "Please fold this white cloth.", promptZh: "請折這塊白布。", answer: "I can fold it.", choices: ["I can fold it.","I can hold the cloth.","I can put cloth on the chair."], choicesZh: ["我可以折它。","我可以拿著布。","我可以把布放在椅子上。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Please put the cloth in the basket.", promptZh: "請把布放進籃子裡。", answer: "I put it in the basket.", choices: ["I put the crown on the fish.","I put it in the basket.","I run in the room."], choicesZh: ["我把王冠放在魚上。","我把它放進籃子裡。","我在房間裡跑。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Thank you for your help, Princess.", promptZh: "謝謝你的幫忙，公主。", answer: "You are welcome.", choices: ["The hall is big.","This is a hot soup.","You are welcome."], choicesZh: ["大廳很大。","這是一碗熱湯。","不客氣。"], reward: jobReward }
     ]
   }
 });
 //#endregion 場景自帶題庫
 
-//#region 生活聊天題庫（issue #135 spec#11）
-// castleChatLessonBank：每個場景的「生活聊天」題組——貼近生活的寒暄、感受與禮貌用語（Dolch 程度、單句）。
-// 與打工題庫分開：聊天答對提升心情並在護眼上限內延長可玩時間、不發 coins（reward.coins=0 僅為結構一致）。
-// 干擾項為合理但情境不符的簡單句（非超現實），由 mergeLessons 以 chatLesson 鍵併入對應場景。
+//#region 生活聊天題庫（issue #135 spec#11；issue #149 全量改寫：角色第一人稱、無 opening/ending）
+// castleChatLessonBank：每個場景的「生活聊天」題組——角色以第一人稱對公主寒暄、提問；每場景 2 題、每題 2 選項。
+// 答對提升心情並在護眼上限內延長可玩時間、不發 coins（reward.coins=0 僅為結構一致）。
 const chatReward = { coins: 0 };
 const castleChatLessonBank = Object.freeze({
   kingHall: {
-    theme: "greeting the king",
     title: "Chat in the King's Hall",
-    opening: "The king waves hello to you.",
-    openingZh: "國王向你揮手打招呼。",
-    ending: "The king smiles. What a nice chat.",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick the friendly hello for the king.", promptZh: "選出對國王親切的招呼。", answer: "Good morning, King.", choices: ["Good morning, King.","Go away now.","Sit down, King.","Not now, King."], choicesZh: ["國王早安。","現在走開。","國王坐下。","國王現在不行。"], words: ["good","morning","king"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Pick the polite answer to \"How are you?\"", promptZh: "選出「你好嗎？」的有禮貌回答。", answer: "I am very well.", choices: ["I am very well.","No, you are not.","Stop right now.","Go to bed."], choicesZh: ["我很好。","不，你才不是。","現在停下。","去睡覺。"], words: ["I","am","very","well"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Pick the kind goodbye.", promptZh: "選出親切的道別。", answer: "See you soon!", choices: ["See you soon!","Go away fast.","Give it to me.","Sit down now."], choicesZh: ["待會見！","快走開。","把它給我。","現在坐下。"], words: ["see","you","soon"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Good morning, my dear.", promptZh: "早安，親愛的。", answer: "Good morning, Father.", choices: ["Good morning, Father.","The soup is hot."], choicesZh: ["早安，父王。","湯很熱。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "How are you today?", promptZh: "你今天好嗎？", answer: "I am very well.", choices: ["I see the crown.","I am very well."], choicesZh: ["我看到王冠。","我很好。"], reward: chatReward }
     ]
   },
   queenStudy: {
-    theme: "chatting about books",
     title: "Chat in the Queen's Study",
-    opening: "The queen looks up from her book.",
-    openingZh: "皇后從書本中抬起頭。",
-    ending: "The queen is glad you talked with her.",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick what you like to do.", promptZh: "選出你喜歡做的事。", answer: "I like to read.", choices: ["I like to read.","I do not care.","Be quiet now.","Go away please."], choicesZh: ["我喜歡看書。","我不在乎。","現在安靜。","請走開。"], words: ["I","like","to","read"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Pick the polite thank-you.", promptZh: "選出有禮貌的道謝。", answer: "Thank you very much.", choices: ["Thank you very much.","No, not you.","Stop talking now.","Give me more."], choicesZh: ["非常謝謝你。","不，不是你。","現在別說了。","再給我一些。"], words: ["thank","you","very","much"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Pick the friendly question.", promptZh: "選出親切的提問。", answer: "What is your book?", choices: ["What is your book?","Go to sleep.","Sit down now.","Do not look."], choicesZh: ["你的書是什麼？","去睡覺。","現在坐下。","不要看。"], words: ["what","is","your","book"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Do you like this book?", promptZh: "你喜歡這本書嗎？", answer: "I like this book.", choices: ["I like this book.","I see the crown."], choicesZh: ["我喜歡這本書。","我看到王冠。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Thank you for sitting with me.", promptZh: "謝謝你坐在我身邊。", answer: "Thank you, Mother.", choices: ["The room is big.","Thank you, Mother."], choicesZh: ["房間很大。","謝謝，母后。"], reward: chatReward }
     ]
   },
   castleKitchen: {
-    theme: "chatting in the kitchen",
     title: "Chat in the Castle Kitchen",
-    opening: "The cook stirs the pot and says hi.",
-    openingZh: "廚師一邊攪鍋一邊和你打招呼。",
-    ending: "The cook laughs. Lunch will be fun.",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick how you feel before lunch.", promptZh: "選出午餐前你的感受。", answer: "I am hungry.", choices: ["I am hungry.","I am not here.","Do not eat.","Go to bed now."], choicesZh: ["我餓了。","我不在這裡。","不要吃。","現在去睡覺。"], words: ["I","am","hungry"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Pick the polite request.", promptZh: "選出有禮貌的請求。", answer: "Some soup, please.", choices: ["Some soup, please.","Give it now.","No, not that.","Stop it now."], choicesZh: ["請給我一些湯。","現在給我。","不，不是那個。","現在停下。"], words: ["some","soup","please"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Pick the kind thing to say.", promptZh: "選出親切的話。", answer: "It smells so good.", choices: ["It smells so good.","It is too bad.","I do not like it.","Throw it away."], choicesZh: ["聞起來真香。","真糟糕。","我不喜歡它。","把它丟掉。"], words: ["it","smells","so","good"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Are you hungry, Princess?", promptZh: "公主，你餓了嗎？", answer: "I am hungry.", choices: ["I am hungry.","The shield is round."], choicesZh: ["我餓了。","盾牌是圓的。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "This soup smells good.", promptZh: "這碗湯聞起來很香。", answer: "Some soup, please.", choices: ["I see the flag.","Some soup, please."], choicesZh: ["我看到旗子。","請給我一些湯。"], reward: chatReward }
     ]
   },
   knightsRoom: {
-    theme: "cheering the knight",
     title: "Chat in the Knights' Room",
-    opening: "The knight is happy to see you.",
-    openingZh: "騎士看到你很開心。",
-    ending: "The knight gives you a big thumbs up.",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick the friendly compliment.", promptZh: "選出親切的稱讚。", answer: "You are very strong.", choices: ["You are very strong.","You are too slow.","Go away now.","Sit down now."], choicesZh: ["你很強壯。","你太慢了。","現在走開。","現在坐下。"], words: ["you","are","very","strong"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Pick the way to ask to play.", promptZh: "選出邀請一起玩的說法。", answer: "Let us play now.", choices: ["Let us play now.","Go to sleep.","Do not move.","Stop it now."], choicesZh: ["我們現在來玩吧。","去睡覺。","不要動。","現在停下。"], words: ["let","us","play","now"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Pick the cheer.", promptZh: "選出加油打氣的話。", answer: "Good job, Theo!", choices: ["Good job, Theo!","That is bad.","Not now, Theo.","Go away fast."], choicesZh: ["做得好，Theo！","那很糟。","現在不行，Theo。","快走開。"], words: ["good","job"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Do you want to play a safe game?", promptZh: "你想玩一個安全的小遊戲嗎？", answer: "Let us play now.", choices: ["Let us play now.","The soup is on the desk."], choicesZh: ["我們現在玩吧。","湯在書桌上。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "I am checking my shield.", promptZh: "我正在檢查我的盾牌。", answer: "Your shield is strong.", choices: ["This book is soft.","Your shield is strong."], choicesZh: ["這本書很柔軟。","你的盾牌很堅固。"], reward: chatReward }
     ]
   },
   maidsRoom: {
-    theme: "chatting with the maid",
     title: "Chat in the Maid's Room",
-    opening: "The maid smiles and folds a towel.",
-    openingZh: "女僕微笑著摺毛巾。",
-    ending: "The maid is happy to chat with you.",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick the friendly hello.", promptZh: "選出親切的招呼。", answer: "Hello, how are you?", choices: ["Hello, how are you?","Go away now.","Be quiet now.","Sit down now."], choicesZh: ["你好，你好嗎？","現在走開。","現在安靜。","現在坐下。"], words: ["hello","how","are","you"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Pick the kind offer to help.", promptZh: "選出親切的幫忙提議。", answer: "Can I help you?", choices: ["Can I help you?","Do it now.","Not my job.","Go away please."], choicesZh: ["我可以幫你嗎？","現在做。","不是我的事。","請走開。"], words: ["can","I","help","you"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Pick the nice thing to say.", promptZh: "選出好聽的話。", answer: "The room looks nice.", choices: ["The room looks nice.","The room is bad.","I do not care.","Clean it now."], choicesZh: ["房間看起來很好。","房間很糟。","我不在乎。","現在打掃。"], words: ["the","room","looks","nice"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "How are you, Princess?", promptZh: "公主，你好嗎？", answer: "Hello, I am well.", choices: ["Hello, I am well.","The crown is hot."], choicesZh: ["你好，我很好。","王冠很熱。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "This room looks nice today.", promptZh: "今天這個房間看起來很漂亮。", answer: "The room looks nice.", choices: ["I want fish.","The room looks nice."], choicesZh: ["我想要魚。","房間看起來很漂亮。"], reward: chatReward }
     ]
   },
   royalCloakRoom: {
-    theme: "chatting in the cloak room",
     title: "Chat in the Royal Cloak Room",
-    opening: "The Cloak Keeper smiles by the warm coats.",
-    openingZh: "斗篷管理員在暖和的外套旁微笑。",
-    ending: "The Cloak Keeper is glad you stopped to chat.",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick the friendly hello.", promptZh: "選出親切的招呼。", answer: "Hello! It is cold today.", choices: ["Hello! It is cold today.","Go away now.","Give me a coat.","Sit down now."], choicesZh: ["你好！今天好冷。","現在走開。","把外套給我。","現在坐下。"], words: ["hello","it","is","cold"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Pick what you like here.", promptZh: "選出你喜歡的東西。", answer: "I like this warm coat.", choices: ["I like this warm coat.","I do not care.","Go to bed now.","Not now, please."], choicesZh: ["我喜歡這件暖外套。","我不在乎。","現在去睡覺。","現在不行。"], words: ["I","like","warm","coat"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Pick the kind goodbye.", promptZh: "選出親切的道別。", answer: "Thank you, see you soon!", choices: ["Thank you, see you soon!","Go away fast.","Give it to me.","That is bad."], choicesZh: ["謝謝，待會見！","快走開。","把它給我。","那很糟。"], words: ["thank","you","see","soon"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "It is cold today, Princess.", promptZh: "公主，今天有點冷。", answer: "I like this warm cloak.", choices: ["I like this warm cloak.","I see six fish."], choicesZh: ["我喜歡這件暖和的披風。","我看到六條魚。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "This hat is for a long walk.", promptZh: "這頂帽子適合長路旅行。", answer: "Thank you. I will try the hat.", choices: ["The soup is on the table.","Thank you. I will try the hat."], choicesZh: ["湯在餐桌上。","謝謝。我會試試這頂帽子。"], reward: chatReward }
     ]
   },
   castleSeamstress: {
-    theme: "chatting with the seamstress",
     title: "Chat with the Castle Seamstress",
-    opening: "Seamstress Bea looks up from her sewing and smiles.",
-    openingZh: "裁縫師 Bea 從針線中抬起頭微笑。",
-    ending: "Seamstress Bea is happy you talked with her.",
     questions: [
-      { questionType: "sentence-choice", prompt: "Pick the polite hello for Bea.", promptZh: "選出對 Bea 有禮貌的招呼。", answer: "Good morning, Bea.", choices: ["Good morning, Bea.","Go away, Bea.","Sit down, Bea.","Not now, Bea."], choicesZh: ["早安，Bea。","走開，Bea。","坐下，Bea。","現在不行，Bea。"], words: ["good","morning"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Pick what you like here.", promptZh: "選出你喜歡的東西。", answer: "I like this soft top.", choices: ["I like this soft top.","I do not care.","Throw it away.","Go to sleep."], choicesZh: ["我喜歡這件柔軟的上衣。","我不在乎。","把它丟掉。","去睡覺。"], words: ["I","like","soft","top"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Pick the thank-you.", promptZh: "選出道謝的話。", answer: "Thank you for the help.", choices: ["Thank you for the help.","No, not you.","Give me more.","Stop it now."], choicesZh: ["謝謝你的幫忙。","不，不是你。","再給我一些。","現在停下。"], words: ["thank","you","for","help"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Do you like this soft top?", promptZh: "你喜歡這件柔軟的上衣嗎？", answer: "I like this soft top.", choices: ["I like this soft top.","The shield is round."], choicesZh: ["我喜歡這件柔軟的上衣。","盾牌是圓的。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Thank you for coming to my room.", promptZh: "謝謝你來我的裁縫室。", answer: "Thank you for the help.", choices: ["I see a fish.","Thank you for the help."], choicesZh: ["我看到一條魚。","謝謝你的幫忙。"], reward: chatReward }
     ]
   }
 });
@@ -235,17 +170,17 @@ const castleChatLessonBank = Object.freeze({
 
 //#region 對話場景設定
 // 每個屬性名稱對應地點或節點，控制對話畫面的背景、NPC 與按鈕文案。
+// issue #149：travelLine／shopGreeting 改為角色第一人稱對公主發話，並補中文（travelLineZh／shopGreetingZh）。
 export const castleSceneConfigs = mergeLessons(mergeLessons({
-  princessRoom: { ...princessRoomArt, scene: "scene-princess-room", npcClass: "npc-none", npc: "Lumi", travelAction: "Enter", travelLine: "Lumi's room is ready for hair, clothes, outerwear, shoes, and accessories." },
-  kingHall: { ...castleSceneArt("king-hall"), scene: "scene-castle-king-hall", npc: "King Rowan", npcImage: npcImage("king-rowan"), npcNaturalHeightCm: 178, travelAction: "Visit", travelLine: "King Rowan is waiting in the bright royal hall." },
-  queenStudy: { ...castleSceneArt("queen-study"), scene: "scene-castle-queen-study", npc: "Queen Mira", npcImage: npcImage("queen-mira"), npcNaturalHeightCm: 165, travelAction: "Visit", travelLine: "Queen Mira has opened her study book." },
-  castleKitchen: { ...castleSceneArt("castle-kitchen"), scene: "scene-castle-kitchen", npc: "Cook Panna", npcImage: npcImage("cook-panna"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Cook Panna stirs warm soup for the castle." },
-  knightsRoom: { ...castleSceneArt("knights-room"), scene: "scene-castle-knights-room", npc: "Knight Theo", npcImage: npcImage("knight-theo"), npcNaturalHeightCm: 182, travelAction: "Visit", travelLine: "Knight Theo is checking the shields." },
-  maidsRoom: { ...castleSceneArt("maids-room"), scene: "scene-castle-maids-room", npc: "Maid Lala", npcImage: npcImage("maid-lala"), npcNaturalHeightCm: 158, travelAction: "Visit", travelLine: "Maid Lala is folding soft white cloth." },
-  royalCloakRoom: { ...castleShopArt("royal-cloak-room"), scene: "scene-castle-royal-cloak-room", npc: "Cloak Keeper", npcImage: npcImage("royal-cloak-keeper"), npcNaturalHeightCm: 170, travelAction: "Shop", travelLine: "The Cloak Keeper has royal outerwear and hats.", shopGreeting: "Welcome to the Royal Cloak Room. Pick outerwear or hats." },
-  castleSeamstress: { ...castleShopArt("castle-seamstress"), scene: "scene-castle-seamstress", npc: "Seamstress Bea", npcImage: npcImage("castle-seamstress"), npcNaturalHeightCm: 158, travelAction: "Shop", travelLine: "Seamstress Bea has castle tops and bottoms ready.", shopGreeting: "Welcome to the Castle Seamstress. Pick tops or bottoms." },
-  castleGate: { ...gardenArt, scene: "scene-castle-gate", npcClass: "npc-garden", npc: "Gate Guard", travelAction: "World Map", travelLine: "The castle gate opens the kingdom world map." }
+  princessRoom: { ...princessRoomArt, scene: "scene-princess-room", npcClass: "npc-none", npc: "Lumi", travelAction: "Enter", travelLine: "This is my room. I can dress for the trip.", travelLineZh: "這是我的房間。我可以為旅程換裝。" },
+  kingHall: { ...castleSceneArt("king-hall"), scene: "scene-castle-king-hall", npc: "King Rowan", npcImage: npcImage("king-rowan"), npcNaturalHeightCm: 178, travelAction: "Visit", travelLine: "Hello, my dear. Come to the hall.", travelLineZh: "你好，親愛的。來大廳吧。" },
+  queenStudy: { ...castleSceneArt("queen-study"), scene: "scene-castle-queen-study", npc: "Queen Mira", npcImage: npcImage("queen-mira"), npcNaturalHeightCm: 165, travelAction: "Visit", travelLine: "Come here, my dear. Let us read.", travelLineZh: "過來吧，親愛的。我們一起讀書吧。" },
+  castleKitchen: { ...castleSceneArt("castle-kitchen"), scene: "scene-castle-kitchen", npc: "Cook Panna", npcImage: npcImage("cook-panna"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Hello, Princess. The soup is warm.", travelLineZh: "你好，公主。湯是溫熱的。" },
+  knightsRoom: { ...castleSceneArt("knights-room"), scene: "scene-castle-knights-room", npc: "Knight Theo", npcImage: npcImage("knight-theo"), npcNaturalHeightCm: 182, travelAction: "Visit", travelLine: "Hello, Princess. My shield is ready.", travelLineZh: "你好，公主。我的盾牌準備好了。" },
+  maidsRoom: { ...castleSceneArt("maids-room"), scene: "scene-castle-maids-room", npc: "Maid Lala", npcImage: npcImage("maid-lala"), npcNaturalHeightCm: 158, travelAction: "Visit", travelLine: "Hello, Princess. The room is clean.", travelLineZh: "你好，公主。房間很乾淨。" },
+  royalCloakRoom: { ...castleShopArt("royal-cloak-room"), scene: "scene-castle-royal-cloak-room", npc: "Cloak Keeper", npcImage: npcImage("royal-cloak-keeper"), npcNaturalHeightCm: 170, travelAction: "Shop", travelLine: "Hello, Princess. My cloaks and hats are ready.", travelLineZh: "你好，公主。我的外套和帽子準備好了。", shopGreeting: "Try this warm cloak, Princess.", shopGreetingZh: "公主，試試這件暖和的披風吧。" },
+  castleSeamstress: { ...castleShopArt("castle-seamstress"), scene: "scene-castle-seamstress", npc: "Seamstress Bea", npcImage: npcImage("castle-seamstress"), npcNaturalHeightCm: 158, travelAction: "Shop", travelLine: "Good morning, Princess. Soft clothes are ready.", travelLineZh: "早安，公主。柔軟的衣服準備好了。", shopGreeting: "Pick a top or a skirt, Princess.", shopGreetingZh: "公主，選一件上衣或裙子吧。" },
+  castleGate: { ...gardenArt, scene: "scene-castle-gate", npcClass: "npc-garden", npc: "Gate Guard", travelAction: "World Map", travelLine: "Princess, the gate is open. You can go to the world map.", travelLineZh: "公主，城門打開了。你可以前往世界地圖。" }
 }, castleLessonBank, { area: "castle", vocabProfile: castleVocabularyProfile.id }),
   castleChatLessonBank, { area: "castle", vocabProfile: castleVocabularyProfile.id }, "chatLesson");
 //#endregion 對話場景設定
-
