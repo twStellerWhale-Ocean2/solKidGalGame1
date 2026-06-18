@@ -110,8 +110,37 @@ const REWARD_SECOND_TRY_RATIO = 0.5;    // design paramRewardSecondTryRatio
 const CHAT_MOOD_REWARD = 1;             // issue #135 design paramChatMoodReward：每次生活聊天答對增加的心情值
 const MOOD_MINUTES_PER_POINT = 1;       // issue #135 design paramMoodMinutesPerPoint：每點心情換算延長的遊玩分鐘數
 const CHAT_CHOICE_COUNT = 2;            // issue #138 design paramChatChoiceCount：生活聊天每題呈現選項數（輕鬆寒暄）
-const JOB_CHOICE_COUNT = 4;             // issue #138 design paramJobChoiceCount：打工任務每題呈現選項數
-const SPEECH_RATE_SCALE = 0.8;          // issue #109 design paramSpeechRateScale：全域朗讀語速倍率（套用於所有發聲）
+const JOB_CHOICE_COUNT = 3;             // issue #149 design paramJobChoiceCount：打工任務每題呈現選項數（#138 為 4、#149 收斂為 3）
+// issue #149：題組不再帶 ending 旁白；完成時由角色說一句自然收尾（聊天＝道別、打工＝稱讚＋道謝），隨機選一句並附中文、由 NPC 音色朗讀，取代固定的 "Nice chat!"／"Great work!"。
+const CHAT_ENDINGS = [
+  { en: "See you soon, Princess!", zh: "待會見，公主！" },
+  { en: "Take care, Princess!", zh: "公主，保重喔！" },
+  { en: "Come and chat again soon!", zh: "要再來聊天喔！" },
+  { en: "Bye for now, Princess!", zh: "先這樣囉，公主，再見！" },
+  { en: "It was lovely talking with you.", zh: "和你聊天真開心。" },
+  { en: "Thanks for stopping by, Princess!", zh: "謝謝你過來，公主！" },
+  { en: "Have a wonderful day!", zh: "祝你有美好的一天！" },
+  { en: "See you next time!", zh: "下次見！" },
+  { en: "I always enjoy our chats.", zh: "我每次都很喜歡和你聊天。" },
+  { en: "Take good care, and come back soon!", zh: "好好保重，要再來喔！" }
+];
+const WORK_ENDINGS = [
+  { en: "Good job! Thank you, Princess.", zh: "做得好！謝謝你，公主。" },
+  { en: "Great work! Thank you so much.", zh: "做得很棒！非常謝謝你。" },
+  { en: "Well done! Thank you for your help.", zh: "太好了！謝謝你的幫忙。" },
+  { en: "Wonderful! You helped me a lot.", zh: "太棒了！你幫了我大忙。" },
+  { en: "Perfect! I could not have done it without you.", zh: "完美！沒有你我做不到。" },
+  { en: "Amazing work, Princess! Thank you!", zh: "公主，做得太厲害了！謝謝你！" },
+  { en: "You did it! Thank you, Princess.", zh: "你做到了！謝謝你，公主。" },
+  { en: "Such a big help! Thank you!", zh: "真是幫了大忙！謝謝你！" },
+  { en: "Nicely done! I really appreciate it.", zh: "做得真好！我真的很感謝。" },
+  { en: "Brilliant! You are a great helper.", zh: "太棒了！你是很棒的小幫手。" }
+];
+function pickEnding(isChat) {
+  const pool = isChat ? CHAT_ENDINGS : WORK_ENDINGS;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+const SPEECH_RATE_SCALE = 0.9;          // issue #109 design paramSpeechRateScale：全域朗讀語速倍率（套用於所有發聲）；issue #149 調整 0.8→0.9
 const SPEECH_QUEUE_MODE = "replace-last";
 const SPEECH_DEBOUNCE_MS = 120;
 const SPEECH_LEADING_PAD = "　　　　　　　　"; // issue #134 design paramSpeechLeadingPad：送入 utterance 前於開頭加入前置留白，延後首字、改善開頭清楚度（8 個全形空白 U+3000）
@@ -604,6 +633,12 @@ function withPlayerName(text) {
   return typeof text === "string" ? text.replaceAll("Lumi", princessName()) : text;
 }
 
+// issue #149：題庫不再逐題手寫 words；缺 words 時由正解英文句導出（小寫、去標點、拆詞），供 learnedWords／日誌記錄。
+function deriveWordsFromAnswer(answer) {
+  if (typeof answer !== "string") return [];
+  return answer.toLowerCase().replace(/[^a-z'\s]/g, " ").split(/\s+/).filter(Boolean);
+}
+
 function localizeLesson(lesson) {
   if (!lesson) return lesson;
   return {
@@ -613,7 +648,9 @@ function localizeLesson(lesson) {
     answer: withPlayerName(lesson.answer),
     choices: Array.isArray(lesson.choices) ? lesson.choices.map(withPlayerName) : lesson.choices,
     choicesZh: Array.isArray(lesson.choicesZh) ? lesson.choicesZh.map(withPlayerName) : lesson.choicesZh,
-    words: Array.isArray(lesson.words) ? lesson.words.map(withPlayerName) : lesson.words
+    words: Array.isArray(lesson.words) && lesson.words.length
+      ? lesson.words.map(withPlayerName)
+      : deriveWordsFromAnswer(withPlayerName(lesson.answer))
   };
 }
 
@@ -1934,7 +1971,8 @@ function openSceneAdv(hotspot) {
   openAdvBase(hotspot, "scene");
   addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
   const scene = sceneConfigFor(hotspot);
-  elements.advLine.textContent = scene.travelLine || hotspot.hint;
+  // issue #149：歡迎詞由角色第一人稱發話，並支援中文協助（中文鈕播 travelLineZh）。
+  setAdvLine(scene.travelLine || hotspot.hint, scene.travelLineZh);
   elements.advPrompt.textContent = "Choose what to do here.";
   renderFirstLayerSceneActions(hotspot);
   scheduleAdvFocus(0);
@@ -1943,7 +1981,7 @@ function openSceneAdv(hotspot) {
 
 function openRoomScene(hotspot = hotspotById("princessRoom")) {
   openAdvBase(hotspot, "scene");
-  elements.advLine.textContent = `${princessName()} is in her room. What should we change today?`;
+  setAdvLine(`${princessName()} is in her room. What should we change today?`);
   elements.advPrompt.textContent = "Choose a room action.";
   renderFirstLayerSceneActions(hotspot);
   scheduleAdvFocus(0);
@@ -2073,10 +2111,9 @@ function openQuestAdv(hotspot, opts = {}) {
   activeLesson = localizeLesson(lesson);
   advChineseUsed = false;
   advWrongAttempts = 0;
-  activeOpeningZh = withPlayerName(quest.openingZh) || "";
-  elements.advLine.textContent = quest.opening;
-  elements.advPrompt.textContent = `${quest.title}: ${activeLesson.prompt}`;
-  updatePromptAudioButtons();
+  // issue #149：移除題組 opening 旁白；角色第一人稱台詞即 prompt——以 advLine 呈現、由 NPC 音色朗讀，中文鈕播 promptZh。
+  setAdvLine(activeLesson.prompt, activeLesson.promptZh);
+  elements.advPrompt.textContent = quest.title;
   const zhByChoice = Array.isArray(activeLesson.choicesZh) ? activeLesson.choicesZh : [];
   const allOptions = activeLesson.choices.map((choice, i) => ({ choice, zh: zhByChoice[i] || "" }));
   // issue #138：依互動模式裁切選項數（生活聊天＝2 輕鬆、打工任務＝4），永遠保留正解。
@@ -2086,7 +2123,7 @@ function openQuestAdv(hotspot, opts = {}) {
   // issue #143：第二層答題（聊天／打工）離開統一為 Back 回第一層場景選單，不直接跳出場景。
   addAdvOption("↩ Back", () => backToSceneMenu(hotspot), { navigation: true });
   scheduleAdvFocus(0);
-  speak(quest.opening, npcVoiceFor(hotspot), { source: "npc-quest-opening" });
+  speak(activeLesson.prompt, npcVoiceFor(hotspot), { source: "npc-quest-prompt" });
 }
 
 // issue #138：依互動模式裁切選項數，永遠保留正解；選項數不足時原樣返回。
@@ -2101,6 +2138,14 @@ function limitChoiceOptions(options, answer, count) {
 // issue #73：題目（advLine）的中文撥放鈕僅在有中文時顯示。
 function updatePromptAudioButtons() {
   if (elements.speakPromptButtonZh) elements.speakPromptButtonZh.hidden = !activeOpeningZh;
+}
+
+// issue #149：集中設定 advLine 文字與其對應中文（中文協助鈕播此中文）；無中文者一律清空，
+// 避免切換 ADV 模式（場景／商店／退款／衣櫥／提示／完成）時殘留前一畫面的中文（Codex P2）。
+function setAdvLine(text, zh = "") {
+  elements.advLine.textContent = text;
+  activeOpeningZh = zh ? (withPlayerName(zh) || "") : "";
+  updatePromptAudioButtons();
 }
 
 // issue #73：一列選項＝可作答的選項鈕＋英文撥放鈕＋（有中文時）中文撥放鈕。
@@ -2149,7 +2194,7 @@ function helpRewardTier() {
 function openHintAdv(hotspot, line = hotspot.hint) {
   openAdvBase(hotspot, "hint");
   setExpressions("thinking", "normal");
-  elements.advLine.textContent = line;
+  setAdvLine(line);
   elements.advPrompt.textContent = hasLessonsForPlace(hotspot?.id)
     ? "Choose Practice to start this place's English."
     : "This place is for travel or story only.";
@@ -2170,7 +2215,8 @@ function openShopDetail(hotspot) {
   const stockedCategories = availableShopCategories(hotspot);
   shopCategory = stockedCategories.includes(shopCategory) ? shopCategory : stockedCategories[0] || firstCategory;
   clearTryOnPreview({ renderDoll: false });
-  elements.advLine.textContent = shopGreeting(hotspot);
+  // issue #149：商店招呼由店家第一人稱發話，並支援中文協助（中文鈕播 shopGreetingZh）。
+  setAdvLine(shopGreeting(hotspot), sceneConfigFor(hotspot).shopGreetingZh);
   elements.advPrompt.textContent = "Tap to preview. BUY to keep.";
   elements.shopArea.classList.remove("wardrobe-detail", "refund-detail");
   elements.shopArea.classList.add("show");
@@ -2184,7 +2230,7 @@ function openRefundDetail(hotspot) {
   activeShopHotspot = hotspot;
   addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
   clearTryOnPreview({ renderDoll: false });
-  elements.advLine.textContent = `${sceneConfigFor(hotspot).npc} can help return treasures from this shop.`;
+  setAdvLine(`${sceneConfigFor(hotspot).npc} can help return treasures from this shop.`);
   elements.advPrompt.textContent = "Tap an owned treasure, then Refund.";
   elements.shopArea.classList.remove("wardrobe-detail");
   elements.shopArea.classList.add("show", "refund-detail");
@@ -2200,7 +2246,7 @@ function openWardrobeDetail(category = "dresses") {
   shopCategory = category;
   clearTryOnPreview({ renderDoll: false });
   elements.advScene.dataset.mode = "wardrobe";
-  elements.advLine.textContent = `Choose ${categoryLabel(category).toLowerCase()} for ${princessName()}.`;
+  setAdvLine(`Choose ${categoryLabel(category).toLowerCase()} for ${princessName()}.`);
   elements.advPrompt.textContent = "Tap to preview, then equip.";
   elements.shopArea.classList.remove("refund-detail");
   elements.shopArea.classList.add("show", "wardrobe-detail");
@@ -2449,7 +2495,7 @@ function tryOnFeedbackText(item, source) {
 function renderShopSoldOut() {
   elements.shopArea.querySelector(".shop-feature")?.remove();
   renderPaperDolls();
-  elements.advLine.textContent = "You found every treasure in this shop.";
+  setAdvLine("You found every treasure in this shop.");
   elements.advPrompt.textContent = "Visit the wardrobe to wear owned treasures.";
   elements.advFeedback.textContent = `${sceneConfigFor(activeShopHotspot).npc} smiles. ${princessName()} can wear owned treasures from the wardrobe.`;
 }
@@ -2488,7 +2534,7 @@ function buyItemInAdv(item) {
   updateProgressBadges();
   addDiary({ type: "shop", title: activeShopHotspot?.label || "Shop", body: `Bought ${item.name}.`, result: `-${item.cost} coins` });
   const feedbackText = item.type === "room" ? `${item.name} is in ${princessName()}'s room now.` : `${item.name} is on ${princessName()} now.`;
-  elements.advLine.textContent = `${item.name} is yours now. It looks wonderful.`;
+  setAdvLine(`${item.name} is yours now. It looks wonderful.`);
   elements.advFeedback.textContent = feedbackText;
   elements.statusMessage.textContent = feedbackText;
   showRewardBurst(`${item.name} ✦`);
@@ -2584,7 +2630,7 @@ function refundItemInAdv(item) {
   clearRemovedEquippedItems(removedOwnedIds);
   shopPreviewItemId = "";
   const feedbackText = `Refunded ${item.name} for ${amount} coins.`;
-  elements.advLine.textContent = feedbackText;
+  setAdvLine(feedbackText);
   elements.advFeedback.textContent = feedbackText;
   elements.statusMessage.textContent = feedbackText;
   addDiary({ type: "shop", title: activeShopHotspot?.label || "Refund", body: `Refunded ${item.name}.`, result: `+${amount} coins` });
@@ -2734,10 +2780,11 @@ function answerLesson(button, choice) {
     words: activeLesson.words,
     vocabProfile: activeLesson.vocabProfile
   });
-  elements.advLine.textContent = quest.ending;
+  // issue #149：完成時由角色說一句自然收尾（聊天=道別、打工=稱讚＋道謝），隨機選一句並附中文（NPC 音色朗讀）。
+  const closing = pickEnding(isChat);
+  setAdvLine(quest.ending || closing.en, quest.ending ? "" : closing.zh);
   // issue #143：完成後一律 Back 回第一層場景選單，提示文案對齊（不再分商店／非商店或提示 room／leave）。
-  const doneLead = isChat ? "Nice chat." : "Practice complete.";
-  elements.advPrompt.textContent = `${doneLead} Go back to choose what to do next here.`;
+  elements.advPrompt.textContent = "Go back to choose what to do next here.";
   elements.advFeedback.textContent = feedbackText;
   state.activeQuest = null;
   activeLesson = null;

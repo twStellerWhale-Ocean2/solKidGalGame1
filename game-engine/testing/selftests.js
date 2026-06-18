@@ -634,13 +634,13 @@ function runChineseRewardSelfTest(api) {
     const gainedThird = api.state.coins - before;
     if (gainedThird !== 0) errors.push(`third-try gained ${gainedThird}, expected 0`);
 
-    // E) 跨地區中文覆蓋：每區一處應渲染題目中文鈕與 4 個選項中文鈕
+    // E) 跨地區中文覆蓋：每區一處（打工題）應渲染題目中文鈕與 3 個選項中文鈕（issue #149：打工選項 4→3）
     for (const [area, p] of [["castle", "kingHall"], ["urban", "garden"], ["rural", "mine"], ["wild", "elfGlade"]]) {
       openOne(p);
       const zhCount = api.elements.choiceList.querySelectorAll(".choice-audio-button.zh").length;
       const promptZhHidden = document.getElementById("speakPromptButtonZh").hidden;
-      if (zhCount !== 4) errors.push(`${area}/${p}: zh choice buttons ${zhCount}, expected 4`);
-      if (promptZhHidden) errors.push(`${area}/${p}: prompt zh button hidden (missing openingZh)`);
+      if (zhCount !== 3) errors.push(`${area}/${p}: zh choice buttons ${zhCount}, expected 3`);
+      if (promptZhHidden) errors.push(`${area}/${p}: prompt zh button hidden (missing promptZh)`);
     }
 
     api.closeAdv();
@@ -700,7 +700,7 @@ function runCharacterVoiceSelfTest(api) {
     if (typeof api.speechRateScale !== "number" || typeof api.effectiveSpeechRate !== "function") {
       errors.push("speechRateScale／effectiveSpeechRate hook 缺失");
     } else {
-      if (Math.abs(api.speechRateScale - 0.8) > 0.001) errors.push(`語速倍率應為 0.8，實際 ${api.speechRateScale}`);
+      if (Math.abs(api.speechRateScale - 0.9) > 0.001) errors.push(`語速倍率應為 0.9，實際 ${api.speechRateScale}`);
       const fast = compose({ gender: "female", age: "child", personality: "cheerful" });   // 較快童聲
       const slow = compose({ gender: "male", age: "elderly", personality: "melancholy" });  // 較慢長者
       const fastEff = api.effectiveSpeechRate(fast.rate);
@@ -1022,8 +1022,8 @@ async function runDataAudit(api) {
       lessonAudit.places += 1;
       lessonAudit.byArea[area.id] = (lessonAudit.byArea[area.id] || 0) + 1;
       const at = `${area.id}/${hotspot.id}`;
-      if (!lesson.title || !lesson.opening || !lesson.ending) errors.push(`${at} lesson missing title/opening/ending`);
-      if (!lesson.openingZh) errors.push(`${at} lesson missing openingZh`);
+      if (!lesson.title) errors.push(`${at} lesson missing title`);
+      // issue #149：移除題組 opening/ending 旁白（角色第一人稱台詞即 prompt），故不再檢查 opening/ending/openingZh。
       if (!lesson.area || !lesson.vocabProfile) errors.push(`${at} lesson missing area/vocabProfile (completedLessons/徽章/日誌所需)`);
       if (!Array.isArray(lesson.questions) || !lesson.questions.length) { errors.push(`${at} lesson has no questions`); return; }
       lesson.questions.forEach((q, i) => {
@@ -1031,7 +1031,7 @@ async function runDataAudit(api) {
         const where = `${at}#${i + 1}`;
         if (!q.prompt || !q.answer || !Array.isArray(q.choices) || q.choices.length < 2) errors.push(`${where} missing prompt/answer/choices`);
         else if (!q.choices.includes(q.answer)) errors.push(`${where} answer not in choices`);
-        if (!Array.isArray(q.words) || !q.words.length) errors.push(`${where} missing words`);
+        // issue #149：words 改由引擎自正解英文導出（不再逐題手寫），故不檢查 words。
         if (!q.reward || !Number.isFinite(q.reward.coins)) errors.push(`${where} missing reward.coins`);
         if (!q.promptZh) errors.push(`${where} missing promptZh (中文協助所需)`);
         if (!Array.isArray(q.choicesZh) || q.choicesZh.length !== q.choices.length || q.choicesZh.some((z) => !z)) errors.push(`${where} choicesZh incomplete (中文協助所需)`);
@@ -1052,8 +1052,8 @@ async function runDataAudit(api) {
       chatAudit.places += 1;
       chatAudit.byArea[area.id] = (chatAudit.byArea[area.id] || 0) + 1;
       const at = `${area.id}/${hotspot.id}`;
-      if (!chat.title || !chat.opening || !chat.ending) errors.push(`${at} chatLesson missing title/opening/ending`);
-      if (!chat.openingZh) errors.push(`${at} chatLesson missing openingZh`);
+      if (!chat.title) errors.push(`${at} chatLesson missing title`);
+      // issue #149：聊天題組同移除 opening/ending 旁白，故不再檢查 opening/ending/openingZh。
       if (!chat.area || !chat.vocabProfile) errors.push(`${at} chatLesson missing area/vocabProfile`);
       if (!Array.isArray(chat.questions) || !chat.questions.length) { errors.push(`${at} chatLesson has no questions`); return; }
       chat.questions.forEach((q, i) => {
@@ -1061,7 +1061,7 @@ async function runDataAudit(api) {
         const where = `${at} chat#${i + 1}`;
         if (!q.prompt || !q.answer || !Array.isArray(q.choices) || q.choices.length < 2) errors.push(`${where} missing prompt/answer/choices`);
         else if (!q.choices.includes(q.answer)) errors.push(`${where} answer not in choices`);
-        if (!Array.isArray(q.words) || !q.words.length) errors.push(`${where} missing words`);
+        // issue #149：words 改由引擎自正解英文導出（不再逐題手寫），故不檢查 words。
         if (!q.reward || !Number.isFinite(q.reward.coins)) errors.push(`${where} missing reward.coins`);
         else if (q.reward.coins !== 0) errors.push(`${where} chat reward.coins must be 0`);
         if (!q.promptZh) errors.push(`${where} missing promptZh (中文協助所需)`);
