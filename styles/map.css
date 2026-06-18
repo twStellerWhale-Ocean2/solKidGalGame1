@@ -212,11 +212,11 @@
    採適度圓角保留童趣、與 portal 門形有別；shop 與 portal 互斥（商店無 gate/portal），
    且不覆寫 .hotspot.target／.nearby 之高亮（僅改形狀、與其並存）。 */
 .hotspot.shop {
-  border-radius: 10px;
+  border-radius: 4px;
 }
 
 .hotspot.shop .hotspot-icon {
-  border-radius: 7px;
+  border-radius: 3px;
 }
 
 .hotspot.disabled {

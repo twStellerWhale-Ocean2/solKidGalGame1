@@ -85,7 +85,8 @@
 
 ### 實作
 
-* **D1（[styles/map.css]）**：於 `.hotspot.portal` 之後新增 `.hotspot.shop { border-radius: 10px; }` 與 `.hotspot.shop .hotspot-icon { border-radius: 7px; }`——商店 marker 由圓形（`50%`）改為適度圓角方形，內 icon 板同步方角；保留既有 `.hotspot` 暖色漸層底（同族異形），與 `portal` 門形（`12px 12px 16px 16px`）及圓形地點有別；不覆寫 `.hotspot.target`／`.nearby`／`.disabled` 之高亮（僅改形狀、與其並存）。mobile.css 既有 `.hotspot` 覆寫未動 `border-radius`，方形於窄版自動沿用、無須另立分歧（D5）。
+* **D1（[styles/map.css]）**：於 `.hotspot.portal` 之後新增 `.hotspot.shop { border-radius: 4px; }` 與 `.hotspot.shop .hotspot-icon { border-radius: 3px; }`——商店 marker 由圓形（`50%`）改為**銳利方角**（僅留極小圓角避免完全硬邊、維持童趣），內 icon 板同步方角；保留既有 `.hotspot` 暖色漸層底（同族異形），與 `portal` 門形（`12px 12px 16px 16px`）及圓形地點有別；不覆寫 `.hotspot.target`／`.nearby`／`.disabled` 之高亮（僅改形狀、與其並存）。mobile.css 既有 `.hotspot` 覆寫未動 `border-radius`，方形於窄版自動沿用、無須另立分歧（D5）。
+  * **USR 回饋微調（2026-06-19）**：初版 `10px`／`7px` 圓角過於圓潤、與圓形不易區分；依 USR 回饋收斂為 `4px`／`3px`（固定 px、各尺寸一致銳利），使方形於寬窄版皆清楚可辨。
 * **D2（[game-engine/main.js] `renderCastleMap`）**：className 補 `` `${isShopHotspot(hotspot) ? " shop" : ""}` ``，使城堡內部地圖之商店（`royalCloakRoom`／`castleSeamstress`）一致取得 `shop` class；`renderHotspots`（區域地圖）既有 `shop` class 不動，接上 D1 之 CSS 後自動生效——兩 renderer 對「商店＝方形」達成一致，消除原「掛了沒接／castle 漏掛」之半完成 hook。
 * **回歸守門（[game-engine/testing/selftests.js] `map-avatar`）**：於既有跨地圖渲染自測補斷言——castle 與 urban／rural／wild 各區之所有 `isShopHotspot`（非空 `shopCategories`）地點，其地圖 marker 皆須帶 `shop` class（守住兩 renderer 一致性，正是本案修正之 castle 漏掛回歸點）。
 
@@ -100,11 +101,11 @@
 
 | 地圖（surface） | 商店 marker | 一般地點 | 城門/傳送 |
 |---|---|---|---|
-| urban（寬版） | 5 商店 `border-radius:10px`（方）✅ | 9 地點 `50%`（圓）✅ | `luminaraCastle` 門形 ✅ |
-| **castle**（D2 修正點，寬版） | `royalCloakRoom`／`castleSeamstress` `10px`（方）✅ | 6 房間 `50%`（圓）✅ | `castleGate` 門形 ✅ |
-| rural（寬版） | `workwearStall`／`fieldCobbler` `10px`（方）✅ | 全 `50%`（圓）✅ | — |
-| wild（寬版） | `fairyAtelier`／`dwarfCottage` `10px`（方）✅ | 全 `50%`（圓）✅ | — |
-| urban（窄版 376px） | `boutique`／`shoeShop` `10px`（方，30×30）✅ | `library` `50%`（圓）✅ | `luminaraCastle` 門形 ✅ |
+| urban（寬版） | 5 商店 `border-radius:4px`（方）✅ | 9 地點 `50%`（圓）✅ | `luminaraCastle` 門形 ✅ |
+| **castle**（D2 修正點，寬版） | `royalCloakRoom`／`castleSeamstress` `4px`（方）✅ | 6 房間 `50%`（圓）✅ | `castleGate` 門形 ✅ |
+| rural（寬版） | `workwearStall`／`fieldCobbler` `4px`（方）✅ | 全 `50%`（圓）✅ | — |
+| wild（寬版） | `fairyAtelier`／`dwarfCottage` `4px`（方）✅ | 全 `50%`（圓）✅ | — |
+| urban（窄版 376px） | `boutique`／`shoeShop` `4px`（方，30×30）✅ | `library` `50%`（圓）✅ | `luminaraCastle` 門形 ✅ |
 
 * 全方案 **11/11 商店** marker 皆呈方形、各區（含 castle）一致；非商店地點維持圓形、portal 維持門形；窄版同樣方形（D5）。
 * 邊界案例：`harbor`（label「Fish Shop」）因無 `shopCategories`（屬打工/釣魚場景、不販售外觀商品）**正確維持圓形**——規則以 `isShopHotspot` 旗標為準、非依名稱，符合「場景有賣東西」之語意。
