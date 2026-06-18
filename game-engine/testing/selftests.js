@@ -220,6 +220,27 @@ function runPlayTimerSelfTest(api) {
     if (status.phase !== "play") errors.push(`after resume phase=${status.phase}, expected play`);
     if (clock.limit.cycle.answered !== 0) errors.push(`new cycle answered=${clock.limit.cycle.answered}, expected 0`);
 
+    // 7) issue #169：遊玩時間用完但尚未進入休息（restEndsAt 仍 0，如於帳號選單離開、ticker 未跑）時，
+    //    帳號卡（playStatus）須與點擊選取（tick）一致、不再誤顯示「Play 0:00」；休息自遊玩結束起算、離開時間計入。
+    clock.setDurations(15, 15);
+    const t0 = clock.now();
+    // (A) 離開未達休息時長（1 分鐘前用完，restMinutes=15）→ 卡片顯示休息、選取結算並進入休息。
+    clock.limit.sessionEndsAt = t0 - 60000;
+    clock.limit.sessionMaxEndsAt = t0 - 60000;
+    clock.limit.restEndsAt = 0;
+    let card = clock.status();
+    if (card.phase !== "rest") errors.push(`#169(A) expired-within-window card phase=${card.phase}, expected rest (not "Play 0:00")`);
+    let pick = clock.tick();
+    if (pick.phase !== "rest" || !pick.justExpired) errors.push(`#169(A) select-within-window phase=${pick.phase} justExpired=${pick.justExpired}, expected rest/justExpired`);
+    // (B) 離開已達休息時長（16 分鐘前用完 > 15 分鐘休息）→ 卡片顯示可玩(idle)、選取直接續玩、不強制再等。
+    clock.limit.sessionEndsAt = t0 - 16 * 60000;
+    clock.limit.sessionMaxEndsAt = t0 - 16 * 60000;
+    clock.limit.restEndsAt = 0;
+    card = clock.status();
+    if (card.phase !== "idle") errors.push(`#169(B) rested-away card phase=${card.phase}, expected idle (Ready)`);
+    pick = clock.tick();
+    if (pick.phase !== "play" || !pick.justStarted) errors.push(`#169(B) select-after-rested phase=${pick.phase} justStarted=${pick.justStarted}, expected play/justStarted (no forced wait)`);
+
     // 清理：移除測試帳號，回到 baseline。
     accounts.remove(createdId);
     createdId = null;
@@ -284,8 +305,9 @@ function runMoodExtendSelfTest(api) {
     const a3 = clock.extend(5);
     if (a3 !== 0) errors.push(`extend at cap added=${a3}, expected 0 (eye-rest cap not bypassed)`);
 
-    // 6) 進入休息後不可延長（phase!=play）。
-    clock.advance(5 * MIN);
+    // 6) 進入休息後不可延長（phase!=play）。休息自遊玩結束（cap=+4min）起算、窗寬=restMinutes(1min)，
+    //    故快轉至休息窗內（+4.5min）而非剛好邊界（+5min＝休息已足，issue #169）。
+    clock.advance(4 * MIN + 30 * 1000);
     ev = clock.tick();
     if (ev.phase !== "rest") errors.push(`after advance phase=${ev.phase}, expected rest`);
     const a4 = clock.extend(1);
