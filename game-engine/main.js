@@ -671,7 +671,7 @@ function renderIdentity() {
   elements.systemMenuClose?.setAttribute("aria-label", `Close ${diaryTitle}`);
 }
 
-function openCharacterSelect({ forced = false } = {}) {
+function openCharacterSelect({ forced = false, cancelable = false } = {}) {
   // issue #134 後續：選角為全幅覆蓋層，開啟前先關閉系統選單（含設定頁），避免設定選單殘留於背景。
   closeSystemMenu();
   pendingCharacterId = state.activeCharacterId;
@@ -685,7 +685,8 @@ function openCharacterSelect({ forced = false } = {}) {
   buildProfileColorChoices();
   buildBackgroundPatternChoices();
   elements.playerNameInput.value = state.playerName || playableCharacterById(pendingCharacterId)?.defaultName || "";
-  elements.characterSelect.classList.toggle("first-run", forced);
+  // issue #153：真正首啟（forced 且不可取消）才鎖定不可取消；既有帳號下新增（cancelable）顯示返回鈕、可取消返回帳號選擇。
+  elements.characterSelect.classList.toggle("first-run", forced && !cancelable);
   elements.characterSelect.classList.add("show");
   elements.characterSelect.setAttribute("aria-hidden", "false");
   document.body.classList.add("character-select-open");
@@ -821,14 +822,39 @@ function confirmCharacterSelect() {
   persist();
   const activeAccountId = getActiveAccountId();
   if (activeAccountId) syncActiveAccountMeta({ touched: true });
+  pendingNewAccount = null; // issue #153：已確認創角，此新帳號不再是可丟棄的待定帳號。
   closeCharacterSelect();
   render();
   elements.statusMessage.textContent = `${princessName()} is ready. Choose a place to start.`;
 }
 
+// issue #153：取消創角。若為「既有帳號下新增」之未確認新帳號，丟棄該空帳號並返回帳號選擇（還原先前使用中帳號）；
+// 一般換角（changeCharacter）或無待定新帳號時，僅關閉覆蓋層。
+function cancelCharacterSelect() {
+  if (pendingNewAccount) {
+    const { id, prevActiveId, prevMustChoose } = pendingNewAccount;
+    pendingNewAccount = null;
+    deleteAccount(id); // 丟棄此新建空帳號（刪到使用中帳號會清空 activeId）。
+    const restoreId = prevActiveId && listAccounts().some((account) => account.id === prevActiveId) ? prevActiveId : null;
+    if (restoreId) {
+      setActiveAccountId(restoreId);
+      state = loadAccountState(restoreId);
+    } else {
+      state = freshState();
+    }
+    closeCharacterSelect();
+    render();
+    openAccountSelect({ mustChoose: prevMustChoose || !restoreId });
+    return;
+  }
+  closeCharacterSelect();
+}
+
 // ---- 本機多帳號（issue #63）：每次進入先選玩家帳號，可新增與刪除，各帳號進度互不混用 ----
 // mustChoose=true：啟動 gate，必須選擇或新增帳號才能進入（不可關閉、不顯示 Back）。
 let accountSelectMustChoose = false;
+// issue #153：自帳號選擇「新增」進入創角時，於既有帳號情境下記下待定新帳號（含先前使用中帳號與帳號選擇模式），供取消時丟棄並返回。
+let pendingNewAccount = null;
 function openAccountSelect({ mustChoose = false } = {}) {
   accountSelectMustChoose = mustChoose;
   buildAccountList();
@@ -942,6 +968,10 @@ function selectAccount(accountId) {
 }
 
 function createNewAccount() {
+  // issue #153：先前已有其他帳號時，本次新增之創角可取消返回帳號選擇；真正首啟（先前毫無帳號）則維持不可取消。
+  const hadAccounts = listAccounts().length > 0;
+  const prevActiveId = getActiveAccountId();
+  const prevMustChoose = accountSelectMustChoose;
   const account = createFreshAccount();
   state = loadAccountState(account.id);
   syncActiveAccountMeta({ touched: true });
@@ -949,7 +979,8 @@ function createNewAccount() {
   closeAccountSelect();
   render();
   changeView("home");
-  openCharacterSelect({ forced: true });
+  pendingNewAccount = hadAccounts ? { id: account.id, prevActiveId, prevMustChoose } : null;
+  openCharacterSelect({ forced: true, cancelable: hadAccounts });
 }
 
 function handleDeleteAccount(accountId, label) {
@@ -3445,10 +3476,10 @@ function bindEvents() {
   elements.switchPlayerQuickButton?.addEventListener("click", returnToInitialSelect);
   elements.changeCharacterButton?.addEventListener("click", () => openCharacterSelect({ forced: false }));
   elements.characterConfirm?.addEventListener("click", confirmCharacterSelect);
-  elements.characterCancel?.addEventListener("click", closeCharacterSelect);
+  elements.characterCancel?.addEventListener("click", cancelCharacterSelect);
   elements.characterSelect?.addEventListener("click", (event) => {
     if (event.target.matches("[data-character-cancel]") && !elements.characterSelect.classList.contains("first-run")) {
-      closeCharacterSelect();
+      cancelCharacterSelect();
     }
   });
   elements.playerNameInput?.addEventListener("input", () => { playerNameEdited = true; });
@@ -3622,7 +3653,7 @@ function bindEvents() {
     if (elements.characterSelect?.classList.contains("show")) {
       if (event.key === "Escape" && !elements.characterSelect.classList.contains("first-run")) {
         event.preventDefault();
-        closeCharacterSelect();
+        cancelCharacterSelect();
       }
       return;
     }
@@ -3766,6 +3797,8 @@ installTestingHooks({
   },
   syncActiveAccountMeta,
   openCharacterSelect,
+  createNewAccount,
+  cancelCharacterSelect,
   openAccountSelect,
   closeAccountSelect,
   returnToInitialSelect,
