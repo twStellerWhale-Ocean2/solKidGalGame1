@@ -16,11 +16,11 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 
 * **spec#1-可用短回合低挫折方式練習英文**：方案須讓年幼學習者以「聽情境句、從少量選項選出正確英文、立即對錯回饋」的短回合循環接觸英文，遇困難時可取得提示（含題目與各選項的中文理解協助），降低挫折；英文與中文語音協助須播放開頭清楚、語速適合兒童理解，並以獎勵高低鼓勵先嘗試英文——未借助中文且越早答對者獎勵越高、曾借助中文者該題無獎勵，維持以英文為主、中文為輔的學習動機。練習內容須依地區英文等級分級、句型由單句逐級進階至較複雜句並補齊各級缺口，且以貼近兒童日常的功能性生活對話為主、避免與生活脫節的描述句與超現實選項；每道題目（含題組開場白／結語外框與干擾選項）須歸屬特定場景並與該場景主體相符，不採跨場景可互換的換名詞樣板，亦不得出現指涉「英文字／英文單字」之 meta 敘述（如「需要一個英文字」）；且場景對話（歡迎詞與題幹）一律由場景角色以第一人稱對玩家公主發話、不另設題組開場白／結語旁白（角色首句即題幹 Q1），題幹為角色台詞而非對玩家的操作指示（不採「Pick／Tell／Choose」之考試式 prompt），選項為玩家公主可回應的話語（回應、承諾、行動確認或任務回報），使練習以「公主與場景角色互動」之真實對話形式而非考試作答形式呈現；玩家公主之回應（選項與正解）並須讀來自然口語、貼近真實聊天語氣（可適度使用語氣詞與生活用語、非強制且不超綱），避免教科書式孤立直述句，當場景角色提出幫忙請求時正解須以自然應允語句開頭（如「Sure thing」「OK, I can …」「Well, I think I can help …」）再接實質回答或回報，使協助回應親切一致而非生硬。
 * **spec#2-可用角色陪伴與場景探索維持遊玩意願**：方案須以公主角色陪伴、王國地圖與多地區場景探索及地點互動（各地圖之地點配置須對應地圖背景藝術元素並相互不過度群聚，使場景探索之空間定位一致且具沉浸感），提高兒童反覆遊玩意願；並讓不同場景人物與玩家公主各具貼合其角色的聲音表現（含玩家公主以其聲音朗讀所選作答），使陪伴與場景更具辨識度與臨場沉浸，而非一律同一語音；玩家或家長並可於設定依角色的性別與性格類型，為各類角色指定實際採用的語音，使不同人物聲線可被真正區分，未指定之類型由系統自動選用合適語音；語音播放開頭須清楚，且受瀏覽器語音能力限制時須明確降級且不中斷遊戲；離開場景（關閉場景對話、切換場景或返回地圖）時正在播放的語音須即時收束、不殘留跨場景發聲，以約 1 秒內平滑淡出至靜音為目標聽感（受瀏覽器語音能力限制無法漸進淡出時，明確降級為即時停止）。
-* **spec#3-可把學習成果轉為看得見的外觀獎勵**：方案須讓答對所得 coins 能兌換為角色外觀（髮型、衣物、鞋帽、配件、outfit set）等可見變化，使成就可見而非僅顯示分數；目前可玩公主 base 依使用者指定採 baked-in 短髮 playwear，仍不得烘入長髮、長袖、睡衣、禮服、皇冠或背景，且預設 starter 項不得造成重複疊圖。可玩公主 base 屬童話手繪風格 raster 素材，角色新增、髮色修訂或眼睛局部校準須以 GPT 產生或修圖取得透明 PNG／WebP，再縮放對位至 `shared-512x768-v1`；不得以 SVG、CSS 濾鏡、向量拼貼或 runtime 特例代替角色素材。本議題指定 [Yumi] 改為深藍頭髮，歷史 id `sol` 所代表之公主對外呈現為 [Mary] 並改為深綠頭髮；後續依使用者要求，Mary／Yumi 眼睛使用 [Rosa] 眼睛校準；除髮色、顯示名稱與眼睛局部校準外，其服裝、姿勢、比例、透明底、baseline 與紙娃娃 rig 對位不得改動。
+* **spec#3-可把學習成果轉為看得見的外觀獎勵**：方案須讓答對所得 coins 能兌換為角色外觀（髮型、衣物、鞋帽、配件、outfit set）等可見變化，使成就可見而非僅顯示分數；目前可玩公主 base 依使用者指定採 baked-in 短髮 playwear，仍不得烘入長髮、長袖、睡衣、禮服、皇冠或背景，且預設 starter 項不得造成重複疊圖。可玩公主 base 屬童話手繪風格 raster 素材，角色新增、髮色修訂或眼睛局部校準須以 GPT 產生或修圖取得透明 PNG／WebP，再縮放對位至 `shared-512x768-v1`；不得以 SVG、CSS 濾鏡、向量拼貼或 runtime 特例代替角色素材。本議題指定 [Yumi] 改為深藍頭髮，歷史 id `sol` 所代表之公主對外呈現為 [Mary] 並改為深綠頭髮；後續依使用者要求，Mary／Yumi 眼睛使用 [Rosa] 眼睛校準；除髮色、顯示名稱與眼睛局部校準外，其服裝、姿勢、比例、透明底、baseline 與紙娃娃 rig 對位不得改動。wardrobe layer 穿上後須與 `shared-512x768-v1` 四位可玩公主 base 正確對位；衣物對位應以類別級上下左右邊界／安全框組態管理，使同類衣物統一遵照同一對位範圍，避免每件衣服各自新增一次性位移或 CSS nudge。正式服裝 layer 與商品縮圖須使用 GPT 產生符合本作品童話手繪風格的 bitmap 美術素材，並轉為透明 WebP／PNG 等正式圖像資產；不得使用 SVG 作為正式服裝素材、商品縮圖或完成品替代素材。完成判定須包含實際把代表性衣物穿上角色後的手機直向與桌機視覺檢查，確認衣物位置、比例、接縫與跨角色共用 layer 對位合格，而非僅確認檔案存在或程式無錯。
 * **spec#4-可形成練英文獲獎勵換裝的正向閉環**：方案須使英文練習、獎勵取得與換裝回饋構成同一個可重複的正向循環。
 * **spec#5-可保存並還原玩家進度**：方案須讓每個帳號各自的 coins、學習紀錄、擁有與穿搭、所在位置、所選角色、名字與識別色可被保存並於再次遊玩時還原。
 * **spec#6-可選擇與命名自己的公主**：方案須讓玩家首次進入時選定公主外觀、命名並確認識別色，之後可重選外觀、改名或調整識別色，且不影響既有存檔進度；可玩公主 roster 須提供可辨識差異，使用者可見名為 Lumi、Yumi、Mary、Rosa，並保留既有 `lumi`／`yumi`／`sol` id 的舊存檔相容，其中 `sol` 為歷史 stable id、預設玩家名與顯示標籤為 `Mary`。識別色須以飽和度較低、柔和的粉彩色盤供選擇，並可由調色器自訂任一色（既有存檔之識別色須相容保留、不被重置）；新帳號或首次初始化公主視覺主題時，profileColor 與背景花紋須各自自合法集合一次性隨機選出並寫入帳號狀態，後續載入不得重抽；玩家仍可手動改色或自背景花紋集（如波浪、泡泡、格紋等）改選，與識別色共同構成可辨識且具沉浸感的公主視覺主題。
-* **spec#7-可用純靜態網站方式部署並模組化擴充內容**：方案須能以 GitHub Pages 等純靜態方式部署遊玩，且 area、角色、可玩公主 roster 與衣物等內容可模組化新增與調整；角色與可見美術素材之交付應採內容包 raster 檔案，不以 SVG、CSS 濾鏡或 renderer 特例偽裝素材完成。
+* **spec#7-可用純靜態網站方式部署並模組化擴充內容**：方案須能以 GitHub Pages 等純靜態方式部署遊玩，且 area、角色、可玩公主 roster 與衣物等內容可模組化新增與調整；角色、wardrobe layer、商品縮圖與可見美術素材之交付應採內容包 raster 檔案，不以 SVG、CSS 濾鏡或 renderer 特例偽裝素材完成；新增 wardrobe 內容包須沿用類別級 layer bounds 組態，使新增同類衣物不需另建單件對位常數。
 * **spec#8-可用本機多帳號分離不同玩家進度**：方案須讓同一裝置上多位玩家各自擁有獨立帳號，每次進入遊戲先選擇要使用的帳號，並可新增與刪除帳號；帳號選擇與遊戲內人物資訊須以同一套頭胸部大頭照、背景識別色、最近遊玩時間、coins 與可遊玩／休息狀態輔助辨識，且大頭照卡片須以該帳號識別色之半透明底色鋪底（避免過重色塊、維持柔和一致的辨識），使不同玩家的進度與換裝成果互不混用；多帳號僅限同一瀏覽器本機，不含網路登入、密碼或雲端同步。
 * **spec#9-可限制每次遊玩時長並強制休息以護眼**：方案須在兒童連續遊玩達設定時長後自動結算本回合成果並進入強制休息，休息時間結束前不可續玩，以保護兒童視力；每次遊玩與休息的預設時長各 15 分鐘，且可由玩家於設定調整並以各帳號各自計算。遊戲內須顯示本次可玩時間額度（基礎時長與生活聊天延長之合計，並使聊天延長可被看見）與剩餘可玩時間，休息／結算畫面須允許回到初始帳號／公主選單但不得繞過休息鎖定；地圖上公主 token 須以足夠大的尺寸醒目且清楚呈現（較原放大約一倍），不再以識別色背板標示，各帳號識別色不再於地圖 token 上呈現（以視覺簡潔為先）。
 * **spec#10-可查看作品版權與版本沿革**：方案須在設定選單提供 About 頁籤，呈現作品版權宣告，並以中文短主旨列出歷次版本的主要變更，使玩家與家長能識別作品來源並了解版本演進。
@@ -75,7 +75,7 @@ HOST -->|"🎚️paramDeployBranch=`main`"| SYS
   * **solCase#2.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家地圖導航]，以可見的公主頭像在世界地圖、城堡地圖與各地區地圖一致地移動並進入地點場景（世界地圖採移動到目的地後再進入的探索式進入）。
 * **solStory#3-換裝獎勵**：
   * **solCase#3.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家購買衣物]，以 coins 於商店購買外觀商品。
-  * **solCase#3.2**：[etyCfg通用兒童玩家]執行[runAct自訂玩家換裝]，於衣櫃或商店試穿並穿戴所購商品，髮型與衣物變化均應由可替換外觀層呈現。
+  * **solCase#3.2**：[etyCfg通用兒童玩家]執行[runAct自訂玩家換裝]，於衣櫃或商店試穿並穿戴所購商品，髮型與衣物變化均應由可替換外觀層呈現；穿搭後之衣物位置須依類別級 layer bounds 與實際穿搭視覺 QA 判定是否對位。
 * **solStory#4-學習換裝閉環**：
   * **solCase#4.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家退款]，將不需要的商品退回 coins，回到練習與換裝循環。
 * **solStory#5-進度保存與還原**：
@@ -87,7 +87,7 @@ HOST -->|"🎚️paramDeployBranch=`main`"| SYS
   * **solCase#6.3**：[etyCfg通用兒童玩家]執行[runAct自訂玩家設定公主背景花紋]，新帳號或首次初始化時由系統自背景花紋集（如波浪、泡泡、格紋等）一次性隨機選入 backgroundPattern 並保存；玩家可再改選花紋，與識別色共同構成公主視覺主題。
 * **solStory#7-部署擴充與移除**：
   * **solCase#7.1**：[etyCfg通用家長維護者]執行[setAct自訂維護者部署網站]，將網站包發佈至靜態主機平台。
-  * **solCase#7.2**：[etyCfg通用家長維護者]執行[setAct自訂維護者擴充內容]，調整 area、角色、可玩公主或衣物內容包（新增、替換或移除單一包），且可玩公主 base 與 wardrobe 外觀層須持續遵守同一紙娃娃 rig；可玩公主 base 須由 GPT 產生或修圖為童話手繪風格 raster 素材，不得以 SVG、CSS 濾鏡或 runtime 特例代替；調整 area 內容時，各地圖之地點配置須對應該地圖背景藝術元素且相互不過度群聚。
+  * **solCase#7.2**：[etyCfg通用家長維護者]執行[setAct自訂維護者擴充內容]，調整 area、角色、可玩公主或衣物內容包（新增、替換或移除單一包），且可玩公主 base 與 wardrobe 外觀層須持續遵守同一紙娃娃 rig；可玩公主 base 與 wardrobe layer 須由 GPT 產生或修圖為童話手繪風格 raster 素材，不得以 SVG、CSS 濾鏡或 runtime 特例代替；新增衣物須依其類別繼承共用 layer bounds，不得每件重做一次對位；調整 area 內容時，各地圖之地點配置須對應該地圖背景藝術元素且相互不過度群聚。
   * **solCase#7.3**：[etyCfg通用家長維護者]執行[setAct自訂維護者移除部署]，停用靜態主機平台上的部署。
 * **solStory#8-初始化與異常復原**：
   * **solCase#8.1**：[sysGame系統]執行[runAct自訂系統還原進度]，讀取本機存檔並將缺漏或損壞欄位正規化回預設值。
@@ -173,6 +173,8 @@ subgraph SYS["💽[sysGame系統]
 ⚙️etyCfg自訂sysGame組態"]
   CONTENT["📦[modContent模組]
 ⚙️etyCfg自訂modContent組態"]
+  WARDROBE["📦[modWardrobe模組]
+⚙️etyCfg自訂modWardrobe組態"]
   STATE["📦[modState模組]
 ⚙️etyCfg自訂modState組態"]
   SCENE["📦[modScene模組]
@@ -194,6 +196,7 @@ CONTENT -->|"🎚️paramProfileColorCustomEnabled=`true`"| SYS
 CONTENT -->|"🎚️paramBackgroundPatterns=`8 patterns`"| SYS
 CONTENT -->|"🎚️paramPlayableCharacters=`lumi,yumi,sol,rosa`"| SYS
 CONTENT -->|"🎚️paramInitialThemeRandomization=`profileColor,backgroundPattern`"| SYS
+WARDROBE -->|"🎚️paramWardrobeLayerBounds=`type defaults`"| SYS
 ```
 
 ### (C) 運作個案
@@ -205,7 +208,7 @@ CONTENT -->|"🎚️paramInitialThemeRandomization=`profileColor,backgroundPatte
   * **sysCase#2.2**：[modMap模組]承接[runAct自訂玩家地圖導航]，於世界地圖點選目的地時先令公主頭像移動至該目的地座標後再進入，移動途中再次點選即略過位移直接進入。
 * **sysStory#3-承接換裝與商店**：
   * **sysCase#3.1**：[modWardrobe模組]承接[runAct自訂玩家購買衣物]，扣除 coins 並標記擁有。
-  * **sysCase#3.2**：[modWardrobe模組]承接[runAct自訂玩家換裝]，以角色 base 加上髮型、衣物與配件 layer 的順序更新 outfit 並重繪紙娃娃；目前角色 base 依使用者指定含 baked-in 短髮 playwear，starter 髮型與 starter 服裝須正規化為 no overlay 以避免重複疊圖；[Yumi] 與 [Mary] 髮色調整須回到角色 base raster 素材本身，不由 [modWardrobe模組] 以濾鏡或額外 layer 代改。
+  * **sysCase#3.2**：[modWardrobe模組]承接[runAct自訂玩家換裝]，以角色 base 加上髮型、衣物與配件 layer 的順序更新 outfit 並重繪紙娃娃；目前角色 base 依使用者指定含 baked-in 短髮 playwear，starter 髮型與 starter 服裝須正規化為 no overlay 以避免重複疊圖；[Yumi] 與 [Mary] 髮色調整須回到角色 base raster 素材本身，不由 [modWardrobe模組] 以濾鏡或額外 layer 代改。wardrobe layer 渲染須先依 item type／slot 取得類別級上下左右邊界或安全框，再將該類 layer 放入對應範圍；單件商品預設不得自帶一次性 nudge，必要例外須受控且可由視覺 QA 追溯。
   * **sysCase#3.3**：[modWardrobe模組]承接[runAct自訂玩家退款]，回補 coins 並取消擁有。
 * **sysStory#4-承接狀態保存與還原**：
   * **sysCase#4.1**：[modState模組]承接[runAct自訂系統保存進度]，寫入瀏覽器本機儲存。
@@ -214,7 +217,7 @@ CONTENT -->|"🎚️paramInitialThemeRandomization=`profileColor,backgroundPatte
 * **sysStory#5-承接選角與內容擴充**：
   * **sysCase#5.1**：[modShell模組]承接[runAct自訂玩家選角命名]，於 `lumi`、`yumi`、`sol`、`rosa` 可玩公主 roster 中更新 activeCharacterId、playerName 與 profileColor，且保留 `lumi`／`yumi`／`sol` 舊 id 對既有存檔相容；`sol` 之使用者可見標籤與預設玩家名為 `Mary`，舊存檔仍以 `activeCharacterId="sol"` 載入該公主。
   * **sysCase#5.2**：[modShell模組]承接[runAct自訂玩家設定公主識別色]，提供飽和度較低的粉彩色盤與調色器自訂供玩家設定 profileColor（自訂色以格式驗證取代固定色盤白名單，既有存檔之 profileColor 相容保留、不被重置）；新帳號或首次初始化缺 profileColor 時，由 [modState模組] 自粉彩色盤一次性隨機選出初始 profileColor 並保存至帳號狀態，後續載入不得重抽；公主選單、帳號卡與人物資訊欄均使用同一個可重用頭胸部大頭照渲染函式，以目前角色之即時穿搭（紙娃娃外觀層裁切為頭胸）呈現、卡片底色為 profileColor 之半透明鋪底，不另維護第二套裁切邏輯；公主選單因選角當下尚未套用衣櫥而呈現各公主基本造型。
-  * **sysCase#5.3**：[modContent模組]承接[setAct自訂維護者擴充內容]，匯入新內容包至 registry；可玩公主與 wardrobe layer 均須遵守 [hmiIntf自訂角色尺度與美術規範] 的 `shared-512x768-v1` rig；可玩公主 base 須以 GPT 產生或修圖為童話手繪風格透明 raster 素材，不得以 SVG、CSS 濾鏡、向量拼貼或 renderer 特例代替。
+  * **sysCase#5.3**：[modContent模組]承接[setAct自訂維護者擴充內容]，匯入新內容包至 registry；可玩公主與 wardrobe layer 均須遵守 [hmiIntf自訂角色尺度與美術規範] 的 `shared-512x768-v1` rig；可玩公主 base、wardrobe layer 與商品縮圖須以 GPT 產生或修圖為童話手繪風格透明 raster 素材，不得以 SVG、CSS 濾鏡、向量拼貼或 renderer 特例代替；新增 wardrobe item 須依 `type`／slot 繼承類別級 layer bounds。
   * **sysCase#5.4**：[modShell模組]承接[runAct自訂玩家設定公主背景花紋]，自 [modContent模組] 背景花紋資產集提供選項供玩家擇一，更新並持久化目前帳號之背景花紋至其視覺主題狀態；新帳號或首次初始化缺 backgroundPattern 時，由 [modState模組] 自可見背景花紋集合一次性隨機選出初始 backgroundPattern 並保存至帳號狀態，後續載入不得重抽；未知花紋時回退無花紋預設。
 * **sysStory#6-承接多帳號選擇與管理**：
   * **sysCase#6.1**：[modShell模組]承接[runAct自訂玩家選擇帳號]，啟動時先進入帳號選擇，讀取帳號清單與各帳號摘要（頭胸部大頭照、profileColor、lastPlayedAt、coins、play/rest 狀態），玩家選定後透過 modState 載入該帳號進度再進入遊戲。
@@ -252,15 +255,6 @@ CONTENT -->|"🎚️paramInitialThemeRandomization=`profileColor,backgroundPatte
 * **HelmChart參數-chart.yaml**
   * [etyCfg自訂sysGame組態]：暫無。
 * **HelmChart參數-values.yaml**
-  * [etyCfg自訂modState組態]
-    * paramStorageKey=`luminara-princess-english-adv`
-    * paramSaveMarker=`LUMINARA_SAVE_JSON`
-    * paramAccountIndexKey=`luminara-princess-english-accounts`
-    * paramVoiceAssignmentKey=`luminara-princess-english-voice`
-    * paramPlayMinutes=`15`
-    * paramRestMinutes=`15`
-    * paramPlayMaxMinutes=`20`
-    * paramMoodMinutesPerPoint=`1`
   * [etyCfg自訂modContent組態]
     * paramDefaultArea=`castle`
     * paramDefaultCharacter=`lumi`
@@ -285,6 +279,17 @@ CONTENT -->|"🎚️paramInitialThemeRandomization=`profileColor,backgroundPatte
     * paramSpeechPreferredVoices=`user-assigned,lang-first`
     * paramSpeechLeadingPad=`8 full-width spaces`
     * paramVoiceBucketDimensions=`gender,personality`
+  * [etyCfg自訂modState組態]
+    * paramStorageKey=`luminara-princess-english-adv`
+    * paramSaveMarker=`LUMINARA_SAVE_JSON`
+    * paramAccountIndexKey=`luminara-princess-english-accounts`
+    * paramVoiceAssignmentKey=`luminara-princess-english-voice`
+    * paramPlayMinutes=`15`
+    * paramRestMinutes=`15`
+    * paramPlayMaxMinutes=`20`
+    * paramMoodMinutesPerPoint=`1`
+  * [etyCfg自訂modWardrobe組態]
+    * paramWardrobeLayerBounds=`type defaults`
 
 ## C. 補充設計(選配)
 
@@ -418,6 +423,7 @@ erDiagram
 | cfgTest#05 | [etyCfg自訂modContent組態] | 內容包預設與 registry 組態符合契約規範 |
 | cfgTest#06 | [etyCfg自訂modState組態] | 儲存鍵與存檔標記組態符合契約規範 |
 | cfgTest#07 | [etyCfg自訂modScene組態] | 英文練習、中文協助與獎勵組態符合契約規範 |
+| cfgTest#08 | [etyCfg自訂modWardrobe組態] | wardrobe 類別級 layer bounds 與素材限制組態符合契約規範 |
 
 ## D. 方案層級：整合測試(setAct/runAct)
 
@@ -498,6 +504,7 @@ erDiagram
   1. 於衣櫃穿戴已擁有商品。
 * 預期結果：
   1. 紙娃娃 outfit 更新且互斥 slot 正確處理；目前 baked-in playwear base 不得出現黑底，且 starter 髮型／服裝不會重複疊在 base 上。
+  2. 已穿戴商品依其 item type／slot 套用類別級 layer bounds；未出現單件專用 CSS nudge 或未登記的一次性位移。
 
 #### intTest#09-驗證 [runAct自訂玩家退款]
 
@@ -917,7 +924,7 @@ erDiagram
 #### docProgTest#03-productReadme 承接 [solStory#3-換裝獎勵]
 
 * productReadme 要求：
-  1. 說明如何用 coins 購買並換裝，且目前預設短髮 playwear 來自使用者指定 baked-in base；若要完全自由替換髮型或衣物，須改回中性 base 與可替換 layer。
+  1. 說明如何用 coins 購買並換裝，且目前預設短髮 playwear 來自使用者指定 baked-in base；wardrobe layer 依類別級對位範圍穿到角色身上，若要完全自由替換髮型或衣物，須改回中性 base 與可替換 layer。
 * 通過判定：
   1. 讀者可依 productReadme 完成一次購買與換裝。
 
@@ -945,7 +952,7 @@ erDiagram
 #### docProgTest#07-productReadme 承接 [solStory#7-部署擴充與移除]
 
 * productReadme 要求：
-  1. 說明以 GitHub Pages 部署、擴充內容包與移除部署的方式，並指向可玩公主 `shared-512x768-v1` rig 與 base 分層契約；維護者須知道角色 base 應使用 GPT 產生或修圖之童話手繪風格 raster 素材，不可用 SVG、CSS 濾鏡或 renderer 特例代替。
+  1. 說明以 GitHub Pages 部署、擴充內容包與移除部署的方式，並指向可玩公主 `shared-512x768-v1` rig 與 base／wardrobe layer 分層契約；維護者須知道角色 base、wardrobe layer 與商品縮圖應使用 GPT 產生或修圖之童話手繪風格 raster 素材，不可用 SVG、CSS 濾鏡或 renderer 特例代替，且新增衣物須繼承類別級 layer bounds。
 * 通過判定：
   1. 維護者可依 productReadme 完成一次靜態部署。
 
@@ -1109,11 +1116,11 @@ erDiagram
 * 依據：docProgTest#03、docProgTest#06、docProgTest#07、[solCase#3.2]、[solCase#6.1]、[solCase#6.2]、[solCase#7.2]。
 * 步驟：
   1. 依 productReadme 建立新帳號，於選角畫面逐一檢視 Lumi、Yumi、Mary、Rosa 的頭胸部大頭照與初始主題。
-  2. 選擇一位公主並自粉彩色盤或調色器自訂改其識別色、再選一背景花紋後進入遊戲，確認 baked-in 短髮 playwear base 顯示正常，並於衣櫃切換其他 wardrobe layer。
+  2. 選擇一位公主並自粉彩色盤或調色器自訂改其識別色、再選一背景花紋後進入遊戲，確認 baked-in 短髮 playwear base 顯示正常，並於衣櫃切換代表性 wardrobe layer（至少含上衣／下身／洋裝／鞋帽或配件類別）。
   3. 載入 activeCharacterId 為 `lumi`、`yumi`、`sol` 且缺 profileColor 的舊存檔。
 * 預期結果：
   1. 四位公主在選角畫面可辨識，Rosa 以棕髮甜美系呈現，Yumi 為深藍髮，Mary 為深綠髮且沿用 `sol` id；新帳號初始識別色與背景花紋自合法集合一次性隨機取得並保存，所選識別色（含調色器自訂色）以半透明底色套用於大頭照卡片、所選背景花紋於視覺主題生效。
-  2. 四張 base 無黑底且對位正確，預設與舊存檔 starter 外觀不會重複疊圖；Yumi 與 Mary 的素材為 GPT 產生或修圖之童話手繪風格 raster 圖，不存在 SVG 角色素材、CSS 濾鏡改色或 renderer 特例。
+  2. 四張 base 無黑底且對位正確，預設與舊存檔 starter 外觀不會重複疊圖；代表性 wardrobe layer 穿上後符合其類別級 layer bounds，衣物位置、比例、接縫與跨角色共用 layer 對位合格；Yumi、Mary 與 wardrobe 素材為 GPT 產生或修圖之童話手繪風格 raster 圖，不存在 SVG 角色／服裝素材、CSS 濾鏡改色或 renderer 特例。
   3. 舊存檔仍載入對應公主，不因新增 Rosa 或 `sol` 對外改名 Mary 而回退預設；缺 profileColor 或 backgroundPattern 時會補入合法初始化值並保存。
 
 #### e2eTest#11-依 productReadme 驗測語音清楚度與 Web Speech 降級
@@ -1172,8 +1179,8 @@ erDiagram
   * 評估方式：觀察單次遊玩探索的地點數與回訪次數、地圖各地點配置對應背景之空間一致性，以及角色配音的覆蓋、使用者語音指定採用與降級情形，並觀察離開場景時語音是否即時收束、不殘留跨場景。
   * 觀察項目：到訪地點數、連續遊玩回合數、已宣告音色特性的角色比例、缺特性降級發生率、actual voice 差異覆蓋率、使用者語音指定（性別×性格）設定採用率、指定後角色聲線真人可辨識率、指定 voice 於裝置缺失之降級率、語音首字清楚度、離場語音收束生效率、跨場景語音殘留發生率、地圖各地點落在對應背景藝術元素之正確率與相互不過度群聚情形。
 * **spec#3-可把學習成果轉為看得見的外觀獎勵**
-  * 評估方式：觀察 coins 兌換為外觀的比例，並以素材 QA 確認 baked-in base 無黑底、對位正確、starter 預設外觀不重複疊圖，且 Yumi／Mary 髮色修訂遵守 GPT 童話手繪 raster 素材與禁止 SVG／濾鏡代替之限制。
-  * 觀察項目：購買件數、換裝次數、coins 留存、base 對位錯誤率、starter 預設外觀重疊率、Yumi 深藍髮與 Mary 深綠髮視覺 QA 通過率、非髮色外觀變動率、SVG／濾鏡替代檢出率。
+  * 評估方式：觀察 coins 兌換為外觀的比例，並以素材 QA 確認 baked-in base 無黑底、對位正確、starter 預設外觀不重複疊圖，且 Yumi／Mary 髮色修訂與 wardrobe layer 素材遵守 GPT 童話手繪 raster 素材與禁止 SVG／濾鏡代替之限制；另以實際穿搭視覺 QA 檢查代表性 wardrobe 類別是否依類別級 layer bounds 正確對位。
+  * 觀察項目：購買件數、換裝次數、coins 留存、base 對位錯誤率、wardrobe 類別級 layer bounds 覆蓋率、代表性衣物實穿對位 QA 通過率、跨角色共用 layer 對位錯誤率、starter 預設外觀重疊率、Yumi 深藍髮與 Mary 深綠髮視覺 QA 通過率、非髮色外觀變動率、SVG／濾鏡／單件 nudge 替代檢出率。
 * **spec#4-可形成練英文獲獎勵換裝的正向閉環**
   * 評估方式：觀察「答題→購買→換裝」是否在單次遊玩內成環。
   * 觀察項目：單次遊玩完成閉環的比例。
@@ -1184,8 +1191,8 @@ erDiagram
   * 評估方式：觀察選角命名與識別色設定完成率、改名後稱呼一致性、四位公主辨識度，以及識別色（初始化隨機、粉彩與調色器自訂）與背景花紋設定情形與舊存檔相容。
   * 觀察項目：選角完成率、profileColor 設定成功率、初始 profileColor 與 backgroundPattern 合法集合命中率、初始主題重整後不重抽成功率、調色器自訂色保存（不被重置）成功率、背景花紋設定與套用率、粉彩色盤各色辨識度、稱呼動態化正確率、Lumi／Yumi／Mary／Rosa 辨識正確率、舊 `lumi`／`yumi`／`sol` 存檔（含既有識別色）載入成功率。
 * **spec#7-可用純靜態網站方式部署並模組化擴充內容**
-  * 評估方式：以全新環境依 productReadme 完成部署與內容擴充，並驗證可玩公主與衣物 layer 可獨立擴充，且角色素材擴充流程維持 raster 內容包交付。
-  * 觀察項目：部署成功率、新增內容包後既有功能未回歸、可玩公主新增／替換成功率、同一衣物 layer 跨角色對位成功率、角色素材 raster 交付率、SVG／濾鏡／renderer 特例替代檢出率。
+  * 評估方式：以全新環境依 productReadme 完成部署與內容擴充，並驗證可玩公主與衣物 layer 可獨立擴充，且角色與 wardrobe 素材擴充流程維持 raster 內容包交付、類別級對位組態可重用。
+  * 觀察項目：部署成功率、新增內容包後既有功能未回歸、可玩公主新增／替換成功率、新增 wardrobe item 繼承類別級 layer bounds 成功率、同一衣物 layer 跨角色對位成功率、角色與 wardrobe 素材 raster 交付率、SVG／濾鏡／renderer 特例替代檢出率。
 * **spec#8-可用本機多帳號分離不同玩家進度**
   * 評估方式：以多個帳號分別遊玩後比對各自進度、識別色、最近遊玩時間與休息狀態是否互不混用，並觀察是否能於遊戲內返回初始選單切換。
   * 觀察項目：帳號間進度隔離正確率、帳號卡摘要正確率、帳號卡識別色半透明底色辨識清晰度、返回初始選單成功率、刪除帳號後狀態一致性。
