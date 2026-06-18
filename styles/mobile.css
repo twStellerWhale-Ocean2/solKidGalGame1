@@ -2409,9 +2409,10 @@ body {
   right: 0;
 }
 
-.adv-scene[data-mode="scene"] .adv-location {
-  left: auto;
-  right: 58px;
+/* issue#150: 窄版資訊欄為頂部浮動 HUD（z>場景）覆蓋場景頂緣約 71px；
+   角落標示下移避開 HUD（取代舊 .adv-location 之 right:58px 單行避位）。 */
+.adv-scene .adv-corner {
+  top: 80px;
 }
 
   .adv-scene[data-mode="scene"] .adv-box {
@@ -3089,11 +3090,6 @@ body {
     [data-mode="shop"],
     [data-mode="wardrobe"],
     [data-mode="refund"]
-  ) .adv-location {
-    left: auto;
-    right: 58px;
-  }
-
   .adv-scene:is(
     [data-mode="scene"],
     [data-mode="hint"],
@@ -3445,7 +3441,7 @@ body {
   backdrop-filter: none;
 }
 
-.adv-location {
+.adv-tag {
   z-index: 7;
   color: var(--adv-dialog-text);
   background: rgba(47, 38, 52, 0.9);
