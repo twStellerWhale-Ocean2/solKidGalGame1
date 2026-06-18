@@ -24,9 +24,12 @@ import {
   characterScaleContract,
   characterRegistry,
   defaultActiveCharacterId,
+  defaultFaceConfigFor,
   defaultProfileColorFor,
   difficultyConfig,
+  faceEditorOptions,
   playableCharacterById,
+  normalizeFaceConfig,
   normalizeProfileColor,
   backgroundPatternIds,
   normalizeBackgroundPattern,
@@ -139,6 +142,7 @@ let worldTravelTimer = null;
 const WORLD_TRAVEL_MS = 620; // 走到目的地時長；與 .world-player.traveling 之 CSS transition 對齊
 let pendingCharacterId = state.activeCharacterId;
 let pendingProfileColor = state.profileColor || defaultProfileColorFor(state.activeCharacterId);
+let pendingFaceConfig = normalizeFaceConfig(state.faceConfig, state.activeCharacterId);
 // issue #131：選角流程進行中的背景花紋（per-account 視覺主題，spec#6）。
 let pendingBackgroundPattern = normalizeBackgroundPattern(state.backgroundPattern);
 let playerNameEdited = false;
@@ -159,6 +163,7 @@ const areaMapViewportController = createAreaMapViewportController({
 const paperDollRenderer = createPaperDollRenderer({
   baseLayer: paperDollBaseLayer,
   getCharacter: activePaperDollCharacter,
+  getFaceConfig: () => state.faceConfig,
   itemById,
   layerOrder: paperDollLayerOrder
 });
@@ -211,9 +216,9 @@ function profileColorFor(characterId = state.activeCharacterId, color = state.pr
 
 // 單一頭胸 bust 渲染（issue #132，sysCase#5.2）：側欄、帳號卡與選角卡共用「同一個」頭胸渲染——
 // 同一紙娃娃層合成（bustMarkupFor）＋同一 .bust-doll 裁切，不另維護第二套裁切邏輯。
-function renderBustInto(frameEl, characterId, outfitState, color, pattern = "none") {
+function renderBustInto(frameEl, characterId, outfitState, color, pattern = "none", faceConfig = null) {
   if (!frameEl) return;
-  frameEl.innerHTML = `<span class="paper-doll bust-doll">${bustMarkupFor(characterId, outfitState)}</span>`;
+  frameEl.innerHTML = `<span class="paper-doll bust-doll">${bustMarkupFor(characterId, outfitState, faceConfig)}</span>`;
   if (color != null) {
     frameEl.style.setProperty("--active-profile-color", color);
     frameEl.style.setProperty("--profile-color", color);
@@ -639,12 +644,14 @@ function openCharacterSelect({ forced = false } = {}) {
   closeSystemMenu();
   pendingCharacterId = state.activeCharacterId;
   pendingProfileColor = profileColorFor(state.activeCharacterId, state.profileColor);
+  pendingFaceConfig = normalizeFaceConfig(state.faceConfig, state.activeCharacterId);
   pendingBackgroundPattern = normalizeBackgroundPattern(state.backgroundPattern);
   profileColorEdited = profileColorFor(state.activeCharacterId, state.profileColor) !== defaultProfileColorFor(state.activeCharacterId);
   // 既有的自訂名字（與目前角色預設名不同）視為玩家已輸入，切換外觀時不覆蓋。
   const activeDefaultName = playableCharacterById(state.activeCharacterId)?.defaultName;
   playerNameEdited = Boolean(state.playerName) && state.playerName !== activeDefaultName;
   buildCharacterCards();
+  buildFaceEditor();
   buildProfileColorChoices();
   buildBackgroundPatternChoices();
   elements.playerNameInput.value = state.playerName || playableCharacterById(pendingCharacterId)?.defaultName || "";
@@ -673,7 +680,17 @@ function buildCharacterCards() {
     const portrait = document.createElement("span");
     portrait.className = "character-portrait";
     // 選角當下尚未套衣櫥 → 以空 outfit 渲染各候選公主的基本造型（與側欄/帳號卡同一 bust 機制）。
-    renderBustInto(portrait, character.id, {}, character.id === pendingCharacterId ? pendingProfileColor : character.defaultProfileColor, character.id === pendingCharacterId ? pendingBackgroundPattern : "none");
+    const faceConfig = character.id === pendingCharacterId
+      ? pendingFaceConfig
+      : defaultFaceConfigFor(character.id);
+    renderBustInto(
+      portrait,
+      character.id,
+      {},
+      character.id === pendingCharacterId ? pendingProfileColor : character.defaultProfileColor,
+      character.id === pendingCharacterId ? pendingBackgroundPattern : "none",
+      faceConfig
+    );
     portrait.setAttribute("aria-hidden", "true");
     const label = document.createElement("span");
     label.textContent = character.label;
@@ -687,6 +704,7 @@ function selectPendingCharacter(characterId) {
   if (!characterRegistry[characterId]) return;
   pendingCharacterId = characterId;
   if (!profileColorEdited) pendingProfileColor = defaultProfileColorFor(characterId);
+  pendingFaceConfig = normalizeFaceConfig(defaultFaceConfigFor(characterId), characterId);
   [...elements.characterGrid.querySelectorAll(".character-card")].forEach((card) => {
     card.setAttribute("aria-checked", String(card.dataset.characterId === characterId));
     const portrait = card.querySelector(".character-portrait");
@@ -696,6 +714,7 @@ function selectPendingCharacter(characterId) {
     portrait?.style.setProperty("--profile-color", color);
     applyCardPattern(portrait, card.dataset.characterId === characterId ? pendingBackgroundPattern : "none");
   });
+  buildFaceEditor();
   buildProfileColorChoices();
   if (!playerNameEdited) {
     elements.playerNameInput.value = playableCharacterById(characterId)?.defaultName || "";
@@ -718,6 +737,7 @@ function buildProfileColorChoices() {
       profileColorEdited = true;
       buildProfileColorChoices();
       buildCharacterCards();
+      buildFaceEditor();
     });
     elements.profileColorGrid.appendChild(button);
   });
@@ -731,8 +751,97 @@ function buildProfileColorChoices() {
       profileColorEdited = true;
       buildProfileColorChoices();
       buildCharacterCards();
+      buildFaceEditor();
     };
   }
+}
+
+function buildFaceEditor() {
+  if (!elements.faceEditorControls) return;
+  pendingFaceConfig = normalizeFaceConfig(pendingFaceConfig, pendingCharacterId);
+  if (elements.faceEditorPreview) {
+    renderBustInto(
+      elements.faceEditorPreview,
+      pendingCharacterId,
+      {},
+      pendingProfileColor,
+      pendingBackgroundPattern,
+      pendingFaceConfig
+    );
+  }
+  const rows = [
+    ["hairStyleId", "Hair"],
+    ["browId", "Brow"],
+    ["eyeId", "Eyes"],
+    ["noseId", "Nose"],
+    ["mouthId", "Mouth"]
+  ];
+  elements.faceEditorControls.innerHTML = "";
+  rows.forEach(([key, label]) => {
+    const row = document.createElement("div");
+    row.className = "face-editor-row";
+    row.dataset.faceControl = key;
+    const title = document.createElement("span");
+    title.className = "face-editor-label";
+    title.textContent = label;
+    const prev = document.createElement("button");
+    prev.type = "button";
+    prev.className = "face-editor-step";
+    prev.textContent = "‹";
+    prev.setAttribute("aria-label", `Previous ${label}`);
+    const value = document.createElement("span");
+    value.className = "face-editor-value";
+    value.textContent = labelForFaceOption(pendingFaceConfig[key]);
+    const next = document.createElement("button");
+    next.type = "button";
+    next.className = "face-editor-step";
+    next.textContent = "›";
+    next.setAttribute("aria-label", `Next ${label}`);
+    prev.addEventListener("click", () => stepFaceOption(key, -1));
+    next.addEventListener("click", () => stepFaceOption(key, 1));
+    row.append(title, prev, value, next);
+    elements.faceEditorControls.appendChild(row);
+  });
+  elements.faceEditorControls.append(
+    buildFaceColorControl("skinTone", "Skin"),
+    buildFaceColorControl("hairColor", "Hair color")
+  );
+}
+
+function buildFaceColorControl(key, label) {
+  const row = document.createElement("label");
+  row.className = "face-editor-row face-editor-color-row";
+  row.dataset.faceControl = key;
+  const title = document.createElement("span");
+  title.className = "face-editor-label";
+  title.textContent = label;
+  const input = document.createElement("input");
+  input.type = "color";
+  input.value = pendingFaceConfig[key];
+  input.setAttribute("aria-label", label);
+  input.addEventListener("input", (event) => {
+    pendingFaceConfig = normalizeFaceConfig({ ...pendingFaceConfig, [key]: event.target.value }, pendingCharacterId);
+    buildCharacterCards();
+    buildFaceEditor();
+  });
+  row.append(title, input);
+  return row;
+}
+
+function stepFaceOption(key, direction) {
+  const options = faceEditorOptions[key] || [];
+  if (!options.length) return;
+  const currentIndex = Math.max(0, options.indexOf(pendingFaceConfig[key]));
+  const nextIndex = (currentIndex + direction + options.length) % options.length;
+  pendingFaceConfig = normalizeFaceConfig({ ...pendingFaceConfig, [key]: options[nextIndex] }, pendingCharacterId);
+  buildCharacterCards();
+  buildFaceEditor();
+}
+
+function labelForFaceOption(value) {
+  return String(value || "")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 // issue #131：背景花紋選擇器（spec#6）。每個花紋一個預覽 swatch；選定即更新 pendingBackgroundPattern 並反映於選角卡。
@@ -754,6 +863,7 @@ function buildBackgroundPatternChoices() {
       pendingBackgroundPattern = pattern;
       buildBackgroundPatternChoices();
       buildCharacterCards();
+      buildFaceEditor();
     });
     elements.backgroundPatternGrid.appendChild(button);
   });
@@ -780,6 +890,7 @@ function confirmCharacterSelect() {
   applyCharacterStarterOutfit(character);
   state.profileColor = profileColorFor(character.id, pendingProfileColor);
   state.backgroundPattern = normalizeBackgroundPattern(pendingBackgroundPattern);
+  state.faceConfig = normalizeFaceConfig(pendingFaceConfig, character.id);
   state.playerName = sanitizePlayerName(elements.playerNameInput.value) || character.defaultName;
   persist();
   const activeAccountId = getActiveAccountId();
@@ -831,6 +942,7 @@ function accountSummary(account) {
     characterId: accountState.activeCharacterId || account.characterId || defaultActiveCharacterId,
     characterLabel: playableCharacterById(accountState.activeCharacterId || account.characterId)?.label || "Princess",
     color: profileColorFor(accountState.activeCharacterId, accountState.profileColor || account.profileColor),
+    faceConfig: normalizeFaceConfig(accountState.faceConfig, accountState.activeCharacterId || account.characterId),
     backgroundPattern: normalizeBackgroundPattern(accountState.backgroundPattern),
     coins: Math.max(0, Number(accountState.coins) || 0),
     lastPlayedAt: account.lastPlayedAt || account.createdAt || 0,
@@ -856,7 +968,7 @@ function buildAccountList() {
     pick.style.setProperty("--profile-color", summary.color);
     const avatar = document.createElement("span");
     avatar.className = "account-avatar bust-frame";
-    renderBustInto(avatar, summary.characterId, summary.state.outfit, summary.color, summary.backgroundPattern);
+    renderBustInto(avatar, summary.characterId, summary.state.outfit, summary.color, summary.backgroundPattern, summary.faceConfig);
     const nameEl = document.createElement("strong");
     nameEl.textContent = summary.name;
     const charEl = document.createElement("small");
@@ -928,17 +1040,22 @@ function outfitSummary() {
 }
 
 function renderPaperDolls() {
-  paperDollRenderer.renderPaperDolls(state.outfit, princessExpression, activePaperDollCharacter());
+  paperDollRenderer.renderPaperDolls(state.outfit, princessExpression, activePaperDollCharacter(), state.faceConfig);
   renderActiveTryOnDoll();
 }
 
 function avatarMarkup(surface, outfitState = state.outfit) {
-  return paperDollRenderer.avatarMarkup(surface, outfitState, activePaperDollCharacter());
+  return paperDollRenderer.avatarMarkup(surface, outfitState, activePaperDollCharacter(), state.faceConfig);
 }
 
 // 頭胸 bust 紙娃娃層（issue #132）：供帳號卡以各帳號自己的角色＋穿搭渲染即時衣著（資訊欄則由 renderPaperDolls 以使用中狀態填層）。
-function bustMarkupFor(characterId, outfitState) {
-  return paperDollRenderer.avatarMarkup("side-bust", outfitState || {}, playableCharacterById(characterId));
+function bustMarkupFor(characterId, outfitState, faceConfig = null) {
+  return paperDollRenderer.avatarMarkup(
+    "side-bust",
+    outfitState || {},
+    playableCharacterById(characterId),
+    normalizeFaceConfig(faceConfig, characterId)
+  );
 }
 
 function activePaperDollCharacter() {
@@ -954,6 +1071,7 @@ function tryOnOutfitFor(item) {
 function renderAdvDoll(outfitState, isTryOn = false) {
   const doll = elements.advScene?.querySelector('[data-doll="adv"]');
   if (!doll) return;
+  const face = normalizeFaceConfig(state.faceConfig, state.activeCharacterId);
   doll.innerHTML = avatarMarkup("adv", outfitState);
   doll.dataset.hairstyle = outfitState.hairstyle || "none";
   doll.dataset.top = outfitState.top || "none";
@@ -967,6 +1085,13 @@ function renderAdvDoll(outfitState, isTryOn = false) {
   doll.dataset.faceMask = outfitState.faceMask || "none";
   doll.dataset.neck = outfitState.neck || "none";
   doll.dataset.hand = outfitState.hand || "none";
+  doll.dataset.hairStyleId = face.hairStyleId;
+  doll.dataset.browId = face.browId;
+  doll.dataset.eyeId = face.eyeId;
+  doll.dataset.noseId = face.noseId;
+  doll.dataset.mouthId = face.mouthId;
+  doll.dataset.skinTone = face.skinTone;
+  doll.dataset.hairColor = face.hairColor;
   doll.dataset.expression = princessExpression;
   doll.classList.toggle("try-on-active", isTryOn);
 }
@@ -3724,6 +3849,9 @@ installTestingHooks({
   normalizeProfileColor,
   backgroundPatternIds,
   normalizeBackgroundPattern,
+  faceEditorOptions,
+  defaultFaceConfigFor,
+  normalizeFaceConfig,
   // 遊玩時間限制與護眼休息（issue #6 / spec#9）測試介面：以注入時鐘驅動，不需真實等待。
   playClock: {
     now: () => clockNow(),

@@ -28,6 +28,76 @@ export const profileColorPalette = Object.freeze([
   "#f0abfc"  // lilac
 ]);
 
+export const faceEditorOptions = Object.freeze({
+  hairStyleId: Object.freeze(["bob", "waves", "puffs", "side-sweep"]),
+  browId: Object.freeze(["soft", "bright", "calm"]),
+  eyeId: Object.freeze(["round", "smile", "star"]),
+  noseId: Object.freeze(["button", "tiny", "soft"]),
+  mouthId: Object.freeze(["smile", "open", "calm"]),
+  skinTone: Object.freeze(["#f7c9ad", "#f1b895", "#d99a73", "#b97955", "#8f6049"]),
+  hairColor: Object.freeze(["#8b5a3c", "#d9a441", "#3f2d28", "#9b4f37", "#6d5cae"])
+});
+
+export const defaultFaceConfigByCharacterId = Object.freeze({
+  lumi: Object.freeze({
+    hairStyleId: "bob",
+    browId: "soft",
+    eyeId: "round",
+    noseId: "button",
+    mouthId: "smile",
+    skinTone: "#f7c9ad",
+    hairColor: "#d9a441"
+  }),
+  yumi: Object.freeze({
+    hairStyleId: "side-sweep",
+    browId: "calm",
+    eyeId: "smile",
+    noseId: "tiny",
+    mouthId: "calm",
+    skinTone: "#f1b895",
+    hairColor: "#3f2d28"
+  }),
+  sol: Object.freeze({
+    hairStyleId: "puffs",
+    browId: "bright",
+    eyeId: "star",
+    noseId: "button",
+    mouthId: "open",
+    skinTone: "#d99a73",
+    hairColor: "#8b5a3c"
+  }),
+  rosa: Object.freeze({
+    hairStyleId: "waves",
+    browId: "soft",
+    eyeId: "round",
+    noseId: "soft",
+    mouthId: "smile",
+    skinTone: "#f1b895",
+    hairColor: "#9b4f37"
+  })
+});
+
+const FACE_COLOR_RE = /^#(?:[0-9a-fA-F]{6})$/;
+
+export function defaultFaceConfigFor(characterId = defaultActiveCharacterId) {
+  const template = defaultFaceConfigByCharacterId[characterId] || defaultFaceConfigByCharacterId[defaultActiveCharacterId];
+  return { ...template };
+}
+
+export function normalizeFaceConfig(candidate = {}, characterId = defaultActiveCharacterId) {
+  const defaults = defaultFaceConfigFor(characterId);
+  const normalized = { ...defaults };
+  Object.entries(faceEditorOptions).forEach(([key, options]) => {
+    const value = candidate?.[key];
+    if (key === "skinTone" || key === "hairColor") {
+      normalized[key] = typeof value === "string" && FACE_COLOR_RE.test(value.trim()) ? value.trim() : defaults[key];
+    } else {
+      normalized[key] = options.includes(value) ? value : defaults[key];
+    }
+  });
+  return normalized;
+}
+
 // issue #131：合法 hex（#rgb / #rrggbb）即接受，使調色器自訂色可存活、且舊存檔既有識別色（含舊 16 色盤值）原值保留、不被重置。
 const PROFILE_COLOR_RE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 export function isValidProfileColor(color) {

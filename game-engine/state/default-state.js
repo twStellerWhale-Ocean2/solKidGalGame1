@@ -1,4 +1,4 @@
-import { defaultProfileColorFor } from "../data/game-data.js";
+import { defaultFaceConfigFor, defaultProfileColorFor } from "../data/game-data.js";
 
 export const defaultState = {
   activeCharacterId: "lumi",
@@ -6,6 +6,7 @@ export const defaultState = {
   profileColor: defaultProfileColorFor("lumi"),
   // issue #131：背景花紋（spec#6），與識別色組成公主視覺主題；"none"=無花紋。
   backgroundPattern: "none",
+  faceConfig: defaultFaceConfigFor("lumi"),
   coins: 100,
   // energy 即「每次遊玩時間預算」的顯示值（0–100%，issue #6 / spec#9）；由 play-clock 依真實時間重算，
   // 不再由答題等 effects 變動。實際倒數時間以 playLimit.sessionEndsAt／restEndsAt 時戳為準。

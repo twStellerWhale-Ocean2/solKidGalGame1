@@ -38,7 +38,9 @@
 }
 
 .avatar-shadow,
-.paper-doll-layer {
+.paper-doll-layer,
+.paper-doll-runtime-layer,
+.paper-doll-feature-root {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -54,12 +56,17 @@
   background: rgba(80, 56, 70, 0.2);
 }
 
-.paper-doll-layer {
+.paper-doll-layer,
+.paper-doll-runtime-layer,
+.paper-doll-feature-root {
   inset: 0;
   left: 0;
   width: 100%;
   height: 100%;
   transform: none;
+}
+
+.paper-doll-layer {
   background-image: var(--layer-img);
   background-position: center bottom;
   background-repeat: no-repeat;
@@ -67,20 +74,191 @@
   filter: drop-shadow(0 14px 18px rgba(58, 37, 46, 0.16));
 }
 
+.paper-doll-runtime-layer {
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 14px 18px rgba(58, 37, 46, 0.12));
+  -webkit-mask-image: var(--body-mask);
+  mask-image: var(--body-mask);
+  -webkit-mask-position: center bottom;
+  mask-position: center bottom;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.paper-doll-body-fill {
+  z-index: 2;
+  background: var(--skin-tone, #f7c9ad);
+}
+
+.paper-doll-skin-shade {
+  z-index: 3;
+  background:
+    radial-gradient(circle at 49% 39%, rgba(255, 140, 156, 0.26) 0 2.8%, transparent 4.8%),
+    radial-gradient(circle at 57% 39%, rgba(255, 140, 156, 0.22) 0 2.5%, transparent 4.6%),
+    linear-gradient(90deg, rgba(90, 48, 43, 0.18), transparent 16% 84%, rgba(90, 48, 43, 0.16)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 40%, rgba(68, 37, 38, 0.16));
+}
+
 .paper-doll-layer-outerBack { z-index: 1; }
 .paper-doll-layer-base { z-index: 2; }
-.paper-doll-layer-hairstyle { z-index: 3; }
+.paper-doll-layer-hairstyle { z-index: 6; }
 .paper-doll-layer-dress,
 .paper-doll-layer-bottom,
-.paper-doll-layer-top { z-index: 4; }
-.paper-doll-layer-outerFront { z-index: 5; }
-.paper-doll-layer-shoes { z-index: 6; }
+.paper-doll-layer-top { z-index: 7; }
+.paper-doll-layer-outerFront { z-index: 8; }
+.paper-doll-layer-shoes { z-index: 9; }
 .paper-doll-layer-neck { z-index: 7; }
 .paper-doll-layer-hand { z-index: 7; }
 .paper-doll-layer-headTop,
 .paper-doll-layer-headSide,
 .paper-doll-layer-faceEyes,
-.paper-doll-layer-faceMask { z-index: 8; }
+.paper-doll-layer-faceMask { z-index: 11; }
+
+.paper-doll-feature-root {
+  z-index: 10;
+  filter: drop-shadow(0 4px 5px rgba(58, 37, 46, 0.12));
+}
+
+.paper-doll-hair,
+.paper-doll-face,
+.paper-doll-brow,
+.paper-doll-eye,
+.paper-doll-nose,
+.paper-doll-mouth {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+}
+
+.paper-doll-hair {
+  left: 34%;
+  top: 32%;
+  width: 32%;
+  height: 18%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.22), transparent 20%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 42%),
+    var(--hair-color, #8b5a3c);
+  border-radius: 48% 48% 42% 42% / 55% 55% 42% 42%;
+  clip-path: polygon(10% 22%, 28% 3%, 55% 0, 80% 8%, 94% 32%, 88% 74%, 68% 98%, 52% 77%, 35% 98%, 12% 72%);
+}
+
+.paper-doll-feature-root[data-hair-style="waves"] .paper-doll-hair {
+  left: 32%;
+  top: 31%;
+  width: 36%;
+  height: 20%;
+  border-radius: 50% 46% 46% 44%;
+  clip-path: polygon(8% 28%, 25% 4%, 53% 0, 79% 8%, 96% 34%, 88% 95%, 70% 76%, 58% 100%, 43% 74%, 24% 100%, 12% 74%);
+}
+
+.paper-doll-feature-root[data-hair-style="puffs"] .paper-doll-hair {
+  left: 31%;
+  top: 33%;
+  width: 38%;
+  height: 16%;
+  border-radius: 50%;
+  clip-path: polygon(0 48%, 16% 12%, 36% 30%, 50% 3%, 64% 30%, 84% 12%, 100% 48%, 82% 88%, 62% 70%, 50% 96%, 38% 70%, 18% 88%);
+}
+
+.paper-doll-feature-root[data-hair-style="side-sweep"] .paper-doll-hair {
+  left: 33%;
+  top: 31%;
+  width: 34%;
+  height: 19%;
+  border-radius: 52% 42% 48% 40%;
+  clip-path: polygon(5% 32%, 28% 5%, 58% 0, 89% 14%, 96% 48%, 78% 95%, 55% 74%, 28% 94%, 16% 70%);
+}
+
+.paper-doll-face {
+  left: 40%;
+  top: 48%;
+  width: 20%;
+  height: 14%;
+}
+
+.paper-doll-brow {
+  top: 18%;
+  width: 22%;
+  height: 5%;
+  border-radius: 999px;
+  background: var(--hair-color, #8b5a3c);
+}
+
+.paper-doll-brow-left { left: 18%; transform: rotate(-8deg); }
+.paper-doll-brow-right { right: 18%; transform: rotate(8deg); }
+.paper-doll-feature-root[data-brow="bright"] .paper-doll-brow-left { transform: rotate(-18deg); }
+.paper-doll-feature-root[data-brow="bright"] .paper-doll-brow-right { transform: rotate(18deg); }
+.paper-doll-feature-root[data-brow="calm"] .paper-doll-brow { height: 4%; opacity: 0.78; }
+
+.paper-doll-eye {
+  top: 34%;
+  width: 13%;
+  height: 13%;
+  border-radius: 50%;
+  background: #2f2430;
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.5);
+}
+
+.paper-doll-eye-left { left: 24%; }
+.paper-doll-eye-right { right: 24%; }
+.paper-doll-feature-root[data-eye="smile"] .paper-doll-eye {
+  height: 7%;
+  border-radius: 999px;
+  background: transparent;
+  border-top: 2px solid #2f2430;
+  box-shadow: none;
+}
+.paper-doll-feature-root[data-eye="star"] .paper-doll-eye {
+  border-radius: 45% 55% 45% 55%;
+  background: #4b356a;
+}
+
+.paper-doll-nose {
+  left: 48%;
+  top: 48%;
+  width: 5%;
+  height: 12%;
+  border-radius: 999px;
+  background: rgba(130, 82, 72, 0.36);
+}
+.paper-doll-feature-root[data-nose="tiny"] .paper-doll-nose {
+  height: 8%;
+  opacity: 0.7;
+}
+.paper-doll-feature-root[data-nose="soft"] .paper-doll-nose {
+  width: 7%;
+  background: rgba(130, 82, 72, 0.24);
+}
+
+.paper-doll-mouth {
+  left: 39%;
+  top: 70%;
+  width: 22%;
+  height: 10%;
+  border-bottom: 2px solid #b44958;
+  border-radius: 0 0 999px 999px;
+}
+.paper-doll-feature-root[data-mouth="open"] .paper-doll-mouth {
+  left: 43%;
+  width: 14%;
+  height: 13%;
+  border: 0;
+  border-radius: 50%;
+  background: #a33f52;
+}
+.paper-doll-feature-root[data-mouth="calm"] .paper-doll-mouth {
+  left: 42%;
+  width: 16%;
+  height: 2%;
+  border: 0;
+  border-radius: 999px;
+  background: #b44958;
+}
 
 /* issue #131：移除 #126 的識別色光暈 drop-shadow（糊化）；識別色改由 .map-doll::before 橢圓背版承載（spec#9）。
    此處僅保留深色投影與白描邊維持頭像清晰銳利。 */
@@ -108,8 +286,18 @@
 }
 
 /* issue #132：側欄、帳號卡與選角卡共用此唯一頭胸裁切（.bust-doll 為單一裁切邏輯，各處外框僅負責方框與底色）。 */
-.bust-doll .paper-doll-layer {
+.bust-doll .paper-doll-layer,
+.bust-doll .paper-doll-runtime-layer {
   background-size: 245% auto;
   background-position: 50% 47%;
+  -webkit-mask-size: 245% auto;
+  mask-size: 245% auto;
+  -webkit-mask-position: 50% 47%;
+  mask-position: 50% 47%;
   filter: drop-shadow(0 8px 12px rgba(58, 37, 46, 0.14));
+}
+
+.bust-doll .paper-doll-feature-root {
+  transform: translateY(-36%) scale(2.45);
+  transform-origin: 50% 47%;
 }

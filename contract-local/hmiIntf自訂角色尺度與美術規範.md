@@ -40,11 +40,12 @@ Lumi ADV stageScale = 1.20
 * NPC 腳底須貼近 canvas 最底端；底部透明留白不得用來調整站位。
 * 可視人物高度由 `npcNaturalHeightCm` 換算，不得由 WebP 比例、mobile CSS 個別縮放或透明留白意外造成。
 * Lumi、Yumi、Sol、Rosa 與 wardrobe layer 共用同一 `512x768` paper-doll rig，須同一幾何對位；主角感只由 ADV 舞台倍率 `1.20` 表達，不得把 base 或衣物 layer 做成不同自然尺度。
-* 可玩公主 `base.webp` 採固定 baked-in playwear 身體底圖：可包含基礎頭部遮罩、粉紅短袖上衣與紅短褲，但不得烘入最終髮型、長袖、睡衣、禮服、鞋帽、皇冠、場景或黑色／純色背景。
-* 可玩公主變化性由 face layer 提供，不靠持續新增差異化 `base.webp` 範例。face layer 至少包含髮型、眉毛、眼睛、鼻子、嘴巴五類零件，並支援膚色與髮色參數；髮色須同步套用眉毛顏色。
+* 可玩公主 `base.webp` 在目前實作中作為 body mask 與頭胸裁切來源；正式素材方向須收斂為無固定五官、無固定髮型、無固定衣著、無固定膚色的人形 alpha mask。runtime 以 `skinTone` 填入 body mask，透明區不得被染色。
+* body mask 上層須可疊加 skin shade／紅潤／陰影效果；這些效果只補明暗與膚色質感，不得烘入最終髮型、長袖、睡衣、禮服、鞋帽、皇冠、場景、黑色／純色背景或不可調的衣著。
+* 可玩公主變化性由 face layer 與 hair layer 提供，不靠持續新增差異化 `base.webp` 範例。face layer 至少包含髮型、眉毛、眼睛、鼻子、嘴巴五類零件，並支援膚色與髮色參數；髮色須同步套用眉毛顏色。
 * face layer 須固定對齊頭胸部座標，不得為個別模板新增 CSS nudge、改畫布尺寸或以透明留白調整對位；對位錯誤須回到素材修正。
 * 選角畫面須直接以 CSS 裁切 `base.webp` 的頭部、肩膀與胸口上緣並疊加 face layer 作為 portrait，不另維護角色 `thumb.webp`。
-* starter items（例如 `softBrownHair`、`starterPajama` 或後續替代品）保留為舊存檔相容項；在 baked-in playwear base 策略下可為空 layer/no-op，但預設與舊存檔正規化不得造成 starter 髮型或 starter 服裝重複疊圖。
+* starter items（例如 `softBrownHair`、`starterPajama` 或後續替代品）保留為舊存檔相容項；在 body mask／face layer／wardrobe layer 策略下可為空 layer/no-op，但預設與舊存檔正規化不得造成 starter 髮型或 starter 服裝重複疊圖。
 * 四位可玩公主的預設模板方向：Lumi 為明亮經典方向；Yumi 為冷色、安靜、優雅方向；Sol 為陽光、俐落、活動感方向；Rosa 為甜美、溫暖方向。模板差異由 face config 預設值與識別色／背景花紋組成，正式素材仍須同 rig、透明背景、同 baseline。
 * 露膚衣物層（短袖、涼鞋／赤腳、手部配件邊界）須逐一在各膚色角色上檢查接縫，不得殘留為單一膚色繪製的色塊。
 * 臉部編輯器 UI 須適合手機觸控：右側垂直控制列由上到下排列髮型、眉毛、眼睛、鼻子、嘴巴，每列以左右水平按鈕切換上一個／下一個選項；膚色與髮色控制不得擠壓主預覽，且文字不得溢出控制容器。
@@ -65,4 +66,4 @@ Lumi ADV stageScale = 1.20
 * 2026/6/15：補入 issue #123 可玩公主 base 分層、四角色 roster、starter 外觀與舊 id 相容規格。
 * 2026/6/16：依使用者改圖決策調整 issue #123 契約，改採四張指定 PNG 轉 WebP 的 baked-in 短髮 playwear base，starter items 改為相容 no-op 以避免預設重複疊圖。
 * 2026/6/16：依使用者要求移除角色 `thumb.webp` runtime 用途，選角 portrait 改由 `base.webp` CSS 裁切頭胸部。
-* 2026/6/18：依 issue #130 將可玩公主變化性方向改為固定身體底圖與臉部編輯器；Lumi／Yumi／Sol／Rosa 改作預設模板，臉部零件與膚色／髮色參數承接辨識差異。
+* 2026/6/18：依 issue #130 將可玩公主變化性方向改為 body mask／skin shade／face layer／hair layer／wardrobe layer 疊合；Lumi／Yumi／Sol／Rosa 改作預設模板，臉部零件與膚色／髮色參數承接辨識差異。

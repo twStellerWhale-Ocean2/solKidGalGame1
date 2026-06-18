@@ -28,6 +28,8 @@ export function createElements() {
     characterSelect: $("#characterSelect"),
     characterSelectCard: $(".character-select-card"),
     characterGrid: $("#characterGrid"),
+    faceEditorControls: $("#faceEditorControls"),
+    faceEditorPreview: $("#faceEditorPreview"),
     characterNameForm: $("#characterNameForm"),
     playerNameInput: $("#playerNameInput"),
     profileColorGrid: $("#profileColorGrid"),

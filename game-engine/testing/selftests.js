@@ -54,6 +54,7 @@ export function installTestingHooks(api) {
   runChatSelfTest(api);
   runSceneNavSelfTest(api);
   runProfileColorSelfTest(api);
+  runPrincessEditorSelfTest(api);
   runChineseRewardSelfTest(api);
   runCharacterVoiceSelfTest(api);
   runMapAvatarSelfTest(api);
@@ -490,7 +491,9 @@ function runProfileColorSelfTest(api) {
     api.render();
 
     const sideAvatar = api.elements.sideProfileAvatar;
-    if (!sideAvatar || sideAvatar.querySelectorAll(".paper-doll-layer").length === 0) errors.push("side profile avatar did not render outfit layers");
+    if (!sideAvatar || !sideAvatar.querySelector(".paper-doll-body-fill") || !sideAvatar.querySelector(".paper-doll-feature-root")) {
+      errors.push("side profile avatar did not render layered princess avatar");
+    }
     if (sideAvatar?.style.getPropertyValue("--profile-color") !== api.state.profileColor) errors.push("side avatar profile color does not match state (custom color reset?)");
     // issue #131：背景花紋以 data-pattern 套用於資訊欄識別卡背版。
     if (api.elements.sideProfileFrame?.dataset.pattern !== "bubble") errors.push(`info-bar card pattern ${api.elements.sideProfileFrame?.dataset.pattern || "(none)"}, expected bubble`);
@@ -523,6 +526,104 @@ function runProfileColorSelfTest(api) {
     test: "profile-color",
     passed: errors.length === 0,
     errors: errors.slice(0, 10)
+  });
+  document.body.prepend(result);
+}
+
+// issue #130：驗證分層臉部編輯器、body mask runtime 膚色、髮/眉同色與 faceConfig 持久化入口。
+function runPrincessEditorSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "princess-editor") return;
+  const errors = [];
+  let account = null;
+  try {
+    const requiredKeys = ["hairStyleId", "browId", "eyeId", "noseId", "mouthId", "skinTone", "hairColor"];
+    requiredKeys.forEach((key) => {
+      if (!Array.isArray(api.faceEditorOptions?.[key]) || api.faceEditorOptions[key].length < 2) {
+        errors.push(`faceEditorOptions.${key} missing or too small`);
+      }
+    });
+
+    const rosaDefaults = api.defaultFaceConfigFor("rosa");
+    if (rosaDefaults.hairStyleId !== "waves") errors.push("rosa default face config did not load");
+    const normalized = api.normalizeFaceConfig({
+      hairStyleId: "not-real",
+      browId: "bright",
+      skinTone: "#123abc",
+      hairColor: "bad-color"
+    }, "sol");
+    if (normalized.hairStyleId !== api.defaultFaceConfigFor("sol").hairStyleId) errors.push("invalid hair style did not fall back");
+    if (normalized.browId !== "bright") errors.push("valid brow option was not preserved");
+    if (normalized.skinTone !== "#123abc") errors.push("custom skin hex was not preserved");
+    if (normalized.hairColor !== api.defaultFaceConfigFor("sol").hairColor) errors.push("invalid hair color did not fall back");
+
+    account = api.accounts.create();
+    api.state.activeCharacterId = "lumi";
+    api.state.faceConfig = api.defaultFaceConfigFor("lumi");
+    api.state.profileColor = api.defaultProfileColorFor("lumi");
+    api.render();
+    api.openCharacterSelect({ forced: false });
+
+    const controls = api.elements.faceEditorControls;
+    if (!controls) {
+      errors.push("face editor controls missing");
+    } else {
+      const rows = [...controls.querySelectorAll("[data-face-control]")].map((row) => row.dataset.faceControl);
+      requiredKeys.forEach((key) => {
+        if (!rows.includes(key)) errors.push(`face editor missing ${key} control`);
+      });
+    }
+
+    const beforeHair = api.elements.faceEditorPreview?.querySelector(".paper-doll-feature-root")?.dataset.hairStyle || "";
+    const hairNext = controls?.querySelector('[data-face-control="hairStyleId"] .face-editor-step:last-child');
+    hairNext?.click();
+    const afterHair = api.elements.faceEditorPreview?.querySelector(".paper-doll-feature-root")?.dataset.hairStyle || "";
+    if (!beforeHair || afterHair === beforeHair) errors.push("hair style next button did not update preview");
+
+    const skinInput = controls?.querySelector('[data-face-control="skinTone"] input[type="color"]');
+    const hairInput = controls?.querySelector('[data-face-control="hairColor"] input[type="color"]');
+    if (!skinInput || !hairInput) errors.push("skin/hair color inputs missing");
+    if (skinInput) {
+      skinInput.value = "#8f6049";
+      skinInput.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    if (hairInput) {
+      const refreshedHairInput = api.elements.faceEditorControls.querySelector('[data-face-control="hairColor"] input[type="color"]');
+      refreshedHairInput.value = "#6d5cae";
+      refreshedHairInput.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
+    const previewBody = api.elements.faceEditorPreview?.querySelector(".paper-doll-body-fill");
+    const previewFeatures = api.elements.faceEditorPreview?.querySelector(".paper-doll-feature-root");
+    const previewHair = api.elements.faceEditorPreview?.querySelector(".paper-doll-hair");
+    const previewBrow = api.elements.faceEditorPreview?.querySelector(".paper-doll-brow");
+    if (previewBody?.style.getPropertyValue("--skin-tone") !== "#8f6049") errors.push("preview body fill did not receive skin tone");
+    if (previewFeatures?.style.getPropertyValue("--hair-color") !== "#6d5cae") errors.push("preview features did not receive hair color");
+    if (getComputedStyle(previewHair).backgroundColor !== getComputedStyle(previewBrow).backgroundColor) {
+      errors.push("hair and brow colors are not synchronized");
+    }
+    const bodyStyle = getComputedStyle(previewBody);
+    const maskImage = bodyStyle.maskImage || bodyStyle.webkitMaskImage || "";
+    if (!maskImage || maskImage === "none") errors.push("body fill is missing CSS mask image");
+
+    api.elements.characterConfirm.click();
+    if (api.state.faceConfig.skinTone !== "#8f6049") errors.push("confirmed state did not persist skinTone");
+    if (api.state.faceConfig.hairColor !== "#6d5cae") errors.push("confirmed state did not persist hairColor");
+    if (api.state.faceConfig.hairStyleId === beforeHair) errors.push("confirmed state did not persist changed hair style");
+    api.render();
+    const sideBody = api.elements.sideProfileAvatar?.querySelector(".paper-doll-body-fill");
+    if (sideBody?.style.getPropertyValue("--skin-tone") !== "#8f6049") errors.push("side avatar did not render persisted skinTone");
+  } catch (error) {
+    errors.push(error.message);
+  } finally {
+    if (account?.id) api.accounts.remove(account.id);
+  }
+  const result = document.createElement("pre");
+  result.id = "princessEditorTestResult";
+  result.textContent = JSON.stringify({
+    test: "princess-editor",
+    passed: errors.length === 0,
+    errors: errors.slice(0, 12)
   });
   document.body.prepend(result);
 }

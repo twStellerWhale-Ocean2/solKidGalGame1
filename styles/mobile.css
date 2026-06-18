@@ -1264,6 +1264,36 @@ body {
     display: none;
   }
 
+  .face-editor-panel {
+    grid-template-columns: minmax(104px, 0.9fr) minmax(156px, 1.1fr);
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .face-editor-preview-wrap {
+    min-height: 132px;
+  }
+
+  .face-editor-row {
+    grid-template-columns: minmax(48px, 1fr) 28px minmax(44px, 1fr) 28px;
+    min-height: 31px;
+    gap: 4px;
+  }
+
+  .face-editor-step {
+    width: 28px;
+    height: 28px;
+  }
+
+  .face-editor-label,
+  .face-editor-value {
+    font-size: 0.72rem;
+  }
+
+  .face-editor-color-row {
+    grid-template-columns: minmax(48px, 1fr) 32px;
+  }
+
   .info-bar .info-portrait {
     grid-area: portrait;
     width: 58px;

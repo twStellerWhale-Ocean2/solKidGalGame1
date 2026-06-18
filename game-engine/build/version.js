@@ -3,6 +3,7 @@
 export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
+  { version: "2026.06.18-princess-editor", buildDateTime: "2026-06-18", issue: "#130", summaryZh: "分層公主臉部編輯器：body mask 膚色、髮眉同色與五官切換" },
   { version: "2026.06.16-speech-quality", buildDateTime: "2026-06-16", issue: "#109", summaryZh: "Web Speech API 語音品質改善：80% 語速、voice fallback、佇列與診斷紀錄" },
   { version: "2026.06.16-rest-profile-flow", buildDateTime: "2026-06-16", issue: "#126", summaryZh: "兒童休息預設 15 分鐘，公主識別色、大頭照與切換入口一致化" },
   { version: "2026.06.16-user-princess-base", buildDateTime: "2026-06-16", issue: "#123", summaryZh: "依使用者提供圖片替換四位公主 base，轉透明 WebP 並對齊紙娃娃版型" },
