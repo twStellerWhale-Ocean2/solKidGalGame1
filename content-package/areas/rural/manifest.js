@@ -19,7 +19,7 @@ export const ruralVocabularyProfile = Object.freeze({
   id: "cambridge-a1-movers",
   label: "Cambridge A1 Movers",
   levelLabel: "Cambridge Movers",
-  rewardCoins: 500,
+  rewardCoins: 70,
   note: "Rural production places use practical Movers-style resource words."
 });
 //#endregion 英文等級與獎勵設定
@@ -69,7 +69,7 @@ export const ruralArea = Object.freeze({
 //#region 場景自帶題庫（issue #96 結構；issue #149 全量改寫：角色第一人稱、prompt 即台詞、選項即公主回應、無 opening/ending）
 // ruralLessonBank：以 place 為鍵的「打工任務」題庫（答對得 coins＝勞動所得）。
 // issue #149：Movers 分級（過去式／because／比較級／going to·will／加減法）；每場景 3 題、每題 3 選項；prompt＝角色第一人稱請求／任務、choices＝公主回應。
-const jobReward = { coins: 500 };
+const jobReward = { coins: 70 };
 const ruralLessonBank = Object.freeze({
   mine: {
     title: "Help at the Mine",

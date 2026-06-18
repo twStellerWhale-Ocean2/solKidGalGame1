@@ -19,7 +19,7 @@ export const urbanDressBoutiqueItems = [
   outfitSet({ id: "lilacDreamSet", name: "Lilac dream outfit set", cost: 460, asset: "set-lilac-dream", equips: { hairstyle: "lavenderBobHair", dress: "lilacHarborDress", shoes: "lilacRibbonShoes", headTop: "lilacCrown" } }),
   outfitSet({ id: "tailorDaySet", name: "Tailor day outfit set", cost: 420, asset: "set-tailor-day", equips: { top: "mintBlouse", bottom: "skyShorts", shoes: "mintRibbonShoes", headSide: "mintRibbon" } }),
   outfitSet({ id: "castleHelperSet", name: "Castle helper outfit set", cost: 260, asset: "set-castle-helper", equips: { top: "creamBlouse", bottom: "roseSkirt", outer: "yellowCardigan", headTop: "pearlTiara" } }),
-  outfitSet({ id: "wildTrailSet", name: "Wild trail outfit set", cost: 2450, asset: "set-wild-trail", equips: { top: "aquaSailorTop", bottom: "wildShorts", outer: "fernCloak", shoes: "wildBoots" } }),
+  outfitSet({ id: "wildTrailSet", name: "Wild trail outfit set", cost: 500, asset: "set-wild-trail", equips: { top: "aquaSailorTop", bottom: "wildShorts", outer: "fernCloak", shoes: "wildBoots" } }),
   outfitSet({ id: "starryCapeSet", name: "Starry cape outfit set", cost: 620, asset: "set-starry-cape", equips: { dress: "starlightGown", outer: "moonCape", shoes: "silverBoots", headTop: "starryTiara" } }),
   outfitSet({ id: "auroraFestivalSet", name: "Aurora festival outfit set", cost: 680, asset: "set-aurora-festival", equips: { dress: "auroraGown", outer: "auroraCape", shoes: "lilacRibbonShoes", headTop: "auroraTiara" } })
 ];
