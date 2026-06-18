@@ -942,6 +942,12 @@ async function runDataAudit(api) {
   ]));
   const errors = [];
   const warnings = [];
+  // issue #155：打工正解須以自然應允語句開頭（分級相稱、可擴充），使幫忙回應親切一致；含禮貌回應供收尾型題目。
+  const JOB_ANSWER_OPENERS = ["yes", "yeah", "ok", "okay", "sure", "of course", "no problem", "well", "certainly", "alright", "all right", "right away", "happy to", "you are welcome", "you're welcome", "my pleasure", "thank you", "thanks"];
+  const startsWithAckOpener = (text) => {
+    const t = String(text).trimStart().toLowerCase();
+    return JOB_ANSWER_OPENERS.some((opener) => t.startsWith(opener));
+  };
   const mapContracts = await collectMapContractAudit(api, errors);
 
   Object.entries(categoryCounts).forEach(([category, count]) => {
@@ -1045,6 +1051,8 @@ async function runDataAudit(api) {
         if (!q.prompt || !q.answer || !Array.isArray(q.choices) || q.choices.length < 2) errors.push(`${where} missing prompt/answer/choices`);
         else if (!q.choices.includes(q.answer)) errors.push(`${where} answer not in choices`);
         // issue #149：words 改由引擎自正解英文導出（不再逐題手寫），故不檢查 words。
+        // issue #155：打工正解須以自然應允語句開頭（幫忙請求→公主應允的固定樣式）。
+        if (q.answer && !startsWithAckOpener(q.answer)) errors.push(`${where} job answer must open with an acknowledgement (${JOB_ANSWER_OPENERS.slice(0, 8).join("/")}…) — got "${q.answer}"`);
         if (!q.reward || !Number.isFinite(q.reward.coins)) errors.push(`${where} missing reward.coins`);
         if (!q.promptZh) errors.push(`${where} missing promptZh (中文協助所需)`);
         if (!Array.isArray(q.choicesZh) || q.choicesZh.length !== q.choices.length || q.choicesZh.some((z) => !z)) errors.push(`${where} choicesZh incomplete (中文協助所需)`);
