@@ -2863,6 +2863,10 @@ function answerLesson(button, choice) {
 }
 
 function closeAdv() {
+  // issue #156：離開場景（關閉場景對話、切換場景或返回地圖之共同收口）即時收束正在播放之語音，
+  // 避免語音殘留跨場景。Web Speech API 無法對進行中語句音量淡出（utterance.volume 於 speak() 固定、
+  // 僅 cancel() 可停），故以即時 stop() 作為「約 1 秒淡出」目標聽感之明確降級。
+  if (speechManager.isSpeaking()) speechManager.stop("scene-leave");
   elements.advModal.classList.remove("show");
   elements.advModal.setAttribute("aria-hidden", "true");
   advMode = "closed";
@@ -2996,6 +3000,8 @@ function createSpeechManager() {
   let voiceLoadState = "not-supported";
   let initialized = false;
   let lastReplayKey = "";
+  // issue #156：管理器自身追蹤之發聲狀態，供離場收束判斷（headless 測試 mock speak 時瀏覽器 speaking getter 不可靠）。
+  let speaking = false;
   // issue #134：使用者語音指定（覆蓋層）。鍵為 `${gender}:${personality}`，性別預設桶為 `${gender}:`；全機（非帳號）儲存。
   let voiceAssignments = {};
   // issue #134：voice 清單（getVoices 初次常為空）於 voiceschanged 載入後，通知 UI 重渲染語音設定。
@@ -3106,6 +3112,7 @@ function createSpeechManager() {
         voiceLoadState
       });
       lastReplayKey = "";
+      speaking = false;
       return true;
     } catch {
       return false;
@@ -3181,6 +3188,7 @@ function createSpeechManager() {
     const fireThen = () => {
       if (fired) return;
       fired = true;
+      speaking = false;
       if (done) done();
     };
     utterance.addEventListener("start", (event) => addSpeechDiagnosticEvent(diagnostic, "start", event));
@@ -3197,6 +3205,7 @@ function createSpeechManager() {
     });
 
     try {
+      speaking = true;
       window.speechSynthesis.speak(utterance);
     } catch (error) {
       diagnostic.errorCode = error?.name === "NotAllowedError" ? "not-allowed" : "synthesis-failed";
@@ -3212,6 +3221,8 @@ function createSpeechManager() {
     selectVoice,
     speak,
     stop,
+    // issue #156：是否有語音正在播放或排隊（內部旗標 OR 瀏覽器狀態），供離場收束判斷。
+    isSpeaking: () => speaking || (hasSynth() && (window.speechSynthesis.speaking || window.speechSynthesis.pending)),
     diagnostics: () => speechDiagnostics.slice(),
     resetDiagnostics: () => { speechDiagnostics.length = 0; },
     voiceLoadState: () => voiceLoadState,
@@ -3966,6 +3977,7 @@ installTestingHooks({
   selectSpeechVoice: (profile) => speechManager.selectVoice(profile || DEFAULT_VOICE_PROFILE),
   getSpeechDiagnostics: () => speechManager.diagnostics(),
   resetSpeechDiagnostics: () => speechManager.resetDiagnostics(),
+  isSpeaking: () => speechManager.isSpeaking(),
   refreshSpeechVoices: () => speechManager.refreshVoices(),
   speechLeadingPad: SPEECH_LEADING_PAD,
   voiceAssignmentKey: VOICE_ASSIGNMENT_KEY,

@@ -825,6 +825,39 @@ function runCharacterVoiceSelfTest(api) {
       }
     }
 
+    // intTest#44：離開場景時收束正在播放之語音、不殘留跨場景（issue #156）。
+    if ("speechSynthesis" in window && api.getSpeechDiagnostics && api.isSpeaking && api.openQuestAdv) {
+      const synth = window.speechSynthesis;
+      const origSpeak = synth.speak.bind(synth);
+      const origCancel = synth.cancel.bind(synth);
+      let cancelCount = 0;
+      synth.speak = () => {};
+      synth.cancel = () => { cancelCount += 1; };
+      try {
+        api.state.speechEnabled = true;
+        api.openQuestAdv(api.hotspotById("kingHall"));
+        if (!api.isSpeaking()) errors.push("intTest#44：場景觸發語音後 isSpeaking 應為 true");
+        const before = api.getSpeechDiagnostics().length;
+        const cancelBefore = cancelCount;
+        api.closeAdv(); // 離開場景 → 應即時收束語音
+        if (cancelCount <= cancelBefore) errors.push("intTest#44：離開場景未呼叫 speechSynthesis.cancel 收束語音");
+        const leaveStop = api.getSpeechDiagnostics().slice(before).find((d) => d.source === "scene-leave");
+        if (!leaveStop) errors.push("intTest#44：離開場景未記錄 scene-leave 收束診斷");
+        else if (!leaveStop.cancelCalled) errors.push("intTest#44：scene-leave 診斷 cancelCalled 應為 true");
+        if (api.isSpeaking()) errors.push("intTest#44：離開場景後 isSpeaking 仍為 true（語音殘留跨場景）");
+        // 不殘留：無語音時再次 closeAdv 不應新增 scene-leave 收束診斷。
+        const afterLeave = api.getSpeechDiagnostics().length;
+        api.closeAdv();
+        const spurious = api.getSpeechDiagnostics().slice(afterLeave).some((d) => d.source === "scene-leave");
+        if (spurious) errors.push("intTest#44：無語音時 closeAdv 不應新增 scene-leave 收束診斷");
+      } catch (error) {
+        errors.push(`intTest#44：${error.message}`);
+      } finally {
+        synth.speak = origSpeak;
+        synth.cancel = origCancel;
+      }
+    }
+
     // intTest#33-35：Web Speech API voice 載入／fallback、cancel 策略與診斷錯誤紀錄。
     if ("speechSynthesis" in window && api.speakForTest && api.selectSpeechVoice && api.getSpeechDiagnostics) {
       const synth = window.speechSynthesis;
