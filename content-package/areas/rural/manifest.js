@@ -35,16 +35,16 @@ export const ruralArea = Object.freeze({
   vocabularyProfile: ruralVocabularyProfile,
   // nodes 控制地圖上的路網與圖示座標；x / y 是相對地圖寬高的百分比。
   nodes: {
-    ruralEntrance: { id: "ruralEntrance", label: "World Road", x: 9.1, y: 81.8, links: ["pasture", "farm"] },
-    mine: { id: "mine", label: "Mine", x: 78.8, y: 20.2, links: ["loggingCamp", "fishingShore", "ruralEntrance"] },
-    loggingCamp: { id: "loggingCamp", label: "Logging Camp", x: 83.6, y: 56.0, links: ["mine", "fishingShore", "mill", "fieldCobbler"] },
-    fishingShore: { id: "fishingShore", label: "Fishing Shore", x: 81.4, y: 85.9, links: ["loggingCamp", "farm", "mine", "fieldCobbler"] },
-    pasture: { id: "pasture", label: "Pasture", x: 65.8, y: 41.0, links: ["ruralEntrance", "farm", "mill", "workwearStall"] },
-    farm: { id: "farm", label: "Farm", x: 46.9, y: 69.7, links: ["pasture", "mill", "villageHome", "fishingShore", "workwearStall"] },
-    mill: { id: "mill", label: "Mill", x: 22.1, y: 67.7, links: ["farm", "pasture", "loggingCamp", "villageHome", "workwearStall"] },
-    workwearStall: { id: "workwearStall", label: "Workwear Stall", x: 37.1, y: 57.9, links: ["pasture", "farm", "mill"] },
-    fieldCobbler: { id: "fieldCobbler", label: "Field Cobbler", x: 65.1, y: 87.2, links: ["fishingShore", "loggingCamp", "mine"] },
-    villageHome: { id: "villageHome", label: "Village Home", x: 26.7, y: 87.9, links: ["farm", "mill"] }
+    ruralEntrance: { id: "ruralEntrance", label: "World Road", x: 7, y: 78, links: ["pasture", "farm"] },
+    mine: { id: "mine", label: "Mine", x: 64, y: 17, links: ["loggingCamp", "fishingShore", "ruralEntrance"] },
+    loggingCamp: { id: "loggingCamp", label: "Logging Camp", x: 45, y: 28, links: ["mine", "fishingShore", "mill", "fieldCobbler"] },
+    fishingShore: { id: "fishingShore", label: "Fishing Shore", x: 84, y: 76, links: ["loggingCamp", "farm", "mine", "fieldCobbler"] },
+    pasture: { id: "pasture", label: "Pasture", x: 56, y: 34, links: ["ruralEntrance", "farm", "mill", "workwearStall"] },
+    farm: { id: "farm", label: "Farm", x: 64, y: 58, links: ["pasture", "mill", "villageHome", "fishingShore", "workwearStall"] },
+    mill: { id: "mill", label: "Mill", x: 33, y: 61, links: ["farm", "pasture", "loggingCamp", "villageHome", "workwearStall"] },
+    workwearStall: { id: "workwearStall", label: "Workwear Stall", x: 42, y: 46, links: ["pasture", "farm", "mill"] },
+    fieldCobbler: { id: "fieldCobbler", label: "Field Cobbler", x: 50, y: 82, links: ["fishingShore", "loggingCamp", "mine"] },
+    villageHome: { id: "villageHome", label: "Village Home", x: 15, y: 86, links: ["farm", "mill"] }
   },
   // locations 控制地圖圖示進入後的場景、NPC、商店與提示文字。
   locations: [

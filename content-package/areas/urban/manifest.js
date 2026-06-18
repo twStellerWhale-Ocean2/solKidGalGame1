@@ -35,21 +35,21 @@ export const urbanArea = Object.freeze({
   vocabularyProfile: urbanVocabularyProfile,
   // nodes 控制地圖上的路網與圖示座標；x / y 是相對地圖寬高的百分比。
   nodes: {
-    castleRoom: { id: "castleRoom", label: "Castle Stairway", x: 52.7, y: 15.0, links: ["garden", "schoolClassroom", "library", "temple", "administration", "market"] },
-    garden: { id: "garden", label: "Castle Garden", x: 52.7, y: 44.9, links: ["castleRoom", "market", "library", "temple"] },
-    schoolClassroom: { id: "schoolClassroom", label: "School Classroom", x: 35.2, y: 47.5, links: ["castleRoom", "library", "market"] },
-    library: { id: "library", label: "Library", x: 44.5, y: 44.3, links: ["schoolClassroom", "castleRoom", "garden"] },
-    temple: { id: "temple", label: "Temple", x: 67.1, y: 46.9, links: ["castleRoom", "garden", "administration", "boutique", "hairSalon"] },
-    administration: { id: "administration", label: "Administration Building", x: 60.5, y: 37.1, links: ["castleRoom", "temple", "boutique", "tailorStudio"] },
-    market: { id: "market", label: "Market Square", x: 40.4, y: 59.2, links: ["garden", "schoolClassroom", "tailorStudio", "shoeShop", "harbor", "port"] },
-    boutique: { id: "boutique", label: "Dress Boutique", x: 68.4, y: 59.2, links: ["tailorStudio", "shoeShop", "accessoryShop", "administration", "temple", "hairSalon"] },
-    hairSalon: { id: "hairSalon", label: "Hair Salon", x: 80.7, y: 54.7, links: ["boutique", "accessoryShop", "temple"] },
-    tailorStudio: { id: "tailorStudio", label: "Tailor Studio", x: 59.2, y: 67.7, links: ["market", "boutique", "shoeShop", "administration"] },
-    shoeShop: { id: "shoeShop", label: "Shoe Shop", x: 73.6, y: 70.3, links: ["market", "harbor", "boutique", "tailorStudio"] },
-    accessoryShop: { id: "accessoryShop", label: "Accessory Atelier", x: 84.0, y: 65.1, links: ["boutique", "hairSalon"] },
-    harbor: { id: "harbor", label: "Fish Shop", x: 39.7, y: 76.8, links: ["market", "shoeShop", "port"] },
-    port: { id: "port", label: "Harbor Port", x: 56.0, y: 84.6, links: ["market", "harbor", "lighthouse"] },
-    lighthouse: { id: "lighthouse", label: "Lighthouse", x: 89.8, y: 76.2, links: ["port"] }
+    castleRoom: { id: "castleRoom", label: "Castle Stairway", x: 47, y: 7, links: ["garden", "schoolClassroom", "library", "temple", "administration", "market"] },
+    garden: { id: "garden", label: "Castle Garden", x: 20, y: 42, links: ["castleRoom", "market", "library", "temple"] },
+    schoolClassroom: { id: "schoolClassroom", label: "School Classroom", x: 26, y: 18, links: ["castleRoom", "library", "market"] },
+    library: { id: "library", label: "Library", x: 17, y: 30, links: ["schoolClassroom", "castleRoom", "garden"] },
+    temple: { id: "temple", label: "Temple", x: 60, y: 47, links: ["castleRoom", "garden", "administration", "boutique", "hairSalon"] },
+    administration: { id: "administration", label: "Administration Building", x: 40, y: 15, links: ["castleRoom", "temple", "boutique", "tailorStudio"] },
+    market: { id: "market", label: "Market Square", x: 46, y: 33, links: ["garden", "schoolClassroom", "tailorStudio", "shoeShop", "harbor", "port"] },
+    boutique: { id: "boutique", label: "Dress Boutique", x: 60, y: 17, links: ["tailorStudio", "shoeShop", "accessoryShop", "administration", "temple", "hairSalon"] },
+    hairSalon: { id: "hairSalon", label: "Hair Salon", x: 73, y: 41, links: ["boutique", "accessoryShop", "temple"] },
+    tailorStudio: { id: "tailorStudio", label: "Tailor Studio", x: 45, y: 49, links: ["market", "boutique", "shoeShop", "administration"] },
+    shoeShop: { id: "shoeShop", label: "Shoe Shop", x: 30, y: 48, links: ["market", "harbor", "boutique", "tailorStudio"] },
+    accessoryShop: { id: "accessoryShop", label: "Accessory Atelier", x: 72, y: 27, links: ["boutique", "hairSalon"] },
+    harbor: { id: "harbor", label: "Fish Shop", x: 36, y: 76, links: ["market", "shoeShop", "port"] },
+    port: { id: "port", label: "Harbor Port", x: 22, y: 88, links: ["market", "harbor", "lighthouse"] },
+    lighthouse: { id: "lighthouse", label: "Lighthouse", x: 88, y: 80, links: ["port"] }
   },
   // locations 控制地圖圖示進入後的場景、NPC、商店與提示文字。
   locations: [
