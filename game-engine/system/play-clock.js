@@ -61,12 +61,19 @@ export function playStatus(state, now) {
   if (pl.sessionEndsAt <= 0) {
     return { phase: "idle", energyPercent: 100 };
   }
-  const totalMs = pl.playMinutes * MINUTE_MS;
   const playRemainingMs = pl.sessionEndsAt - now;
+  if (playRemainingMs <= 0) {
+    // 遊玩時間已用完但尚未進入休息（如於帳號選單離開、ticker 未運作，restEndsAt 仍 0）：
+    // 休息自「遊玩結束時戳」起算、離開（未遊玩）時間計入休息——離開達休息時長即視為休息已足、
+    // 回到 idle 可重新開始；否則回報休息剩餘，使帳號卡與 tick() 一致、不再誤顯示「Play 0:00」（issue #169）。
+    const restEnd = pl.sessionEndsAt + pl.restMinutes * MINUTE_MS;
+    if (now >= restEnd) return { phase: "idle", energyPercent: 100 };
+    return { phase: "rest", restRemainingMs: restEnd - now, restDone: false, energyPercent: 0 };
+  }
+  const totalMs = pl.playMinutes * MINUTE_MS;
   return {
     phase: "play",
-    playRemainingMs: Math.max(0, playRemainingMs),
-    expired: playRemainingMs <= 0,
+    playRemainingMs,
     energyPercent: clamp(Math.round((playRemainingMs / totalMs) * 100), 0, 100)
   };
 }
@@ -112,9 +119,12 @@ export function playAllowance(state) {
 }
 
 // 進入強制休息：鎖定遊玩到 restEndsAt。
+// 休息自「遊玩結束時戳」(sessionEndsAt) 起算，使離開（未遊玩）的時間計入休息（issue #169）；
+// 無有效 session 時退回以 now 起算。正常遊玩中即時到點時 sessionEndsAt≈now，與舊行為一致。
 export function enterRest(state, now) {
   const pl = state.playLimit;
-  pl.restEndsAt = now + pl.restMinutes * MINUTE_MS;
+  const restFrom = pl.sessionEndsAt > 0 ? pl.sessionEndsAt : now;
+  pl.restEndsAt = restFrom + pl.restMinutes * MINUTE_MS;
   pl.sessionEndsAt = 0;
 }
 
@@ -147,21 +157,36 @@ export function recordAnswer(state, correct) {
 // 推進一拍（ticker 呼叫）：依 now 套用狀態轉換，回傳事件供 UI 反應。
 export function tick(state, now) {
   if (!state.playLimit) state.playLimit = defaultPlayLimit();
-  const status = playStatus(state, now);
-  if (status.phase === "rest") {
-    // 休息結束不自動續玩：回報 restDone，由使用者按「繼續玩」(resumeFromRest) 才開始新回合，確保有意識地休息。
-    return { phase: "rest", energyPercent: 0, restDone: status.restDone, restRemainingMs: status.restRemainingMs };
+  const pl = state.playLimit;
+
+  // 休息進行中（restEndsAt 已設）：休息結束不自動續玩，回報 restDone，由使用者按「繼續玩」
+  // (resumeFromRest) 才開始新回合，確保有意識地休息。
+  if (pl.restEndsAt > 0) {
+    const restRemainingMs = Math.max(0, pl.restEndsAt - now);
+    return { phase: "rest", energyPercent: 0, restDone: restRemainingMs <= 0, restRemainingMs };
   }
-  if (status.phase === "idle") {
-    startSession(state, now);
-    const next = playStatus(state, now);
-    return { phase: "play", energyPercent: next.energyPercent, justStarted: true, playRemainingMs: next.playRemainingMs };
+
+  // 遊玩回合進行中。
+  if (pl.sessionEndsAt > 0 && now < pl.sessionEndsAt) {
+    const status = playStatus(state, now);
+    return { phase: "play", energyPercent: status.energyPercent, playRemainingMs: status.playRemainingMs };
   }
-  if (status.expired) {
-    const settlement = settlementSummary(state);
-    enterRest(state, now);
-    const rest = playStatus(state, now);
-    return { phase: "rest", energyPercent: 0, justExpired: true, settlement, restRemainingMs: rest.restRemainingMs };
+
+  // 遊玩時間已用完、尚未進入休息（restEndsAt 仍 0）。
+  if (pl.sessionEndsAt > 0) {
+    const restEnd = pl.sessionEndsAt + pl.restMinutes * MINUTE_MS;
+    if (now < restEnd) {
+      // 首次觀察到用完（遊玩中即時到點，或離開後於休息窗內回來）：結算並進入休息（自 sessionEndsAt 起算）。
+      const settlement = settlementSummary(state);
+      enterRest(state, now);
+      return { phase: "rest", energyPercent: 0, justExpired: true, settlement, restRemainingMs: Math.max(0, pl.restEndsAt - now) };
+    }
+    // 離開已達休息時長：休息已足，清掉殘留 session、直接開新回合（玩家已離開、不再強制等待，issue #169）。
+    pl.sessionEndsAt = 0;
   }
-  return { phase: "play", energyPercent: status.energyPercent, playRemainingMs: status.playRemainingMs };
+
+  // 全新／休息已足：開始新回合。
+  startSession(state, now);
+  const next = playStatus(state, now);
+  return { phase: "play", energyPercent: next.energyPercent, justStarted: true, playRemainingMs: next.playRemainingMs };
 }

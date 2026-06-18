@@ -855,21 +855,47 @@ function cancelCharacterSelect() {
 let accountSelectMustChoose = false;
 // issue #153：自帳號選擇「新增」進入創角時，於既有帳號情境下記下待定新帳號（含先前使用中帳號與帳號選擇模式），供取消時丟棄並返回。
 let pendingNewAccount = null;
+// issue #169：帳號選擇開啟期間每秒重算各帳號卡狀態，使休息倒數實際遞減、休息屆滿即時轉 Ready（非開啟當下的凍結快照）。
+let accountStatusTimer = null;
 function openAccountSelect({ mustChoose = false } = {}) {
   accountSelectMustChoose = mustChoose;
   buildAccountList();
   elements.accountSelect.classList.add("show");
   elements.accountSelect.setAttribute("aria-hidden", "false");
   document.body.classList.add("account-select-open");
+  startAccountStatusTicker();
   setTimeout(() => elements.accountSelectCard?.focus({ preventScroll: true }), 0);
 }
 
 function closeAccountSelect() {
   // 啟動 gate 或尚無使用中帳號時不可關閉（必須先選或新增帳號）。
   if (accountSelectMustChoose || !getActiveAccountId()) return;
+  stopAccountStatusTicker();
   elements.accountSelect.classList.remove("show");
   elements.accountSelect.setAttribute("aria-hidden", "true");
   document.body.classList.remove("account-select-open");
+}
+
+// issue #169：依現在時鐘重算各帳號卡狀態文字（休息倒數／Ready／Play），供開啟期間每秒刷新。
+function refreshAccountStatuses() {
+  if (!elements.accountList) return;
+  elements.accountList.querySelectorAll(".account-row").forEach((row) => {
+    const accountId = row.querySelector(".account-pick")?.dataset.accountId;
+    const statusEl = row.querySelector(".account-status");
+    if (!accountId || !statusEl) return;
+    statusEl.textContent = accountPlayStatusText(loadAccountState(accountId));
+  });
+}
+
+function startAccountStatusTicker() {
+  if (accountStatusTimer) return;
+  accountStatusTimer = window.setInterval(refreshAccountStatuses, 1000);
+}
+
+function stopAccountStatusTicker() {
+  if (!accountStatusTimer) return;
+  window.clearInterval(accountStatusTimer);
+  accountStatusTimer = null;
 }
 
 function formatLastPlayed(timestamp) {
@@ -3846,6 +3872,8 @@ installTestingHooks({
   openQuestAdv,
   getActiveLesson: () => activeLesson,
   getAdvMode: () => advMode,
+  buildAccountList,
+  refreshAccountStatuses,
   buildSaveMarkdown,
   buyItemInAdv,
   castleMapNodes,
