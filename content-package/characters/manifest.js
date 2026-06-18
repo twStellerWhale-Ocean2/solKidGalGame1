@@ -1,6 +1,6 @@
 //#region 可玩紙娃娃角色
 // 角色本體集中在 content-package/characters；衣物 layer 仍共用同一個 512x768 rig。
-export const characterAssetVersion = "?v=20260616-base-portrait-r1";
+export const characterAssetVersion = "?v=20260619-issue163-character-theme-r1";
 export const defaultActiveCharacterId = "lumi";
 export const sharedPaperDollRig = Object.freeze({
   id: "shared-512x768-v1",
@@ -59,8 +59,8 @@ export const characterRegistry = Object.freeze({
   }),
   sol: Object.freeze({
     id: "sol",
-    label: "Princess Sol",
-    defaultName: "Sol",
+    label: "Princess Mary",
+    defaultName: "Mary",
     baseLayer: characterAsset("sol", "base"),
     defaultProfileColor: "#fcd34d",
     defaultOutfit: Object.freeze({ hairstyle: "none", dress: "none" }),
@@ -89,6 +89,10 @@ export function defaultProfileColorFor(characterId) {
   return playableCharacterById(characterId).defaultProfileColor || profileColorPalette[0];
 }
 
+export function randomProfileColor() {
+  return profileColorPalette[Math.floor(Math.random() * profileColorPalette.length)] || profileColorPalette[0];
+}
+
 export function normalizeProfileColor(color, characterId = defaultActiveCharacterId) {
   return isValidProfileColor(color) ? color.trim() : defaultProfileColorFor(characterId);
 }
@@ -100,6 +104,11 @@ export const backgroundPatternIds = Object.freeze([
 
 export function normalizeBackgroundPattern(pattern) {
   return backgroundPatternIds.includes(pattern) ? pattern : "none";
+}
+
+export function randomBackgroundPattern() {
+  const visiblePatterns = backgroundPatternIds.filter((pattern) => pattern !== "none");
+  return visiblePatterns[Math.floor(Math.random() * visiblePatterns.length)] || "none";
 }
 
 export function isPlayableCharacterId(characterId) {

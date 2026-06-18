@@ -452,7 +452,8 @@ function runSceneNavSelfTest(api) {
   document.body.prepend(result);
 }
 
-// issue #126/#131：驗證 profileColor、粉彩色盤、調色器自訂色、舊存檔相容、背景花紋、共用頭胸大頭照、帳號摘要、地圖橢圓背版與返回初始選單。
+// issue #126/#131/#163：驗證 profileColor、粉彩色盤、調色器自訂色、舊存檔相容、一次性隨機初始主題、
+// 背景花紋、共用頭胸大頭照、帳號摘要、地圖橢圓背版與返回初始選單。
 function runProfileColorSelfTest(api) {
   const params = new URLSearchParams(location.search);
   if (params.get("selftest") !== "profile-color") return;
@@ -478,8 +479,26 @@ function runProfileColorSelfTest(api) {
     if (!Array.isArray(api.backgroundPatternIds) || api.backgroundPatternIds.length < 9) errors.push(`background pattern set size ${api.backgroundPatternIds?.length || 0}, expected >= 9 (none + 8)`);
     if (api.normalizeBackgroundPattern("bubble") !== "bubble") errors.push("valid background pattern was not preserved");
     if (api.normalizeBackgroundPattern("bogus-pattern") !== "none") errors.push("unknown background pattern did not fall back to none");
+    const randomColor = api.randomProfileColor?.();
+    const randomPattern = api.randomBackgroundPattern?.();
+    if (!api.profileColorPalette.includes(randomColor)) errors.push("randomProfileColor did not return a palette value");
+    if (!api.backgroundPatternIds.includes(randomPattern) || randomPattern === "none") {
+      errors.push("randomBackgroundPattern did not return a visible legal pattern");
+    }
+
+    // issue #163：新帳號與缺漏舊存檔須取得合法初始主題，且選定後持久化不重抽。
+    const missingTheme = api.normalizeState({ activeCharacterId: "sol", playerName: "Legacy Mary" });
+    if (!api.profileColorPalette.includes(missingTheme.profileColor)) errors.push(`missing profileColor normalized to non-palette value ${missingTheme.profileColor}`);
+    if (!api.backgroundPatternIds.includes(missingTheme.backgroundPattern) || missingTheme.backgroundPattern === "none") {
+      errors.push(`missing backgroundPattern normalized to ${missingTheme.backgroundPattern}, expected visible legal pattern`);
+    }
 
     account = api.accounts.create();
+    const createdInitial = api.accounts.loadState(account.id);
+    if (!api.profileColorPalette.includes(createdInitial.profileColor)) errors.push(`fresh account profileColor ${createdInitial.profileColor} not from palette`);
+    if (!api.backgroundPatternIds.includes(createdInitial.backgroundPattern) || createdInitial.backgroundPattern === "none") {
+      errors.push(`fresh account backgroundPattern ${createdInitial.backgroundPattern}, expected visible legal pattern`);
+    }
     api.state.activeCharacterId = "yumi";
     api.state.playerName = "Blue Kid";
     api.state.profileColor = customHex; // 自訂色（不在色盤內）：驗證可流經 render 不被重置
@@ -512,6 +531,10 @@ function runProfileColorSelfTest(api) {
     api.returnToInitialSelect();
     if (!api.elements.accountSelect?.classList.contains("show")) errors.push("return to initial select did not open account select");
     if (api.state.coins !== 321) errors.push("return to initial select changed current progress");
+    const afterReturn = api.accounts.loadState(account.id);
+    if (afterReturn.profileColor !== customHex || afterReturn.backgroundPattern !== "bubble") {
+      errors.push("saved profile theme was re-randomized after reload");
+    }
   } catch (error) {
     errors.push(error.message);
   } finally {
@@ -1132,6 +1155,9 @@ async function collectPaperDollCharacterAudit(api, errors) {
     if (!registry[characterId]) errors.push(`characterRegistry missing ${characterId}`);
     if (!api.playableVoiceById?.[characterId]) errors.push(`playableVoiceById missing ${characterId}`);
   });
+  if (registry.sol?.label !== "Princess Mary" || registry.sol?.defaultName !== "Mary") {
+    errors.push("sol stable id is not exposed as Princess Mary");
+  }
   const defaultCharacter = api.playableCharacterById(api.defaultActiveCharacterId);
   if (!defaultCharacter?.id) {
     errors.push("default active character is missing");

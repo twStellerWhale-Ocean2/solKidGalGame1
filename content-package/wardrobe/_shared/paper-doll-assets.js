@@ -11,7 +11,9 @@ import {
   playableCharacterById,
   profileColorPalette,
   backgroundPatternIds,
-  normalizeBackgroundPattern
+  normalizeBackgroundPattern,
+  randomProfileColor,
+  randomBackgroundPattern
 } from "../../characters/manifest.js";
 
 export const dollAssetVersion = characterAssetVersion;
@@ -24,7 +26,9 @@ export {
   playableCharacterById,
   profileColorPalette,
   backgroundPatternIds,
-  normalizeBackgroundPattern
+  normalizeBackgroundPattern,
+  randomProfileColor,
+  randomBackgroundPattern
 };
 
 export const characterAsset = (name, characterId = defaultActiveCharacterId) => registryCharacterAsset(characterId, name);
