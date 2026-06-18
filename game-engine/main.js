@@ -1410,7 +1410,7 @@ function renderCastleMap() {
     const marker = document.createElement("button");
     const isPortal = hotspot.kind === "gate" || hotspot.markerStyle === "portal";
     marker.type = "button";
-    marker.className = `map-marker hotspot castle-marker${activeCastleHotspot?.id === hotspot.id ? " nearby" : ""}${hotspot.kind === "future" ? " disabled" : ""}${isPortal ? " portal" : ""}`;
+    marker.className = `map-marker hotspot castle-marker${isShopHotspot(hotspot) ? " shop" : ""}${activeCastleHotspot?.id === hotspot.id ? " nearby" : ""}${hotspot.kind === "future" ? " disabled" : ""}${isPortal ? " portal" : ""}`;
     marker.dataset.hotspotId = hotspot.id;
     marker.dataset.label = hotspot.label;
     marker.setAttribute("aria-label", `${hotspot.label}. ${travelActionLabel(hotspot)}.`);
