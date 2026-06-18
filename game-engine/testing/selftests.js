@@ -1583,6 +1583,22 @@ function runVisualQa(api) {
     return;
   }
 
+  // issue #153：既有帳號下「新增公主」之可取消創角（顯示返回鈕、可取消返回帳號選擇）視覺 QA surface。
+  if (surface === "create-cancelable") {
+    if (api.accounts.list().length === 0) api.accounts.create(); // 確保已有既有帳號 → 新增進入可取消模式
+    api.render();
+    api.createNewAccount();
+    return;
+  }
+
+  // issue #153：真正首啟（零帳號）之創角（first-run 鎖定、無返回鈕）視覺 QA surface。
+  if (surface === "create-firstrun") {
+    api.accounts.list().slice().forEach((account) => api.accounts.remove(account.id)); // 清空所有帳號 → 真正首啟
+    api.render();
+    api.createNewAccount();
+    return;
+  }
+
   if (surface === "castle-map") {
     api.render();
     api.openArea("castle");
