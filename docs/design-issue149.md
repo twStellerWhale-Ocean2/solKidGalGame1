@@ -17,7 +17,7 @@
 3. 場景與角色配置（各 area manifest 之 `locations`／`sceneConfigs` 之 NPC 與場景）。
 4. 場景功能方向（廚房、漁港、圖書館、礦場、巫師小屋……）。
 5. 互動模式：生活聊天（Chat）與打工任務（Work）兩種題庫。
-6. 獎勵梯度：Castle 20、Urban 100、Rural 500、Wild 2000 coins（`{area}VocabularyProfile.rewardCoins`／`reward.coins`）。
+6. 獎勵梯度：Castle 20、Urban 100、Rural 500、Wild 2000 coins（`{area}VocabularyProfile.rewardCoins`／`reward.coins`）。**（⚠️ 已由 issue #157 改為平緩等差 Castle 50／Urban 60／Rural 70／Wild 80；本行為 #149 當時基線，現以 [docs/design-issue157.md] 為準。）**
 7. **資料結構欄位**：`questionType`、`answer`、`choices`、`choicesZh`、`words`、`reward`、`opening`／`openingZh`、`ending` 等鍵名與型別不變（見 §12）。
 
 **淘汰（重寫）：**
