@@ -111,6 +111,23 @@ const CHAT_MOOD_REWARD = 1;             // issue #135 design paramChatMoodReward
 const MOOD_MINUTES_PER_POINT = 1;       // issue #135 design paramMoodMinutesPerPoint：每點心情換算延長的遊玩分鐘數
 const CHAT_CHOICE_COUNT = 2;            // issue #138 design paramChatChoiceCount：生活聊天每題呈現選項數（輕鬆寒暄）
 const JOB_CHOICE_COUNT = 3;             // issue #149 design paramJobChoiceCount：打工任務每題呈現選項數（#138 為 4、#149 收斂為 3）
+// issue #149：題組不再帶 ending 旁白；完成時由角色說一句自然收尾（聊天＝道別、打工＝稱讚＋道謝），隨機選一句並附中文、由 NPC 音色朗讀，取代固定的 "Nice chat!"／"Great work!"。
+const CHAT_ENDINGS = [
+  { en: "See you soon, Princess!", zh: "待會見，公主！" },
+  { en: "Take care, Princess!", zh: "公主，保重喔！" },
+  { en: "Come and chat again soon!", zh: "要再來聊天喔！" },
+  { en: "Bye for now, Princess!", zh: "先這樣囉，公主，再見！" }
+];
+const WORK_ENDINGS = [
+  { en: "Good job! Thank you, Princess.", zh: "做得好！謝謝你，公主。" },
+  { en: "Great work! Thank you so much.", zh: "做得很棒！非常謝謝你。" },
+  { en: "Well done! Thank you for your help.", zh: "太好了！謝謝你的幫忙。" },
+  { en: "Wonderful! You helped me a lot.", zh: "太棒了！你幫了我大忙。" }
+];
+function pickEnding(isChat) {
+  const pool = isChat ? CHAT_ENDINGS : WORK_ENDINGS;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
 const SPEECH_RATE_SCALE = 0.8;          // issue #109 design paramSpeechRateScale：全域朗讀語速倍率（套用於所有發聲）
 const SPEECH_QUEUE_MODE = "replace-last";
 const SPEECH_DEBOUNCE_MS = 120;
@@ -2751,9 +2768,9 @@ function answerLesson(button, choice) {
     words: activeLesson.words,
     vocabProfile: activeLesson.vocabProfile
   });
-  // issue #149：題組不再帶 ending 旁白；無 ending 時以簡短收尾語替代（NPC 音色朗讀）。
-  const doneLead = isChat ? "Nice chat!" : "Great work!";
-  setAdvLine(quest.ending || doneLead);
+  // issue #149：完成時由角色說一句自然收尾（聊天=道別、打工=稱讚＋道謝），隨機選一句並附中文（NPC 音色朗讀）。
+  const closing = pickEnding(isChat);
+  setAdvLine(quest.ending || closing.en, quest.ending ? "" : closing.zh);
   // issue #143：完成後一律 Back 回第一層場景選單，提示文案對齊（不再分商店／非商店或提示 room／leave）。
   elements.advPrompt.textContent = "Go back to choose what to do next here.";
   elements.advFeedback.textContent = feedbackText;
