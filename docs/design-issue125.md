@@ -1,6 +1,6 @@
 # 設計note — issue #125 場景位置重新配置（地圖地點 marker 對應背景藝術、去群聚）
 
-> 本檔為 2plan 設計note（**Option A**：本議題屬地圖地點配置之沉浸感／可讀性精修，地點座標為內容資料、`docs/design.md`（功能 spec/case/test）無對應像素落點，故 **design.md 與 README 不動、docLint 0**；配置決策以本 note 承載，確切座標留 3code 以實機 visual-qa overlay 逐圖×逐點定案）。對應既有 spec#2（角色陪伴與場景探索）／solCase#2.1（地圖導航與地點進入）。
+> 本檔為 2plan 設計note。**USR 審查決策（2026-06-18）：採 design.md USR-gated 輕修**（非 Option A）——對 spec#2／solCase#7.2／＜IV.B＞spec#2 成效作條文文字精修（**spec# 編號不增減**），將「地圖各地點配置須對應地圖背景藝術元素且相互不過度群聚」明確為 design 級需求，README 同步初稿；地點 marker 之配置決策與各圖目標提案以本 note 承載，確切座標留 3code 以實機 visual-qa overlay 逐圖×逐點定案。對應 spec#2／solCase#2.1（地圖導航與地點進入）、solCase#7.2（維護者擴充內容）。
 
 ## 1. 現況（以產物為準）
 
@@ -88,18 +88,24 @@
 * **範圍**：城堡／市區／鄉野／野地四張地區地圖之 `nodes` x/y。世界地圖 [content-package/areas/world.js] 之四區 destination 座標 USR 未指明問題，**提案不納入本案**（見 §4 ④）。
 * **相容**：純內容資料（`nodes` x/y）調整，不動 [game-engine/map] 渲染（viewport／actors）、不動遊戲邏輯、不動 DOM；`links`／`portalId`／`defaultNode`／`entryNode` 保持不變。
 
-## 4. 審查點（⚠️ USR 待裁，plan 交棒前確認）
+## 4. 審查點（✅ USR 已裁，2026-06-18）
 
-* **① design.md 落點**：
-  * **Option A（建議）**：地點座標屬內容資料、design.md＜I＞無像素落點，維持 spec#1–#11 與條文不變，配置決策以本 note 承載（同 #120／#132）。
-  * **備選（輕修）**：將「地圖地點配置須對應背景藝術且不過度群聚」提升為 design 級需求，對 spec#2／solCase#2.1（或 solCase#7.2 維護者擴充內容）作 USR-gated 文字精修（不增減 spec# 編號），使未來新增地圖內容有設計錨點。
-* **② 配置方法**：方案甲（手調＋visual-qa，建議）vs 方案乙（背景分區參考＋自動檢核）。
-* **③ 市區對外出口「在中間」之確切落點**：提案落於**頂門中央**（~47, 7，城牆門上、水平置中）；若 USR 指「中央廣場」或「下門」另有所指，請於 PR 指明。
-* **④ 範圍**：是否一併校準世界地圖 [world.js] 四區 destination？提案**不納入**（USR 未指出問題）。
+* **① design.md 落點 → 採輕修**：對 spec#2／solCase#7.2／＜IV.B＞spec#2 成效作 USR-gated 條文精修（spec# 編號不變），將「地圖各地點配置須對應地圖背景藝術元素且相互不過度群聚」明確為 design 級需求；README 同步初稿。已驗 docLint sol 0。具體改動見 §4A。
+* **② 配置方法 → 方案甲**：純手調各 `nodes` x/y，以實機 visual-qa overlay 逐圖×逐點校驗（限內容資料層，不新增資料結構、不動引擎）。
+* **③ 市區對外出口 → 頂門中央 ~47, 7**：落於城牆頂門上、水平置中。
+* **④ 範圍 → 不納入 world.js**：本案聚焦四張地區地圖內之 `nodes`；世界地圖四區 destination 不動。
+
+### 4A. design.md／README 輕修內容（本案實改）
+
+* `docs/design.md`
+  * **spec#2**：場景探索條文加註「（各地圖之地點配置須對應地圖背景藝術元素並相互不過度群聚，使場景探索之空間定位一致且具沉浸感）」。
+  * **solCase#7.2**：維護者擴充內容加註「調整 area 內容時，各地圖之地點配置須對應該地圖背景藝術元素且相互不過度群聚」。
+  * **＜IV.B＞spec#2 成效**：評估方式補「地圖各地點配置對應背景之空間一致性」；觀察項目補「地圖各地點落在對應背景藝術元素之正確率與相互不過度群聚情形」。
+* `README.md`：地圖導覽段加註各地點貼合地圖背景、不擠成一團；＜變更紀錄＞新增 2026-06-18（issue #125）2plan 初稿條目。
 
 ## 5. 產物分工與 GATE 驗證計畫（交棒 3code）
 
-* **不動** `docs/design.md`（docLint sol 0，已驗）與 `README.md`（無對外行為變更）；本案產物為各地區 manifest `nodes` x/y 之重排，配置依據記於本 note。
+* **輕修** `docs/design.md`（spec#2／solCase#7.2／＜IV.B＞spec#2 成效，docLint sol 0 已驗）與 `README.md`（地圖導覽段＋變更紀錄初稿）；3code 之程式產物為各地區 manifest `nodes` x/y 之重排，配置依據記於本 note §3。
 * 3code 完成判定：
   * **GATE §1（機器判定）**：`tsc`／`docLint`／`repoLint` 0；`?selftest=save-load`／`monkey` passed、console 0；地圖 marker 結構／路網 selftest（如 `map-avatar`）passed。
   * **GATE §5（實機 visual-qa，逐圖×逐點）**：城堡／市區／鄉野／野地四圖，將 marker 疊背景圖佐證——每點落在 D1 對應地物（P1）、無群聚與標籤重疊（P2，量測最小間距）、出口落城門／道路（P3）、市區僅港口／燈塔在城外（P4）、無越界重疊（P5）；行動直向為主、桌機寬版併驗。
