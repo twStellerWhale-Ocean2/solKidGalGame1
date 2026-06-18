@@ -560,7 +560,20 @@ function runAccountSelfTest(api) {
     // 6) 刪除使用中帳號 B：activeId 應清空（交回帳號選擇）。
     accounts.remove(accB.id);
     if (accounts.activeId()) errors.push("deleting active account left an active id (should return to account select)");
-    // 7) 帳號數回到 baseline（測試自我清理）。
+    // 7) issue #153：既有帳號下「新增公主」可取消返回、且不殘留空帳號。
+    //    先建立基準帳號 C 作為「既有帳號」，再走 createNewAccount → cancelCharacterSelect。
+    const accC = accounts.create();
+    api.state.playerName = "KeepC";
+    api.persist();
+    const countBeforeAdd = accounts.list().length;
+    api.createNewAccount(); // 既有帳號下新增 → 進入可取消創角，先落地待定空帳號
+    if (accounts.list().length !== countBeforeAdd + 1) errors.push(`createNewAccount did not add a pending account (count=${accounts.list().length}, expected ${countBeforeAdd + 1})`);
+    api.cancelCharacterSelect(); // 取消 → 丟棄待定空帳號、返回帳號選擇
+    if (accounts.list().length !== countBeforeAdd) errors.push(`cancel left an orphan account (count=${accounts.list().length}, expected ${countBeforeAdd})`);
+    if (accounts.activeId() !== accC.id) errors.push(`cancel did not restore previous active account (active=${accounts.activeId()}, expected ${accC.id})`);
+    if (api.state.playerName !== "KeepC") errors.push(`cancel did not restore previous account state (playerName=${api.state.playerName}, expected KeepC)`);
+    accounts.remove(accC.id); // 清理基準帳號 C
+    // 8) 帳號數回到 baseline（測試自我清理）。
     if (accounts.list().length !== baseline) errors.push(`account count after cleanup = ${accounts.list().length}, expected ${baseline}`);
   } catch (error) {
     errors.push(error.message);
@@ -1575,6 +1588,22 @@ function runVisualQa(api) {
   if (surface === "account-select") {
     api.render();
     api.openAccountSelect({ mustChoose: false });
+    return;
+  }
+
+  // issue #153：既有帳號下「新增公主」之可取消創角（顯示返回鈕、可取消返回帳號選擇）視覺 QA surface。
+  if (surface === "create-cancelable") {
+    if (api.accounts.list().length === 0) api.accounts.create(); // 確保已有既有帳號 → 新增進入可取消模式
+    api.render();
+    api.createNewAccount();
+    return;
+  }
+
+  // issue #153：真正首啟（零帳號）之創角（first-run 鎖定、無返回鈕）視覺 QA surface。
+  if (surface === "create-firstrun") {
+    api.accounts.list().slice().forEach((account) => api.accounts.remove(account.id)); // 清空所有帳號 → 真正首啟
+    api.render();
+    api.createNewAccount();
     return;
   }
 
