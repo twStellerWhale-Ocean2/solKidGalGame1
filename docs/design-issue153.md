@@ -78,6 +78,41 @@
   * **GATE §1（機器判定）**：`tsc`／`docLint`（sol 0）／`repoLint` 0；`?selftest=accounts`／`save-load`／`map-avatar`／`monkey` passed、console 0。其中 concern 1 須以 `accounts`（含「既有帳號下新增→取消→返回帳號選擇、無殘留空帳號」流程）佐證。
   * **GATE §5（實機 visual-qa，寬＋窄、行動直向為主）**：concern 1——零帳號首啟仍強制創角（無取消鈕）、既有帳號新增可取消返回且無殘留帳號；concern 2——地圖公主 token 識別色背版清楚可辨、各帳號識別色仍有別、寬窄一致、不糊邊。逐頁 ≥10 發現＋截圖＋分級、must-fix 全修。
 
-## 6. 實作與驗證結果（3code，待填）
+## 6. 實作與驗證結果（3code，2026-06-18）
 
-> 沿 #101／#111／#120／#132／#150：本焦點 UI 修正之 GATE 驗證結果於 3code 階段記於本節。
+> 沿 #101／#111／#120／#132／#150：本焦點 UI 修正之 GATE 驗證結果記於本節。design.md 未改（Option A，docLint sol 0）。
+
+### 實作
+
+* **concern 1（commit `0d04afa`，採設計決策 D1 根因選項 (a)）**：
+  * [game-engine/main.js]：`createNewAccount` 依 `hadAccounts`（先前是否已有其他帳號）記下 `pendingNewAccount`（含 `prevActiveId`／`prevMustChoose`），並以 `cancelable: hadAccounts` 開創角；新增 `cancelCharacterSelect`——待定新帳號時 `deleteAccount` 丟棄空帳號、還原先前使用中帳號（或 `freshState`）、`openAccountSelect` 返回，否則僅 `closeCharacterSelect`；`openCharacterSelect` 僅在 `forced && !cancelable`（真正首啟）時套 `first-run` 鎖定；`confirmCharacterSelect` 確認後清 `pendingNewAccount`；取消鈕／背景點擊／Esc 三入口改走 `cancelCharacterSelect`；測試 hooks 曝露 `createNewAccount`／`cancelCharacterSelect`。
+  * [styles/character-select.css]：沿用既有 `.first-run .character-select-cancel{display:none}`——cancelable 時不套 `first-run`，返回鈕自然顯示；無需改 CSS。
+  * [game-engine/testing/selftests.js]：`accounts` 自測新增「既有帳號下新增→取消→無殘留空帳號、還原前帳號（含 playerName）」步驟。
+* **concern 2（commit `954f72c`）**：
+  * [styles/paper-doll.css]：`.map-doll::before` 漸層由「中心 60%→32%→透明」加深為「95%→88%→55%→透明」、加 `box-shadow`（淺投影＋白色 inset 描邊）定義邊緣、尺寸微調（`bottom:0`、`width:100%`、`height:62%`）；保留 `--profile-color` 識別色語意。
+  * [game-engine/testing/selftests.js]：新增 visual-qa surface `create-cancelable`／`create-firstrun`（test-only），供擷取兩種創角狀態。
+
+### GATE §1（機器判定，全綠）
+
+* `npx -p typescript tsc --noEmit --project jsconfig.json` → exit 0。
+* `node --check`（main.js／selftests.js）→ OK。
+* `docLint docs/design.md`（sol）→ 0；`repoLint .` → 0。
+* selftest（headless，獨立 context）：`accounts`（含 #153 取消新帳號流程）／`save-load`／`map-avatar`／`monkey`／`profile-color` 全 PASS、console 0 error。
+* 依賴安全：純靜態網站、無 package 相依，`npm audit` 不適用。
+
+### GATE §5（實機 visual-qa，寬版＋窄版）
+
+| 畫面（surface） | 窄版 412×880 | 寬版 1280×900 |
+|---|---|---|
+| 既有帳號下新增創角（create-cancelable） | ✅ 顯示 **Back＋Start**、Back 可返回帳號選擇 | ✅ 同左、版面完整 |
+| 真正首啟創角（create-firstrun） | ✅ 僅 **Start**、無 Back（維持鎖定） | ✅ 同左 |
+| 人物（帳號）選擇（account-select） | ✅ 清單／Add player／Back 正常 | ✅ |
+| 地圖公主 token 識別背版（world／castle） | ✅ 粉色／黃色背版清楚可辨、白描邊定義邊緣、各色可區分 | ✅ 同左 |
+
+* 三鏡頭：A（HMI 最低能力：新增→可取消返回、首啟不可取消、地圖 token 清楚標示，均達成）＋B（兒童 UX：誤觸新增可退回、不殘留空帳號；公主在地圖上一眼可見）＋C 逐頁（上表 4 類畫面 × 寬窄）。
+* `務必要修`：concern 1 取消新帳號原無路徑且殘留空帳號——**已修**（cancelable＋丟棄＋還原＋返回，selftest 佐證）；concern 2 識別背版過淡——**已修**（加深＋描邊，粉/黃皆清楚）。其餘為可接受（背版採柔邊橢圓、延續 #131 不糊邊取捨）。
+* **結論：可宣稱完成。**
+
+### 交付物（test-summary.pdf 待 USR 裁決）
+
+* 沿 #101／#111／#120／#132／#150 焦點 UI 修正慣例，本節即 GATE 報告；是否另產 A5 直向 [docs/test-summary.pdf]（逐頁≥10 發現）待 USR 裁決。截圖／腳本（`.codex/qa153/`）為暫存產物（`.codex/` 已 gitignore）、不作交付物。
