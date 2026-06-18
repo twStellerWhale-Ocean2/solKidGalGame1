@@ -5,36 +5,12 @@
   contain: layout paint;
 }
 
+/* issue #161：地圖公主 token 放大約一倍（54×70 → 108×140）並移除識別色橢圓背板（原 #131／#153 的 .map-doll::before）。
+   去背板後地圖上不再呈現各帳號識別色（spec#9，以視覺簡潔為先）；圖地分離續由 doll 既有深色投影＋白描邊承擔（見下方 .map-doll .paper-doll-layer）。 */
 .map-doll {
   position: relative;
-  width: 54px;
-  height: 70px;
-}
-
-/* issue #131：地圖公主 token 改用識別色橢圓背版標示（取代 #126 的 drop-shadow 光暈，避免邊緣糊化；spec#9）。
-   issue #153：原半透明漸層過淡、於花俏地圖背景上未達「清楚標示」——核心改為近實心識別色、收窄柔邊範圍並加細描邊，
-   使公主 token 在地圖上清楚可辨，同時保留各帳號識別色仍可區分、不回到糊邊光暈。橢圓置於腳下、位於 doll 層之下（z-index 0）。 */
-.map-doll::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: 0%;
-  transform: translateX(-50%);
-  width: 100%;
-  height: 62%;
-  border-radius: 50%;
-  z-index: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse at center,
-    color-mix(in srgb, var(--profile-color, #ffd166) 95%, transparent) 0%,
-    color-mix(in srgb, var(--profile-color, #ffd166) 88%, transparent) 50%,
-    color-mix(in srgb, var(--profile-color, #ffd166) 55%, transparent) 74%,
-    transparent 90%
-  );
-  box-shadow:
-    0 1px 3px rgba(58, 37, 46, 0.32),
-    inset 0 0 0 1.5px color-mix(in srgb, #ffffff 70%, transparent);
+  width: 108px;
+  height: 140px;
 }
 
 .adv-doll {
