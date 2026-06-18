@@ -855,21 +855,47 @@ function cancelCharacterSelect() {
 let accountSelectMustChoose = false;
 // issue #153：自帳號選擇「新增」進入創角時，於既有帳號情境下記下待定新帳號（含先前使用中帳號與帳號選擇模式），供取消時丟棄並返回。
 let pendingNewAccount = null;
+// issue #169：帳號選擇開啟期間每秒重算各帳號卡狀態，使休息倒數實際遞減、休息屆滿即時轉 Ready（非開啟當下的凍結快照）。
+let accountStatusTimer = null;
 function openAccountSelect({ mustChoose = false } = {}) {
   accountSelectMustChoose = mustChoose;
   buildAccountList();
   elements.accountSelect.classList.add("show");
   elements.accountSelect.setAttribute("aria-hidden", "false");
   document.body.classList.add("account-select-open");
+  startAccountStatusTicker();
   setTimeout(() => elements.accountSelectCard?.focus({ preventScroll: true }), 0);
 }
 
 function closeAccountSelect() {
   // 啟動 gate 或尚無使用中帳號時不可關閉（必須先選或新增帳號）。
   if (accountSelectMustChoose || !getActiveAccountId()) return;
+  stopAccountStatusTicker();
   elements.accountSelect.classList.remove("show");
   elements.accountSelect.setAttribute("aria-hidden", "true");
   document.body.classList.remove("account-select-open");
+}
+
+// issue #169：依現在時鐘重算各帳號卡狀態文字（休息倒數／Ready／Play），供開啟期間每秒刷新。
+function refreshAccountStatuses() {
+  if (!elements.accountList) return;
+  elements.accountList.querySelectorAll(".account-row").forEach((row) => {
+    const accountId = row.querySelector(".account-pick")?.dataset.accountId;
+    const statusEl = row.querySelector(".account-status");
+    if (!accountId || !statusEl) return;
+    statusEl.textContent = accountPlayStatusText(loadAccountState(accountId));
+  });
+}
+
+function startAccountStatusTicker() {
+  if (accountStatusTimer) return;
+  accountStatusTimer = window.setInterval(refreshAccountStatuses, 1000);
+}
+
+function stopAccountStatusTicker() {
+  if (!accountStatusTimer) return;
+  window.clearInterval(accountStatusTimer);
+  accountStatusTimer = null;
 }
 
 function formatLastPlayed(timestamp) {
@@ -2837,6 +2863,10 @@ function answerLesson(button, choice) {
 }
 
 function closeAdv() {
+  // issue #156：離開場景（關閉場景對話、切換場景或返回地圖之共同收口）即時收束正在播放之語音，
+  // 避免語音殘留跨場景。Web Speech API 無法對進行中語句音量淡出（utterance.volume 於 speak() 固定、
+  // 僅 cancel() 可停），故以即時 stop() 作為「約 1 秒淡出」目標聽感之明確降級。
+  if (speechManager.isSpeaking()) speechManager.stop("scene-leave");
   elements.advModal.classList.remove("show");
   elements.advModal.setAttribute("aria-hidden", "true");
   advMode = "closed";
@@ -2970,6 +3000,8 @@ function createSpeechManager() {
   let voiceLoadState = "not-supported";
   let initialized = false;
   let lastReplayKey = "";
+  // issue #156：管理器自身追蹤之發聲狀態，供離場收束判斷（headless 測試 mock speak 時瀏覽器 speaking getter 不可靠）。
+  let speaking = false;
   // issue #134：使用者語音指定（覆蓋層）。鍵為 `${gender}:${personality}`，性別預設桶為 `${gender}:`；全機（非帳號）儲存。
   let voiceAssignments = {};
   // issue #134：voice 清單（getVoices 初次常為空）於 voiceschanged 載入後，通知 UI 重渲染語音設定。
@@ -3080,6 +3112,7 @@ function createSpeechManager() {
         voiceLoadState
       });
       lastReplayKey = "";
+      speaking = false;
       return true;
     } catch {
       return false;
@@ -3155,6 +3188,7 @@ function createSpeechManager() {
     const fireThen = () => {
       if (fired) return;
       fired = true;
+      speaking = false;
       if (done) done();
     };
     utterance.addEventListener("start", (event) => addSpeechDiagnosticEvent(diagnostic, "start", event));
@@ -3171,6 +3205,7 @@ function createSpeechManager() {
     });
 
     try {
+      speaking = true;
       window.speechSynthesis.speak(utterance);
     } catch (error) {
       diagnostic.errorCode = error?.name === "NotAllowedError" ? "not-allowed" : "synthesis-failed";
@@ -3186,6 +3221,8 @@ function createSpeechManager() {
     selectVoice,
     speak,
     stop,
+    // issue #156：是否有語音正在播放或排隊（內部旗標 OR 瀏覽器狀態），供離場收束判斷。
+    isSpeaking: () => speaking || (hasSynth() && (window.speechSynthesis.speaking || window.speechSynthesis.pending)),
     diagnostics: () => speechDiagnostics.slice(),
     resetDiagnostics: () => { speechDiagnostics.length = 0; },
     voiceLoadState: () => voiceLoadState,
@@ -3835,6 +3872,8 @@ installTestingHooks({
   openQuestAdv,
   getActiveLesson: () => activeLesson,
   getAdvMode: () => advMode,
+  buildAccountList,
+  refreshAccountStatuses,
   buildSaveMarkdown,
   buyItemInAdv,
   castleMapNodes,
@@ -3938,6 +3977,7 @@ installTestingHooks({
   selectSpeechVoice: (profile) => speechManager.selectVoice(profile || DEFAULT_VOICE_PROFILE),
   getSpeechDiagnostics: () => speechManager.diagnostics(),
   resetSpeechDiagnostics: () => speechManager.resetDiagnostics(),
+  isSpeaking: () => speechManager.isSpeaking(),
   refreshSpeechVoices: () => speechManager.refreshVoices(),
   speechLeadingPad: SPEECH_LEADING_PAD,
   voiceAssignmentKey: VOICE_ASSIGNMENT_KEY,
