@@ -20,7 +20,7 @@ export const castleVocabularyProfile = Object.freeze({
   id: "dolch-220",
   label: "Dolch Sight Words",
   levelLabel: "Dolch Sight Words 220",
-  rewardCoins: 50,
+  rewardCoins: 100,
   note: "Castle rooms use short sight-word sentences for the earliest readers."
 });
 //#endregion 英文等級與獎勵設定
@@ -66,7 +66,7 @@ export const castleArea = Object.freeze({
 //#region 場景自帶題庫（issue #96 結構；issue #149 全量改寫：角色第一人稱、prompt 即台詞、選項即公主回應、無 opening/ending）
 // castleLessonBank：以 place 為鍵的「打工任務」題庫（答對得 coins＝勞動所得）。
 // issue #149：prompt＝場景角色第一人稱對公主之請求／任務；choices＝公主可說出的回應；每場景 3 題、每題 3 選項；words 由引擎自正解導出。
-const jobReward = { coins: 50 };
+const jobReward = { coins: 100 };
 const castleLessonBank = Object.freeze({
   kingHall: {
     title: "Help in the King's Hall",
