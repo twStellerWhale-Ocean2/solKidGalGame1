@@ -6,6 +6,15 @@ Open from the local server:
 http://127.0.0.1:4174/tool/wardrobe-tuner.html
 ```
 
+On Windows, you can start the local server and open the tool with:
+
+```powershell
+.\tool\start-wardrobe-tuner.ps1
+```
+
+This is still a static site flow. The local server only avoids Chrome `file://`
+module loading restrictions during development.
+
 The tool reads the live wardrobe manifest and shows:
 
 - wardrobe UI categories and all items in each category
