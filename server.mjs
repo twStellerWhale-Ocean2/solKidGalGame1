@@ -150,42 +150,76 @@ async function handleDeleteItem(request, response) {
   } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
 }
 
+// 共用：把（已存在的）layer 素材登記到 manifest，並緊貼裁切＋記 content-box（canvas 座標）。
+async function registerItemManifestAndBox(b) {
+  const cost = Number.isFinite(Number(b.cost)) ? Number(b.cost) : 0;
+  const icon = /^[a-zA-Z0-9_-]+$/.test(b.icon || "") ? b.icon : "Item";
+  const layerFile = join(packDir(b.pack), "assets", "layers", `${b.asset}.webp`);
+  await stat(layerFile).catch(() => { throw new Error(`assets/layers/${b.asset}.webp 不存在`); });
+  const manifestPath = join(packDir(b.pack), "manifest.js");
+  let src = await readFile(manifestPath, "utf8");
+  if (src.includes(`id: "${b.id}"`)) throw new Error(`id ${b.id} 已存在`);
+  const storeId = /^[a-zA-Z0-9_-]+$/.test(b.storeId || "") ? b.storeId : (src.match(/storeId:\s*"([^"]+)"/)?.[1] || b.pack);
+  const eol = src.includes("\r\n") ? "\r\n" : "\n";
+  const name = String(b.name).replace(/"/g, '\\"');
+  const line = `  wearable({ id: "${b.id}", storeId: "${storeId}", type: "${b.type}", name: "${name}", cost: ${cost}, icon: "${icon}", asset: "${b.asset}" }),`;
+  const m = src.match(/export const \w+ = \[\s*?\r?\n/);
+  if (!m) throw new Error("找不到 items 陣列");
+  await writeFile(manifestPath, src.replace(m[0], m[0] + line + eol));
+  let box = null;
+  try {
+    const geom = (await magick([layerFile, "-channel", "A", "-separate", "+channel", "-threshold", "6%", "-format", "%@", "info:"])).trim();
+    const mm = /^(\d+)x(\d+)\+(\d+)\+(\d+)$/.exec(geom);
+    if (mm) {
+      const w = +mm[1]; const h = +mm[2]; const x = +mm[3]; const y = +mm[4];
+      box = { left: x, top: y, right: x + w, bottom: y + h };
+      await magick([layerFile, "-crop", `${w}x${h}+${x}+${y}`, "+repage", layerFile]);
+      await spliceMapLine(
+        join(root, "content-package/wardrobe/_shared/asset-content-box.generated.js"),
+        `${b.pack}/${b.asset}`,
+        `  ${JSON.stringify(`${b.pack}/${b.asset}`)}: { left: ${box.left}, top: ${box.top}, right: ${box.right}, bottom: ${box.bottom} },`
+      );
+    }
+  } catch { /* magick optional */ }
+  return box;
+}
+
 async function handleAddItem(request, response) {
   try {
     const b = JSON.parse(await readBody(request) || "{}");
     safeName(b.pack, "pack"); safeName(b.type, "type"); safeName(b.asset, "asset"); safeName(b.id, "id");
     if (!b.name || typeof b.name !== "string") throw new Error("name required");
-    const cost = Number.isFinite(Number(b.cost)) ? Number(b.cost) : 0;
-    const icon = /^[a-zA-Z0-9_-]+$/.test(b.icon || "") ? b.icon : "Item";
-    const layerFile = join(packDir(b.pack), "assets", "layers", `${b.asset}.webp`);
-    await stat(layerFile).catch(() => { throw new Error(`assets/layers/${b.asset}.webp 不存在（先用「開啟資料夾」放入 layer 與 thumb）`); });
-    const manifestPath = join(packDir(b.pack), "manifest.js");
-    let src = await readFile(manifestPath, "utf8");
-    if (src.includes(`id: "${b.id}"`)) throw new Error(`id ${b.id} 已存在`);
-    const storeId = /^[a-zA-Z0-9_-]+$/.test(b.storeId || "") ? b.storeId : (src.match(/storeId:\s*"([^"]+)"/)?.[1] || b.pack);
-    const eol = src.includes("\r\n") ? "\r\n" : "\n";
-    const name = b.name.replace(/"/g, '\\"');
-    const line = `  wearable({ id: "${b.id}", storeId: "${storeId}", type: "${b.type}", name: "${name}", cost: ${cost}, icon: "${icon}", asset: "${b.asset}" }),`;
-    const m = src.match(/export const \w+ = \[\s*?\r?\n/);
-    if (!m) throw new Error("找不到 items 陣列");
-    src = src.replace(m[0], m[0] + line + eol);
-    await writeFile(manifestPath, src);
-    // 緊貼裁切 + 量測 content-box（與 trim 工具一致），讓新素材直接有合理對位。
-    let box = null;
+    const box = await registerItemManifestAndBox(b);
+    json(response, 200, { ok: true, contentBox: box });
+  } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
+}
+
+// 上傳圖檔：解 base64 → 以 ImageMagick 轉 webp 並置於 512x768 透明畫布（fit+center）作 layer，
+// 由其裁切產生 thumb，再走 registerItemManifestAndBox 登記。
+async function handleUploadItem(request, response) {
+  try {
+    const b = JSON.parse(await readBody(request) || "{}");
+    safeName(b.pack, "pack"); safeName(b.type, "type"); safeName(b.asset, "asset"); safeName(b.id, "id");
+    if (!b.name || typeof b.name !== "string") throw new Error("name required");
+    const m = /^data:image\/[a-zA-Z.+-]+;base64,(.+)$/.exec(String(b.imageData || ""));
+    if (!m) throw new Error("缺少有效圖檔");
+    const buf = Buffer.from(m[1], "base64");
+    if (buf.length > 12 * 1024 * 1024) throw new Error("圖檔過大（>12MB）");
+    const dir = packDir(b.pack);
+    const layerFile = join(dir, "assets", "layers", `${b.asset}.webp`);
+    const thumbFile = join(dir, "assets", "thumbs", `${b.asset}.webp`);
+    let exists = false;
+    try { await stat(layerFile); exists = true; } catch { /* not exists */ }
+    if (exists && !b.overwrite) throw new Error(`assets/layers/${b.asset}.webp 已存在（勾選覆寫才會取代）`);
+    const tmp = join(dir, "assets", "layers", `.upload-${Date.now()}.tmp`);
+    await writeFile(tmp, buf);
     try {
-      const geom = (await magick([layerFile, "-channel", "A", "-separate", "+channel", "-threshold", "6%", "-format", "%@", "info:"])).trim();
-      const mm = /^(\d+)x(\d+)\+(\d+)\+(\d+)$/.exec(geom);
-      if (mm) {
-        const w = +mm[1]; const h = +mm[2]; const x = +mm[3]; const y = +mm[4];
-        box = { left: x, top: y, right: x + w, bottom: y + h };
-        await magick([layerFile, "-crop", `${w}x${h}+${x}+${y}`, "+repage", layerFile]);
-        await spliceMapLine(
-          join(root, "content-package/wardrobe/_shared/asset-content-box.generated.js"),
-          `${b.pack}/${b.asset}`,
-          `  ${JSON.stringify(`${b.pack}/${b.asset}`)}: { left: ${box.left}, top: ${box.top}, right: ${box.right}, bottom: ${box.bottom} },`
-        );
-      }
-    } catch { /* magick optional */ }
+      await magick([tmp, "-background", "none", "-resize", "512x768", "-gravity", "center", "-extent", "512x768", "-strip", layerFile]);
+      await magick([layerFile, "-trim", "+repage", "-resize", "256x256", "-strip", thumbFile]);
+    } finally {
+      try { await unlink(tmp); } catch { /* ignore */ }
+    }
+    const box = await registerItemManifestAndBox(b);
     json(response, 200, { ok: true, contentBox: box });
   } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
 }
@@ -193,7 +227,8 @@ async function handleAddItem(request, response) {
 const WARDROBE_ROUTES = {
   "/tool/open-folder": handleOpenFolder,
   "/tool/delete-item": handleDeleteItem,
-  "/tool/add-item": handleAddItem
+  "/tool/add-item": handleAddItem,
+  "/tool/upload-item": handleUploadItem
 };
 
 createServer(async (request, response) => {

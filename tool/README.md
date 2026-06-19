@@ -64,11 +64,15 @@ These write to the pack manifests / asset files via `server.mjs` (dev only,
 - **🗑** — delete the item: removes its `wearable({…})` line from the pack
   `manifest.js`, deletes its `layers/`+`thumbs/` webp, and drops any override /
   content-box entry. Asks for confirmation; **not undoable** (use git to recover).
-- **➕ 新增單品** — register an item already dropped into the pack folder: fill
-  pack / type / id / name / asset (filename without `.webp`) / cost → inserts a
-  `wearable({…})` line, then trims the new layer and records its content box.
-  (Upload-and-convert is a planned follow-up; for now place the `.webp` yourself
-  via **📁** first.)
+- **➕ 新增單品** — fill pack / type / id / name / asset (filename without `.webp`)
+  / cost, then either:
+  - **upload an image** (`圖檔上傳`) — the server converts it to webp, fits it onto
+    a 512×768 transparent canvas (centred), generates the thumbnail, then registers
+    it; or
+  - **leave the file empty** to register an asset you already placed in the pack's
+    `layers/`+`thumbs/` (via **📁**).
+  Either way it inserts a `wearable({…})` line, trims the layer, and records the
+  content box. Tick `覆寫同名素材` to replace an existing asset.
 
 The page reloads after add/delete so the manifests are re-read.
 

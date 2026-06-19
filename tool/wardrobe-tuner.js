@@ -46,7 +46,8 @@ const dom = {
   applyAll: q("#applyAll"), applyStatus: q("#applyStatus"),
   addItemToggle: q("#addItemToggle"), addItemForm: q("#addItemForm"),
   addPack: q("#addPack"), addType: q("#addType"), addId: q("#addId"),
-  addName: q("#addName"), addAsset: q("#addAsset"), addCost: q("#addCost"), addStatus: q("#addStatus")
+  addName: q("#addName"), addAsset: q("#addAsset"), addCost: q("#addCost"),
+  addFile: q("#addFile"), addOverwrite: q("#addOverwrite"), addStatus: q("#addStatus")
 };
 
 const paperDollRenderer = createPaperDollRenderer({
@@ -215,13 +216,29 @@ async function submitAddItem(e) {
     pack: dom.addPack.value, type: dom.addType.value, id: dom.addId.value.trim(),
     name: dom.addName.value.trim(), asset: dom.addAsset.value.trim(), cost: Number(dom.addCost.value) || 0
   };
-  setStatus(dom.addStatus, "新增中…", "");
+  const file = dom.addFile.files?.[0];
+  setStatus(dom.addStatus, file ? "上傳轉檔中…" : "新增中…", "");
   try {
-    const d = await postJson("/tool/add-item", body);
+    let d;
+    if (file) {
+      const imageData = await readFileAsDataUrl(file);
+      d = await postJson("/tool/upload-item", { ...body, imageData, overwrite: dom.addOverwrite.checked });
+    } else {
+      d = await postJson("/tool/add-item", body);
+    }
     if (!d.ok) { setStatus(dom.addStatus, `失敗：${d.error}`, "err"); return; }
     setStatus(dom.addStatus, "已新增，重新整理…", "ok");
     window.setTimeout(() => window.location.reload(), 700);
   } catch (e2) { setStatus(dom.addStatus, `失敗：${e2.message}`, "err"); }
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => resolve(reader.result));
+    reader.addEventListener("error", () => reject(new Error("讀取圖檔失敗")));
+    reader.readAsDataURL(file);
+  });
 }
 
 async function postJson(url, body) {
