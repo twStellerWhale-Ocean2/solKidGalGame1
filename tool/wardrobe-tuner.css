@@ -100,22 +100,40 @@ button.active {
 }
 
 .item-row {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.item-main {
+  flex: 1;
+  min-width: 0;
   display: grid;
   grid-template-columns: 54px 1fr auto;
   align-items: center;
   gap: 10px;
-  width: 100%;
   min-height: 70px;
   padding: 8px;
   text-align: left;
 }
 
-.item-row.active {
+.item-row.active .item-main {
   border-color: #cc4c87;
   background: #fff0f6;
 }
 
-.item-row img {
+.item-act {
+  width: 36px;
+  padding: 0;
+  font-size: 15px;
+}
+
+.item-act[data-act="del"]:hover {
+  border-color: #b3203f;
+  background: #ffe9ee;
+}
+
+.item-main img {
   width: 54px;
   height: 54px;
   object-fit: contain;
@@ -573,4 +591,53 @@ button.active {
   color: #9a7e9d;
   font-style: normal;
   font-size: 11px;
+}
+
+.add-item {
+  margin: 6px 0 10px;
+}
+
+.add-toggle {
+  width: 100%;
+}
+
+.add-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px;
+  border: 1px solid rgba(91, 62, 100, 0.18);
+  border-radius: 8px;
+  background: #fff9fb;
+}
+
+.add-form[hidden] {
+  display: none;
+}
+
+.add-form label {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #59445e;
+}
+
+.add-form input,
+.add-form select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid rgba(91, 62, 100, 0.22);
+  border-radius: 6px;
+  background: white;
+  font: inherit;
+}
+
+.add-submit {
+  min-height: 36px;
+  border-color: #2e9e54;
+  background: #2e9e54;
+  color: #fff;
+  font-weight: 600;
 }

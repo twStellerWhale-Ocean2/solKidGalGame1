@@ -37,6 +37,21 @@
         </div>
       </div>
 
+      <div class="add-item">
+        <button id="addItemToggle" type="button" class="add-toggle">➕ 新增單品</button>
+        <form id="addItemForm" class="add-form" hidden>
+          <p class="control-help">先用單品的 <strong>📁</strong> 或自行把 <code>asset</code> 的 webp 放進該包的 <code>assets/layers/</code> 與 <code>assets/thumbs/</code>，再填以下登記到 manifest。</p>
+          <label>素材包<select id="addPack"></select></label>
+          <label>類型<select id="addType"></select></label>
+          <label>id<input id="addId" type="text" placeholder="myNewItem" autocomplete="off"></label>
+          <label>名稱<input id="addName" type="text" placeholder="My New Item" autocomplete="off"></label>
+          <label>asset 檔名<input id="addAsset" type="text" placeholder="hairstyle-foo（不含 .webp）" autocomplete="off"></label>
+          <label>價格<input id="addCost" type="number" value="100"></label>
+          <button type="submit" class="add-submit">新增到 manifest</button>
+          <div id="addStatus" class="apply-status"></div>
+        </form>
+      </div>
+
       <section id="itemList" class="item-list" aria-label="Wardrobe items"></section>
     </aside>
 

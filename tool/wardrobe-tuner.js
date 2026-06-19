@@ -43,7 +43,10 @@ const dom = {
   previewLabel: q("#previewLabel"), previewDoll: q("#previewDoll"), previewStage: q(".preview-stage"),
   typeOverlay: q("#typeOverlay"), itemOverlay: q("#itemOverlay"), selectedInfo: q("#selectedInfo"),
   modeTabs: q("#modeTabs"), modeHelp: q("#modeHelp"),
-  applyAll: q("#applyAll"), applyStatus: q("#applyStatus")
+  applyAll: q("#applyAll"), applyStatus: q("#applyStatus"),
+  addItemToggle: q("#addItemToggle"), addItemForm: q("#addItemForm"),
+  addPack: q("#addPack"), addType: q("#addType"), addId: q("#addId"),
+  addName: q("#addName"), addAsset: q("#addAsset"), addCost: q("#addCost"), addStatus: q("#addStatus")
 };
 
 const paperDollRenderer = createPaperDollRenderer({
@@ -58,6 +61,7 @@ const paperDollRenderer = createPaperDollRenderer({
 bindEvents();
 renderPackFilter();
 renderCategoryFilter();
+populateAddSelects();
 equipSelectedItem();
 renderAll();
 
@@ -87,6 +91,8 @@ function bindEvents() {
     const mode = e.target.closest("button")?.dataset.mode;
     if (mode) { state.editMode = mode; renderAll(); }
   });
+  dom.addItemToggle.addEventListener("click", () => { dom.addItemForm.hidden = !dom.addItemForm.hidden; });
+  dom.addItemForm.addEventListener("submit", submitAddItem);
   dom.applyAll.addEventListener("click", applyToFiles);
   setupDrag(dom.typeOverlay);
   setupDrag(dom.itemOverlay);
@@ -163,17 +169,66 @@ function afterCatChange() {
 function renderItemList() {
   dom.itemList.innerHTML = "";
   itemsShown().forEach((item) => {
-    const row = document.createElement("button");
-    row.type = "button";
+    const row = document.createElement("div");
     row.className = `item-row${item.id === state.selectedItemId ? " active" : ""}`;
     row.innerHTML = `
-      <img src="${assetUrl(item.image)}" alt="">
-      <span class="item-name"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.type)} / ${escapeHtml(item.id)}</span></span>
-      <span class="item-price">${priceText(item)}</span>`;
-    row.addEventListener("click", () => { state.selectedItemId = item.id; equipSelectedItem(); renderAll(); });
+      <button type="button" class="item-main">
+        <img src="${assetUrl(item.image)}" alt="">
+        <span class="item-name"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.type)} / ${escapeHtml(item.id)}</span></span>
+        <span class="item-price">${priceText(item)}</span>
+      </button>
+      <button type="button" class="item-act" data-act="open" title="開啟素材資料夾">📁</button>
+      <button type="button" class="item-act" data-act="del" title="刪除此單品">🗑</button>`;
+    row.querySelector(".item-main").addEventListener("click", () => { state.selectedItemId = item.id; equipSelectedItem(); renderAll(); });
+    row.querySelector('[data-act="open"]').addEventListener("click", () => openItemFolder(item));
+    row.querySelector('[data-act="del"]').addEventListener("click", () => deleteItem(item));
     dom.itemList.append(row);
   });
 }
+
+function assetOfItem(item) { const m = /assets\/(?:layers|thumbs)\/([^/]+)\.webp/.exec(item?.image || item?.layers?.[0]?.src || ""); return m ? m[1] : ""; }
+
+async function openItemFolder(item) {
+  try {
+    const d = await postJson("/tool/open-folder", { pack: packOfItem(item) });
+    if (!d.ok) window.alert(`開啟資料夾失敗：${d.error}`);
+  } catch (e) { window.alert(`開啟資料夾失敗：${e.message}`); }
+}
+
+async function deleteItem(item) {
+  if (!window.confirm(`刪除「${item.name}」？\n會移除 manifest 該行＋layer/thumb webp＋其覆寫，無法復原。`)) return;
+  try {
+    const d = await postJson("/tool/delete-item", { pack: packOfItem(item), asset: assetOfItem(item), itemId: item.id });
+    if (!d.ok) { window.alert(`刪除失敗：${d.error}`); return; }
+    window.location.reload();
+  } catch (e) { window.alert(`刪除失敗：${e.message}`); }
+}
+
+function populateAddSelects() {
+  dom.addPack.innerHTML = allPacks.map((p) => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
+  dom.addType.innerHTML = Object.keys(wardrobeLayerBoundsByType).map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+}
+
+async function submitAddItem(e) {
+  e.preventDefault();
+  const body = {
+    pack: dom.addPack.value, type: dom.addType.value, id: dom.addId.value.trim(),
+    name: dom.addName.value.trim(), asset: dom.addAsset.value.trim(), cost: Number(dom.addCost.value) || 0
+  };
+  setStatus(dom.addStatus, "新增中…", "");
+  try {
+    const d = await postJson("/tool/add-item", body);
+    if (!d.ok) { setStatus(dom.addStatus, `失敗：${d.error}`, "err"); return; }
+    setStatus(dom.addStatus, "已新增，重新整理…", "ok");
+    window.setTimeout(() => window.location.reload(), 700);
+  } catch (e2) { setStatus(dom.addStatus, `失敗：${e2.message}`, "err"); }
+}
+
+async function postJson(url, body) {
+  const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  return res.json();
+}
+function setStatus(el, text, kind) { el.textContent = text; el.className = `apply-status${kind ? ` apply-status-${kind}` : ""}`; }
 
 function renderPackFilter() {
   dom.packCheckboxes.innerHTML = "";

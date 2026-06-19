@@ -54,6 +54,24 @@ back to disk via the local `server.mjs` dev endpoint (`POST /tool/apply-wardrobe
 (whitelisted files), preserving each file's line endings. Reload the game to see
 the result. (Requires the dev server to be `node server.mjs`.)
 
+## Managing items (dev-server endpoints)
+
+Each item row has two actions, and there is an **➕ 新增單品** form above the list.
+These write to the pack manifests / asset files via `server.mjs` (dev only,
+`127.0.0.1`, whitelisted to `content-package/wardrobe/<pack>/`):
+
+- **📁** — open the pack's `assets` folder in the OS file explorer.
+- **🗑** — delete the item: removes its `wearable({…})` line from the pack
+  `manifest.js`, deletes its `layers/`+`thumbs/` webp, and drops any override /
+  content-box entry. Asks for confirmation; **not undoable** (use git to recover).
+- **➕ 新增單品** — register an item already dropped into the pack folder: fill
+  pack / type / id / name / asset (filename without `.webp`) / cost → inserts a
+  `wearable({…})` line, then trims the new layer and records its content box.
+  (Upload-and-convert is a planned follow-up; for now place the `.webp` yourself
+  via **📁** first.)
+
+The page reloads after add/delete so the manifests are re-read.
+
 ## Trim tool
 
 `node tool/trim-wardrobe-assets.mjs` (dry-run) measures every layer asset's
