@@ -1825,6 +1825,12 @@ function runVisualQa(api) {
     return;
   }
 
+  if (surface === "paper-doll-outfit") {
+    api.render();
+    renderPaperDollOutfitQa(api, params);
+    return;
+  }
+
   if (surface === "wardrobe-detail") {
     const requestedItem = api.itemById(params.get("item"));
     const category = params.get("category") || api.categoryForType(requestedItem?.type)?.id || "dresses";
@@ -1983,6 +1989,69 @@ function runVisualQa(api) {
     return;
   }
 
+  api.render();
+}
+
+function renderPaperDollOutfitQa(api, params) {
+  document.querySelector("#paperDollOutfitQa")?.remove();
+  document.querySelector("#paperDollOutfitQaStyle")?.remove();
+  const item = api.itemById(params.get("item")) || api.itemById(params.get("equip"));
+  const surface = document.createElement("main");
+  surface.id = "paperDollOutfitQa";
+  surface.innerHTML = `
+    <section class="paper-doll-outfit-qa-card">
+      <div class="paper-doll-outfit-qa-label">
+        <strong>${item?.type || "outfit"}</strong>
+        <span>${item?.name || item?.id || "Current outfit"}</span>
+      </div>
+      <span class="paper-doll adv-doll paper-doll-outfit-qa-doll" data-doll="outfit-qa" aria-hidden="true"></span>
+    </section>
+  `;
+  const style = document.createElement("style");
+  style.id = "paperDollOutfitQaStyle";
+  style.textContent = `
+    #paperDollOutfitQa {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.68)),
+        url("/content-package/areas/castle/assets/scenes/bedroom-1024.webp") center / cover no-repeat;
+    }
+    .paper-doll-outfit-qa-card {
+      position: relative;
+      width: min(62vw, 560px);
+      height: min(86vh, 760px);
+    }
+    .paper-doll-outfit-qa-label {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      gap: 4px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: rgba(48, 35, 54, 0.82);
+      color: white;
+      font: 700 15px/1.2 system-ui, sans-serif;
+      box-shadow: 0 8px 20px rgba(40, 28, 48, 0.24);
+    }
+    .paper-doll-outfit-qa-label span {
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.84);
+    }
+    .paper-doll-outfit-qa-doll {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+  `;
+  document.head.append(style);
+  document.body.append(surface);
   api.render();
 }
 
