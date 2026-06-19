@@ -56,7 +56,7 @@ export const wardrobeLayerBoundsByType = Object.freeze({
   bottom: layerBounds({ left: 161, top: 459, right: 361, bottom: 666 }, { left: -6, top: -32, right: 6, bottom: 32 }),
   dress: layerBounds({ left: 145, top: 405, right: 375, bottom: 730 }, { left: -5, top: -19, right: 5, bottom: 19 }),
   outer: layerBounds({ left: 145, top: 385, right: 375, bottom: 660 }, { left: -4, top: -16, right: 4, bottom: 16 }),
-  shoes: layerBounds({ left: 216, top: 720, right: 300, bottom: 768 }, { left: -4, top: -3, right: 4, bottom: 3 }),
+  shoes: layerBounds({ left: 211, top: 720, right: 295, bottom: 768 }, { left: -4, top: -3, right: 4, bottom: 3 }),
   headTop: layerBounds({ left: 190, top: 270, right: 330, bottom: 365 }, { left: -4, top: -14, right: 4, bottom: 14 }),
   headSide: layerBounds({ left: 280, top: 335, right: 345, bottom: 420 }, { left: -10, top: -8, right: 10, bottom: 8 }),
   faceEyes: layerBounds({ left: 205, top: 335, right: 315, bottom: 390 }, { left: 0, top: 12, right: 0, bottom: -12 }),
