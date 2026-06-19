@@ -48,16 +48,16 @@ const layerBounds = (safeBox, renderBounds = fullCanvasBounds) => Object.freeze(
 });
 
 export const wardrobeLayerBoundsByType = Object.freeze({
-  hairstyle: layerBounds({ left: 168, top: 280, right: 352, bottom: 570 }),
-  top: layerBounds({ left: 150, top: 390, right: 370, bottom: 570 }),
-  bottom: layerBounds({ left: 160, top: 510, right: 360, bottom: 690 }),
-  dress: layerBounds({ left: 145, top: 405, right: 375, bottom: 730 }, { left: 0, top: -4, right: 0, bottom: 4 }),
-  outer: layerBounds({ left: 145, top: 385, right: 375, bottom: 660 }),
-  shoes: layerBounds({ left: 216, top: 720, right: 300, bottom: 768 }, { left: 0, top: -12, right: 0, bottom: 12 }),
-  headTop: layerBounds({ left: 190, top: 270, right: 330, bottom: 365 }, { left: 0, top: -12, right: 0, bottom: 12 }),
+  hairstyle: layerBounds({ left: 168, top: 280, right: 352, bottom: 570 }, { left: -6, top: -23, right: 6, bottom: 23 }),
+  top: layerBounds({ left: 150, top: 390, right: 370, bottom: 570 }, { left: -4, top: -9, right: 4, bottom: 9 }),
+  bottom: layerBounds({ left: 160, top: 510, right: 360, bottom: 690 }, { left: -6, top: -32, right: 6, bottom: 32 }),
+  dress: layerBounds({ left: 145, top: 405, right: 375, bottom: 730 }, { left: -5, top: -19, right: 5, bottom: 19 }),
+  outer: layerBounds({ left: 145, top: 385, right: 375, bottom: 660 }, { left: -4, top: -16, right: 4, bottom: 16 }),
+  shoes: layerBounds({ left: 216, top: 720, right: 300, bottom: 768 }, { left: -4, top: -3, right: 4, bottom: 3 }),
+  headTop: layerBounds({ left: 190, top: 270, right: 330, bottom: 365 }, { left: -4, top: -14, right: 4, bottom: 14 }),
   headSide: layerBounds({ left: 280, top: 335, right: 345, bottom: 420 }, { left: -10, top: -8, right: 10, bottom: 8 }),
   faceEyes: layerBounds({ left: 205, top: 335, right: 315, bottom: 390 }, { left: 0, top: 12, right: 0, bottom: -12 }),
-  faceMask: layerBounds({ left: 205, top: 335, right: 315, bottom: 392 }, { left: 0, top: 12, right: 0, bottom: -12 }),
+  faceMask: layerBounds({ left: 205, top: 335, right: 315, bottom: 392 }, { left: -6, top: -5, right: 6, bottom: 5 }),
   neck: layerBounds({ left: 210, top: 385, right: 310, bottom: 470 }),
   hand: layerBounds({ left: 280, top: 530, right: 365, bottom: 640 })
 });
