@@ -19,5 +19,5 @@ export const assetTargetOverrides = Object.freeze({
   "urban-shoe-shop/shoes-pink-ribbon": { left: 230, top: 737, right: 278, bottom: 763, corners: { nw: [0, 0], ne: [0, 0], sw: [0, 0], se: [-2, 0] } },
   "urban-tailor-studio/bottom-cocoa-shorts": { left: 194, top: 499, right: 319, bottom: 604 },
   "urban-tailor-studio/bottom-navy-shorts": { left: 193, top: 494, right: 319, bottom: 616 },
-  "urban-tailor-studio/bottom-rose-skirt": { left: 160, top: 489, right: 351, bottom: 726 }
+  "urban-tailor-studio/bottom-rose-skirt": { left: 160, top: 489, right: 351, bottom: 726, corners: { nw: [-9, 3], ne: [8, -7], sw: [0, 0], se: [0, 0] } }
 });
