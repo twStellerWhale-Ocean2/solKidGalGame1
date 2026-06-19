@@ -19,7 +19,7 @@ export const urbanVocabularyProfile = Object.freeze({
   id: "cambridge-pre-a1-starters",
   label: "Cambridge Pre-A1 Starters",
   levelLabel: "Cambridge Starters",
-  rewardCoins: 60,
+  rewardCoins: 105,
   note: "Urban town places use short Starters-style words and classroom-safe sentences."
 });
 //#endregion 英文等級與獎勵設定
@@ -79,7 +79,7 @@ export const urbanArea = Object.freeze({
 //#region 場景自帶題庫（issue #96 結構；issue #149 全量改寫：角色第一人稱、prompt 即台詞、選項即公主回應、無 opening/ending）
 // urbanLessonBank：以 place 為鍵的「打工任務」題庫（答對得 coins＝勞動所得）。
 // issue #149：Starters 分級；每場景 3 題、每題 3 選項；prompt＝角色第一人稱請求／任務、choices＝公主回應；數學包進角色任務情境。
-const jobReward = { coins: 60 };
+const jobReward = { coins: 105 };
 const urbanLessonBank = Object.freeze({
   garden: {
     title: "Help in the Castle Garden",

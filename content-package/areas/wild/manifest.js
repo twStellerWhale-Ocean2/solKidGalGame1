@@ -19,7 +19,7 @@ export const wildVocabularyProfile = Object.freeze({
   id: "cambridge-a2-flyers",
   label: "Cambridge A2 Flyers",
   levelLabel: "Cambridge Flyers",
-  rewardCoins: 80,
+  rewardCoins: 115,
   note: "Wild fantasy scenes use longer Flyers-style sentences with richer story words."
 });
 //#endregion 英文等級與獎勵設定
@@ -69,7 +69,7 @@ export const wildArea = Object.freeze({
 //#region 場景自帶題庫（issue #96 結構；issue #149 全量改寫：角色第一人稱、prompt 即台詞、選項即公主回應、無 opening/ending）
 // wildLessonBank：以 place 為鍵的「打工任務」題庫（答對得 coins＝勞動所得）。
 // issue #149：Flyers 分級（現在完成式／過去進行式＋when／if…will／關係子句／間接問句／情態）；每場景 3 題、每題 3 選項；保留奇幻角色、互動功能生活化。
-const jobReward = { coins: 80 };
+const jobReward = { coins: 115 };
 const wildLessonBank = Object.freeze({
   elfGlade: {
     title: "Help in the Elf Glade",
