@@ -1,3 +1,5 @@
+import { createKeyboardWalkController, directionForKey } from "../map/keyboard-walk.js";
+
 export function installTestingHooks(api) {
   window.LuminaraTest = {
     exportMarkdown: api.buildSaveMarkdown,
@@ -58,7 +60,92 @@ export function installTestingHooks(api) {
   runChineseRewardSelfTest(api);
   runCharacterVoiceSelfTest(api);
   runMapAvatarSelfTest(api);
+  runMapWalkSelfTest(api);
   runAboutSelfTest(api);
+}
+
+// issue #178：鍵盤地圖走動控制器——自管連續移動迴圈（消除起步停頓）、放鍵/失焦即停、忽略 OS 自動重複、三面座標改變。
+function runMapWalkSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "map-walk") return;
+  const errors = [];
+
+  // A. 方向鍵對映（方向鍵＋WASD；非走動鍵回傳 null）
+  const dirChecks = [
+    ["ArrowUp", "up"], ["w", "up"], ["W", "up"],
+    ["ArrowDown", "down"], ["s", "down"],
+    ["ArrowLeft", "left"], ["a", "left"],
+    ["ArrowRight", "right"], ["d", "right"],
+    ["Enter", null], ["1", null], [" ", null]
+  ];
+  for (const [key, expected] of dirChecks) {
+    if (directionForKey(key) !== expected) {
+      errors.push(`directionForKey(${JSON.stringify(key)}) 期望 ${expected}，得 ${directionForKey(key)}`);
+    }
+  }
+
+  // B. 控制器：即時起步 ＋ 連續多步 ＋ 放鍵即停（注入假時鐘與 raf 佇列，免依賴真實 OS 自動重複）
+  let clock = 0;
+  const pending = [];
+  const steps = [];
+  const ctrl = createKeyboardWalkController({
+    stepMs: 33,
+    now: () => clock,
+    requestFrame: (cb) => { pending.push(cb); return pending.length; },
+    cancelFrame: () => {}
+  });
+  const pump = () => { const cb = pending.shift(); if (cb) cb(); };
+
+  ctrl.press("up", (dx, dy) => steps.push([dx, dy]));
+  if (steps.length !== 1) errors.push(`press 應即時走一步，實得 ${steps.length}`);
+  if (!ctrl.isWalking()) errors.push("press 後連續移動迴圈未啟動");
+  for (let i = 0; i < 4; i++) { clock += 33; pump(); }   // 每前進 33ms 應再推進一步
+  if (steps.length < 5) errors.push(`連續走動步數不足（期望 ≥5，實得 ${steps.length}）`);
+  const heldSteps = steps.length;
+  ctrl.release("up");
+  if (ctrl.isWalking()) errors.push("放鍵後迴圈未停止");
+  clock += 99; pump(); pump();
+  if (steps.length !== heldSteps) errors.push("放鍵後仍持續走動（卡走）");
+
+  // C. 忽略 OS 自動重複：同向重按不額外即時走步、不重複登記方向
+  const repeatSteps = [];
+  const ctrlRepeat = createKeyboardWalkController({
+    stepMs: 33, now: () => 0, requestFrame: () => 1, cancelFrame: () => {}
+  });
+  const repeatMove = (dx, dy) => repeatSteps.push([dx, dy]);
+  ctrlRepeat.press("right", repeatMove);
+  ctrlRepeat.press("right", repeatMove);   // 模擬 OS 自動重複的合成 keydown
+  if (repeatSteps.length !== 1) errors.push(`同向重複按鍵應被忽略，期望即時步數 1，實得 ${repeatSteps.length}`);
+  if (ctrlRepeat.heldDirections().length !== 1) errors.push("同向重複按鍵不應重複登記方向");
+
+  // D. clear（失焦／切面）即停並清空按住狀態
+  ctrlRepeat.clear();
+  if (ctrlRepeat.isWalking() || ctrlRepeat.heldDirections().length !== 0) {
+    errors.push("clear 後未停止或未清空按住狀態");
+  }
+
+  // E. 三處走動面：座標皆隨對應 move 函式改變（地區／城堡／世界）
+  const movedX = (label, area, moveFn) => {
+    const before = { ...api.currentPlayerPoint(area) };
+    moveFn(1, 0);
+    const after = api.currentPlayerPoint(area);
+    if (!(Math.abs(after.x - before.x) > 0.001)) errors.push(`${label}鍵盤走動未改變座標`);
+  };
+  api.openArea("urban");
+  api.renderMap();
+  movedX("地區地圖", "urban", api.moveOnMap);
+  api.openArea("castle");
+  api.renderCastleMap();
+  movedX("城堡地圖", "castle", api.moveOnCastleMap);
+  api.openWorldMap();
+  api.renderWorldMap();
+  movedX("世界地圖", "world", api.moveOnWorldMap);
+
+  const passed = errors.length === 0;
+  const result = document.createElement("pre");
+  result.id = "mapWalkResult";
+  result.textContent = JSON.stringify({ test: "map-walk", passed, errors });
+  document.body.prepend(result);
 }
 
 // issue #99：跨地圖公主頭像一致顯示（intTest#26）＋世界地圖走到再進入與途中略過（intTest#27）。
