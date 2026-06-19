@@ -15,6 +15,9 @@ import { createPaperDollRenderer } from "../game-engine/render/paper-doll.js";
 const CANVAS = { W: 512, H: 768 };
 
 const itemMap = new Map(shopItems.map((item) => [item.id, item]));
+// 素材包（content pack）清單與篩選集（預設全選；模組層級，避免 state 初始化前的 TDZ）。
+const allPacks = [...new Set(shopItems.map(packOfItem).filter(Boolean))].sort();
+let selectedPacks = new Set(allPacks);
 // 第一層：類別投影框（= 該類 safeBox）。第二層：各單品 targetBox（覆寫→裁切原始框→safeBox）。
 const workingSafeBox = Object.fromEntries(
   Object.entries(wardrobeLayerBoundsByType).map(([type, b]) => [type, b.safeBox ? { ...b.safeBox } : fullCanvas()])
@@ -30,6 +33,8 @@ const state = {
 
 const dom = {
   summaryLine: q("#summaryLine"), categoryTabs: q("#categoryTabs"), itemList: q("#itemList"),
+  packFilterToggle: q("#packFilterToggle"), packFilterMenu: q("#packFilterMenu"),
+  packAll: q("#packAll"), packNone: q("#packNone"), packCheckboxes: q("#packCheckboxes"),
   previewLabel: q("#previewLabel"), previewDoll: q("#previewDoll"),
   typeOverlay: q("#typeOverlay"), itemOverlay: q("#itemOverlay"),
   selectedInfo: q("#selectedInfo"),
@@ -49,10 +54,21 @@ const paperDollRenderer = createPaperDollRenderer({
 });
 
 bindEvents();
+renderPackFilter();
 equipSelectedItem();
 renderAll();
 
 function bindEvents() {
+  dom.packFilterToggle.addEventListener("click", () => { dom.packFilterMenu.hidden = !dom.packFilterMenu.hidden; });
+  dom.packAll.addEventListener("click", () => { selectedPacks = new Set(allPacks); afterPackChange(); });
+  dom.packNone.addEventListener("click", () => { selectedPacks = new Set(); afterPackChange(); });
+  dom.packCheckboxes.addEventListener("change", (e) => {
+    const pack = e.target?.value;
+    if (!pack) return;
+    if (e.target.checked) selectedPacks.add(pack); else selectedPacks.delete(pack);
+    afterPackChange();
+  });
+  document.addEventListener("click", (e) => { if (!e.target.closest(".pack-filter")) dom.packFilterMenu.hidden = true; });
   dom.modeTabs.addEventListener("click", (e) => {
     const mode = e.target.closest("button")?.dataset.mode;
     if (mode) { state.editMode = mode; renderAll(); }
@@ -118,6 +134,36 @@ function renderItemList() {
     row.addEventListener("click", () => { state.selectedItemId = item.id; equipSelectedItem(); renderAll(); });
     dom.itemList.append(row);
   });
+}
+
+function renderPackFilter() {
+  dom.packCheckboxes.innerHTML = "";
+  allPacks.forEach((pack) => {
+    const count = shopItems.filter((i) => packOfItem(i) === pack).length;
+    const label = document.createElement("label");
+    label.className = "pack-check";
+    label.innerHTML = `<input type="checkbox" value="${escapeHtml(pack)}"${selectedPacks.has(pack) ? " checked" : ""}><span>${escapeHtml(pack)}</span><em>${count}</em>`;
+    dom.packCheckboxes.append(label);
+  });
+  const n = selectedPacks.size;
+  const summary = n === allPacks.length ? "全部" : n === 0 ? "無" : n === 1 ? [...selectedPacks][0] : `${n} 包`;
+  dom.packFilterToggle.textContent = `素材包：${summary} ▾`;
+}
+
+function afterPackChange() {
+  ensureValidSelection();
+  renderPackFilter();
+  renderAll();
+}
+
+function ensureValidSelection() {
+  let items = itemsForCategory(state.categoryId);
+  if (!items.length) {
+    const cat = categories.find((c) => itemsForCategory(c.id).length);
+    if (cat) { state.categoryId = cat.id; items = itemsForCategory(cat.id); }
+  }
+  if (!items.some((i) => i.id === state.selectedItemId)) state.selectedItemId = items[0]?.id || "";
+  equipSelectedItem();
 }
 
 function renderModeTabs() {
@@ -327,7 +373,8 @@ function boxLiteral(b) { return `{ left: ${b.left}, top: ${b.top}, right: ${b.ri
 function renderBoundsOf(b) { return { left: b.left || 0, top: b.top || 0, right: b.right || 0, bottom: b.bottom || 0 }; }
 function hasRenderOffset(b) { return (b.left || 0) !== 0 || (b.top || 0) !== 0 || (b.right || 0) !== 0 || (b.bottom || 0) !== 0; }
 function r3(v) { return Math.round(v * 1000) / 1000; }
-function itemsForCategory(categoryId) { const c = categories.find((x) => x.id === categoryId); return c ? shopItems.filter((item) => c.types.includes(item.type)) : []; }
+function packOfItem(item) { const m = /wardrobe\/([^/]+)\/assets\//.exec(item?.image || ""); return m ? m[1] : ""; }
+function itemsForCategory(categoryId) { const c = categories.find((x) => x.id === categoryId); return c ? shopItems.filter((item) => c.types.includes(item.type) && selectedPacks.has(packOfItem(item))) : []; }
 function firstItemForCategory(categoryId) { return itemsForCategory(categoryId).find((item) => item.storeId !== "starter") || itemsForCategory(categoryId)[0]; }
 function assetUrl(src) { if (!src) return ""; return src.startsWith("content-package/") || src.startsWith("content-base/") ? `../${src}` : src; }
 function priceText(item) { return Number.isFinite(item.cost) && item.cost > 0 ? `${item.cost} coins` : "Free"; }

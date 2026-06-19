@@ -15,6 +15,17 @@
         <div id="summaryLine" class="summary-line"></div>
       </header>
 
+      <div class="pack-filter">
+        <button id="packFilterToggle" type="button" class="pack-toggle">素材包：全部 ▾</button>
+        <div id="packFilterMenu" class="pack-menu" hidden>
+          <div class="pack-menu-actions">
+            <button id="packAll" type="button">全選</button>
+            <button id="packNone" type="button">全不選</button>
+          </div>
+          <div id="packCheckboxes" class="pack-checkboxes"></div>
+        </div>
+      </div>
+
       <nav id="categoryTabs" class="category-tabs" aria-label="Wardrobe categories"></nav>
       <section id="itemList" class="item-list" aria-label="Wardrobe items"></section>
     </aside>

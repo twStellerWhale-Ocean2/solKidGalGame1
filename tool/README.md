@@ -16,8 +16,10 @@ This is still a static site flow. The local server only avoids Chrome `file://`
 module loading restrictions during development.
 
 Pick a garment on the **left** (category → item) — that selection drives
-everything. The right pane then edits two layers of positioning over a live
-paper-doll preview; you tune by dragging boxes directly on the figure.
+everything. The **素材包** dropdown above the categories filters items by content
+pack (multi-select checkboxes; pick one pack or several, or 全選/全不選). The
+right pane then edits two layers of positioning over a live paper-doll preview;
+you tune by dragging boxes directly on the figure.
 
 ## Two-layer positioning (issue #176)
 
