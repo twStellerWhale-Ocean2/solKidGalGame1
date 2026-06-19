@@ -24,27 +24,21 @@ const baseOutfit = Object.fromEntries(Object.keys(wardrobeLayerBoundsByType).map
 const state = {
   categoryId: categories[0]?.id || "",
   selectedItemId: firstItemForCategory(categories[0]?.id)?.id || "",
+  editMode: "item", // "type"（① 類型框/safeBox）或 "item"（② 單品框/targetBox）
   outfit: { ...baseOutfit },
   testImageByType: {}
 };
 
 const dom = {
-  summaryLine: q("#summaryLine"),
-  categoryTabs: q("#categoryTabs"),
-  itemList: q("#itemList"),
-  previewLabel: q("#previewLabel"),
-  previewDoll: q("#previewDoll"),
-  typeOverlay: q("#typeOverlay"),
-  itemOverlay: q("#itemOverlay"),
+  summaryLine: q("#summaryLine"), categoryTabs: q("#categoryTabs"), itemList: q("#itemList"),
+  previewLabel: q("#previewLabel"), previewDoll: q("#previewDoll"),
+  typeOverlay: q("#typeOverlay"), itemOverlay: q("#itemOverlay"),
   selectedInfo: q("#selectedInfo"),
-  safeLeft: q("#safeLeft"), safeTop: q("#safeTop"), safeRight: q("#safeRight"), safeBottom: q("#safeBottom"),
-  itemLeft: q("#itemLeft"), itemTop: q("#itemTop"), itemRight: q("#itemRight"), itemBottom: q("#itemBottom"),
-  itemUp: q("#itemUp"), itemDown: q("#itemDown"), itemMoveLeft: q("#itemMoveLeft"), itemMoveRight: q("#itemMoveRight"),
-  itemBigger: q("#itemBigger"), itemSmaller: q("#itemSmaller"),
-  resetItem: q("#resetItem"), resetType: q("#resetType"), resetAll: q("#resetAll"),
+  modeTabs: q("#modeTabs"), modeHelp: q("#modeHelp"), boxTitle: q("#boxTitle"),
+  boxLeft: q("#boxLeft"), boxTop: q("#boxTop"), boxRight: q("#boxRight"), boxBottom: q("#boxBottom"),
+  boxUp: q("#boxUp"), boxDown: q("#boxDown"), boxMoveLeft: q("#boxMoveLeft"), boxMoveRight: q("#boxMoveRight"),
+  boxBigger: q("#boxBigger"), boxSmaller: q("#boxSmaller"), resetBox: q("#resetBox"), resetAll: q("#resetAll"),
   testImage: q("#testImage"), clearTest: q("#clearTest"),
-  outRules: q("#outRules"), copyRules: q("#copyRules"),
-  outOverrides: q("#outOverrides"), copyOverrides: q("#copyOverrides"),
   applyAll: q("#applyAll"), applyStatus: q("#applyStatus")
 };
 
@@ -62,22 +56,20 @@ equipSelectedItem();
 renderAll();
 
 function bindEvents() {
+  dom.modeTabs.addEventListener("click", (e) => {
+    const mode = e.target.closest("button")?.dataset.mode;
+    if (mode) { state.editMode = mode; renderAll(); }
+  });
   ["Left", "Top", "Right", "Bottom"].forEach((edge) => {
-    dom[`safe${edge}`].addEventListener("input", () => setSafeEdge(edge.toLowerCase(), Number(dom[`safe${edge}`].value)));
-    dom[`item${edge}`].addEventListener("input", () => setItemEdge(edge.toLowerCase(), Number(dom[`item${edge}`].value)));
+    dom[`box${edge}`].addEventListener("input", () => setBoxEdge(edge.toLowerCase(), Number(dom[`box${edge}`].value)));
   });
-  dom.itemUp.addEventListener("click", () => moveItem(0, -4));
-  dom.itemDown.addEventListener("click", () => moveItem(0, 4));
-  dom.itemMoveLeft.addEventListener("click", () => moveItem(-4, 0));
-  dom.itemMoveRight.addEventListener("click", () => moveItem(4, 0));
-  dom.itemBigger.addEventListener("click", () => scaleItem(1.05));
-  dom.itemSmaller.addEventListener("click", () => scaleItem(1 / 1.05));
-  dom.resetItem.addEventListener("click", () => { delete workingItemBox[selectedKey()]; renderAll(); });
-  dom.resetType.addEventListener("click", () => {
-    const type = selectedType();
-    workingSafeBox[type] = wardrobeLayerBoundsByType[type]?.safeBox ? { ...wardrobeLayerBoundsByType[type].safeBox } : fullCanvas();
-    renderAll();
-  });
+  dom.boxUp.addEventListener("click", () => moveBox(0, -4));
+  dom.boxDown.addEventListener("click", () => moveBox(0, 4));
+  dom.boxMoveLeft.addEventListener("click", () => moveBox(-4, 0));
+  dom.boxMoveRight.addEventListener("click", () => moveBox(4, 0));
+  dom.boxBigger.addEventListener("click", () => scaleBox(1.05));
+  dom.boxSmaller.addEventListener("click", () => scaleBox(1 / 1.05));
+  dom.resetBox.addEventListener("click", resetActiveBox);
   dom.resetAll.addEventListener("click", () => {
     Object.entries(wardrobeLayerBoundsByType).forEach(([type, b]) => { workingSafeBox[type] = b.safeBox ? { ...b.safeBox } : fullCanvas(); });
     for (const k of Object.keys(workingItemBox)) delete workingItemBox[k];
@@ -91,95 +83,23 @@ function bindEvents() {
     reader.readAsDataURL(file);
   });
   dom.clearTest.addEventListener("click", () => { delete state.testImageByType[selectedType()]; dom.testImage.value = ""; renderPreview(); });
-  dom.copyRules.addEventListener("click", () => copy(dom.outRules, dom.copyRules, "Copy rules.js safeBox"));
-  dom.copyOverrides.addEventListener("click", () => copy(dom.outOverrides, dom.copyOverrides, "Copy per-item overrides"));
   dom.applyAll.addEventListener("click", applyToFiles);
-  setupDrag();
-}
-
-// ② 單品框：圖上拖拉——中央方塊移動、四邊四角共 8 點非等比縮放。
-function setupDrag() {
-  let active = null;
-  dom.itemOverlay.addEventListener("pointerdown", (e) => {
-    const handle = e.target?.dataset?.h;
-    const key = selectedKey();
-    if (!handle || !key) return;
-    e.preventDefault();
-    try { dom.itemOverlay.setPointerCapture(e.pointerId); } catch { /* noop */ }
-    const p = pointerCanvas(e);
-    active = { handle, key, start: { ...itemBoxFor(key) }, sx: p.x, sy: p.y };
-  });
-  dom.itemOverlay.addEventListener("pointermove", (e) => { if (active) applyDrag(active, pointerCanvas(e)); });
-  const end = () => { active = null; };
-  dom.itemOverlay.addEventListener("pointerup", end);
-  dom.itemOverlay.addEventListener("pointercancel", end);
-}
-
-function pointerCanvas(e) {
-  const rect = dom.previewDoll.getBoundingClientRect();
-  return {
-    x: clampN(((e.clientX - rect.left) / rect.width) * CANVAS.W, 0, CANVAS.W),
-    y: clampN(((e.clientY - rect.top) / rect.height) * CANVAS.H, 0, CANVAS.H)
-  };
-}
-
-function applyDrag(active, p) {
-  const { handle, key, start, sx, sy } = active;
-  let b = { ...start };
-  if (handle === "move") {
-    const w = start.right - start.left; const h = start.bottom - start.top;
-    const left = clampN(start.left + (p.x - sx), 0, CANVAS.W - w);
-    const top = clampN(start.top + (p.y - sy), 0, CANVAS.H - h);
-    b = { left, top, right: left + w, bottom: top + h };
-  } else {
-    if (handle.includes("w")) b.left = clampN(p.x, 0, b.right - 4);
-    if (handle.includes("e")) b.right = clampN(p.x, b.left + 4, CANVAS.W);
-    if (handle.includes("n")) b.top = clampN(p.y, 0, b.bottom - 4);
-    if (handle.includes("s")) b.bottom = clampN(p.y, b.top + 4, CANVAS.H);
-  }
-  workingItemBox[key] = { left: Math.round(b.left), top: Math.round(b.top), right: Math.round(b.right), bottom: Math.round(b.bottom) };
-  renderControls(); renderPreview(); renderOutput(); renderSelectedInfo();
-}
-
-function clampN(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-
-// 把目前兩份匯出就地寫回 rules.js（① 類型框）與 asset-target-overrides.js（② 單品框）。
-async function applyToFiles() {
-  dom.applyAll.disabled = true;
-  setApplyStatus("套用中…", "");
-  try {
-    const res = await fetch("/tool/apply-wardrobe", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rules: dom.outRules.value, overrides: dom.outOverrides.value })
-    });
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
-    setApplyStatus(`已套用 → ${data.written.join("、")}。重新整理遊戲即可看到。`, "ok");
-  } catch (error) {
-    setApplyStatus(`套用失敗：${error.message}（請改用下方 Copy 手動貼回，或確認 dev server 為 server.mjs）`, "err");
-  } finally {
-    dom.applyAll.disabled = false;
-  }
-}
-
-function setApplyStatus(text, kind) {
-  dom.applyStatus.textContent = text;
-  dom.applyStatus.className = `apply-status${kind ? ` apply-status-${kind}` : ""}`;
+  setupDrag(dom.typeOverlay);
+  setupDrag(dom.itemOverlay);
 }
 
 function renderAll() {
   renderSummary();
   renderCategoryTabs();
   renderItemList();
+  renderModeTabs();
   renderSelectedInfo();
   renderControls();
   renderPreview();
-  renderOutput();
 }
 
 function renderSummary() {
-  dom.summaryLine.textContent = `${shopItems.length} items / ${categories.length} categories · 左選單品 → 右① 類型框（套同類）② 單品框（僅此件） · canvas ${CANVAS.W}×${CANVAS.H}`;
+  dom.summaryLine.textContent = `${shopItems.length} items / ${categories.length} categories · 左選單品 → 上選①/② → 圖上拖拉或右側數值 · canvas ${CANVAS.W}×${CANVAS.H}`;
 }
 
 function renderCategoryTabs() {
@@ -207,15 +127,21 @@ function renderItemList() {
     row.className = `item-row${item.id === state.selectedItemId ? " active" : ""}`;
     row.innerHTML = `
       <img src="${assetUrl(item.image)}" alt="">
-      <span class="item-name">
-        <strong>${escapeHtml(item.name)}</strong>
-        <span>${escapeHtml(item.type)} / ${escapeHtml(item.id)}</span>
-      </span>
-      <span class="item-price">${priceText(item)}</span>
-    `;
+      <span class="item-name"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.type)} / ${escapeHtml(item.id)}</span></span>
+      <span class="item-price">${priceText(item)}</span>`;
     row.addEventListener("click", () => { state.selectedItemId = item.id; equipSelectedItem(); renderAll(); });
     dom.itemList.append(row);
   });
+}
+
+function renderModeTabs() {
+  [...dom.modeTabs.querySelectorAll("button")].forEach((b) => {
+    b.classList.toggle("active", b.dataset.mode === state.editMode);
+  });
+  dom.boxTitle.firstChild.textContent = state.editMode === "type" ? "① 類型框 " : "② 單品框 ";
+  dom.modeHelp.textContent = state.editMode === "type"
+    ? "編輯此類的投影範圍（safeBox），套用到同類所有單品；單品框須落在其內。"
+    : "編輯這一件實際投影的矩形（targetBox），只影響目前選取的單品。";
 }
 
 function renderSelectedInfo() {
@@ -228,13 +154,12 @@ function renderSelectedInfo() {
 }
 
 function renderControls() {
-  const safe = workingSafeBox[selectedType()] || fullCanvas();
-  dom.safeLeft.value = safe.left; dom.safeTop.value = safe.top; dom.safeRight.value = safe.right; dom.safeBottom.value = safe.bottom;
-  const key = selectedKey();
-  const disabled = !key;
-  const box = key ? itemBoxFor(key) : fullCanvas();
-  ["Left", "Top", "Right", "Bottom"].forEach((edge) => { dom[`item${edge}`].value = box[edge.toLowerCase()]; dom[`item${edge}`].disabled = disabled; });
-  [dom.itemUp, dom.itemDown, dom.itemMoveLeft, dom.itemMoveRight, dom.itemBigger, dom.itemSmaller, dom.resetItem].forEach((b) => { b.disabled = disabled; });
+  const box = activeBox();
+  const disabled = !box;
+  const b = box || fullCanvas();
+  dom.boxLeft.value = b.left; dom.boxTop.value = b.top; dom.boxRight.value = b.right; dom.boxBottom.value = b.bottom;
+  [dom.boxLeft, dom.boxTop, dom.boxRight, dom.boxBottom, dom.boxUp, dom.boxDown, dom.boxMoveLeft, dom.boxMoveRight,
+    dom.boxBigger, dom.boxSmaller, dom.resetBox].forEach((el) => { el.disabled = disabled; });
 }
 
 function renderPreview() {
@@ -242,10 +167,10 @@ function renderPreview() {
   const character = playableCharacterById(defaultActiveCharacterId);
   dom.previewLabel.innerHTML = `<strong>${escapeHtml(item?.type || "outfit")}</strong><span>${escapeHtml(item?.name || "Current outfit")}</span>`;
   dom.previewDoll.innerHTML = paperDollRenderer.avatarMarkup("tuner", state.outfit, character) + testLayerMarkup();
-  // ① 類型框（faint）依 selectedType safeBox；② 單品框（solid）依 selectedKey targetBox。
-  setOverlay(dom.typeOverlay, workingSafeBox[selectedType()], selectedType() ? `${selectedType()} safeBox` : "");
+  const type = selectedType();
   const key = selectedKey();
-  setOverlay(dom.itemOverlay, key ? itemBoxFor(key) : null, key ? "item box" : "");
+  setOverlay(dom.typeOverlay, type ? workingSafeBox[type] : null, type ? `① ${type} safeBox` : "", state.editMode === "type");
+  setOverlay(dom.itemOverlay, key ? itemBoxFor(key) : null, key ? "② item box" : "", state.editMode === "item");
 }
 
 function testLayerMarkup() {
@@ -253,11 +178,12 @@ function testLayerMarkup() {
   const key = selectedKey();
   if (!url || !key) return "";
   const pct = insetPct(itemBoxFor(key));
-  const style = `--layer-img:url('${url}');--layer-top:${pct.top}%;--layer-right:${pct.right}%;--layer-bottom:${pct.bottom}%;--layer-left:${pct.left}%`;
+  const style = `--layer-img:url('${url}');--layer-top:${pct.top}%;--layer-right:${pct.right}%;--layer-bottom:${pct.bottom}%;--layer-left:${pct.left}%;--layer-fit:100% 100%`;
   return `<span class="paper-doll-layer paper-doll-layer-type-test" style="${style}" aria-hidden="true"></span>`;
 }
 
-function setOverlay(el, box, label) {
+function setOverlay(el, box, label, active) {
+  el.classList.toggle("active", !!active && !!box);
   if (!box) { el.style.display = "none"; return; }
   const pct = insetPct(box);
   el.style.display = "block";
@@ -265,25 +191,91 @@ function setOverlay(el, box, label) {
   el.dataset.label = label || "";
 }
 
-function renderOutput() {
-  // ① 類型框 → rules.js wardrobeLayerBoundsByType（safeBox 改為工作值，保留 render bounds）。
-  dom.outRules.value = `export const wardrobeLayerBoundsByType = Object.freeze({\n${Object.keys(wardrobeLayerBoundsByType).map((type) => {
-    const orig = wardrobeLayerBoundsByType[type];
-    const safe = workingSafeBox[type];
-    const render = hasRenderOffset(orig) ? `, ${boxLiteral(renderBoundsOf(orig))}` : "";
-    return `  ${type}: layerBounds(${boxLiteral(safe)}${render})`;
-  }).join(",\n")}\n});`;
-  // ② 單品框覆寫 → asset-target-overrides.js（只列與裁切原始框不同者）。
-  const entries = Object.keys(workingItemBox)
-    .filter((key) => !sameBox(workingItemBox[key], assetContentBoxByPackName[key] || null))
-    .sort()
-    .map((key) => `  ${JSON.stringify(key)}: ${boxLiteral(workingItemBox[key])}`);
-  dom.outOverrides.value = `export const assetTargetOverrides = Object.freeze({\n${entries.join(",\n")}${entries.length ? "\n" : ""}});`;
+// ===== active box（依 editMode 指向類型框或單品框） =====
+function activeBox() {
+  if (state.editMode === "type") { const t = selectedType(); return t ? workingSafeBox[t] : null; }
+  const k = selectedKey(); return k ? itemBoxFor(k) : null;
+}
+function commitActiveBox(box) {
+  const b = { left: Math.round(box.left), top: Math.round(box.top), right: Math.round(box.right), bottom: Math.round(box.bottom) };
+  if (state.editMode === "type") { const t = selectedType(); if (t) workingSafeBox[t] = b; }
+  else { const k = selectedKey(); if (k) workingItemBox[k] = b; }
+}
+function resetActiveBox() {
+  if (state.editMode === "type") {
+    const t = selectedType(); if (!t) return;
+    workingSafeBox[t] = wardrobeLayerBoundsByType[t]?.safeBox ? { ...wardrobeLayerBoundsByType[t].safeBox } : fullCanvas();
+  } else {
+    const k = selectedKey(); if (k) delete workingItemBox[k];
+  }
+  renderAll();
+}
+
+function setBoxEdge(edge, raw) {
+  const box = activeBox();
+  if (!box || !Number.isFinite(raw)) return;
+  commitActiveBox({ ...box, [edge]: clampEdge(edge, raw, box) });
+  afterBoxChange();
+}
+function moveBox(dx, dy) {
+  const box = activeBox(); if (!box) return;
+  const w = box.right - box.left; const h = box.bottom - box.top;
+  const left = clampN(box.left + dx, 0, CANVAS.W - w); const top = clampN(box.top + dy, 0, CANVAS.H - h);
+  commitActiveBox({ left, top, right: left + w, bottom: top + h });
+  afterBoxChange();
+}
+function scaleBox(factor) {
+  const box = activeBox(); if (!box) return;
+  const cx = (box.left + box.right) / 2; const cy = (box.top + box.bottom) / 2;
+  const hw = ((box.right - box.left) * factor) / 2; const hh = ((box.bottom - box.top) * factor) / 2;
+  commitActiveBox({ left: clampN(cx - hw, 0, CANVAS.W), top: clampN(cy - hh, 0, CANVAS.H), right: clampN(cx + hw, 0, CANVAS.W), bottom: clampN(cy + hh, 0, CANVAS.H) });
+  afterBoxChange();
+}
+function afterBoxChange() { renderControls(); renderPreview(); renderSelectedInfo(); }
+
+// ② 圖上拖拉：中央方塊移動、四邊四角 8 點非等比縮放（作用於目前所選的框）。
+function setupDrag(overlay) {
+  let active = null;
+  overlay.addEventListener("pointerdown", (e) => {
+    const handle = e.target?.dataset?.h;
+    const box = activeBox();
+    if (!handle || !box) return;
+    e.preventDefault();
+    try { overlay.setPointerCapture(e.pointerId); } catch { /* noop */ }
+    const p = pointerCanvas(e);
+    active = { handle, start: { ...box }, sx: p.x, sy: p.y };
+  });
+  overlay.addEventListener("pointermove", (e) => { if (active) applyDrag(active, pointerCanvas(e)); });
+  const end = () => { active = null; };
+  overlay.addEventListener("pointerup", end);
+  overlay.addEventListener("pointercancel", end);
+}
+function pointerCanvas(e) {
+  const rect = dom.previewDoll.getBoundingClientRect();
+  return {
+    x: clampN(((e.clientX - rect.left) / rect.width) * CANVAS.W, 0, CANVAS.W),
+    y: clampN(((e.clientY - rect.top) / rect.height) * CANVAS.H, 0, CANVAS.H)
+  };
+}
+function applyDrag(active, p) {
+  const { handle, start, sx, sy } = active;
+  let b = { ...start };
+  if (handle === "move") {
+    const w = start.right - start.left; const h = start.bottom - start.top;
+    const left = clampN(start.left + (p.x - sx), 0, CANVAS.W - w); const top = clampN(start.top + (p.y - sy), 0, CANVAS.H - h);
+    b = { left, top, right: left + w, bottom: top + h };
+  } else {
+    if (handle.includes("w")) b.left = clampN(p.x, 0, b.right - 4);
+    if (handle.includes("e")) b.right = clampN(p.x, b.left + 4, CANVAS.W);
+    if (handle.includes("n")) b.top = clampN(p.y, 0, b.bottom - 4);
+    if (handle.includes("s")) b.bottom = clampN(p.y, b.top + 4, CANVAS.H);
+  }
+  commitActiveBox(b);
+  afterBoxChange();
 }
 
 // ===== selection / model =====
 function equipSelectedItem() { state.outfit = { ...baseOutfit }; equipItem(selectedItem(), state.outfit); }
-
 function equipItem(item, outfit) {
   if (!item) return;
   if (item.type === "outfitSet") { Object.values(item.equips || {}).forEach((id) => equipItem(itemMap.get(id), outfit)); return; }
@@ -291,7 +283,6 @@ function equipItem(item, outfit) {
   if (item.type === "top" || item.type === "bottom") outfit.dress = "none";
   outfit[item.type] = item.id;
 }
-
 function itemWithWorkingBoxes(id) {
   const item = itemMap.get(id);
   if (!item) return null;
@@ -300,71 +291,59 @@ function itemWithWorkingBoxes(id) {
     layers: (item.layers || []).map((layer) => {
       const key = keyFromSrc(layer.src);
       const type = layer.type || item.type;
-      const targetBox = key ? itemBoxFor(key) : null;
-      return { ...layer, bounds: { ...(wardrobeLayerBoundsByType[type] || {}), targetBox } };
+      return { ...layer, bounds: { ...(wardrobeLayerBoundsByType[type] || {}), targetBox: key ? itemBoxFor(key) : null } };
     })
   };
 }
-
 function selectedItem() { return itemMap.get(state.selectedItemId) || null; }
 function selectedType() { const it = selectedItem(); return it?.layers?.[0]?.type || it?.type || ""; }
 function selectedKey() { const it = selectedItem(); const src = it?.layers?.[0]?.src; return src ? keyFromSrc(src) : ""; }
-
-function seedItemBox(key) {
-  return assetTargetOverrides[key] || assetContentBoxByPackName[key] || workingSafeBox[typeOfKey(key)] || fullCanvas();
-}
+function seedItemBox(key) { return assetTargetOverrides[key] || assetContentBoxByPackName[key] || workingSafeBox[typeOfKey(key)] || fullCanvas(); }
 function itemBoxFor(key) { if (!(key in workingItemBox)) workingItemBox[key] = { ...seedItemBox(key) }; return workingItemBox[key]; }
 function typeOfKey(key) {
   for (const item of shopItems) for (const layer of item.layers || []) if (keyFromSrc(layer.src) === key) return layer.type || item.type;
   return "";
 }
 
-function setSafeEdge(edge, raw) {
-  if (!Number.isFinite(raw)) return;
-  const type = selectedType(); if (!type) return;
-  const box = workingSafeBox[type];
-  const value = clampEdge(edge, raw, box);
-  workingSafeBox[type] = { ...box, [edge]: value };
-  dom[`safe${cap(edge)}`].value = value;
-  renderPreview(); renderOutput();
+// ===== export snippets + apply =====
+function buildRulesSnippet() {
+  return `export const wardrobeLayerBoundsByType = Object.freeze({\n${Object.keys(wardrobeLayerBoundsByType).map((type) => {
+    const orig = wardrobeLayerBoundsByType[type];
+    const render = hasRenderOffset(orig) ? `, ${boxLiteral(renderBoundsOf(orig))}` : "";
+    return `  ${type}: layerBounds(${boxLiteral(workingSafeBox[type])}${render})`;
+  }).join(",\n")}\n});`;
 }
-
-function setItemEdge(edge, raw) {
-  const key = selectedKey(); if (!key || !Number.isFinite(raw)) return;
-  const box = itemBoxFor(key);
-  const value = clampEdge(edge, raw, box);
-  workingItemBox[key] = { ...box, [edge]: value };
-  dom[`item${cap(edge)}`].value = value;
-  renderPreview(); renderOutput(); renderSelectedInfo();
+function buildOverridesSnippet() {
+  const entries = Object.keys(workingItemBox)
+    .filter((key) => !sameBox(workingItemBox[key], assetContentBoxByPackName[key] || null))
+    .sort()
+    .map((key) => `  ${JSON.stringify(key)}: ${boxLiteral(workingItemBox[key])}`);
+  return `export const assetTargetOverrides = Object.freeze({\n${entries.join(",\n")}${entries.length ? "\n" : ""}});`;
 }
-
-function moveItem(dx, dy) {
-  const key = selectedKey(); if (!key) return;
-  const box = itemBoxFor(key);
-  const w = box.right - box.left; const h = box.bottom - box.top;
-  const left = Math.max(0, Math.min(CANVAS.W - w, box.left + dx));
-  const top = Math.max(0, Math.min(CANVAS.H - h, box.top + dy));
-  workingItemBox[key] = { left, top, right: left + w, bottom: top + h };
-  renderAll();
+async function applyToFiles() {
+  dom.applyAll.disabled = true;
+  setApplyStatus("套用中…", "");
+  try {
+    const res = await fetch("/tool/apply-wardrobe", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rules: buildRulesSnippet(), overrides: buildOverridesSnippet() })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    setApplyStatus(`已套用 → ${data.written.join("、")}。重新整理遊戲即可看到。`, "ok");
+  } catch (error) {
+    setApplyStatus(`套用失敗：${error.message}（請確認 dev server 為 server.mjs）`, "err");
+  } finally {
+    dom.applyAll.disabled = false;
+  }
 }
-
-function scaleItem(factor) {
-  const key = selectedKey(); if (!key) return;
-  const box = itemBoxFor(key);
-  const cx = (box.left + box.right) / 2; const cy = (box.top + box.bottom) / 2;
-  const hw = ((box.right - box.left) * factor) / 2; const hh = ((box.bottom - box.top) * factor) / 2;
-  workingItemBox[key] = {
-    left: Math.round(Math.max(0, cx - hw)), top: Math.round(Math.max(0, cy - hh)),
-    right: Math.round(Math.min(CANVAS.W, cx + hw)), bottom: Math.round(Math.min(CANVAS.H, cy + hh))
-  };
-  renderAll();
-}
+function setApplyStatus(text, kind) { dom.applyStatus.textContent = text; dom.applyStatus.className = `apply-status${kind ? ` apply-status-${kind}` : ""}`; }
 
 // ===== helpers =====
 function q(sel) { return document.querySelector(sel); }
-function cap(s) { return s[0].toUpperCase() + s.slice(1); }
 function fullCanvas() { return { left: 0, top: 0, right: CANVAS.W, bottom: CANVAS.H }; }
 function keyFromSrc(src) { const m = /wardrobe\/([^/]+)\/assets\/layers\/([^/]+)\.webp/.exec(src || ""); return m ? `${m[1]}/${m[2]}` : ""; }
+function clampN(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 function clampEdge(edge, raw, box) {
   const limit = edge === "left" || edge === "right" ? CANVAS.W : CANVAS.H;
   let v = Math.max(0, Math.min(limit, Math.round(raw)));
@@ -385,20 +364,8 @@ function boxLiteral(b) { return `{ left: ${b.left}, top: ${b.top}, right: ${b.ri
 function renderBoundsOf(b) { return { left: b.left || 0, top: b.top || 0, right: b.right || 0, bottom: b.bottom || 0 }; }
 function hasRenderOffset(b) { return (b.left || 0) !== 0 || (b.top || 0) !== 0 || (b.right || 0) !== 0 || (b.bottom || 0) !== 0; }
 function r3(v) { return Math.round(v * 1000) / 1000; }
-function itemsForCategory(categoryId) {
-  const category = categories.find((c) => c.id === categoryId);
-  return category ? shopItems.filter((item) => category.types.includes(item.type)) : [];
-}
-function firstItemForCategory(categoryId) {
-  return itemsForCategory(categoryId).find((item) => item.storeId !== "starter") || itemsForCategory(categoryId)[0];
-}
+function itemsForCategory(categoryId) { const c = categories.find((x) => x.id === categoryId); return c ? shopItems.filter((item) => c.types.includes(item.type)) : []; }
+function firstItemForCategory(categoryId) { return itemsForCategory(categoryId).find((item) => item.storeId !== "starter") || itemsForCategory(categoryId)[0]; }
 function assetUrl(src) { if (!src) return ""; return src.startsWith("content-package/") || src.startsWith("content-base/") ? `../${src}` : src; }
 function priceText(item) { return Number.isFinite(item.cost) && item.cost > 0 ? `${item.cost} coins` : "Free"; }
-async function copy(area, button, label) {
-  await navigator.clipboard?.writeText(area.value);
-  button.textContent = "Copied";
-  window.setTimeout(() => { button.textContent = label; }, 900);
-}
-function escapeHtml(value = "") {
-  return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
-}
+function escapeHtml(value = "") { return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;"); }

@@ -24,17 +24,19 @@
         <div class="figure-frame" aria-hidden="true"></div>
         <div id="previewLabel" class="preview-label"></div>
         <span id="previewDoll" class="paper-doll adv-doll tuner-doll" data-doll="tuner"></span>
-        <div id="typeOverlay" class="type-overlay" aria-hidden="true"></div>
-        <div id="itemOverlay" class="item-overlay">
+        <div id="typeOverlay" class="box-overlay">
           <span class="drag-handle move" data-h="move"></span>
-          <span class="drag-handle n" data-h="n"></span>
-          <span class="drag-handle s" data-h="s"></span>
-          <span class="drag-handle w" data-h="w"></span>
-          <span class="drag-handle e" data-h="e"></span>
-          <span class="drag-handle nw" data-h="nw"></span>
-          <span class="drag-handle ne" data-h="ne"></span>
-          <span class="drag-handle sw" data-h="sw"></span>
-          <span class="drag-handle se" data-h="se"></span>
+          <span class="drag-handle n" data-h="n"></span><span class="drag-handle s" data-h="s"></span>
+          <span class="drag-handle w" data-h="w"></span><span class="drag-handle e" data-h="e"></span>
+          <span class="drag-handle nw" data-h="nw"></span><span class="drag-handle ne" data-h="ne"></span>
+          <span class="drag-handle sw" data-h="sw"></span><span class="drag-handle se" data-h="se"></span>
+        </div>
+        <div id="itemOverlay" class="box-overlay">
+          <span class="drag-handle move" data-h="move"></span>
+          <span class="drag-handle n" data-h="n"></span><span class="drag-handle s" data-h="s"></span>
+          <span class="drag-handle w" data-h="w"></span><span class="drag-handle e" data-h="e"></span>
+          <span class="drag-handle nw" data-h="nw"></span><span class="drag-handle ne" data-h="ne"></span>
+          <span class="drag-handle sw" data-h="sw"></span><span class="drag-handle se" data-h="se"></span>
         </div>
       </div>
     </section>
@@ -42,65 +44,51 @@
     <aside class="control-pane">
       <div id="selectedInfo" class="selected-info"></div>
 
-      <section class="control-section apply-section">
-        <button id="applyAll" type="button" class="apply-button">✓ 套用到檔案 (Apply)</button>
-        <div id="applyStatus" class="apply-status"></div>
-      </section>
-
       <section class="control-section">
-        <h2>① 類型框 <span class="hint">Type Box · 套同類</span></h2>
-        <p class="control-help">此類衣物的投影範圍（= safeBox）；單品框須落在其內，新素材預設投影到這裡。改了影響整個 <code>type</code>。</p>
-        <div class="bound-grid">
-          <label>Left <input id="safeLeft" type="number" step="1" min="0" max="512"></label>
-          <label>Top <input id="safeTop" type="number" step="1" min="0" max="768"></label>
-          <label>Right <input id="safeRight" type="number" step="1" min="0" max="512"></label>
-          <label>Bottom <input id="safeBottom" type="number" step="1" min="0" max="768"></label>
+        <h2>編輯對象</h2>
+        <div id="modeTabs" class="mode-tabs">
+          <button type="button" data-mode="type">① 類型框<span>套同類</span></button>
+          <button type="button" data-mode="item">② 單品框<span>僅此件</span></button>
         </div>
+        <p id="modeHelp" class="control-help"></p>
       </section>
 
       <section class="control-section">
-        <h2>② 單品框 <span class="hint">Item Box · 僅此件</span></h2>
-        <p class="control-help">這件衣物實際投影到人物的矩形（縮放＋位移）。素材會等比 fit 進此框；只動目前選取的單品。</p>
+        <h2 id="boxTitle">框 <span class="hint">canvas px</span></h2>
         <div class="bound-grid">
-          <label>Left <input id="itemLeft" type="number" step="1" min="0" max="512"></label>
-          <label>Top <input id="itemTop" type="number" step="1" min="0" max="768"></label>
-          <label>Right <input id="itemRight" type="number" step="1" min="0" max="512"></label>
-          <label>Bottom <input id="itemBottom" type="number" step="1" min="0" max="768"></label>
+          <label>Left <input id="boxLeft" type="number" step="1" min="0" max="512"></label>
+          <label>Top <input id="boxTop" type="number" step="1" min="0" max="768"></label>
+          <label>Right <input id="boxRight" type="number" step="1" min="0" max="512"></label>
+          <label>Bottom <input id="boxBottom" type="number" step="1" min="0" max="768"></label>
         </div>
         <div class="nudge-grid">
-          <button id="itemUp" type="button">Move Up</button>
-          <button id="itemDown" type="button">Move Down</button>
-          <button id="itemMoveLeft" type="button">Move Left</button>
-          <button id="itemMoveRight" type="button">Move Right</button>
-          <button id="itemBigger" type="button">Bigger</button>
-          <button id="itemSmaller" type="button">Smaller</button>
-          <button id="resetItem" type="button">Reset Item</button>
+          <button id="boxUp" type="button">Move Up</button>
+          <button id="boxDown" type="button">Move Down</button>
+          <button id="boxMoveLeft" type="button">Move Left</button>
+          <button id="boxMoveRight" type="button">Move Right</button>
+          <button id="boxBigger" type="button">Bigger</button>
+          <button id="boxSmaller" type="button">Smaller</button>
+          <button id="resetBox" type="button">Reset This Box</button>
         </div>
+        <p class="control-help">於左側預覽圖上直接拖拉：中央 ✛ 方塊移動、四邊四角 8 點縮放（非等比）。拖到的是上方所選的框。</p>
       </section>
 
       <section class="control-section">
         <h2>Test Image <span class="hint">任意尺寸</span></h2>
-        <p class="control-help">載入一張任意尺寸素材，預覽它 fit 進目前單品框的效果（驗證版型不一也能對位）。</p>
+        <p class="control-help">載入任意尺寸素材，預覽它 fit 進目前單品框的效果（驗證版型不一也能對位）。</p>
         <div class="test-grid">
           <label class="file-button">Load Image<input id="testImage" type="file" accept="image/*"></label>
           <button id="clearTest" type="button">Clear</button>
         </div>
         <div class="reset-grid">
-          <button id="resetType" type="button">Reset Type Box</button>
           <button id="resetAll" type="button">Reset All</button>
         </div>
       </section>
 
-      <section class="control-section">
-        <h2>Export ① 類型框 <span class="hint">→ rules.js</span></h2>
-        <textarea id="outRules" readonly spellcheck="false"></textarea>
-        <button id="copyRules" type="button">Copy rules.js safeBox</button>
-      </section>
-
-      <section class="control-section">
-        <h2>Export ② 單品框覆寫 <span class="hint">→ asset-target-overrides.js</span></h2>
-        <textarea id="outOverrides" readonly spellcheck="false"></textarea>
-        <button id="copyOverrides" type="button">Copy per-item overrides</button>
+      <section class="control-section apply-section">
+        <button id="applyAll" type="button" class="apply-button">✓ 套用到檔案 (Apply)</button>
+        <div id="applyStatus" class="apply-status"></div>
+        <p class="control-help">直接寫回 <code>rules.js</code>（① 類型框）與 <code>asset-target-overrides.js</code>（② 單品框，只含改過的件）；重新整理遊戲即可看到。</p>
       </section>
     </aside>
   </main>
