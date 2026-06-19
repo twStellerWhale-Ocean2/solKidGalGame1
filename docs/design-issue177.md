@@ -81,4 +81,48 @@
   * **GATE §1（機器判定）**：`node --check`（main.js／play-clock.js／selftests.js）／`docLint docs/design.md`（sol 0）／`repoLint .` 0；headless selftest PASS、console 0 error。補 selftest 斷言：①同一週期內對某場景打工答對後，該場景打工不可再作答／不再計酬（`cycle.jobsDone` 含該場景、入口層不出 practice）；②跨週期（`startSession`／`resumeFromRest`）後重置、該場景打工恢復可作答；③舊存檔（無 `jobsDone`）正規化為空、視為未答對；④聊天答對不寫入 `jobsDone`（D6）。
   * **GATE §5（實機 visual-qa）**：於某場景打工答對 → 該場景 Work 動作消失、其他動作（聊天／逛店等）仍在；同週期重訪該場景無法再打工；經休息→續玩後該場景打工恢復；中途重整（同週期）下架狀態保留。逐項截圖佐證。
 
-> §6 實作與驗證結果由 3code 於落地後回填（沿 #157／#166 焦點修正慣例，GATE 報告記於本節與 PR 留言）。
+## 6. 實作與驗證結果（3code，2026-06-19）
+
+> 沿 #101／#111／#120／#132／#150／#153／#157／#166 焦點修正慣例：本焦點變更之 GATE 驗證結果記於本節與 PR 留言。`docs/design.md` 未改（Option A，docLint sol 0）。
+
+### 實作（依 §3 D1–D6）
+
+* **D1／D4／D5（[game-engine/system/play-clock.js]）**：`emptyCycle()`／`startSession()` 之 `cycle` 增 `jobsDone: []`（與遊玩週期同生命週期、`startSession` 重置免費）；`normalizePlayLimit` 守新欄（非陣列→[]、僅留字串 id，舊存檔視為未答對）。
+* **D2／D3 記錄與查詢（[game-engine/system/play-clock.js]）**：新增 `markJobDone(state, place)`（去重 push）與 `isJobDone(state, place)`，與既有 `recordAnswer` 同慣例由 play-clock 持有 cycle 狀態。
+* **D2 記錄時機（[game-engine/main.js] `answerLesson`）**：於打工(job，`isChat=false`) 答對分支呼叫 `markJobDone(state, activeLesson.place)`；聊天分支不呼叫（D6）。即使本次無 coins（中文／第三次）仍下架（答對即下架）。
+* **D3 下架（[game-engine/flow/scene-actions.js]＋[game-engine/main.js]）**：`firstLayerActionsFor` 之 practice 改 `options.hasLessons && !options.jobDoneThisCycle`；`renderFirstLayerSceneActions` 呼叫處傳入 `jobDoneThisCycle: isJobDone(...)`。新增 main.js helper `jobAvailableForPlace(place)=hasLessonsForPlace(place) && !isJobDone(state, place)`，統一套用於六處 practice 呈現面：場景選單、目的地卡 badge、目的地卡說明文、地圖 travelActionLabel、openHintAdv 提示文、`openPracticeAction` 守門（已下架時改提示「本週期已完成、休息後再來」）。
+* **回歸守門（[game-engine/testing/selftests.js]）**：新增 `runJobCycleSelfTest`（`?selftest=job-cycle`）＋ main.js 測試 hook `firstLayerActionKeys(place)`（回傳場景第一層動作含下架判斷）與 playClock `markJobDone`／`isJobDone`／`normalizeLimit`。
+
+### GATE §1（機器判定，全綠）
+
+* `node --check`：`main.js`／`system/play-clock.js`／`flow/scene-actions.js`／`testing/selftests.js` → 全 OK。
+* `docLint docs/design.md`（sol）→ **0**；`repoLint .` → **0**。
+* headless selftest（獨立 context，注入時鐘）全 PASS、console **0 error**：
+  * **`job-cycle`（本案新增）**：`passed:true`——起始 practice 提供／jobsDone 空；聊天答對不計入 jobsDone 且不下架打工（D6）；打工答對 → 發 coins、`jobsDone:["kingHall"]`、`isJobDone` 真、practice **下架**、chat 仍在；休息後續玩（`resume`）→ jobsDone 重置、practice 復原（D4）；normalize 舊存檔（缺漏／雜質）→ 安全字串陣列（D5）。
+  * **回歸**：`chat`（聊天+心情/延長、打工+coins 分流）、`playtimer`（週期結算）、`scene-nav`（兩層導覽）、`map-avatar`（跨地圖渲染含 shop class）、`data-audit`（shopCount 11、各類 10）、`monkey`（300 步）→ 全 `passed:true`、errors `[]`。
+* 依賴安全：純靜態網站、無 package 相依，`npm audit` 不適用。
+
+### GATE §2 產品能力矩陣（摘要）
+
+| story/case | 產品能力 | 實作入口 | 測試 | 狀態 |
+|---|---|---|---|---|
+| spec#11（反洗 coins）／spec#9（週期） | 每場景打工每遊玩週期限答對計酬一次、答對後下架 | `answerLesson`→`markJobDone`；`firstLayerActionsFor` gate；`jobAvailableForPlace` 六面 | `job-cycle` selftest（步驟 0–4） | 已測通過 |
+| D4 重置 | 下一週期（休息後續玩）恢復可作答 | `startSession` 重置 `cycle.jobsDone` | `job-cycle` 步驟 3 | 已測通過 |
+| D5 相容 | 舊存檔無 jobsDone → 視為未答對 | `normalizePlayLimit` | `job-cycle` 步驟 4 | 已測通過 |
+| D6 範圍 | 聊天不套用、不計入 | `answerLesson` 聊天分支不呼叫 markJobDone | `job-cycle` 步驟 1 | 已測通過 |
+
+結論摘要：**4/4 核心能力已測通過、0 未實作、0 責任邊界不符**。
+
+### GATE §5（業界水準審查，異動 UI → 鏡頭 C 逐面）
+
+* **鏡頭 C（scene 選單，主要異動面）**：實機（真實帳號＋注入時鐘）驅動 castle `kingHall` 第一層場景選單——
+  * **下架前**：選單＝`["💬 Chat","💼 Work"]`、`isJobDone=false`、`jobsDone=[]`。
+  * **打工答對後（markJobDone 同真實答對分支之狀態變更）**：選單＝`["💬 Chat"]`——**Work 動作消失**、Chat 保留；`isJobDone=true`、`jobsDone=["kingHall"]`。console 0 error。
+* **其餘 practice 呈現面（map badge／destinationActionText／travelActionLabel／openHintAdv／openPracticeAction）**：統一走 `jobAvailableForPlace`；**打工未答對時與原 `hasLessonsForPlace` 完全等價（無回歸）**，僅「本週期已答對」時由「Practice/有打工」回退為一般呈現，與場景選單下架一致。
+* **跨畫面一致性**：下架僅針對打工(job)，Chat／逛店／退款／換裝等其他動作依各自旗標不受影響；下一週期一致恢復。
+* 分級：`務必要修` 0（核心下架已達成且 selftest 守門）；`可以接受`——下架採「Work 動作整個消失」（符合 Issue「題目消失／不可再作答」語意，USR §4③ 已確認）。截圖因本機 preview renderer 對本遊戲 canvas/語音持續佔用而逾時，改以 DOM 動作標籤＋狀態變更為證（GATE §4 合格證據：可操作流程＋資料狀態改變＋測試檔案＋runtime 紀錄）。
+* **結論：可宣稱完成。**
+
+### 交付物（test-summary.pdf 待 USR 裁決）
+
+* 沿 #157／#166 焦點修正慣例，本節即 GATE 報告；是否另產 A5 直向 [docs/test-summary.pdf] 待 USR 裁決。QA 驅動為暫存、不作交付物。

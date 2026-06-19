@@ -12,7 +12,8 @@ function clamp(value, min, max) {
 }
 
 function emptyCycle() {
-  return { coinsAtStart: 0, answered: 0, correct: 0 };
+  // jobsDone（issue #177）：本遊玩週期已答對之打工場景 id；使同場景打工於本週期下架、下一週期由 startSession 重置。
+  return { coinsAtStart: 0, answered: 0, correct: 0, jobsDone: [] };
 }
 
 export function defaultPlayLimit() {
@@ -46,7 +47,9 @@ export function normalizePlayLimit(candidate = {}) {
     cycle: {
       coinsAtStart: Number(cycle.coinsAtStart) || 0,
       answered: Math.max(0, Math.trunc(Number(cycle.answered)) || 0),
-      correct: Math.max(0, Math.trunc(Number(cycle.correct)) || 0)
+      correct: Math.max(0, Math.trunc(Number(cycle.correct)) || 0),
+      // issue #177：守舊存檔——缺漏或非陣列 → 空；僅留字串場景 id（舊存檔視為本週期尚未答對任何打工）。
+      jobsDone: Array.isArray(cycle.jobsDone) ? cycle.jobsDone.filter((id) => typeof id === "string") : []
     }
   };
 }
@@ -86,7 +89,7 @@ export function startSession(state, now) {
   const maxMinutes = Math.max(pl.playMinutes, pl.playMaxMinutes || pl.playMinutes);
   pl.sessionMaxEndsAt = now + maxMinutes * MINUTE_MS;
   pl.restEndsAt = 0;
-  pl.cycle = { coinsAtStart: Number(state.coins) || 0, answered: 0, correct: 0 };
+  pl.cycle = { coinsAtStart: Number(state.coins) || 0, answered: 0, correct: 0, jobsDone: [] };
 }
 
 // 心情延長當次遊玩（spec#11，solCase#14.1／sysCase#11.3）：依心情換算的分鐘數延長 sessionEndsAt，
@@ -152,6 +155,21 @@ export function recordAnswer(state, correct) {
   if (!pl || !pl.cycle) return;
   pl.cycle.answered += 1;
   if (correct) pl.cycle.correct += 1;
+}
+
+// 記錄本遊玩週期某場景之打工已答對（issue #177，spec#11 反洗 coins）：使同場景打工於本週期下架、
+// 不可再作答；下一週期由 startSession 重置。僅供打工(job) 答對時呼叫——聊天(chat) 不計（不發 coins）。
+export function markJobDone(state, place) {
+  const pl = state.playLimit;
+  if (!pl || !pl.cycle || !place) return;
+  if (!Array.isArray(pl.cycle.jobsDone)) pl.cycle.jobsDone = [];
+  if (!pl.cycle.jobsDone.includes(place)) pl.cycle.jobsDone.push(place);
+}
+
+// 本遊玩週期內，該場景之打工是否已答對（已下架）。
+export function isJobDone(state, place) {
+  const jobsDone = state.playLimit?.cycle?.jobsDone;
+  return Array.isArray(jobsDone) && jobsDone.includes(place);
 }
 
 // 推進一拍（ticker 呼叫）：依 now 套用狀態轉換，回傳事件供 UI 反應。
