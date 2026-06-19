@@ -142,29 +142,41 @@ button.active {
   aspect-ratio: 512 / 768;
 }
 
-/* 目標矩形 overlay：以 stage 百分比定位，與 paper-doll layer 的 canvas 相對 inset 對齊（#176）。 */
-.target-overlay {
+/* 兩層框 overlay：以 stage 百分比定位，與 paper-doll layer 的 canvas 相對 inset 對齊（#176）。
+   ① 類型框 .type-overlay（faint 虛線灰）＝該類 safeBox；② 單品框 .item-overlay（實線粉）＝該件 targetBox。 */
+.type-overlay,
+.item-overlay {
   position: absolute;
-  z-index: 15;
-  border: 1.5px dashed #cc4c87;
-  background: rgba(204, 76, 135, 0.08);
-  border-radius: 3px;
   pointer-events: none;
+  border-radius: 3px;
 }
 
-.target-overlay::after {
-  content: attr(data-type) " target box";
+.type-overlay {
+  z-index: 14;
+  border: 1.5px dashed rgba(91, 62, 100, 0.5);
+  background: rgba(91, 62, 100, 0.05);
+}
+
+.item-overlay {
+  z-index: 16;
+  border: 2px solid #cc4c87;
+  background: rgba(204, 76, 135, 0.08);
+}
+
+.type-overlay::after,
+.item-overlay::after {
+  content: attr(data-label);
   position: absolute;
   left: 0;
-  bottom: 100%;
-  margin-bottom: 3px;
   padding: 1px 6px;
   border-radius: 4px;
   white-space: nowrap;
   font-size: 11px;
   color: white;
-  background: #cc4c87;
 }
+
+.type-overlay::after { top: 100%; margin-top: 3px; background: #7a6080; }
+.item-overlay::after { bottom: 100%; margin-bottom: 3px; background: #cc4c87; }
 
 /* 測試圖層：使用 game renderer 同一 .paper-doll-layer 樣式，疊在最上層。 */
 .paper-doll-layer-type-test {
@@ -307,4 +319,50 @@ button.active {
 
 .file-button input {
   display: none;
+}
+
+.selected-info {
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fff0f6;
+  border: 1px solid rgba(204, 76, 135, 0.22);
+  display: grid;
+  gap: 3px;
+  font-size: 13px;
+}
+
+.selected-info strong {
+  font-size: 14px;
+}
+
+.selected-info span {
+  color: #6f5b73;
+  font-size: 12px;
+}
+
+.selected-info code {
+  font-size: 11px;
+  background: rgba(91, 62, 100, 0.08);
+  padding: 0 4px;
+  border-radius: 3px;
+}
+
+.selected-info em {
+  color: #cc4c87;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.reset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.bound-grid input:disabled,
+.nudge-grid button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
