@@ -1573,6 +1573,102 @@ function imageNaturalSize(src) {
   });
 }
 
+function sceneBackgroundRefs(api) {
+  const refs = [];
+  Object.values(api.areaRegistry).forEach((area) => {
+    (area.locations || []).forEach((hotspot) => {
+      const config = api.sceneConfigFor(hotspot);
+      if (!config.sceneArt?.src) return;
+      refs.push({
+        area: area.id,
+        id: hotspot.id,
+        label: hotspot.label,
+        src: config.sceneArt.src,
+        atlas: config.sceneArt.atlas || ""
+      });
+    });
+  });
+  return uniqueBy(refs, (item) => item.src).sort((a, b) => `${a.area}/${a.id}`.localeCompare(`${b.area}/${b.id}`));
+}
+
+function imageSceneContentMetrics(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      const sampleSize = 160;
+      const canvas = document.createElement("canvas");
+      canvas.width = sampleSize;
+      canvas.height = sampleSize;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(image, 0, 0, sampleSize, sampleSize);
+      const pixels = ctx.getImageData(0, 0, sampleSize, sampleSize).data;
+      const lumaAt = (x, y) => {
+        const offset = ((y * sampleSize + x) * 4);
+        return (pixels[offset] * 0.2126) + (pixels[offset + 1] * 0.7152) + (pixels[offset + 2] * 0.0722);
+      };
+      const bandMetric = (name, y0Ratio, y1Ratio) => {
+        const y0 = Math.max(0, Math.floor(sampleSize * y0Ratio));
+        const y1 = Math.min(sampleSize, Math.ceil(sampleSize * y1Ratio));
+        let count = 0;
+        let sum = 0;
+        let sumSq = 0;
+        let edgeSum = 0;
+        let edgeCount = 0;
+        for (let y = y0; y < y1; y += 1) {
+          for (let x = 0; x < sampleSize; x += 1) {
+            const luma = lumaAt(x, y);
+            count += 1;
+            sum += luma;
+            sumSq += luma * luma;
+            if (x + 1 < sampleSize) {
+              edgeSum += Math.abs(luma - lumaAt(x + 1, y));
+              edgeCount += 1;
+            }
+            if (y + 1 < y1) {
+              edgeSum += Math.abs(luma - lumaAt(x, y + 1));
+              edgeCount += 1;
+            }
+          }
+        }
+        const mean = count ? sum / count : 0;
+        const variance = count ? Math.max(0, (sumSq / count) - (mean * mean)) : 0;
+        return {
+          name,
+          lumaMean: Number(mean.toFixed(2)),
+          lumaVariance: Number(variance.toFixed(2)),
+          edgeEnergy: Number((edgeCount ? edgeSum / edgeCount : 0).toFixed(2))
+        };
+      };
+      const top = bandMetric("top", 0, 0.18);
+      const middle = bandMetric("middle", 0.34, 0.66);
+      const bottom = bandMetric("bottom", 0.82, 1);
+      const ratio = (value, base) => Number((value / Math.max(base, 0.01)).toFixed(2));
+      const topEdgeRatio = ratio(top.edgeEnergy, middle.edgeEnergy);
+      const bottomEdgeRatio = ratio(bottom.edgeEnergy, middle.edgeEnergy);
+      const topVarianceRatio = ratio(top.lumaVariance, middle.lumaVariance);
+      const bottomVarianceRatio = ratio(bottom.lumaVariance, middle.lumaVariance);
+      const softBands = [
+        topEdgeRatio < 0.55 && topVarianceRatio < 0.65 ? "top" : "",
+        bottomEdgeRatio < 0.55 && bottomVarianceRatio < 0.65 ? "bottom" : ""
+      ].filter(Boolean);
+      resolve({
+        sampleSize,
+        bands: { top, middle, bottom },
+        ratios: { topEdgeRatio, bottomEdgeRatio, topVarianceRatio, bottomVarianceRatio },
+        review: {
+          status: softBands.length ? "review-soft-band" : "ok-or-depth",
+          softBands,
+          reason: softBands.length
+            ? `${softBands.join("+")} band has much lower edge detail and variance than the middle band`
+            : "top/bottom detail stays within heuristic tolerance"
+        }
+      });
+    };
+    image.onerror = () => reject(new Error(`Could not load ${src}`));
+    image.src = src;
+  });
+}
+
 async function collectMapContractAudit(api, errors) {
   const contracts = [];
   const mapEntries = [
@@ -1630,31 +1726,21 @@ async function collectMapContractAudit(api, errors) {
 async function collectSceneBackgroundContractAudit(api, errors = []) {
   const target = { width: 1024, height: 1024 };
   const warnings = [];
-  const refs = [];
-  Object.values(api.areaRegistry).forEach((area) => {
-    (area.locations || []).forEach((hotspot) => {
-      const config = api.sceneConfigFor(hotspot);
-      if (!config.sceneArt?.src) return;
-      refs.push({
-        area: area.id,
-        id: hotspot.id,
-        label: hotspot.label,
-        src: config.sceneArt.src,
-        atlas: config.sceneArt.atlas || ""
-      });
-    });
-  });
   const pending = [];
   const checked = [];
-  for (const ref of uniqueBy(refs, (item) => item.src)) {
+  for (const ref of sceneBackgroundRefs(api)) {
     try {
       const metrics = await imageNaturalSize(ref.src);
       const matchesTarget = metrics.width === target.width && metrics.height === target.height;
-      const record = { ...ref, ...metrics, target, status: matchesTarget ? "passed" : "failed" };
+      const contentMetrics = matchesTarget ? await imageSceneContentMetrics(ref.src) : null;
+      const record = { ...ref, ...metrics, target, contentMetrics, status: matchesTarget ? "passed" : "failed" };
       checked.push(record);
       if (!matchesTarget) {
         pending.push(record);
         errors.push(`${ref.area}/${ref.id} scene background is ${metrics.width}x${metrics.height}, expected ${target.width}x${target.height}`);
+      }
+      if (contentMetrics?.review?.status === "review-soft-band") {
+        warnings.push(`${ref.area}/${ref.id} scene background needs human review: ${contentMetrics.review.reason}`);
       }
     } catch (error) {
       const record = { ...ref, target, status: "failed", error: error.message };
@@ -1667,6 +1753,8 @@ async function collectSceneBackgroundContractAudit(api, errors = []) {
     status: pending.length ? "failed" : "passed",
     checkedCount: checked.length,
     pendingCount: pending.length,
+    reviewCount: checked.filter((item) => item.contentMetrics?.review?.status === "review-soft-band").length,
+    checked,
     pending,
     warnings
   };
@@ -1945,6 +2033,18 @@ function runVisualQa(api) {
     return;
   }
 
+  if (surface === "scene-art-contact-sheet") {
+    api.render();
+    renderSceneArtContactSheetQa(api);
+    return;
+  }
+
+  if (surface === "scene-art") {
+    api.render();
+    api.openSceneAdv(hotspot);
+    return;
+  }
+
   // issue #131：選角畫面（粉彩色盤＋調色器＋背景花紋選擇器＋選角卡半透明識別底色）視覺 QA surface。
   if (surface === "character-select") {
     api.render();
@@ -2215,6 +2315,157 @@ function renderPaperDollOutfitQa(api, params) {
   document.head.append(style);
   document.body.append(surface);
   api.render();
+}
+
+function renderSceneArtContactSheetQa(api) {
+  document.querySelector("#sceneArtContactSheetQa")?.remove();
+  document.querySelector("#sceneArtContactSheetQaStyle")?.remove();
+  const refs = sceneBackgroundRefs(api);
+  const surface = document.createElement("main");
+  surface.id = "sceneArtContactSheetQa";
+  surface.innerHTML = `
+    <header class="scene-art-contact-header">
+      <h1>Scene Art QA</h1>
+      <p>${refs.length} runtime scene backgrounds · target 1024x1024 WebP</p>
+    </header>
+    <section class="scene-art-contact-grid">
+      ${refs.map((ref) => `
+        <article class="scene-art-contact-card" data-src="${ref.src}">
+          <img src="${ref.src}" alt="${ref.label || ref.id}" decoding="async">
+          <div class="scene-art-contact-meta">
+            <strong>${ref.area}/${ref.id}</strong>
+            <span>${ref.label || ""}</span>
+            <small data-role="scene-art-metrics">measuring</small>
+          </div>
+        </article>
+      `).join("")}
+    </section>
+  `;
+  const style = document.createElement("style");
+  style.id = "sceneArtContactSheetQaStyle";
+  style.textContent = `
+    #sceneArtContactSheetQa {
+      position: absolute;
+      inset: 0;
+      z-index: 9999;
+      min-height: 100vh;
+      overflow: auto;
+      padding: 18px;
+      background: #f4f0e8;
+      color: #2f2a25;
+      font: 13px/1.35 system-ui, sans-serif;
+    }
+    .scene-art-contact-header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0 14px;
+      background: #f4f0e8;
+    }
+    .scene-art-contact-header h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+    .scene-art-contact-header p {
+      margin: 0;
+      color: #655d55;
+      font-weight: 700;
+    }
+    .scene-art-contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+    }
+    .scene-art-contact-card {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      overflow: hidden;
+      border: 1px solid rgba(55, 45, 36, 0.18);
+      border-radius: 8px;
+      background: #fffaf2;
+      box-shadow: 0 8px 18px rgba(47, 42, 37, 0.08);
+    }
+    .scene-art-contact-card img {
+      width: 100%;
+      aspect-ratio: 1;
+      display: block;
+      object-fit: cover;
+      background: #e7dfd4;
+    }
+    .scene-art-contact-meta {
+      display: grid;
+      gap: 2px;
+      padding: 8px;
+    }
+    .scene-art-contact-meta strong,
+    .scene-art-contact-meta span,
+    .scene-art-contact-meta small {
+      overflow-wrap: anywhere;
+    }
+    .scene-art-contact-meta strong {
+      font-size: 12px;
+    }
+    .scene-art-contact-meta span {
+      color: #74685d;
+      min-height: 18px;
+    }
+    .scene-art-contact-meta small {
+      color: #4e5d42;
+      font-weight: 800;
+    }
+    .scene-art-contact-card[data-review="review-soft-band"] {
+      outline: 3px solid #c77f35;
+      outline-offset: -3px;
+    }
+    .scene-art-contact-card[data-review="review-soft-band"] small {
+      color: #9b5519;
+    }
+    @media (max-width: 560px) {
+      #sceneArtContactSheetQa { padding: 10px; }
+      .scene-art-contact-header {
+        display: grid;
+        gap: 4px;
+      }
+      .scene-art-contact-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+    }
+  `;
+  document.head.append(style);
+  document.body.append(surface);
+  Promise.all(refs.map(async (ref) => {
+    const card = surface.querySelector(`.scene-art-contact-card[data-src="${CSS.escape(ref.src)}"]`);
+    const target = card?.querySelector('[data-role="scene-art-metrics"]');
+    try {
+      const natural = await imageNaturalSize(ref.src);
+      const content = await imageSceneContentMetrics(ref.src);
+      if (card) card.dataset.review = content.review.status;
+      if (target) {
+        target.textContent = `${natural.width}x${natural.height} · ${content.review.status} · edge ${content.ratios.topEdgeRatio}/${content.ratios.bottomEdgeRatio}`;
+      }
+    } catch (error) {
+      if (card) card.dataset.review = "failed";
+      if (target) target.textContent = error.message;
+    }
+  })).then(() => {
+    const report = document.createElement("pre");
+    report.id = "sceneArtContactSheetMetrics";
+    report.hidden = true;
+    report.style.display = "none";
+    report.textContent = JSON.stringify({
+      total: refs.length,
+      review: [...surface.querySelectorAll('.scene-art-contact-card[data-review="review-soft-band"]')]
+        .map((card) => card.querySelector("strong")?.textContent || card.dataset.src)
+    });
+    document.body.prepend(report);
+  });
 }
 
 function selectShopCategoryForItem(api, hotspot, item) {
