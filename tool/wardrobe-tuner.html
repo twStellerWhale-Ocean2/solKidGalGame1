@@ -37,6 +37,13 @@
         <div class="figure-frame" aria-hidden="true"></div>
         <div id="previewLabel" class="preview-label"></div>
         <span id="previewDoll" class="paper-doll adv-doll tuner-doll" data-doll="tuner"></span>
+        <div id="typeOverlay" class="box-overlay">
+          <span class="drag-handle move" data-h="move"></span>
+          <span class="drag-handle n" data-h="n"></span><span class="drag-handle s" data-h="s"></span>
+          <span class="drag-handle w" data-h="w"></span><span class="drag-handle e" data-h="e"></span>
+          <span class="drag-handle nw" data-h="nw"></span><span class="drag-handle ne" data-h="ne"></span>
+          <span class="drag-handle sw" data-h="sw"></span><span class="drag-handle se" data-h="se"></span>
+        </div>
         <div id="itemOverlay" class="box-overlay">
           <span class="drag-handle move" data-h="move"></span>
           <span class="drag-handle n" data-h="n"></span><span class="drag-handle s" data-h="s"></span>
@@ -47,12 +54,19 @@
       </div>
     </section>
 
+    <div class="col-resizer col-resizer-right" aria-hidden="true" title="拖曳調整欄寬"></div>
+
     <aside class="control-pane">
       <div id="selectedInfo" class="selected-info"></div>
 
       <section class="control-section">
-        <h2>衣物框</h2>
-        <p class="control-help">在左側預覽圖上直接拖拉綠色框：中央 ✛ 方塊移動、四邊四角 8 點縮放（非等比，寬高可獨立）。</p>
+        <h2>編輯對象</h2>
+        <div id="modeTabs" class="mode-tabs">
+          <button type="button" data-mode="type">① 類型框<span>套同類</span></button>
+          <button type="button" data-mode="item">② 單品框<span>僅此件</span></button>
+        </div>
+        <p id="modeHelp" class="control-help"></p>
+        <p class="control-help">在左側預覽圖上直接拖拉所選的框：中央 ✛ 方塊移動、四邊四角 8 點縮放（非等比）。</p>
       </section>
 
       <section class="control-section apply-section">
