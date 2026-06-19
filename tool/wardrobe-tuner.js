@@ -10,6 +10,7 @@ import {
 import { assetContentBoxByPackName } from "../content-package/wardrobe/_shared/asset-content-box.generated.js";
 import { assetTargetOverrides } from "../content-package/wardrobe/_shared/asset-target-overrides.js";
 import { createPaperDollRenderer } from "../game-engine/render/paper-doll.js";
+import { cornerOffsets, hasWarp } from "../game-engine/render/warp.js";
 
 // 主畫面契約（characterScaleContract）。所有框以此 512x768 畫布座標表示（#176）。
 const CANVAS = { W: 512, H: 768 };
@@ -140,11 +141,11 @@ function renderModeTabs() {
   [...dom.modeTabs.querySelectorAll("button")].forEach((b) => b.classList.toggle("active", b.dataset.mode === state.editMode));
   dom.modeHelp.textContent = state.editMode === "type"
     ? "編輯此類投影範圍（藍框＝safeBox），套用同類；單品框須落在其內。"
-    : "編輯這一件投影矩形（綠框）：邊中點縮放、中央移動；四角拖拉調上/下邊寬（梯形拉伸）。";
+    : "編輯這一件投影框（綠框）：邊中點縮放、中央移動；四角各自拖拉自由變形（任意四邊形）。";
 }
 
 function renderSummary() {
-  dom.summaryLine.textContent = `${itemsShown().length}/${shopItems.length} items · 素材包＋類型多選篩選 · 拖綠框（角＝梯形）· 滾輪縮放 · canvas ${CANVAS.W}×${CANVAS.H}`;
+  dom.summaryLine.textContent = `${itemsShown().length}/${shopItems.length} items · 素材包＋類型多選篩選 · 拖綠框（角＝自由變形）· 滾輪縮放 · canvas ${CANVAS.W}×${CANVAS.H}`;
 }
 
 function renderCategoryFilter() {
@@ -303,14 +304,14 @@ function setOverlay(el, box, label, active) {
   el.style.display = "block";
   el.style.inset = `${pct.top}% ${pct.right}% ${pct.bottom}% ${pct.left}%`;
   el.dataset.label = label || "";
-  // 梯形：把上/下角控制點移到梯形角（綠框＝單品框才有梯形；矩形時即回到四角）。
-  const w = box.right - box.left;
-  const tf = w ? ((Number(box.topInset) || 0) / w) * 100 : 0;
-  const bf = w ? ((Number(box.bottomInset) || 0) / w) * 100 : 0;
-  positionCorner(el, "nw", `${tf}%`, "0");
-  positionCorner(el, "ne", `${100 - tf}%`, "0");
-  positionCorner(el, "sw", `${bf}%`, "100%");
-  positionCorner(el, "se", `${100 - bf}%`, "100%");
+  // 四角形變：把四角控制點移到實際角位（綠框＝單品框可各自自由變形；無形變時即回到矩形四角）。
+  const w = (box.right - box.left) || 1;
+  const h = (box.bottom - box.top) || 1;
+  const o = cornerOffsets(box);
+  positionCorner(el, "nw", `${(o.nw[0] / w) * 100}%`, `${(o.nw[1] / h) * 100}%`);
+  positionCorner(el, "ne", `${100 + (o.ne[0] / w) * 100}%`, `${(o.ne[1] / h) * 100}%`);
+  positionCorner(el, "sw", `${(o.sw[0] / w) * 100}%`, `${100 + (o.sw[1] / h) * 100}%`);
+  positionCorner(el, "se", `${100 + (o.se[0] / w) * 100}%`, `${100 + (o.se[1] / h) * 100}%`);
 }
 function positionCorner(el, cls, left, top) {
   const h = el.querySelector(`.drag-handle.${cls}`);
@@ -325,15 +326,22 @@ function activeBox() {
 }
 function commitActiveBox(box) {
   const b = { left: Math.round(box.left), top: Math.round(box.top), right: Math.round(box.right), bottom: Math.round(box.bottom) };
-  const halfMax = (b.right - b.left) / 2 - 2;
-  if (Number(box.topInset) > 0) b.topInset = Math.round(clampN(box.topInset, 0, halfMax));
-  if (Number(box.bottomInset) > 0) b.bottomInset = Math.round(clampN(box.bottomInset, 0, halfMax));
-  if (state.editMode === "type") { const t = selectedType(); if (t) workingSafeBox[t] = b; }
-  else { const k = selectedKey(); if (k) workingItemBox[k] = b; }
+  if (state.editMode === "type") { const t = selectedType(); if (t) workingSafeBox[t] = b; return; }
+  if (hasWarp(box)) {
+    const o = cornerOffsets(box);
+    b.corners = { nw: roundPair(o.nw), ne: roundPair(o.ne), sw: roundPair(o.sw), se: roundPair(o.se) };
+  }
+  const k = selectedKey(); if (k) workingItemBox[k] = b;
 }
+// 取得 box 正規化後的四角偏移副本（含舊 inset 一律轉成 corners），供拖拉與提交使用。
+function cornersOf(box) {
+  const o = cornerOffsets(box);
+  return { nw: [...o.nw], ne: [...o.ne], sw: [...o.sw], se: [...o.se] };
+}
+function roundPair(p) { return [Math.round(p[0]), Math.round(p[1])]; }
 function afterBoxChange() { renderPreview(); renderSelectedInfo(); }
 
-// ② 圖上拖拉：中央方塊移動、四邊四角 8 點非等比縮放（作用於目前所選的框）。
+// ② 圖上拖拉：中央移動、四邊中點非等比縮放；四角在單品框＝自由變形、在類型框＝角落縮放。
 function setupDrag(overlay) {
   let active = null;
   overlay.addEventListener("pointerdown", (e) => {
@@ -361,17 +369,18 @@ function applyDrag(active, p) {
   const { handle, start, sx, sy } = active;
   let b = { ...start };
   const corner = handle.length === 2; // nw/ne/sw/se
-  const halfMax = (start.right - start.left) / 2 - 2;
   if (handle === "move") {
     const w = start.right - start.left; const h = start.bottom - start.top;
     const left = clampN(start.left + (p.x - sx), 0, CANVAS.W - w); const top = clampN(start.top + (p.y - sy), 0, CANVAS.H - h);
     b = { ...start, left, top, right: left + w, bottom: top + h };
   } else if (corner && state.editMode === "item") {
-    // 梯形：角落控制點調上/下邊內縮量（左右對稱），不改 bounding box。
-    if (handle === "nw") b.topInset = clampN(p.x - start.left, 0, halfMax);
-    else if (handle === "ne") b.topInset = clampN(start.right - p.x, 0, halfMax);
-    else if (handle === "sw") b.bottomInset = clampN(p.x - start.left, 0, halfMax);
-    else if (handle === "se") b.bottomInset = clampN(start.right - p.x, 0, halfMax);
+    // 四角形變：角落控制點可各自往任意方向拖拉，成任意四邊形（不改 bounding box）。
+    const c = cornersOf(start);
+    const ox = handle.includes("e") ? p.x - start.right : p.x - start.left;
+    const oy = handle.includes("s") ? p.y - start.bottom : p.y - start.top;
+    c[handle] = [ox, oy];
+    delete b.topInset; delete b.bottomInset;
+    b.corners = c;
   } else {
     if (handle.includes("w")) b.left = clampN(p.x, 0, b.right - 4);
     if (handle.includes("e")) b.right = clampN(p.x, b.left + 4, CANVAS.W);
@@ -463,15 +472,20 @@ function insetPct(box) {
   };
 }
 function sameBox(a, b) {
-  return !!a && !!b && a.left === b.left && a.top === b.top && a.right === b.right && a.bottom === b.bottom
-    && (a.topInset || 0) === (b.topInset || 0) && (a.bottomInset || 0) === (b.bottomInset || 0);
+  if (!a || !b) return false;
+  if (a.left !== b.left || a.top !== b.top || a.right !== b.right || a.bottom !== b.bottom) return false;
+  const oa = cornerOffsets(a); const ob = cornerOffsets(b);
+  return ["nw", "ne", "sw", "se"].every((k) => oa[k][0] === ob[k][0] && oa[k][1] === ob[k][1]);
 }
 function boxLiteral(b) {
-  const extra = [];
-  if (Number(b.topInset) > 0) extra.push(`topInset: ${b.topInset}`);
-  if (Number(b.bottomInset) > 0) extra.push(`bottomInset: ${b.bottomInset}`);
-  return `{ left: ${b.left}, top: ${b.top}, right: ${b.right}, bottom: ${b.bottom}${extra.length ? `, ${extra.join(", ")}` : ""} }`;
+  let extra = "";
+  if (hasWarp(b)) {
+    const o = cornerOffsets(b);
+    extra = `, corners: { nw: ${fmtPair(o.nw)}, ne: ${fmtPair(o.ne)}, sw: ${fmtPair(o.sw)}, se: ${fmtPair(o.se)} }`;
+  }
+  return `{ left: ${b.left}, top: ${b.top}, right: ${b.right}, bottom: ${b.bottom}${extra} }`;
 }
+function fmtPair(p) { return `[${Math.round(p[0])}, ${Math.round(p[1])}]`; }
 function renderBoundsOf(b) { return { left: b.left || 0, top: b.top || 0, right: b.right || 0, bottom: b.bottom || 0 }; }
 function hasRenderOffset(b) { return (b.left || 0) !== 0 || (b.top || 0) !== 0 || (b.right || 0) !== 0 || (b.bottom || 0) !== 0; }
 function r3(v) { return Math.round(v * 1000) / 1000; }

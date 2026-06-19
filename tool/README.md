@@ -36,9 +36,12 @@ Drag the selected box directly on the figure:
 
 - the centre **✛** square to move it,
 - the four edge-midpoint handles to resize (non-uniform),
-- on the green item box, the **four corner handles taper the top/bottom edge
-  width** — an isosceles-trapezoid warp (left/right symmetric) applied to the art
-  via a projective transform.
+- on the green item box, the **four corner handles drag freely in both axes**
+  (issue #191) — each corner moves independently, warping the art into an arbitrary
+  quadrilateral via a projective transform (no longer limited to a left/right
+  symmetric trapezoid). Exported as `corners: { nw:[dx,dy], ne, sw, se }` (px
+  offsets from the box corners); legacy `topInset`/`bottomInset` entries are still
+  read and converted on edit.
 
 The trim baseline in `asset-content-box.generated.js` is never hand-edited, so
 re-running the trim script will not clobber your overrides. A per-item box may
