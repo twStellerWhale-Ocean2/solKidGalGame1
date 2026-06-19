@@ -152,6 +152,9 @@ const VOICE_ASSIGNMENT_KEY = "luminara-princess-english-voice"; // issue #134 de
 const SPEECH_DIAGNOSTICS_MAX = 80;
 let shopCategory = "dresses";
 let activeShopHotspot = null;
+// issue #164：本次場景造訪已播歡迎詞之 hotspot id。同一造訪內返回第一層場景選單不重播歡迎詞，
+// 離場（closeAdv／openArea 場景切換）清空，使下次造訪重新播放一次。為暫態、不持久化存檔。
+let sceneVisitWelcomeId = "";
 let wardrobeCategory = "dresses";
 let princessExpression = "normal";
 let npcExpression = "normal";
@@ -469,6 +472,8 @@ function openArea(areaId) {
     elements.statusMessage.textContent = `${area?.label || "This area"} is not open yet.`;
     return;
   }
+  // issue #164：場景切換亦結束本次造訪——清空歡迎詞旗標，使進入新區地點時重新播放一次歡迎詞。
+  sceneVisitWelcomeId = "";
   state.area = areaId;
   ensureAreaPosition(areaId);
   areaMapViewportController.requestCenter(areaId);
@@ -2023,6 +2028,9 @@ function openAdvBase(hotspot, mode) {
 
 function openSceneAdv(hotspot) {
   if (!hotspot) return;
+  // issue #164：回到第一層場景選單（自第二層返回之共同收口）時即時收束前段語音、改接當下話題；
+  // 初次進場時無語音播放、為冪等 no-op，不影響隨後之歡迎詞播放。
+  cutSceneVoiceOnSwitch();
   if (hotspot.kind === "room") {
     openRoomScene(hotspot);
     return;
@@ -2035,7 +2043,11 @@ function openSceneAdv(hotspot) {
   elements.advPrompt.textContent = "Choose what to do here.";
   renderFirstLayerSceneActions(hotspot);
   scheduleAdvFocus(0);
-  speak(elements.advLine.textContent, npcVoiceFor(hotspot), { source: "npc-scene" });
+  // issue #164：同一場景每次造訪只播一次歡迎詞——首次進場播放並記旗標，造訪內返回第一層不重播（旗標於離場清空）。
+  if (sceneVisitWelcomeId !== hotspot.id) {
+    sceneVisitWelcomeId = hotspot.id;
+    speak(elements.advLine.textContent, npcVoiceFor(hotspot), { source: "npc-scene" });
+  }
 }
 
 function openRoomScene(hotspot = hotspotById("princessRoom")) {
@@ -2055,7 +2067,16 @@ function renderFirstLayerSceneActions(hotspot) {
   });
 }
 
+// issue #164：場景內第一↔二層切換之共同收束——進入第二層子互動或返回第一層場景選單時即時停止前段語音、
+// 改接當下話題（沿用 #156 之即時 cancel() 降級：Web Speech API 無法對進行中語句音量淡出，僅 cancel() 可停）。
+// 冪等：無語音播放時不動作、不記診斷；收束於當下情境 speak() 之前完成，不誤殺當下話題語音。
+function cutSceneVoiceOnSwitch() {
+  if (speechManager.isSpeaking()) speechManager.stop("scene-switch");
+}
+
 function handleFirstLayerSceneAction(action, hotspot) {
+  // issue #164：進入第二層子互動前先收束第一層前段語音、改接當下話題；離場（leave）由 closeAdv 以 scene-leave 收束、不在此重複。
+  if (action.handlerKey !== "leave") cutSceneVoiceOnSwitch();
   switch (action.handlerKey) {
     case "wardrobe":
       openWardrobeDetail(action.category);
@@ -2869,6 +2890,8 @@ function closeAdv() {
   // 避免語音殘留跨場景。Web Speech API 無法對進行中語句音量淡出（utterance.volume 於 speak() 固定、
   // 僅 cancel() 可停），故以即時 stop() 作為「約 1 秒淡出」目標聽感之明確降級。
   if (speechManager.isSpeaking()) speechManager.stop("scene-leave");
+  // issue #164：離場結束本次造訪——清空歡迎詞旗標，使下次進入該場景重新播放一次歡迎詞。
+  sceneVisitWelcomeId = "";
   elements.advModal.classList.remove("show");
   elements.advModal.setAttribute("aria-hidden", "true");
   advMode = "closed";
@@ -3874,6 +3897,8 @@ installTestingHooks({
   allowedShopCategories,
   answerLesson,
   openQuestAdv,
+  handleFirstLayerSceneAction,
+  backToSceneMenu,
   getActiveLesson: () => activeLesson,
   getAdvMode: () => advMode,
   buildAccountList,

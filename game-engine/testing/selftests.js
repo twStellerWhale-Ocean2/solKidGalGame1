@@ -910,6 +910,75 @@ function runCharacterVoiceSelfTest(api) {
       }
     }
 
+    // intTest#45：場景內第一↔二層切換即時收束前段語音、改接當下話題（issue #164 Facet A）。
+    if ("speechSynthesis" in window && api.getSpeechDiagnostics && api.isSpeaking && api.openSceneAdv && api.handleFirstLayerSceneAction && api.backToSceneMenu) {
+      const synth = window.speechSynthesis;
+      const origSpeak = synth.speak.bind(synth);
+      const origCancel = synth.cancel.bind(synth);
+      synth.speak = () => {};
+      synth.cancel = () => {};
+      try {
+        api.state.speechEnabled = true;
+        const hotspot = api.hotspotById("kingHall");
+        api.closeAdv(); // 自乾淨狀態起，確保進入＝新造訪
+        // 進入場景第一層 → 觸發歡迎詞語音。
+        api.openSceneAdv(hotspot);
+        if (!api.isSpeaking()) errors.push("intTest#45：進入場景第一層後 isSpeaking 應為 true（歡迎詞播放中）");
+        // 進入第二層子互動（打工）→ 應即時收束第一層前段語音（scene-switch）。
+        let before = api.getSpeechDiagnostics().length;
+        api.handleFirstLayerSceneAction({ handlerKey: "practice" }, hotspot);
+        const enterStop = api.getSpeechDiagnostics().slice(before).find((d) => d.source === "scene-switch");
+        if (!enterStop) errors.push("intTest#45：進入第二層子互動未記錄 scene-switch 收束診斷");
+        else if (!enterStop.cancelCalled) errors.push("intTest#45：進入第二層 scene-switch 診斷 cancelCalled 應為 true");
+        // 第二層觸發語音後返回第一層場景選單 → 應即時收束第二層前段語音（scene-switch），無跨層級殘留。
+        if (!api.isSpeaking()) errors.push("intTest#45：進入第二層子互動後應有語音播放中");
+        before = api.getSpeechDiagnostics().length;
+        api.backToSceneMenu(hotspot);
+        const backStop = api.getSpeechDiagnostics().slice(before).find((d) => d.source === "scene-switch");
+        if (!backStop) errors.push("intTest#45：返回第一層場景選單未記錄 scene-switch 收束診斷");
+        if (api.isSpeaking()) errors.push("intTest#45：返回第一層後 isSpeaking 仍為 true（前段語音殘留跨層級）");
+        api.closeAdv();
+      } catch (error) {
+        errors.push(`intTest#45：${error.message}`);
+      } finally {
+        synth.speak = origSpeak;
+        synth.cancel = origCancel;
+      }
+    }
+
+    // intTest#46：同一場景歡迎詞每次造訪只播一次（issue #164 Facet B）。
+    if ("speechSynthesis" in window && api.getSpeechDiagnostics && api.openSceneAdv && api.backToSceneMenu && api.handleFirstLayerSceneAction) {
+      const synth = window.speechSynthesis;
+      const origSpeak = synth.speak.bind(synth);
+      const origCancel = synth.cancel.bind(synth);
+      synth.speak = () => {};
+      synth.cancel = () => {};
+      const welcomeCountSince = (sinceIndex) => api.getSpeechDiagnostics().slice(sinceIndex).filter((d) => d.source === "npc-scene").length;
+      try {
+        api.state.speechEnabled = true;
+        const hotspot = api.hotspotById("kingHall");
+        api.closeAdv(); // 重置造訪態旗標，確保自地圖進入＝新造訪
+        let start = api.getSpeechDiagnostics().length;
+        api.openSceneAdv(hotspot); // 首次進入場景第一層
+        if (welcomeCountSince(start) !== 1) errors.push(`intTest#46：首次進入場景歡迎詞應播放一次，實際 ${welcomeCountSince(start)}`);
+        // 造訪內進入第二層再返回第一層 → 歡迎詞不重播。
+        api.handleFirstLayerSceneAction({ handlerKey: "practice" }, hotspot);
+        api.backToSceneMenu(hotspot);
+        if (welcomeCountSince(start) !== 1) errors.push(`intTest#46：造訪內返回第一層不應重播歡迎詞，累計實際 ${welcomeCountSince(start)}`);
+        // 離場後再次進入同一場景 → 新造訪、歡迎詞重新播放一次。
+        api.closeAdv();
+        start = api.getSpeechDiagnostics().length;
+        api.openSceneAdv(hotspot);
+        if (welcomeCountSince(start) !== 1) errors.push(`intTest#46：離場後再次造訪應重新播放一次歡迎詞，實際 ${welcomeCountSince(start)}`);
+        api.closeAdv();
+      } catch (error) {
+        errors.push(`intTest#46：${error.message}`);
+      } finally {
+        synth.speak = origSpeak;
+        synth.cancel = origCancel;
+      }
+    }
+
     // intTest#33-35：Web Speech API voice 載入／fallback、cancel 策略與診斷錯誤紀錄。
     if ("speechSynthesis" in window && api.speakForTest && api.selectSpeechVoice && api.getSpeechDiagnostics) {
       const synth = window.speechSynthesis;
