@@ -94,7 +94,54 @@ function bindEvents() {
   dom.copyRules.addEventListener("click", () => copy(dom.outRules, dom.copyRules, "Copy rules.js safeBox"));
   dom.copyOverrides.addEventListener("click", () => copy(dom.outOverrides, dom.copyOverrides, "Copy per-item overrides"));
   dom.applyAll.addEventListener("click", applyToFiles);
+  setupDrag();
 }
+
+// ② 單品框：圖上拖拉——中央方塊移動、四邊四角共 8 點非等比縮放。
+function setupDrag() {
+  let active = null;
+  dom.itemOverlay.addEventListener("pointerdown", (e) => {
+    const handle = e.target?.dataset?.h;
+    const key = selectedKey();
+    if (!handle || !key) return;
+    e.preventDefault();
+    try { dom.itemOverlay.setPointerCapture(e.pointerId); } catch { /* noop */ }
+    const p = pointerCanvas(e);
+    active = { handle, key, start: { ...itemBoxFor(key) }, sx: p.x, sy: p.y };
+  });
+  dom.itemOverlay.addEventListener("pointermove", (e) => { if (active) applyDrag(active, pointerCanvas(e)); });
+  const end = () => { active = null; };
+  dom.itemOverlay.addEventListener("pointerup", end);
+  dom.itemOverlay.addEventListener("pointercancel", end);
+}
+
+function pointerCanvas(e) {
+  const rect = dom.previewDoll.getBoundingClientRect();
+  return {
+    x: clampN(((e.clientX - rect.left) / rect.width) * CANVAS.W, 0, CANVAS.W),
+    y: clampN(((e.clientY - rect.top) / rect.height) * CANVAS.H, 0, CANVAS.H)
+  };
+}
+
+function applyDrag(active, p) {
+  const { handle, key, start, sx, sy } = active;
+  let b = { ...start };
+  if (handle === "move") {
+    const w = start.right - start.left; const h = start.bottom - start.top;
+    const left = clampN(start.left + (p.x - sx), 0, CANVAS.W - w);
+    const top = clampN(start.top + (p.y - sy), 0, CANVAS.H - h);
+    b = { left, top, right: left + w, bottom: top + h };
+  } else {
+    if (handle.includes("w")) b.left = clampN(p.x, 0, b.right - 4);
+    if (handle.includes("e")) b.right = clampN(p.x, b.left + 4, CANVAS.W);
+    if (handle.includes("n")) b.top = clampN(p.y, 0, b.bottom - 4);
+    if (handle.includes("s")) b.bottom = clampN(p.y, b.top + 4, CANVAS.H);
+  }
+  workingItemBox[key] = { left: Math.round(b.left), top: Math.round(b.top), right: Math.round(b.right), bottom: Math.round(b.bottom) };
+  renderControls(); renderPreview(); renderOutput(); renderSelectedInfo();
+}
+
+function clampN(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
 // 把目前兩份匯出就地寫回 rules.js（① 類型框）與 asset-target-overrides.js（② 單品框）。
 async function applyToFiles() {

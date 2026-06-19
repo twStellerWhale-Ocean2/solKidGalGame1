@@ -21,10 +21,21 @@
 
     <section class="preview-pane">
       <div class="preview-stage">
+        <div class="figure-frame" aria-hidden="true"></div>
         <div id="previewLabel" class="preview-label"></div>
         <span id="previewDoll" class="paper-doll adv-doll tuner-doll" data-doll="tuner"></span>
         <div id="typeOverlay" class="type-overlay" aria-hidden="true"></div>
-        <div id="itemOverlay" class="item-overlay" aria-hidden="true"></div>
+        <div id="itemOverlay" class="item-overlay">
+          <span class="drag-handle move" data-h="move"></span>
+          <span class="drag-handle n" data-h="n"></span>
+          <span class="drag-handle s" data-h="s"></span>
+          <span class="drag-handle w" data-h="w"></span>
+          <span class="drag-handle e" data-h="e"></span>
+          <span class="drag-handle nw" data-h="nw"></span>
+          <span class="drag-handle ne" data-h="ne"></span>
+          <span class="drag-handle sw" data-h="sw"></span>
+          <span class="drag-handle se" data-h="se"></span>
+        </div>
       </div>
     </section>
 

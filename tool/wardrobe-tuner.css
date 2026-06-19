@@ -161,7 +161,60 @@ button.active {
   z-index: 16;
   border: 2px solid #cc4c87;
   background: rgba(204, 76, 135, 0.08);
+  pointer-events: auto;
+  touch-action: none;
 }
+
+/* 人物畫布圖框：512:768 圖框 + 中線，幫助對位（#176）。 */
+.figure-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 13;
+  border: 1.5px solid rgba(91, 62, 100, 0.35);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.figure-frame::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  border-left: 1px dashed rgba(91, 62, 100, 0.22);
+}
+
+.figure-frame::after {
+  content: "人物畫布 512×768";
+  position: absolute;
+  right: 4px;
+  bottom: 3px;
+  font-size: 10px;
+  color: rgba(91, 62, 100, 0.5);
+}
+
+/* ② 單品框拖拉控制點：中央方塊移動、四邊與四角共 8 點縮放（非等比）。 */
+.drag-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #cc4c87;
+  border: 1.5px solid #fff;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(40, 28, 48, 0.35);
+  touch-action: none;
+}
+
+.drag-handle.move { left: 50%; top: 50%; width: 18px; height: 18px; transform: translate(-50%, -50%); border-radius: 4px; cursor: move; }
+.drag-handle.move::after { content: "✛"; display: block; text-align: center; color: #fff; font-size: 12px; line-height: 15px; }
+.drag-handle.n { left: 50%; top: 0; transform: translate(-50%, -50%); cursor: ns-resize; }
+.drag-handle.s { left: 50%; bottom: 0; transform: translate(-50%, 50%); cursor: ns-resize; }
+.drag-handle.w { left: 0; top: 50%; transform: translate(-50%, -50%); cursor: ew-resize; }
+.drag-handle.e { right: 0; top: 50%; transform: translate(50%, -50%); cursor: ew-resize; }
+.drag-handle.nw { left: 0; top: 0; transform: translate(-50%, -50%); cursor: nwse-resize; }
+.drag-handle.ne { right: 0; top: 0; transform: translate(50%, -50%); cursor: nesw-resize; }
+.drag-handle.sw { left: 0; bottom: 0; transform: translate(-50%, 50%); cursor: nesw-resize; }
+.drag-handle.se { right: 0; bottom: 0; transform: translate(50%, 50%); cursor: nwse-resize; }
 
 .type-overlay::after,
 .item-overlay::after {

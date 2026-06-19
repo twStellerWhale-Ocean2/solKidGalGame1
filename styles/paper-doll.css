@@ -45,7 +45,8 @@
   background-image: var(--layer-img);
   background-position: center bottom;
   background-repeat: no-repeat;
-  background-size: contain;
+  /* #176：帶 targetBox 的 wardrobe layer 以 --layer-fit:100% 100% 非等比填滿目標矩形；其餘（base 等）維持 contain。 */
+  background-size: var(--layer-fit, contain);
   filter: drop-shadow(0 14px 18px rgba(58, 37, 46, 0.16));
 }
 

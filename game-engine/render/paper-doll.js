@@ -77,9 +77,12 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
         bottom: ((canvasHeight - box.bottom) / canvasHeight) * 100,
         left: (box.left / canvasWidth) * 100
       };
-      return ["top", "right", "bottom", "left"]
-        .map((edge) => `--layer-${edge}:${Math.round(pct[edge] * 1000) / 1000}%`)
-        .join(";");
+      // --layer-fit:100% 100% → 非等比填滿目標矩形（box 同時決定寬與高，可獨立縮放）；
+      // 素材緊貼裁切後 box 預設＝內容框、長寬比相同故無變形，調整 box 比例才拉伸（#176）。
+      return [
+        ...["top", "right", "bottom", "left"].map((edge) => `--layer-${edge}:${Math.round(pct[edge] * 1000) / 1000}%`),
+        "--layer-fit:100% 100%"
+      ].join(";");
     }
     return ["top", "right", "bottom", "left"]
       .map((edge) => `--layer-${edge}:${Number.isFinite(bounds[edge]) ? bounds[edge] : 0}px`)
