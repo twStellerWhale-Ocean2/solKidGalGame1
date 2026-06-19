@@ -94,6 +94,9 @@ import {
   MAX_LIMIT_MINUTES,
   MIN_LIMIT_MINUTES,
   extendSession,
+  isJobDone,
+  markJobDone,
+  normalizePlayLimit,
   playAllowance,
   playStatus,
   recordAnswer as recordCycleAnswer,
@@ -1752,7 +1755,7 @@ function renderDestinationPicker() {
         <strong>${hotspot.label}</strong>
         <small>${destinationActionText(hotspot)}</small>
       </span>
-      <span class="destination-badge">${hasLessonsForPlace(hotspot.id) ? "Practice" : isShop ? "Shop" : "Visit"}</span>
+      <span class="destination-badge">${jobAvailableForPlace(hotspot.id) ? "Practice" : isShop ? "Shop" : "Visit"}</span>
     `;
     button.addEventListener("click", () => chooseDestination(hotspot.id));
     elements.destinationList.appendChild(button);
@@ -1760,7 +1763,7 @@ function renderDestinationPicker() {
 }
 
 function destinationActionText(hotspot) {
-  if (hasLessonsForPlace(hotspot.id)) return `${sceneConfigFor(hotspot).npc} has a local English task.`;
+  if (jobAvailableForPlace(hotspot.id)) return `${sceneConfigFor(hotspot).npc} has a local English task.`;
   if (isShopHotspot(hotspot)) {
     const categoriesText = allowedShopCategories(hotspot).map(categoryLabel).join(" / ");
     return `Try ${categoriesText.toLowerCase()} rewards.`;
@@ -1924,7 +1927,7 @@ function travelActionLabel(hotspot) {
     return sceneConfigFor(hotspot).travelAction || "World Map";
   }
   if (hotspot.kind === "future") return "Soon";
-  if (hasLessonsForPlace(hotspot.id)) return "Practice";
+  if (jobAvailableForPlace(hotspot.id)) return "Practice";
   if (isShopHotspot(hotspot)) return "Shop";
   return sceneConfigFor(hotspot).travelAction || "Visit";
 }
@@ -2059,7 +2062,7 @@ function openRoomScene(hotspot = hotspotById("princessRoom")) {
 }
 
 function renderFirstLayerSceneActions(hotspot) {
-  firstLayerActionsFor(hotspot, { hasLessons: hasLessonsForPlace(hotspot?.id), hasChat: hasChatForPlace(hotspot?.id) }).forEach((action) => {
+  firstLayerActionsFor(hotspot, { hasLessons: hasLessonsForPlace(hotspot?.id), hasChat: hasChatForPlace(hotspot?.id), jobDoneThisCycle: isJobDone(state, hotspot?.id) }).forEach((action) => {
     addAdvOption(sceneActionLabel(action), () => handleFirstLayerSceneAction(action, hotspot), {
       leave: action.handlerKey === "leave",
       navigation: action.navigation && action.handlerKey !== "leave"
@@ -2102,11 +2105,15 @@ function handleFirstLayerSceneAction(action, hotspot) {
 }
 
 function openPracticeAction(hotspot) {
-  if (hasLessonsForPlace(hotspot?.id)) {
+  if (jobAvailableForPlace(hotspot?.id)) {
     openQuestAdv(hotspot);
     return;
   }
-  openHintAdv(hotspot, hotspot?.hint || "There is no English practice ready here.");
+  // issue #177：本週期已答對此場景打工 → 已下架，提示休息後再來；否則沿用「此處無打工」提示。
+  const doneThisCycle = hasLessonsForPlace(hotspot?.id) && isJobDone(state, hotspot?.id);
+  openHintAdv(hotspot, doneThisCycle
+    ? "You've already finished this place's work this playtime. Take a rest and come back!"
+    : (hotspot?.hint || "There is no English practice ready here."));
 }
 
 // issue #135：生活聊天入口——以 chatLesson 開啟對話題，答對加心情並在護眼上限內延長遊玩時間（不發 coins）。
@@ -2275,7 +2282,7 @@ function openHintAdv(hotspot, line = hotspot.hint) {
   openAdvBase(hotspot, "hint");
   setExpressions("thinking", "normal");
   setAdvLine(line);
-  elements.advPrompt.textContent = hasLessonsForPlace(hotspot?.id)
+  elements.advPrompt.textContent = jobAvailableForPlace(hotspot?.id)
     ? "Choose Practice to start this place's English."
     : "This place is for travel or story only.";
   elements.advFeedback.textContent = "";
@@ -2787,6 +2794,12 @@ function hasLessonsForPlace(place) {
   return Boolean(place && sceneConfigs[place]?.lesson?.questions?.length);
 }
 
+// issue #177：場景打工於「本遊玩週期尚未答對」時才視為可作答（答對後下架、下一週期重置）；
+// 供場景選單、地圖目的地卡與提示文案一致判斷「是否仍提供此打工」。
+function jobAvailableForPlace(place) {
+  return hasLessonsForPlace(place) && !isJobDone(state, place);
+}
+
 function hasChatForPlace(place) {
   return Boolean(place && sceneConfigs[place]?.chatLesson?.questions?.length);
 }
@@ -2839,6 +2852,9 @@ function answerLesson(button, choice) {
       : advChineseUsed
         ? "Nice learning with Chinese help! No coins this time."
         : "No coins this time — try to answer sooner next time.";
+    // issue #177：打工答對 → 標記本場景打工於本遊玩週期已完成（下架，不可再作答），下一週期重置；
+    // 僅打工計入（在此 job 分支內），聊天不計（spec#11 反洗 coins）。即使本次無 coins（中文／第三次）仍下架。
+    markJobDone(state, activeLesson.place);
   }
   addUnique("completedLessons", [activeLesson.id]);
   addUnique("learnedWords", activeLesson.words);
@@ -3885,7 +3901,11 @@ installTestingHooks({
     setDurations: (playMinutes, restMinutes) => {
       state.playLimit.playMinutes = playMinutes;
       state.playLimit.restMinutes = restMinutes;
-    }
+    },
+    // issue #177：每場景打工每遊玩週期限答對一次測試介面。
+    markJobDone: (place) => markJobDone(state, place),
+    isJobDone: (place) => isJobDone(state, place),
+    normalizeLimit: (candidate) => normalizePlayLimit(candidate)
   },
   get shopPreviewItemId() { return shopPreviewItemId; },
   set shopPreviewItemId(nextItemId) { shopPreviewItemId = nextItemId; },
@@ -3898,6 +3918,15 @@ installTestingHooks({
   answerLesson,
   openQuestAdv,
   handleFirstLayerSceneAction,
+  // issue #177：回傳場景第一層動作 handlerKey 清單（含本週期打工下架判斷），供 selftest 驗證「答對後 practice 下架」。
+  firstLayerActionKeys: (place) => {
+    const hotspot = hotspotById(place);
+    return firstLayerActionsFor(hotspot, {
+      hasLessons: hasLessonsForPlace(hotspot?.id),
+      hasChat: hasChatForPlace(hotspot?.id),
+      jobDoneThisCycle: isJobDone(state, hotspot?.id)
+    }).map((action) => action.handlerKey);
+  },
   backToSceneMenu,
   getActiveLesson: () => activeLesson,
   getAdvMode: () => advMode,
