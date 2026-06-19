@@ -138,8 +138,37 @@ button.active {
 
 .preview-stage {
   position: relative;
-  width: min(58vw, 560px);
-  height: min(88vh, 760px);
+  height: min(88vh, 768px);
+  aspect-ratio: 512 / 768;
+}
+
+/* 目標矩形 overlay：以 stage 百分比定位，與 paper-doll layer 的 canvas 相對 inset 對齊（#176）。 */
+.target-overlay {
+  position: absolute;
+  z-index: 15;
+  border: 1.5px dashed #cc4c87;
+  background: rgba(204, 76, 135, 0.08);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.target-overlay::after {
+  content: attr(data-type) " target box";
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  margin-bottom: 3px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 11px;
+  color: white;
+  background: #cc4c87;
+}
+
+/* 測試圖層：使用 game renderer 同一 .paper-doll-layer 樣式，疊在最上層。 */
+.paper-doll-layer-type-test {
+  z-index: 9;
 }
 
 .preview-label {
@@ -240,7 +269,42 @@ button.active {
   }
 
   .preview-stage {
-    width: min(92vw, 520px);
-    height: 680px;
+    height: min(70vh, 680px);
+    aspect-ratio: 512 / 768;
   }
+}
+
+.control-section h2 .hint {
+  margin-left: 6px;
+  color: #9a7e9d;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.control-help {
+  margin: 0 0 10px;
+  color: #6f5b73;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.test-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.file-button {
+  display: grid;
+  place-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(91, 62, 100, 0.2);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.file-button input {
+  display: none;
 }

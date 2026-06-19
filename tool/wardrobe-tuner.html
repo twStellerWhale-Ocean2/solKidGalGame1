@@ -23,6 +23,7 @@
       <div class="preview-stage">
         <div id="previewLabel" class="preview-label"></div>
         <span id="previewDoll" class="paper-doll adv-doll tuner-doll" data-doll="tuner"></span>
+        <div id="targetOverlay" class="target-overlay" aria-hidden="true"></div>
       </div>
     </section>
 
@@ -33,20 +34,30 @@
       </section>
 
       <section class="control-section">
-        <h2>Render Bounds</h2>
+        <h2>Target Box <span class="hint">投影矩形 · canvas px</span></h2>
+        <p class="control-help">設定此類衣物在 512×768 人物上應投影到的範圍；素材會等比縮放 fit 進此框。框＝全畫布即沿用舊滿版行為。</p>
         <div class="bound-grid">
-          <label>Top <input id="boundTop" type="number" step="1"></label>
-          <label>Right <input id="boundRight" type="number" step="1"></label>
-          <label>Bottom <input id="boundBottom" type="number" step="1"></label>
-          <label>Left <input id="boundLeft" type="number" step="1"></label>
+          <label>Left <input id="targetLeft" type="number" step="1" min="0" max="512"></label>
+          <label>Top <input id="targetTop" type="number" step="1" min="0" max="768"></label>
+          <label>Right <input id="targetRight" type="number" step="1" min="0" max="512"></label>
+          <label>Bottom <input id="targetBottom" type="number" step="1" min="0" max="768"></label>
         </div>
         <div class="nudge-grid">
-          <button id="nudgeUp" type="button">Up</button>
-          <button id="nudgeDown" type="button">Down</button>
-          <button id="nudgeLeft" type="button">Left</button>
-          <button id="nudgeRight" type="button">Right</button>
+          <button id="nudgeUp" type="button">Move Up</button>
+          <button id="nudgeDown" type="button">Move Down</button>
+          <button id="nudgeLeft" type="button">Move Left</button>
+          <button id="nudgeRight" type="button">Move Right</button>
           <button id="resetType" type="button">Reset Type</button>
           <button id="resetAll" type="button">Reset All</button>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <h2>Test Image <span class="hint">任意尺寸</span></h2>
+        <p class="control-help">載入一張任意尺寸素材，預覽它 fit 進目前 Target Box 的效果（驗證來圖版型不一也能對位）。</p>
+        <div class="test-grid">
+          <label class="file-button">Load Image<input id="testImage" type="file" accept="image/*"></label>
+          <button id="clearTest" type="button">Clear</button>
         </div>
       </section>
 

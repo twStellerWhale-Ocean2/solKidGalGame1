@@ -1,6 +1,8 @@
 # 設計note — issue #176 任意尺寸衣物素材都能正確對位穿戴
 
-> 本檔為 2plan 設計note（非 design.md 正本、不受 docLint）。**初判 Option A**：本項為既有 wardrobe 類別級對位機制之精修，於 `docs/design.md` ＜I／II＞無須增刪修改 **spec# 編號**；對位機制語意（render bounds 由「近全畫布 inset 微調」轉為「類別目標矩形 fit」）位於 design.md 抽象高度以下，由本 note 承載，確切資料 shape（沿用既有 `safeBox` 作目標矩形／新增 `targetBox` 欄位／是否保留 inset 作微調 override）、各類別錨定與縮放策略值留 3code 以實機 visual-qa（代表性異尺寸素材實穿、寬＋窄、四位公主）定案。意旨對應既有 **spec#3**（換裝外觀獎勵——wardrobe layer 須與 `shared-512x768-v1` base 正確對位、類別級邊界組態、同類統一、不逐件 nudge）＋ **spec#7**（模組化擴充——新增同類衣物沿用類別級 layer bounds、不另建單件對位常數）。⚠️ 審查點見 §4：design.md ＜II＞（L292 重點組態、L507 intTest#08）與 [contract-local/hmiIntf自訂角色尺度與美術規範.md] §III.B 對「render bounds／512×768 rig」之既有措辭仍成立，本案維持 Option A（決策由本 note 承載、實作與契約措辭隨 3code 落地）；USR 可選擇是否對 design.md ＜II＞與 art 契約作 USR-gated 輕修措辭，預設維持 Option A。
+> 本檔為 2plan 設計note（非 design.md 正本、不受 docLint）。**初判 Option A**：本項為既有 wardrobe 類別級對位機制之精修，於 `docs/design.md` ＜I／II＞無須增刪修改 **spec# 編號**；對位機制語意（render bounds 由「近全畫布 inset 微調」轉為「類別目標矩形 fit」）位於 design.md 抽象高度以下，由本 note 承載。意旨對應既有 **spec#3**（換裝外觀獎勵——wardrobe layer 須與 `shared-512x768-v1` base 正確對位、類別級邊界組態、同類統一、不逐件 nudge）＋ **spec#7**（模組化擴充——新增同類衣物沿用類別級 layer bounds、不另建單件對位常數）。⚠️ 審查點見 §4：design.md ＜II＞（L292 重點組態、L507 intTest#08）與 [contract-local/hmiIntf自訂角色尺度與美術規範.md] §III.B 對「render bounds／512×768 rig」之既有措辭仍成立，本案維持 Option A（決策由本 note 承載、契約措辭隨後續落地）；USR 可選擇是否對 design.md ＜II＞與 art 契約作 USR-gated 輕修措辭，預設維持 Option A。
+>
+> **USR 方向（2026-06-19）**：對位由人以肉眼判斷美術效果，故本案交付**手動校準工具**——強化 [tool/wardrobe-tuner.js]，讓 USR 逐類別手動設定衣物投影到人物身上的**目標矩形**；引擎以**選配 `targetBox`**（canvas 座標）把任意尺寸素材經 `background-size:contain` 等比 fit 進該矩形。實作採**加性、向後相容**：未設 `targetBox` 之類別維持現行滿版行為（identity），game 端 `wardrobeLayerBoundsByType` 在 USR 用工具逐類調出並貼回前**完全不變**。各類別目標矩形的**確切數值**即 USR 透過工具的手動校準產出（含以「任意尺寸測試圖」逐類目視驗證）。
 
 ## 1. 現況量測（以產物為準）
 
@@ -40,19 +42,20 @@
 
 ## 3. 設計決策（確切資料 shape／數值留 3code visual-qa）
 
-### D1：對位語意由「近全畫布 inset」改為「類別目標矩形 fit」
+### D1：對位語意由「近全畫布 inset」改為「類別目標矩形 fit」（已實作）
 
 * 渲染盒由「全畫布 inset 微調」改為各類別之**目標矩形**：把 layer 的定位盒設為該類別在 512×768 上應佔的區域，素材 `contain` 縮放置入該盒——任意尺寸來圖被正規化到該類別區域，落點與尺度由目標矩形決定、不再隨來圖外框漂移。
-* 目標矩形之來源：既有 `safeBox`（每類已定義「素材有效像素應落入」之畫面矩形）即為現成候選；3code 定案「直接複用 `safeBox` 作渲染目標／新增明確 `targetBox` 欄位／二者關係」之確切資料 shape。
+* **資料 shape（已定案）**：於 [content-package/wardrobe/_shared/rules.js] `layerBounds(safeBox, renderBounds, targetBox)` 新增**選配第三參數 `targetBox`**（canvas 座標 `{left,top,right,bottom}`）。設定後渲染改走目標矩形 fit；未設定則沿用 render bounds（px inset）舊行為。`safeBox` 保留供 data-audit、不變。12 個既有類別暫不帶 `targetBox`（identity），實際數值由 USR 以工具逐類校準後貼回。
 
 ### D2：縮放保持長寬比、各類別錨定，不變形
 
 * fit 須等比（`contain` 類語意），避免拉伸變形破壞「正確穿戴」；各類別錨定基準（如 `shoes` 錨底、`headTop`/`hairstyle` 錨頂、`top`/`bottom`/`dress` 錨身中線）由 3code 依實機 visual-qa 定案。
 * 沿用既有 `background-position:center bottom` 或改為依類別錨點，屬 3code visual-qa 決策。
 
-### D3：渲染套用點維持 [paper-doll.js]＋[styles/paper-doll.css] 體例
+### D3：渲染套用點維持 [paper-doll.js]＋[styles/paper-doll.css] 體例（已實作）
 
-* 仍以 `.paper-doll-layer` 之 CSS 變數驅動（不另立平行 layer class）；將「`--layer-*` inset＝近全畫布」改為「以目標矩形定位盒＋等比 fit」。確切 CSS／JS 作法（inset 改寫為目標矩形、或新增 `--layer-target-*` 變數、`background-size` 取 `contain`/錨定）由 3code 定案。
+* 仍以 `.paper-doll-layer` 之 CSS 變數驅動（不另立平行 layer class）。[paper-doll.js] `boundsStyle()` 在 layer 帶 `targetBox` 時，把目標矩形換算為**畫布相對百分比** inset（`top=box.top/768`、`left=box.left/512`、`right=(512-box.right)/512`、`bottom=(768-box.bottom)/768`）輸出 `--layer-*:%`；既有 `background-size:contain` 即把素材等比 fit 進該盒。未帶 `targetBox` 時維持 px inset 舊路徑。
+* [styles/paper-doll.css] 無需改動（`inset` 同時接受 px 與 %）。canvas 維度由 `createPaperDollRenderer({canvasWidth,canvasHeight})` 注入（預設 512×768）；% 正確對應之前提為 doll 盒呈 512:768——tuner 預覽 stage 已設 `aspect-ratio:512/768`，game 端待 USR 套用各類 `targetBox` 時於 GATE §5 visual-qa 一併確認。
 
 ### D4：向後相容（identity 路徑，不得退步）
 
@@ -76,13 +79,15 @@
 * **② 範圍確認**：12 類 wardrobe layer 全體（不只上衣／外套／褲子，含髮型／鞋／頭飾／臉部／頸／手）＋既有素材向後相容（identity）；不動答題／聊天／打工／逛店／語音／計時／護眼與商品資料、slot 疊圖順序。
 * **③ 縮放調性確認**：等比 fit、各類別錨定、不變形（非拉伸塞滿）；目標矩形為唯一對位事實來源，nudge 僅例外 override。
 
-## 5. 產物分工與 GATE 驗證計畫（交棒 3code）
+## 5. 產物分工與 GATE 驗證計畫
 
-* **本棒產物（plan）**：本設計note（Option A）＋ [README.md] ＜變更紀錄＞補一筆（2plan 初稿，待 dev／opr 校準）。`docs/design.md` 未改（docLint sol 仍 0）。若 §4① USR 改選輕修，再補 design.md ＜II＞措辭（spec# 不增減，docLint sol 0）與 art 契約 §III.B、README 同步。
-* **3code 程式產物**（依本 note §3）：
-  * [content-package/wardrobe/_shared/rules.js]：類別目標矩形資料 shape（複用 `safeBox`／新增 `targetBox`）（D1／D5）。
-  * [game-engine/render/paper-doll.js] + [styles/paper-doll.css]：渲染盒改為目標矩形＋等比 fit、各類別錨定（D2／D3）；既有滿版素材 identity 相容（D4）。
-  * [game-engine/testing/selftests.js] `data-audit`：補「異尺寸來圖正確 fit／不變形」可重複斷言；[tool/wardrobe-tuner.js] 調參語意配合（D6）。
-* **3code 完成判定**：
-  * **GATE §1（機器判定）**：`node --check` 相關 JS／`docLint docs/design.md`（sol 0）／`repoLint .` 0；headless `data-audit` selftest（含新增異尺寸 fit 斷言）PASS、console 0 error。
-  * **GATE §5（實機 visual-qa，寬＋窄、四位公主）**：代表性各類別（含上衣／下身／洋裝／外套／鞋／髮型／頭飾）及**刻意異尺寸**之同類素材實穿後，衣物落點落入類別目標矩形、比例與接縫正確、不變形；既有 #168／#175 已調素材不退步（identity）；跨四位公主共用 layer 對位一致。逐頁發現＋截圖＋分級，must-fix 全修。
+* **本 PR 已交付（機制 + 工具，加性向後相容）**：
+  * [content-package/wardrobe/_shared/rules.js]：`layerBounds` 新增選配 `targetBox`（D1）；12 類暫不帶、game 不變。
+  * [game-engine/render/paper-doll.js]：`boundsStyle` 目標矩形→畫布相對 % fit；`createPaperDollRenderer` 注入 canvas 維度（D3）。未帶 `targetBox` 維持 px 舊路徑（D4 identity）。
+  * [tool/wardrobe-tuner.js]／`.html`／`.css`：Target Box 編輯（canvas 座標）＋虛線 overlay＋「任意尺寸測試圖」預覽＋含 `targetBox` 的 export（D1／D2／D5／D6）；[tool/README.md] 更新。
+  * 設計note（本檔，Option A）＋ [README.md] ＜變更紀錄＞一筆。`docs/design.md` 未改（docLint sol 0）。
+  * **驗證（已過）**：`node --check`（paper-doll／rules／tuner）OK；`repoLint .` 0；`docLint docs/design.md` sol 0；tuner 於本機 server 載入無 console error，目標矩形→% 對映正確（top 390/768=50.781% 等）、實際 top layer 套用 % inset、export 帶 `targetBox`、identity 預設（0,0,512,768）。
+* **後續（USR 校準迴圈 → 套用 → 收尾 QA）**：
+  * USR 以工具逐類目視校準各 `targetBox`（用「任意尺寸測試圖」確認對位），export 貼回 [content-package/wardrobe/_shared/rules.js]。
+  * 套用後 GATE §5 實機 visual-qa（寬＋窄、四位公主）：各類別含**刻意異尺寸**素材實穿落點落入目標矩形、比例接縫正確、不變形；既有 #168／#175 素材不退步；跨角色共用 layer 一致。
+  * 視需要補 [game-engine/testing/selftests.js] `data-audit` 對 `targetBox`／異尺寸 fit 之可重複斷言（D6）。

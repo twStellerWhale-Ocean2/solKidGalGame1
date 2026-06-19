@@ -42,9 +42,12 @@ export const outfitSlots = [
 // safeBox 是素材透明像素應落入的類別級範圍，供 data-audit 檢查 GPT 童話手繪 bitmap 是否對齊角色 rig。
 const fullCanvasBounds = Object.freeze({ left: 0, top: 0, right: 0, bottom: 0 });
 
-const layerBounds = (safeBox, renderBounds = fullCanvasBounds) => Object.freeze({
+// targetBox（選配，#176）：素材有效內容應投影到的畫布矩形（canvas 座標 left/top/right/bottom）。
+// 設定後渲染改以畫布相對百分比把任意尺寸素材 contain-fit 進此矩形；未設定則沿用 render bounds（px inset）舊行為。
+const layerBounds = (safeBox, renderBounds = fullCanvasBounds, targetBox = null) => Object.freeze({
   ...renderBounds,
-  safeBox: Object.freeze(safeBox)
+  safeBox: Object.freeze(safeBox),
+  ...(targetBox ? { targetBox: Object.freeze({ ...targetBox }) } : {})
 });
 
 export const wardrobeLayerBoundsByType = Object.freeze({

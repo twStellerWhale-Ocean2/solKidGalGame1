@@ -1,4 +1,4 @@
-export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, layerOrder }) {
+export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, layerOrder, canvasWidth = 512, canvasHeight = 768 }) {
   function avatarMarkup(surface, outfitState, character = getCharacter?.()) {
     const layers = activePaperDollLayers(outfitState, character);
     return `
@@ -67,6 +67,20 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
   }
 
   function boundsStyle(bounds = {}) {
+    const box = bounds.targetBox;
+    if (box && ["left", "top", "right", "bottom"].every((edge) => Number.isFinite(box[edge]))) {
+      // 目標矩形（#176）：以畫布相對百分比定位，任意尺寸素材經 background-size:contain
+      // 縮放 fit 進此區域；同類共用同一目標矩形，落點與尺度由矩形決定、不隨來圖外框漂移。
+      const pct = {
+        top: (box.top / canvasHeight) * 100,
+        right: ((canvasWidth - box.right) / canvasWidth) * 100,
+        bottom: ((canvasHeight - box.bottom) / canvasHeight) * 100,
+        left: (box.left / canvasWidth) * 100
+      };
+      return ["top", "right", "bottom", "left"]
+        .map((edge) => `--layer-${edge}:${Math.round(pct[edge] * 1000) / 1000}%`)
+        .join(";");
+    }
     return ["top", "right", "bottom", "left"]
       .map((edge) => `--layer-${edge}:${Number.isFinite(bounds[edge]) ? bounds[edge] : 0}px`)
       .join(";");
