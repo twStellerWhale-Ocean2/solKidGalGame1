@@ -30,18 +30,13 @@
       <section id="itemList" class="item-list" aria-label="Wardrobe items"></section>
     </aside>
 
+    <div class="col-resizer" aria-hidden="true" title="拖曳調整欄寬"></div>
+
     <section class="preview-pane">
       <div class="preview-stage">
         <div class="figure-frame" aria-hidden="true"></div>
         <div id="previewLabel" class="preview-label"></div>
         <span id="previewDoll" class="paper-doll adv-doll tuner-doll" data-doll="tuner"></span>
-        <div id="typeOverlay" class="box-overlay">
-          <span class="drag-handle move" data-h="move"></span>
-          <span class="drag-handle n" data-h="n"></span><span class="drag-handle s" data-h="s"></span>
-          <span class="drag-handle w" data-h="w"></span><span class="drag-handle e" data-h="e"></span>
-          <span class="drag-handle nw" data-h="nw"></span><span class="drag-handle ne" data-h="ne"></span>
-          <span class="drag-handle sw" data-h="sw"></span><span class="drag-handle se" data-h="se"></span>
-        </div>
         <div id="itemOverlay" class="box-overlay">
           <span class="drag-handle move" data-h="move"></span>
           <span class="drag-handle n" data-h="n"></span><span class="drag-handle s" data-h="s"></span>
@@ -56,33 +51,14 @@
       <div id="selectedInfo" class="selected-info"></div>
 
       <section class="control-section">
-        <h2>編輯對象</h2>
-        <div id="modeTabs" class="mode-tabs">
-          <button type="button" data-mode="type">① 類型框<span>套同類</span></button>
-          <button type="button" data-mode="item">② 單品框<span>僅此件</span></button>
-        </div>
-        <p id="modeHelp" class="control-help"></p>
-      </section>
-
-      <section class="control-section">
-        <h2 id="boxTitle">框</h2>
-        <p class="control-help">於左側預覽圖上直接拖拉：中央 ✛ 方塊移動、四邊四角 8 點縮放（非等比）。拖到的是上方所選的框；下列按鈕可微調。</p>
-        <div class="nudge-grid">
-          <button id="boxUp" type="button">Move Up</button>
-          <button id="boxDown" type="button">Move Down</button>
-          <button id="boxMoveLeft" type="button">Move Left</button>
-          <button id="boxMoveRight" type="button">Move Right</button>
-          <button id="boxBigger" type="button">Bigger</button>
-          <button id="boxSmaller" type="button">Smaller</button>
-          <button id="resetBox" type="button">Reset This Box</button>
-          <button id="resetAll" type="button">Reset All</button>
-        </div>
+        <h2>衣物框</h2>
+        <p class="control-help">在左側預覽圖上直接拖拉綠色框：中央 ✛ 方塊移動、四邊四角 8 點縮放（非等比，寬高可獨立）。</p>
       </section>
 
       <section class="control-section apply-section">
         <button id="applyAll" type="button" class="apply-button">✓ 套用到檔案 (Apply)</button>
         <div id="applyStatus" class="apply-status"></div>
-        <p class="control-help">直接寫回 <code>rules.js</code>（① 類型框）與 <code>asset-target-overrides.js</code>（② 單品框，只含改過的件）；重新整理遊戲即可看到。</p>
+        <p class="control-help">寫回 <code>asset-target-overrides.js</code>（單品框）與 <code>rules.js</code>；重新整理遊戲即可看到。</p>
       </section>
     </aside>
   </main>

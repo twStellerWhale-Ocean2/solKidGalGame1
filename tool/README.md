@@ -17,32 +17,26 @@ module loading restrictions during development.
 
 Pick a garment on the **left** (category → item) — that selection drives
 everything. The **素材包** dropdown above the categories filters items by content
-pack (multi-select checkboxes; pick one pack or several, or 全選/全不選). The
-right pane then edits two layers of positioning over a live paper-doll preview;
-you tune by dragging boxes directly on the figure.
+pack (multi-select checkboxes; pick one pack or several, or 全選/全不選). Drag the
+splitter between the catalog and the preview to resize the left column.
 
-## Two-layer positioning (issue #176)
+## Positioning a garment (issue #176)
 
 Wardrobe art is stored tightly trimmed (no transparent margins), and the engine
-scales each piece to fill a target rectangle in `512×768` canvas coordinates
-(non-uniform — the box sets width and height independently). You set that
-rectangle in two layers, chosen via the **編輯對象** toggle:
+scales each piece to fill a target rectangle (its **item box**) in `512×768`
+canvas coordinates — non-uniform, so the box sets width and height independently.
+The selected item shows a green box on the figure; tune it directly:
 
-- **① Type Box** (blue) — the type's projection region (its `safeBox`). Affects
-  every item of that `type`; per-item boxes should stay inside it, and a brand-new
-  asset with no per-item box defaults to projecting here. Exports into
-  `content-package/wardrobe/_shared/rules.js` (`wardrobeLayerBoundsByType`).
-- **② Item Box** (green) — the exact rectangle the *selected* item projects onto,
-  seeded from the trimmed art's original content box (identity). Only items you
-  actually change are exported (as a diff) into
-  `content-package/wardrobe/_shared/asset-target-overrides.js`. The trim baseline
-  in `asset-content-box.generated.js` is never hand-edited, so re-running the trim
-  script will not clobber your overrides.
+- drag the centre **✛** square to move it,
+- drag the eight edge/corner handles to resize (non-uniform).
 
-The selected layer is drawn solid with hollow drag handles; the other is a faint
-reference outline. On the figure: drag the centre **✛** to move, the eight edge/
-corner handles to resize (non-uniform). The **Move / Bigger / Smaller** buttons
-nudge, **Reset This Box** reverts the active box, **Reset All** reverts everything.
+The box is seeded from the trimmed art's original content box (identity). Only
+items you actually change are exported (as a diff) into
+`content-package/wardrobe/_shared/asset-target-overrides.js`; the trim baseline in
+`asset-content-box.generated.js` is never hand-edited, so re-running the trim
+script will not clobber your overrides. Per-type projection regions
+(`wardrobeLayerBoundsByType` `safeBox` in `rules.js`) are written through
+unchanged on Apply.
 
 ## Apply your tuning
 

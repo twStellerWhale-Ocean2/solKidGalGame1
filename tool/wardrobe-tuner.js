@@ -27,7 +27,6 @@ const baseOutfit = Object.fromEntries(Object.keys(wardrobeLayerBoundsByType).map
 const state = {
   categoryId: categories[0]?.id || "",
   selectedItemId: firstItemForCategory(categories[0]?.id)?.id || "",
-  editMode: "item", // "type"（① 類型框/safeBox）或 "item"（② 單品框/targetBox）
   outfit: { ...baseOutfit }
 };
 
@@ -36,11 +35,7 @@ const dom = {
   packFilterToggle: q("#packFilterToggle"), packFilterMenu: q("#packFilterMenu"),
   packAll: q("#packAll"), packNone: q("#packNone"), packCheckboxes: q("#packCheckboxes"),
   previewLabel: q("#previewLabel"), previewDoll: q("#previewDoll"),
-  typeOverlay: q("#typeOverlay"), itemOverlay: q("#itemOverlay"),
-  selectedInfo: q("#selectedInfo"),
-  modeTabs: q("#modeTabs"), modeHelp: q("#modeHelp"), boxTitle: q("#boxTitle"),
-  boxUp: q("#boxUp"), boxDown: q("#boxDown"), boxMoveLeft: q("#boxMoveLeft"), boxMoveRight: q("#boxMoveRight"),
-  boxBigger: q("#boxBigger"), boxSmaller: q("#boxSmaller"), resetBox: q("#resetBox"), resetAll: q("#resetAll"),
+  itemOverlay: q("#itemOverlay"), selectedInfo: q("#selectedInfo"),
   applyAll: q("#applyAll"), applyStatus: q("#applyStatus")
 };
 
@@ -69,34 +64,29 @@ function bindEvents() {
     afterPackChange();
   });
   document.addEventListener("click", (e) => { if (!e.target.closest(".pack-filter")) dom.packFilterMenu.hidden = true; });
-  dom.modeTabs.addEventListener("click", (e) => {
-    const mode = e.target.closest("button")?.dataset.mode;
-    if (mode) { state.editMode = mode; renderAll(); }
-  });
-  dom.boxUp.addEventListener("click", () => moveBox(0, -4));
-  dom.boxDown.addEventListener("click", () => moveBox(0, 4));
-  dom.boxMoveLeft.addEventListener("click", () => moveBox(-4, 0));
-  dom.boxMoveRight.addEventListener("click", () => moveBox(4, 0));
-  dom.boxBigger.addEventListener("click", () => scaleBox(1.05));
-  dom.boxSmaller.addEventListener("click", () => scaleBox(1 / 1.05));
-  dom.resetBox.addEventListener("click", resetActiveBox);
-  dom.resetAll.addEventListener("click", () => {
-    Object.entries(wardrobeLayerBoundsByType).forEach(([type, b]) => { workingSafeBox[type] = b.safeBox ? { ...b.safeBox } : fullCanvas(); });
-    for (const k of Object.keys(workingItemBox)) delete workingItemBox[k];
-    renderAll();
-  });
   dom.applyAll.addEventListener("click", applyToFiles);
-  setupDrag(dom.typeOverlay);
   setupDrag(dom.itemOverlay);
+  setupColumnResize();
+}
+
+// 左欄可拖曳調整欄寬：拖 .col-resizer 改 .tool-shell 的 --left-w。
+function setupColumnResize() {
+  const shell = document.querySelector(".tool-shell");
+  const resizer = document.querySelector(".col-resizer");
+  if (!shell || !resizer) return;
+  let active = false;
+  resizer.addEventListener("pointerdown", (e) => { active = true; try { resizer.setPointerCapture(e.pointerId); } catch { /* noop */ } e.preventDefault(); });
+  resizer.addEventListener("pointermove", (e) => { if (active) shell.style.setProperty("--left-w", `${clampN(e.clientX, 220, 680)}px`); });
+  const end = () => { active = false; };
+  resizer.addEventListener("pointerup", end);
+  resizer.addEventListener("pointercancel", end);
 }
 
 function renderAll() {
   renderSummary();
   renderCategoryTabs();
   renderItemList();
-  renderModeTabs();
   renderSelectedInfo();
-  renderControls();
   renderPreview();
 }
 
@@ -166,16 +156,6 @@ function ensureValidSelection() {
   equipSelectedItem();
 }
 
-function renderModeTabs() {
-  [...dom.modeTabs.querySelectorAll("button")].forEach((b) => {
-    b.classList.toggle("active", b.dataset.mode === state.editMode);
-  });
-  dom.boxTitle.firstChild.textContent = state.editMode === "type" ? "① 類型框 " : "② 單品框 ";
-  dom.modeHelp.textContent = state.editMode === "type"
-    ? "編輯此類的投影範圍（safeBox），套用到同類所有單品；單品框須落在其內。"
-    : "編輯這一件實際投影的矩形（targetBox），只影響目前選取的單品。";
-}
-
 function renderSelectedInfo() {
   const item = selectedItem();
   const key = selectedKey();
@@ -185,21 +165,13 @@ function renderSelectedInfo() {
     : "（未選單品）";
 }
 
-function renderControls() {
-  const disabled = !activeBox();
-  [dom.boxUp, dom.boxDown, dom.boxMoveLeft, dom.boxMoveRight, dom.boxBigger, dom.boxSmaller, dom.resetBox]
-    .forEach((el) => { el.disabled = disabled; });
-}
-
 function renderPreview() {
   const item = selectedItem();
   const character = playableCharacterById(defaultActiveCharacterId);
   dom.previewLabel.innerHTML = `<strong>${escapeHtml(item?.type || "outfit")}</strong><span>${escapeHtml(item?.name || "Current outfit")}</span>`;
   dom.previewDoll.innerHTML = paperDollRenderer.avatarMarkup("tuner", state.outfit, character);
-  const type = selectedType();
   const key = selectedKey();
-  setOverlay(dom.typeOverlay, type ? workingSafeBox[type] : null, type ? `① ${type} safeBox` : "", state.editMode === "type");
-  setOverlay(dom.itemOverlay, key ? itemBoxFor(key) : null, key ? "② item box" : "", state.editMode === "item");
+  setOverlay(dom.itemOverlay, key ? itemBoxFor(key) : null, key ? escapeHtml(item?.name || "item") : "", true);
 }
 
 function setOverlay(el, box, label, active) {
@@ -211,41 +183,13 @@ function setOverlay(el, box, label, active) {
   el.dataset.label = label || "";
 }
 
-// ===== active box（依 editMode 指向類型框或單品框） =====
-function activeBox() {
-  if (state.editMode === "type") { const t = selectedType(); return t ? workingSafeBox[t] : null; }
-  const k = selectedKey(); return k ? itemBoxFor(k) : null;
-}
+// ===== active box（單品框 targetBox，唯一可編輯之框） =====
+function activeBox() { const k = selectedKey(); return k ? itemBoxFor(k) : null; }
 function commitActiveBox(box) {
-  const b = { left: Math.round(box.left), top: Math.round(box.top), right: Math.round(box.right), bottom: Math.round(box.bottom) };
-  if (state.editMode === "type") { const t = selectedType(); if (t) workingSafeBox[t] = b; }
-  else { const k = selectedKey(); if (k) workingItemBox[k] = b; }
+  const k = selectedKey();
+  if (k) workingItemBox[k] = { left: Math.round(box.left), top: Math.round(box.top), right: Math.round(box.right), bottom: Math.round(box.bottom) };
 }
-function resetActiveBox() {
-  if (state.editMode === "type") {
-    const t = selectedType(); if (!t) return;
-    workingSafeBox[t] = wardrobeLayerBoundsByType[t]?.safeBox ? { ...wardrobeLayerBoundsByType[t].safeBox } : fullCanvas();
-  } else {
-    const k = selectedKey(); if (k) delete workingItemBox[k];
-  }
-  renderAll();
-}
-
-function moveBox(dx, dy) {
-  const box = activeBox(); if (!box) return;
-  const w = box.right - box.left; const h = box.bottom - box.top;
-  const left = clampN(box.left + dx, 0, CANVAS.W - w); const top = clampN(box.top + dy, 0, CANVAS.H - h);
-  commitActiveBox({ left, top, right: left + w, bottom: top + h });
-  afterBoxChange();
-}
-function scaleBox(factor) {
-  const box = activeBox(); if (!box) return;
-  const cx = (box.left + box.right) / 2; const cy = (box.top + box.bottom) / 2;
-  const hw = ((box.right - box.left) * factor) / 2; const hh = ((box.bottom - box.top) * factor) / 2;
-  commitActiveBox({ left: clampN(cx - hw, 0, CANVAS.W), top: clampN(cy - hh, 0, CANVAS.H), right: clampN(cx + hw, 0, CANVAS.W), bottom: clampN(cy + hh, 0, CANVAS.H) });
-  afterBoxChange();
-}
-function afterBoxChange() { renderControls(); renderPreview(); renderSelectedInfo(); }
+function afterBoxChange() { renderPreview(); renderSelectedInfo(); }
 
 // ② 圖上拖拉：中央方塊移動、四邊四角 8 點非等比縮放（作用於目前所選的框）。
 function setupDrag(overlay) {
