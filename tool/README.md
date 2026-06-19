@@ -18,25 +18,31 @@ module loading restrictions during development.
 Pick a garment on the **left** (category → item) — that selection drives
 everything. The **素材包** dropdown above the categories filters items by content
 pack (multi-select checkboxes; pick one pack or several, or 全選/全不選). Drag the
-splitter between the catalog and the preview to resize the left column.
+splitters on either side of the preview to resize the left/right columns.
 
 ## Positioning a garment (issue #176)
 
 Wardrobe art is stored tightly trimmed (no transparent margins), and the engine
-scales each piece to fill a target rectangle (its **item box**) in `512×768`
-canvas coordinates — non-uniform, so the box sets width and height independently.
-The selected item shows a green box on the figure; tune it directly:
+fills a target box in `512×768` canvas coordinates — non-uniform, so the box sets
+width and height independently. The **編輯對象** toggle picks which box you edit:
 
-- drag the centre **✛** square to move it,
-- drag the eight edge/corner handles to resize (non-uniform).
+- **① 類型框** (blue) — the type's projection region (`safeBox`, a soft guide /
+  default; exports to `wardrobeLayerBoundsByType` in `rules.js`).
+- **② 單品框** (green) — the selected item's exact box (exports as a diff to
+  `asset-target-overrides.js`; seeded from the trimmed art's content box).
 
-The box is seeded from the trimmed art's original content box (identity). Only
-items you actually change are exported (as a diff) into
-`content-package/wardrobe/_shared/asset-target-overrides.js`; the trim baseline in
-`asset-content-box.generated.js` is never hand-edited, so re-running the trim
-script will not clobber your overrides. Per-type projection regions
-(`wardrobeLayerBoundsByType` `safeBox` in `rules.js`) are written through
-unchanged on Apply.
+Drag the selected box directly on the figure:
+
+- the centre **✛** square to move it,
+- the four edge-midpoint handles to resize (non-uniform),
+- on the green item box, the **four corner handles taper the top/bottom edge
+  width** — an isosceles-trapezoid warp (left/right symmetric) applied to the art
+  via a projective transform.
+
+The trim baseline in `asset-content-box.generated.js` is never hand-edited, so
+re-running the trim script will not clobber your overrides. A per-item box may
+extend beyond its type `safeBox` (manual tuning is allowed anywhere on the
+canvas; `data-audit` only warns, and errors only if it leaves the canvas).
 
 ## Apply your tuning
 

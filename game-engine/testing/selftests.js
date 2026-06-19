@@ -1226,7 +1226,7 @@ async function runDataAudit(api) {
       });
     });
   });
-  const characterRegistry = await collectPaperDollCharacterAudit(api, errors);
+  const characterRegistry = await collectPaperDollCharacterAudit(api, errors, warnings);
   const characterScale = await collectCharacterScaleAudit(api, errors, warnings);
 
   // issue #96 設計契約 §3：場景自帶題庫之結構與中文覆蓋一致性（手寫固定、每題自帶中文、進場取題）。
@@ -1318,7 +1318,7 @@ async function runDataAudit(api) {
   document.body.prepend(result);
 }
 
-async function collectPaperDollCharacterAudit(api, errors) {
+async function collectPaperDollCharacterAudit(api, errors, warnings = []) {
   const registry = api.characterRegistry || {};
   const characters = [];
   const expectedPlayableIds = ["lumi", "yumi", "sol", "rosa"];
@@ -1754,8 +1754,14 @@ async function collectCharacterScaleAudit(api, errors, warnings = []) {
             errors.push(`${item.id}/${layer.slot} bitmap not tightly trimmed (alpha ${JSON.stringify(b)} in ${metrics.width}x${metrics.height})`);
           }
         }
-        if (expectedBounds?.safeBox && !boxContainsAlpha(expectedBounds.safeBox, targetBox)) {
-          errors.push(`${item.id}/${layer.slot} targetBox ${JSON.stringify(targetBox)} is outside ${item.type} safeBox ${JSON.stringify(expectedBounds.safeBox)}`);
+        // 手動 per-item 校準可超出類別 safeBox（safeBox 退為軟性指引）；落在畫布外才算錯，
+        // 僅超出 safeBox 則告警（提醒檢查是否誤拖，如明顯偏離中心）。
+        const onCanvas = targetBox.left >= -2 && targetBox.top >= -2
+          && targetBox.right <= contract.canvasWidth + 2 && targetBox.bottom <= contract.canvasHeight + 2;
+        if (!onCanvas) {
+          errors.push(`${item.id}/${layer.slot} targetBox ${JSON.stringify(targetBox)} is outside the ${contract.canvasWidth}x${contract.canvasHeight} canvas`);
+        } else if (expectedBounds?.safeBox && !boxContainsAlpha(expectedBounds.safeBox, targetBox)) {
+          warnings.push(`${item.id}/${layer.slot} targetBox ${JSON.stringify(targetBox)} extends beyond ${item.type} safeBox (manual tune — verify placement)`);
         }
       } else {
         // 舊滿版模型：素材為 512x768、alpha 落在類別 safeBox 內。

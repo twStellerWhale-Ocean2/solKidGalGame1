@@ -74,6 +74,7 @@ function bindEvents() {
   setupDrag(dom.typeOverlay);
   setupDrag(dom.itemOverlay);
   setupColumnResize();
+  window.addEventListener("resize", () => paperDollRenderer.applyLayerTransforms(dom.previewDoll));
 }
 
 // 左右欄皆可拖曳調寬：左分隔條改 --left-w（=clientX）、右分隔條改 --right-w（=innerWidth-clientX）。
@@ -110,7 +111,7 @@ function renderModeTabs() {
   [...dom.modeTabs.querySelectorAll("button")].forEach((b) => b.classList.toggle("active", b.dataset.mode === state.editMode));
   dom.modeHelp.textContent = state.editMode === "type"
     ? "編輯此類投影範圍（藍框＝safeBox），套用同類；單品框須落在其內。"
-    : "編輯這一件實際投影矩形（綠框＝targetBox），只影響此單品。";
+    : "編輯這一件投影矩形（綠框）：邊中點縮放、中央移動；四角拖拉調上/下邊寬（梯形拉伸）。";
 }
 
 function renderSummary() {
@@ -193,6 +194,7 @@ function renderPreview() {
   const character = playableCharacterById(defaultActiveCharacterId);
   dom.previewLabel.innerHTML = `<strong>${escapeHtml(item?.type || "outfit")}</strong><span>${escapeHtml(item?.name || "Current outfit")}</span>`;
   dom.previewDoll.innerHTML = paperDollRenderer.avatarMarkup("tuner", state.outfit, character);
+  paperDollRenderer.applyLayerTransforms(dom.previewDoll);
   const type = selectedType();
   const key = selectedKey();
   setOverlay(dom.typeOverlay, type ? workingSafeBox[type] : null, type ? `① ${type}` : "", state.editMode === "type");
@@ -206,6 +208,19 @@ function setOverlay(el, box, label, active) {
   el.style.display = "block";
   el.style.inset = `${pct.top}% ${pct.right}% ${pct.bottom}% ${pct.left}%`;
   el.dataset.label = label || "";
+  // 梯形：把上/下角控制點移到梯形角（綠框＝單品框才有梯形；矩形時即回到四角）。
+  const w = box.right - box.left;
+  const tf = w ? ((Number(box.topInset) || 0) / w) * 100 : 0;
+  const bf = w ? ((Number(box.bottomInset) || 0) / w) * 100 : 0;
+  positionCorner(el, "nw", `${tf}%`, "0");
+  positionCorner(el, "ne", `${100 - tf}%`, "0");
+  positionCorner(el, "sw", `${bf}%`, "100%");
+  positionCorner(el, "se", `${100 - bf}%`, "100%");
+}
+function positionCorner(el, cls, left, top) {
+  const h = el.querySelector(`.drag-handle.${cls}`);
+  if (!h) return;
+  h.style.left = left; h.style.top = top; h.style.right = "auto"; h.style.bottom = "auto"; h.style.transform = "translate(-50%, -50%)";
 }
 
 // ===== active box（依 editMode 指向類型框或單品框） =====
@@ -215,6 +230,9 @@ function activeBox() {
 }
 function commitActiveBox(box) {
   const b = { left: Math.round(box.left), top: Math.round(box.top), right: Math.round(box.right), bottom: Math.round(box.bottom) };
+  const halfMax = (b.right - b.left) / 2 - 2;
+  if (Number(box.topInset) > 0) b.topInset = Math.round(clampN(box.topInset, 0, halfMax));
+  if (Number(box.bottomInset) > 0) b.bottomInset = Math.round(clampN(box.bottomInset, 0, halfMax));
   if (state.editMode === "type") { const t = selectedType(); if (t) workingSafeBox[t] = b; }
   else { const k = selectedKey(); if (k) workingItemBox[k] = b; }
 }
@@ -247,10 +265,18 @@ function pointerCanvas(e) {
 function applyDrag(active, p) {
   const { handle, start, sx, sy } = active;
   let b = { ...start };
+  const corner = handle.length === 2; // nw/ne/sw/se
+  const halfMax = (start.right - start.left) / 2 - 2;
   if (handle === "move") {
     const w = start.right - start.left; const h = start.bottom - start.top;
     const left = clampN(start.left + (p.x - sx), 0, CANVAS.W - w); const top = clampN(start.top + (p.y - sy), 0, CANVAS.H - h);
-    b = { left, top, right: left + w, bottom: top + h };
+    b = { ...start, left, top, right: left + w, bottom: top + h };
+  } else if (corner && state.editMode === "item") {
+    // 梯形：角落控制點調上/下邊內縮量（左右對稱），不改 bounding box。
+    if (handle === "nw") b.topInset = clampN(p.x - start.left, 0, halfMax);
+    else if (handle === "ne") b.topInset = clampN(start.right - p.x, 0, halfMax);
+    else if (handle === "sw") b.bottomInset = clampN(p.x - start.left, 0, halfMax);
+    else if (handle === "se") b.bottomInset = clampN(start.right - p.x, 0, halfMax);
   } else {
     if (handle.includes("w")) b.left = clampN(p.x, 0, b.right - 4);
     if (handle.includes("e")) b.right = clampN(p.x, b.left + 4, CANVAS.W);
@@ -341,8 +367,16 @@ function insetPct(box) {
     bottom: r3(((CANVAS.H - box.bottom) / CANVAS.H) * 100), left: r3((box.left / CANVAS.W) * 100)
   };
 }
-function sameBox(a, b) { return !!a && !!b && a.left === b.left && a.top === b.top && a.right === b.right && a.bottom === b.bottom; }
-function boxLiteral(b) { return `{ left: ${b.left}, top: ${b.top}, right: ${b.right}, bottom: ${b.bottom} }`; }
+function sameBox(a, b) {
+  return !!a && !!b && a.left === b.left && a.top === b.top && a.right === b.right && a.bottom === b.bottom
+    && (a.topInset || 0) === (b.topInset || 0) && (a.bottomInset || 0) === (b.bottomInset || 0);
+}
+function boxLiteral(b) {
+  const extra = [];
+  if (Number(b.topInset) > 0) extra.push(`topInset: ${b.topInset}`);
+  if (Number(b.bottomInset) > 0) extra.push(`bottomInset: ${b.bottomInset}`);
+  return `{ left: ${b.left}, top: ${b.top}, right: ${b.right}, bottom: ${b.bottom}${extra.length ? `, ${extra.join(", ")}` : ""} }`;
+}
 function renderBoundsOf(b) { return { left: b.left || 0, top: b.top || 0, right: b.right || 0, bottom: b.bottom || 0 }; }
 function hasRenderOffset(b) { return (b.left || 0) !== 0 || (b.top || 0) !== 0 || (b.right || 0) !== 0 || (b.bottom || 0) !== 0; }
 function r3(v) { return Math.round(v * 1000) / 1000; }
