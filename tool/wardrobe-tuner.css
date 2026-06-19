@@ -148,18 +148,24 @@ button.active {
   position: absolute;
   z-index: 14;
   border-radius: 3px;
-  border: 1.5px dashed rgba(91, 62, 100, 0.5);
-  background: rgba(91, 62, 100, 0.05);
+  border-style: dashed;
+  border-width: 1.5px;
   pointer-events: none;
 }
 
 .box-overlay.active {
   z-index: 16;
-  border: 2px solid #cc4c87;
-  background: rgba(204, 76, 135, 0.08);
+  border-style: solid;
+  border-width: 2px;
   pointer-events: auto;
   touch-action: none;
 }
+
+/* ① 類型框＝藍、② 單品框＝綠；active 實線＋較深底，inactive 虛線參考。 */
+#typeOverlay { border-color: rgba(47, 111, 208, 0.55); background: rgba(47, 111, 208, 0.06); }
+#typeOverlay.active { border-color: #2f6fd0; background: rgba(47, 111, 208, 0.1); }
+#itemOverlay { border-color: rgba(46, 158, 84, 0.6); background: rgba(46, 158, 84, 0.07); }
+#itemOverlay.active { border-color: #2e9e54; background: rgba(46, 158, 84, 0.12); }
 
 /* 人物畫布圖框：512:768 圖框 + 中線，幫助對位（#176）。 */
 .figure-frame {
@@ -189,23 +195,27 @@ button.active {
   color: rgba(91, 62, 100, 0.5);
 }
 
-/* 拖拉控制點：中央方塊移動、四邊與四角共 8 點縮放（非等比）；僅 .active 框顯示。 */
+/* 拖拉控制點：空心方塊（白底＋彩色框）；中央移動、四邊四角共 8 點縮放；僅 .active 框顯示。 */
 .drag-handle {
   position: absolute;
   display: none;
   width: 12px;
   height: 12px;
-  background: #cc4c87;
-  border: 1.5px solid #fff;
+  background: #fff;
+  border: 2px solid #888;
   border-radius: 2px;
-  box-shadow: 0 1px 3px rgba(40, 28, 48, 0.35);
+  box-shadow: 0 1px 2px rgba(40, 28, 48, 0.3);
   touch-action: none;
 }
 
 .box-overlay.active .drag-handle { display: block; }
+#typeOverlay .drag-handle { border-color: #2f6fd0; }
+#itemOverlay .drag-handle { border-color: #2e9e54; }
 
 .drag-handle.move { left: 50%; top: 50%; width: 18px; height: 18px; transform: translate(-50%, -50%); border-radius: 4px; cursor: move; }
-.drag-handle.move::after { content: "✛"; display: block; text-align: center; color: #fff; font-size: 12px; line-height: 15px; }
+.drag-handle.move::after { content: "✛"; display: block; text-align: center; color: #888; font-size: 12px; line-height: 14px; }
+#typeOverlay .drag-handle.move::after { color: #2f6fd0; }
+#itemOverlay .drag-handle.move::after { color: #2e9e54; }
 .drag-handle.n { left: 50%; top: 0; transform: translate(-50%, -50%); cursor: ns-resize; }
 .drag-handle.s { left: 50%; bottom: 0; transform: translate(-50%, 50%); cursor: ns-resize; }
 .drag-handle.w { left: 0; top: 50%; transform: translate(-50%, -50%); cursor: ew-resize; }
@@ -229,7 +239,8 @@ button.active {
   background: #7a6080;
 }
 
-.box-overlay.active::after { background: #cc4c87; }
+#typeOverlay::after { background: #2f6fd0; }
+#itemOverlay::after { background: #2e9e54; }
 
 /* 測試圖層：使用 game renderer 同一 .paper-doll-layer 樣式，疊在最上層。 */
 .paper-doll-layer-type-test {
@@ -473,6 +484,7 @@ button.active {
   color: #9a7e9d;
 }
 
-.mode-tabs button.active span {
-  color: #b85c87;
-}
+#modeTabs button[data-mode="type"].active { border-color: #2f6fd0; background: rgba(47, 111, 208, 0.12); color: #1f4f8f; }
+#modeTabs button[data-mode="type"].active span { color: #2f6fd0; }
+#modeTabs button[data-mode="item"].active { border-color: #2e9e54; background: rgba(46, 158, 84, 0.12); color: #1c6e3a; }
+#modeTabs button[data-mode="item"].active span { color: #2e9e54; }

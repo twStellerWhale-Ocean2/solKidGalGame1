@@ -54,13 +54,8 @@
       </section>
 
       <section class="control-section">
-        <h2 id="boxTitle">框 <span class="hint">canvas px</span></h2>
-        <div class="bound-grid">
-          <label>Left <input id="boxLeft" type="number" step="1" min="0" max="512"></label>
-          <label>Top <input id="boxTop" type="number" step="1" min="0" max="768"></label>
-          <label>Right <input id="boxRight" type="number" step="1" min="0" max="512"></label>
-          <label>Bottom <input id="boxBottom" type="number" step="1" min="0" max="768"></label>
-        </div>
+        <h2 id="boxTitle">框</h2>
+        <p class="control-help">於左側預覽圖上直接拖拉：中央 ✛ 方塊移動、四邊四角 8 點縮放（非等比）。拖到的是上方所選的框；下列按鈕可微調。</p>
         <div class="nudge-grid">
           <button id="boxUp" type="button">Move Up</button>
           <button id="boxDown" type="button">Move Down</button>
@@ -69,18 +64,6 @@
           <button id="boxBigger" type="button">Bigger</button>
           <button id="boxSmaller" type="button">Smaller</button>
           <button id="resetBox" type="button">Reset This Box</button>
-        </div>
-        <p class="control-help">於左側預覽圖上直接拖拉：中央 ✛ 方塊移動、四邊四角 8 點縮放（非等比）。拖到的是上方所選的框。</p>
-      </section>
-
-      <section class="control-section">
-        <h2>Test Image <span class="hint">任意尺寸</span></h2>
-        <p class="control-help">載入任意尺寸素材，預覽它 fit 進目前單品框的效果（驗證版型不一也能對位）。</p>
-        <div class="test-grid">
-          <label class="file-button">Load Image<input id="testImage" type="file" accept="image/*"></label>
-          <button id="clearTest" type="button">Clear</button>
-        </div>
-        <div class="reset-grid">
           <button id="resetAll" type="button">Reset All</button>
         </div>
       </section>

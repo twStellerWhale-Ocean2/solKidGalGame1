@@ -16,48 +16,40 @@ This is still a static site flow. The local server only avoids Chrome `file://`
 module loading restrictions during development.
 
 Pick a garment on the **left** (category → item) — that selection drives
-everything; there is no separate layer-type picker. The right pane then exposes
-two layers of positioning over a live paper-doll preview.
+everything. The right pane then edits two layers of positioning over a live
+paper-doll preview; you tune by dragging boxes directly on the figure.
 
 ## Two-layer positioning (issue #176)
 
 Wardrobe art is stored tightly trimmed (no transparent margins), and the engine
-scales each piece to *contain* within a target rectangle in `512×768` canvas
-coordinates. You set that rectangle in two layers:
+scales each piece to fill a target rectangle in `512×768` canvas coordinates
+(non-uniform — the box sets width and height independently). You set that
+rectangle in two layers, chosen via the **編輯對象** toggle:
 
-- **① Type Box** (`Type Box · 套同類`) — the type's projection region
-  (its `safeBox`). Shown as a faint dashed overlay. Editing it affects every item
-  of that `type`; per-item boxes must stay inside it, and a brand-new asset with
-  no per-item box defaults to projecting here. Exports into
+- **① Type Box** (blue) — the type's projection region (its `safeBox`). Affects
+  every item of that `type`; per-item boxes should stay inside it, and a brand-new
+  asset with no per-item box defaults to projecting here. Exports into
   `content-package/wardrobe/_shared/rules.js` (`wardrobeLayerBoundsByType`).
-- **② Item Box** (`Item Box · 僅此件`) — the exact rectangle the *selected* item
-  projects onto. Shown as the solid pink overlay. Seeded from the trimmed art's
-  original content box (identity), then adjust per item:
-  - **Left / Top / Right / Bottom** — canvas coordinates (0–512 / 0–768).
-  - **Move Up/Down/Left/Right** — shift the box by 4px without resizing.
-  - **Bigger / Smaller** — scale the box ±5% around its centre.
-  - **Reset Item** — back to the trimmed/override seed.
-  Only items you actually change are exported (as a diff) into
+- **② Item Box** (green) — the exact rectangle the *selected* item projects onto,
+  seeded from the trimmed art's original content box (identity). Only items you
+  actually change are exported (as a diff) into
   `content-package/wardrobe/_shared/asset-target-overrides.js`. The trim baseline
-  in `asset-content-box.generated.js` is never hand-edited, so re-running the
-  trim script will not clobber your overrides.
+  in `asset-content-box.generated.js` is never hand-edited, so re-running the trim
+  script will not clobber your overrides.
+
+The selected layer is drawn solid with hollow drag handles; the other is a faint
+reference outline. On the figure: drag the centre **✛** to move, the eight edge/
+corner handles to resize (non-uniform). The **Move / Bigger / Smaller** buttons
+nudge, **Reset This Box** reverts the active box, **Reset All** reverts everything.
 
 ## Apply your tuning
 
-- **✓ 套用到檔案 (Apply)** writes both blocks straight back to disk via the local
-  `server.mjs` dev endpoint (`POST /tool/apply-wardrobe`) — no copy-paste. It only
-  rewrites the `wardrobeLayerBoundsByType` block in `rules.js` and the
-  `assetTargetOverrides` block in `asset-target-overrides.js` (whitelisted files).
-  Reload the game to see the result. (Requires the server to be `node server.mjs`.)
-- Manual fallback if you prefer: **Copy rules.js safeBox** → paste into `rules.js`;
-  **Copy per-item overrides** → paste into `asset-target-overrides.js`.
-
-## Test Image (any size)
-
-Use **Load Image** to drop in an arbitrary-size picture and preview it fitting
-into the current **Item Box** — this is how you confirm that art with a different
-crop/aspect still aligns. **Clear** removes it. The test image is preview-only
-and is never exported.
+**✓ 套用到檔案 (Apply)** (bottom of the right pane) writes both layers straight
+back to disk via the local `server.mjs` dev endpoint (`POST /tool/apply-wardrobe`)
+— no copy-paste. It only rewrites the `wardrobeLayerBoundsByType` block in
+`rules.js` and the `assetTargetOverrides` block in `asset-target-overrides.js`
+(whitelisted files), preserving each file's line endings. Reload the game to see
+the result. (Requires the dev server to be `node server.mjs`.)
 
 ## Trim tool
 

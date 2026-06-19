@@ -25,8 +25,7 @@ const state = {
   categoryId: categories[0]?.id || "",
   selectedItemId: firstItemForCategory(categories[0]?.id)?.id || "",
   editMode: "item", // "type"（① 類型框/safeBox）或 "item"（② 單品框/targetBox）
-  outfit: { ...baseOutfit },
-  testImageByType: {}
+  outfit: { ...baseOutfit }
 };
 
 const dom = {
@@ -35,10 +34,8 @@ const dom = {
   typeOverlay: q("#typeOverlay"), itemOverlay: q("#itemOverlay"),
   selectedInfo: q("#selectedInfo"),
   modeTabs: q("#modeTabs"), modeHelp: q("#modeHelp"), boxTitle: q("#boxTitle"),
-  boxLeft: q("#boxLeft"), boxTop: q("#boxTop"), boxRight: q("#boxRight"), boxBottom: q("#boxBottom"),
   boxUp: q("#boxUp"), boxDown: q("#boxDown"), boxMoveLeft: q("#boxMoveLeft"), boxMoveRight: q("#boxMoveRight"),
   boxBigger: q("#boxBigger"), boxSmaller: q("#boxSmaller"), resetBox: q("#resetBox"), resetAll: q("#resetAll"),
-  testImage: q("#testImage"), clearTest: q("#clearTest"),
   applyAll: q("#applyAll"), applyStatus: q("#applyStatus")
 };
 
@@ -60,9 +57,6 @@ function bindEvents() {
     const mode = e.target.closest("button")?.dataset.mode;
     if (mode) { state.editMode = mode; renderAll(); }
   });
-  ["Left", "Top", "Right", "Bottom"].forEach((edge) => {
-    dom[`box${edge}`].addEventListener("input", () => setBoxEdge(edge.toLowerCase(), Number(dom[`box${edge}`].value)));
-  });
   dom.boxUp.addEventListener("click", () => moveBox(0, -4));
   dom.boxDown.addEventListener("click", () => moveBox(0, 4));
   dom.boxMoveLeft.addEventListener("click", () => moveBox(-4, 0));
@@ -75,14 +69,6 @@ function bindEvents() {
     for (const k of Object.keys(workingItemBox)) delete workingItemBox[k];
     renderAll();
   });
-  dom.testImage.addEventListener("change", () => {
-    const file = dom.testImage.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.addEventListener("load", () => { state.testImageByType[selectedType()] = reader.result; renderPreview(); });
-    reader.readAsDataURL(file);
-  });
-  dom.clearTest.addEventListener("click", () => { delete state.testImageByType[selectedType()]; dom.testImage.value = ""; renderPreview(); });
   dom.applyAll.addEventListener("click", applyToFiles);
   setupDrag(dom.typeOverlay);
   setupDrag(dom.itemOverlay);
@@ -154,32 +140,20 @@ function renderSelectedInfo() {
 }
 
 function renderControls() {
-  const box = activeBox();
-  const disabled = !box;
-  const b = box || fullCanvas();
-  dom.boxLeft.value = b.left; dom.boxTop.value = b.top; dom.boxRight.value = b.right; dom.boxBottom.value = b.bottom;
-  [dom.boxLeft, dom.boxTop, dom.boxRight, dom.boxBottom, dom.boxUp, dom.boxDown, dom.boxMoveLeft, dom.boxMoveRight,
-    dom.boxBigger, dom.boxSmaller, dom.resetBox].forEach((el) => { el.disabled = disabled; });
+  const disabled = !activeBox();
+  [dom.boxUp, dom.boxDown, dom.boxMoveLeft, dom.boxMoveRight, dom.boxBigger, dom.boxSmaller, dom.resetBox]
+    .forEach((el) => { el.disabled = disabled; });
 }
 
 function renderPreview() {
   const item = selectedItem();
   const character = playableCharacterById(defaultActiveCharacterId);
   dom.previewLabel.innerHTML = `<strong>${escapeHtml(item?.type || "outfit")}</strong><span>${escapeHtml(item?.name || "Current outfit")}</span>`;
-  dom.previewDoll.innerHTML = paperDollRenderer.avatarMarkup("tuner", state.outfit, character) + testLayerMarkup();
+  dom.previewDoll.innerHTML = paperDollRenderer.avatarMarkup("tuner", state.outfit, character);
   const type = selectedType();
   const key = selectedKey();
   setOverlay(dom.typeOverlay, type ? workingSafeBox[type] : null, type ? `① ${type} safeBox` : "", state.editMode === "type");
   setOverlay(dom.itemOverlay, key ? itemBoxFor(key) : null, key ? "② item box" : "", state.editMode === "item");
-}
-
-function testLayerMarkup() {
-  const url = state.testImageByType[selectedType()];
-  const key = selectedKey();
-  if (!url || !key) return "";
-  const pct = insetPct(itemBoxFor(key));
-  const style = `--layer-img:url('${url}');--layer-top:${pct.top}%;--layer-right:${pct.right}%;--layer-bottom:${pct.bottom}%;--layer-left:${pct.left}%;--layer-fit:100% 100%`;
-  return `<span class="paper-doll-layer paper-doll-layer-type-test" style="${style}" aria-hidden="true"></span>`;
 }
 
 function setOverlay(el, box, label, active) {
@@ -211,12 +185,6 @@ function resetActiveBox() {
   renderAll();
 }
 
-function setBoxEdge(edge, raw) {
-  const box = activeBox();
-  if (!box || !Number.isFinite(raw)) return;
-  commitActiveBox({ ...box, [edge]: clampEdge(edge, raw, box) });
-  afterBoxChange();
-}
 function moveBox(dx, dy) {
   const box = activeBox(); if (!box) return;
   const w = box.right - box.left; const h = box.bottom - box.top;
@@ -344,15 +312,6 @@ function q(sel) { return document.querySelector(sel); }
 function fullCanvas() { return { left: 0, top: 0, right: CANVAS.W, bottom: CANVAS.H }; }
 function keyFromSrc(src) { const m = /wardrobe\/([^/]+)\/assets\/layers\/([^/]+)\.webp/.exec(src || ""); return m ? `${m[1]}/${m[2]}` : ""; }
 function clampN(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-function clampEdge(edge, raw, box) {
-  const limit = edge === "left" || edge === "right" ? CANVAS.W : CANVAS.H;
-  let v = Math.max(0, Math.min(limit, Math.round(raw)));
-  if (edge === "left") v = Math.min(v, box.right);
-  else if (edge === "right") v = Math.max(v, box.left);
-  else if (edge === "top") v = Math.min(v, box.bottom);
-  else if (edge === "bottom") v = Math.max(v, box.top);
-  return v;
-}
 function insetPct(box) {
   return {
     top: r3((box.top / CANVAS.H) * 100), right: r3(((CANVAS.W - box.right) / CANVAS.W) * 100),
