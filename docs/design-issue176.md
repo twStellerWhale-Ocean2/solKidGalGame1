@@ -91,3 +91,30 @@
   * USR 以工具逐類目視校準各 `targetBox`（用「任意尺寸測試圖」確認對位），export 貼回 [content-package/wardrobe/_shared/rules.js]。
   * 套用後 GATE §5 實機 visual-qa（寬＋窄、四位公主）：各類別含**刻意異尺寸**素材實穿落點落入目標矩形、比例接縫正確、不變形；既有 #168／#175 素材不退步；跨角色共用 layer 一致。
   * 視需要補 [game-engine/testing/selftests.js] `data-audit` 對 `targetBox`／異尺寸 fit 之可重複斷言（D6）。
+
+## 6. 實作與驗證結果（3code，2026-06-19）
+
+> 沿 #101／#111／#120／#132／#150／#153／#166 焦點變更慣例：本變更之 GATE 驗證結果記於本節。本增量交付的是**維護者工具 + 加性引擎機制**；遊戲玩家畫面未變（game 端 `wardrobeLayerBoundsByType` 維持 identity，未帶 `targetBox`），故無玩家面 UI 逐頁與 test-summary.pdf（待 USR 裁決是否另產）。`docs/design.md` 未改（Option A，docLint sol 0）。
+
+### 實作
+
+* **D1（[content-package/wardrobe/_shared/rules.js]）**：`layerBounds(safeBox, renderBounds, targetBox)` 新增選配第三參數 `targetBox`（canvas 座標）；12 個既有類別未帶 → game 行為不變。
+* **D3（[game-engine/render/paper-doll.js]）**：`boundsStyle` 在 layer 帶 `targetBox` 時輸出畫布相對 %（`top/768`、`left/512`、`right=(512-right)/512`、`bottom=(768-bottom)/768`）+ 既有 `background-size:contain` 等比 fit；未帶則維持 px inset 舊路徑（D4 identity）。`createPaperDollRenderer` 加 `canvasWidth/canvasHeight` 參數（預設 512×768）。
+* **工具（[tool/wardrobe-tuner.js]／`.html`／`.css`／README）**：「Render Bounds」改為 **Target Box**（canvas 座標 L/T/R/B）編輯＋ Move 平移＋虛線 overlay；新增「任意尺寸測試圖」載入即時預覽；export 含 `targetBox`（identity 類別自動省略）；stage 設 `aspect-ratio:512/768` 使 % 正確對映。輸入夾限至 `[0, 512/768]` 並回寫輸入框、`left≤right`／`top≤bottom` 防反向框。
+
+### GATE §1（機器判定，全綠）
+
+* `node --check`：`game-engine/render/paper-doll.js`、`content-package/wardrobe/_shared/rules.js`、`tool/wardrobe-tuner.js` → OK。
+* headless selftest（本機 server）：`data-audit` → `passed:true`、`errors:[]`；`map-avatar` → `passed:true`、`errors:[]`；console **0 error**——加性 `targetBox` 對既有 wardrobe 渲染**零回歸**。
+* `repoLint .` → **0**；`docLint docs/design.md`（sol）→ **0**。
+* 依賴安全：純靜態網站、無 package 相依，`npm audit` 不適用。
+
+### GATE §5（業界水準審查，聚焦變更之維護者工具）
+
+* **鏡頭 A（工具/腳本能力）**：目標矩形輸入驗證（夾限＋回寫＋防反向框）✅；Reset Type／Reset All ✅；export 可重貼、identity 類別不含 `targetBox`（貼回 game 不變）✅；載入/Clear 測試圖 ✅。
+* **鏡頭 B（專家缺口）**：發現「超範圍輸入只夾限儲存值、輸入框仍顯示原數字」與「未防 `left>right` 反向框」→ **已修**（`setTargetEdge` 夾限後回寫輸入框並做 `left≤right`/`top≤bottom` 約束），實機複驗 `9999→512`、`-50→0`、`left=999→370`。
+* **鏡頭 C（逐頁）**：本增量唯一變更畫面為維護者 Wardrobe Tuner（非產品玩家 HMI）；遊戲玩家畫面未變（config identity、selftest 零回歸）。Tuner 經實機驗證：目標矩形→% 對映精確（top `390/768=50.781%`…）、overlay 與實際 layer inset 一致、無 console error。
+* **分級**：`務必要修`＝輸入夾限回寫/防反向框（已修）；其餘 `可以接受`（dmethod 為 dev 工具、調性沿用既有粉彩主題）。
+* 註：本環境 preview 截圖工具連續 timeout（截圖管線問題、頁面經 eval 確認正常），故以 computed-style／selftest／DOM 實證代替截圖佐證。
+
+### 結論：可宣稱完成（本增量交付範圍：維護者工具 + 加性引擎機制；玩家畫面零回歸）。各類別 `targetBox` 確切數值為 USR 後續以工具之手動校準產出。

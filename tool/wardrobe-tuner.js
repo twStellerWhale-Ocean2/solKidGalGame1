@@ -280,12 +280,17 @@ function targetBoxFor(type) {
 
 function setTargetEdge(edge, rawValue) {
   if (!Number.isFinite(rawValue)) return;
+  const box = targetBoxFor(state.selectedType);
   const limit = edge === "left" || edge === "right" ? CANVAS.W : CANVAS.H;
-  const value = Math.max(0, Math.min(limit, Math.round(rawValue)));
-  workingBounds[state.selectedType] = {
-    ...workingBounds[state.selectedType],
-    targetBox: { ...targetBoxFor(state.selectedType), [edge]: value }
-  };
+  let value = Math.max(0, Math.min(limit, Math.round(rawValue)));
+  // 維持矩形有效：left<=right、top<=bottom（避免反向框）。
+  if (edge === "left") value = Math.min(value, box.right);
+  else if (edge === "right") value = Math.max(value, box.left);
+  else if (edge === "top") value = Math.min(value, box.bottom);
+  else if (edge === "bottom") value = Math.max(value, box.top);
+  workingBounds[state.selectedType] = { ...workingBounds[state.selectedType], targetBox: { ...box, [edge]: value } };
+  const input = dom[`target${edge[0].toUpperCase()}${edge.slice(1)}`];
+  if (input) input.value = value; // 把夾限後的值回寫輸入框，避免顯示超範圍數字
   renderPreview();
   renderOutput();
 }
