@@ -71,7 +71,9 @@ async function handleApplyWardrobe(request, response) {
       if (typeof payload[key] !== "string") continue;
       const block = validatedBlock(target.name, payload[key]);
       const filePath = join(root, target.file);
-      const updated = replaceExportBlock(await readFile(filePath, "utf8"), target.name, block);
+      const original = await readFile(filePath, "utf8");
+      const eol = original.includes("\r\n") ? "\r\n" : "\n"; // 保留原檔 EOL，避免 autocrlf 將整檔標記為已變更
+      const updated = replaceExportBlock(original, target.name, block).replace(/\r\n/g, "\n").replace(/\n/g, eol);
       await writeFile(filePath, updated);
       written.push(target.file);
     }
