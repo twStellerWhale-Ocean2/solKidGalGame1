@@ -118,3 +118,24 @@
 * 註：本環境 preview 截圖工具連續 timeout（截圖管線問題、頁面經 eval 確認正常），故以 computed-style／selftest／DOM 實證代替截圖佐證。
 
 ### 結論：可宣稱完成（本增量交付範圍：維護者工具 + 加性引擎機制；玩家畫面零回歸）。各類別 `targetBox` 確切數值為 USR 後續以工具之手動校準產出。
+
+## 7. 研改方向：兩層對位 + 去空白邊（USR 回饋，2026-06-19）
+
+USR 實試後回饋：單靠類型框喬不好同類內尺寸差異（如頭髮長短）；改採——
+
+* **兩層對位**：①類型框（layer1，只設投影上下左右邊界）②各單品 per-item `targetBox`（layer2，縮放＋位移），同類內各件可不同。
+* **現有素材去空白邊**：素材改為緊貼裁切 bitmap（USR 選「腳本實際裁切重存」）。
+* **工具以左邊（分類/單品）為准**，移除右側重複的 Layer Type 頁籤。
+
+### 切片 A（已完成：裁切 + 引擎 + 稽核 + 契約）
+
+* [tool/trim-wardrobe-assets.mjs]（ImageMagick）量測每張 layer 的原始內容框（alpha 門檻）並 `--apply` 緊貼裁切覆寫 80 張、產生 [content-package/wardrobe/_shared/asset-content-box.generated.js]。
+* [content-package/wardrobe/_shared/item-helpers.js]：每件 layer 帶 per-item `targetBox` = 其原始內容框（identity 遷移）。
+* [game-engine/testing/selftests.js] `data-audit`：改為——帶 `targetBox` 者驗「素材緊貼裁切 + `targetBox` 落於類別 `safeBox` 內」；未帶者沿用舊 512×768 + alpha-in-safeBox。
+* [contract-local/hmiIntf自訂角色尺度與美術規範.md] §III.B／§IV：wardrobe layer 改為「緊貼裁切 bitmap + per-item `targetBox` 等比 fit」（base rig 仍 512×768）。
+* **驗證**：`node --check`（item-helpers／selftests／generated）OK；`repoLint` 0；`docLint` sol 0；`data-audit` selftest `passed:true errors:[]`；遊戲載入 console 0 error。
+* **已知精度註記**：in-game doll 容器（`.adv-doll` 390×560、`.map-doll` 108×140）非精確 512:768，皆「高度受限」——故 per-item `targetBox` 之 **垂直定位精確、水平僅在邊緣有 ≤letterbox（中心為 0、邊緣約 ±8px）微偏**，近 identity。若需像素精確，後續可加 512:768 內層 canvas wrapper（須一併處理 `.bust-doll` 頭胸裁切）；目前近似足供 USR 校準。
+
+### 切片 B（待辦）：工具兩層改版
+
+* 左（分類/單品）為唯一選取、移除右側 Layer Type 頁籤；右側分①類型框（套同類）②單品 `targetBox`（縮放/位移，僅該件）；匯出含類型框與 per-item 覆寫。

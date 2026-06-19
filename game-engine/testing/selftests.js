@@ -1741,12 +1741,30 @@ async function collectCharacterScaleAudit(api, errors, warnings = []) {
   for (const { item, layer } of layerRefs) {
     try {
       const metrics = await imageMetrics(layer.src);
-      if (metrics.width !== contract.canvasWidth || metrics.height !== contract.canvasHeight) {
-        errors.push(`${layer.slot || "wardrobe"} layer ${layer.src} is ${metrics.width}x${metrics.height}, expected ${contract.canvasWidth}x${contract.canvasHeight}`);
-      }
       const expectedBounds = api.wardrobeLayerBoundsForType?.(layer.type || item.type);
-      if (metrics.alphaBBox && expectedBounds?.safeBox && !boxContainsAlpha(expectedBounds.safeBox, metrics.alphaBBox)) {
-        errors.push(`${item.id}/${layer.slot} alpha box ${JSON.stringify(metrics.alphaBBox)} is outside ${item.type} safeBox ${JSON.stringify(expectedBounds.safeBox)}`);
+      const targetBox = layer.bounds?.targetBox || null;
+      if (targetBox) {
+        // #176 緊貼裁切模型：素材為去空白邊 bitmap，經 per-item targetBox 等比 fit 回畫布。
+        if (metrics.width > contract.canvasWidth || metrics.height > contract.canvasHeight) {
+          errors.push(`${layer.slot || "wardrobe"} layer ${layer.src} is ${metrics.width}x${metrics.height}, larger than canvas ${contract.canvasWidth}x${contract.canvasHeight}`);
+        }
+        if (metrics.alphaBBox) {
+          const b = metrics.alphaBBox;
+          if (b.left > 2 || b.top > 2 || b.right < metrics.width - 2 || b.bottom < metrics.height - 2) {
+            errors.push(`${item.id}/${layer.slot} bitmap not tightly trimmed (alpha ${JSON.stringify(b)} in ${metrics.width}x${metrics.height})`);
+          }
+        }
+        if (expectedBounds?.safeBox && !boxContainsAlpha(expectedBounds.safeBox, targetBox)) {
+          errors.push(`${item.id}/${layer.slot} targetBox ${JSON.stringify(targetBox)} is outside ${item.type} safeBox ${JSON.stringify(expectedBounds.safeBox)}`);
+        }
+      } else {
+        // 舊滿版模型：素材為 512x768、alpha 落在類別 safeBox 內。
+        if (metrics.width !== contract.canvasWidth || metrics.height !== contract.canvasHeight) {
+          errors.push(`${layer.slot || "wardrobe"} layer ${layer.src} is ${metrics.width}x${metrics.height}, expected ${contract.canvasWidth}x${contract.canvasHeight}`);
+        }
+        if (metrics.alphaBBox && expectedBounds?.safeBox && !boxContainsAlpha(expectedBounds.safeBox, metrics.alphaBBox)) {
+          errors.push(`${item.id}/${layer.slot} alpha box ${JSON.stringify(metrics.alphaBBox)} is outside ${item.type} safeBox ${JSON.stringify(expectedBounds.safeBox)}`);
+        }
       }
       wardrobeLayers.push({
         itemId: item.id,
@@ -1754,6 +1772,7 @@ async function collectCharacterScaleAudit(api, errors, warnings = []) {
         slot: layer.slot,
         type: layer.type,
         bounds: renderBounds(layer.bounds),
+        targetBox,
         safeBox: expectedBounds?.safeBox || null,
         ...metrics
       });
