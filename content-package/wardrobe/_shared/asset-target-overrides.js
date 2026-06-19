@@ -10,7 +10,7 @@ export const assetTargetOverrides = Object.freeze({
   "castle-royal-cloak-room/outer-moon-cape": { left: 125, top: 398, right: 384, bottom: 582 },
   "castle-royal-cloak-room/outer-yellow-cardigan": { left: 172, top: 402, right: 341, bottom: 563 },
   "urban-accessory-atelier/headtop-gold-crown": { left: 200, top: 285, right: 311, bottom: 349 },
-  "urban-dress-boutique/dress-blue-harbor": { left: 162, top: 399, right: 348, bottom: 646 },
+  "urban-dress-boutique/dress-blue-harbor": { left: 157, top: 391, right: 356, bottom: 646 },
   "urban-dress-boutique/dress-rose-festival": { left: 164, top: 404, right: 346, bottom: 651 },
   "urban-dress-boutique/dress-snowflake-gown": { left: 143, top: 404, right: 368, bottom: 712 },
   "urban-hair-salon/hairstyle-twin-braid": { left: 151, top: 281, right: 357, bottom: 559, corners: { nw: [22, 0], ne: [-22, 0], sw: [15, 0], se: [-15, 0] } },
