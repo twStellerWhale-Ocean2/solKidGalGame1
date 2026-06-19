@@ -42,8 +42,8 @@ export const outfitSlots = [
 // safeBox 是素材透明像素應落入的類別級範圍，供 data-audit 檢查 GPT 童話手繪 bitmap 是否對齊角色 rig。
 const fullCanvasBounds = Object.freeze({ left: 0, top: 0, right: 0, bottom: 0 });
 
-const layerBounds = (safeBox) => Object.freeze({
-  ...fullCanvasBounds,
+const layerBounds = (safeBox, renderBounds = fullCanvasBounds) => Object.freeze({
+  ...renderBounds,
   safeBox: Object.freeze(safeBox)
 });
 
@@ -51,13 +51,13 @@ export const wardrobeLayerBoundsByType = Object.freeze({
   hairstyle: layerBounds({ left: 168, top: 280, right: 352, bottom: 570 }),
   top: layerBounds({ left: 150, top: 390, right: 370, bottom: 570 }),
   bottom: layerBounds({ left: 160, top: 510, right: 360, bottom: 690 }),
-  dress: layerBounds({ left: 145, top: 405, right: 375, bottom: 730 }),
+  dress: layerBounds({ left: 145, top: 405, right: 375, bottom: 730 }, { left: 0, top: -4, right: 0, bottom: 4 }),
   outer: layerBounds({ left: 145, top: 385, right: 375, bottom: 660 }),
-  shoes: layerBounds({ left: 216, top: 720, right: 300, bottom: 768 }),
-  headTop: layerBounds({ left: 190, top: 270, right: 330, bottom: 365 }),
-  headSide: layerBounds({ left: 280, top: 335, right: 345, bottom: 420 }),
-  faceEyes: layerBounds({ left: 205, top: 335, right: 315, bottom: 390 }),
-  faceMask: layerBounds({ left: 205, top: 335, right: 315, bottom: 392 }),
+  shoes: layerBounds({ left: 216, top: 720, right: 300, bottom: 768 }, { left: 0, top: -12, right: 0, bottom: 12 }),
+  headTop: layerBounds({ left: 190, top: 270, right: 330, bottom: 365 }, { left: 0, top: -12, right: 0, bottom: 12 }),
+  headSide: layerBounds({ left: 280, top: 335, right: 345, bottom: 420 }, { left: -10, top: -8, right: 10, bottom: 8 }),
+  faceEyes: layerBounds({ left: 205, top: 335, right: 315, bottom: 390 }, { left: 0, top: 12, right: 0, bottom: -12 }),
+  faceMask: layerBounds({ left: 205, top: 335, right: 315, bottom: 392 }, { left: 0, top: 12, right: 0, bottom: -12 }),
   neck: layerBounds({ left: 210, top: 385, right: 310, bottom: 470 }),
   hand: layerBounds({ left: 280, top: 530, right: 365, bottom: 640 })
 });
