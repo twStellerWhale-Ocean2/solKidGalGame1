@@ -226,6 +226,34 @@ function runMapAvatarSelfTest(api) {
   api.requestWorldTravel("rural");
   if (api.state.area !== "rural") errors.push("途中略過：再次點選未立即進入 rural");
 
+  // issue #180：地圖公主 token 永遠顯示於地圖圖示之上、但低於地圖操作 UI 面板。
+  // 守住「公主 token z-index 高於地點標記層／hotspot(nearby)／裝飾層，且低於目的地面板」。
+  const zOf = (el) => (el ? parseInt(getComputedStyle(el).zIndex, 10) : NaN);
+  const checkTokenAboveIcons = (tokenId, stageId, markerLayerId) => {
+    const tokenZ = zOf(document.getElementById(tokenId));
+    if (!Number.isFinite(tokenZ)) { errors.push(`${tokenId} z-index 非數值（公主 token 缺有效堆疊層級）`); return; }
+    const layerZ = zOf(document.getElementById(markerLayerId));
+    if (Number.isFinite(layerZ) && !(tokenZ > layerZ)) errors.push(`${tokenId}(z${tokenZ}) 未高於標記層 ${markerLayerId}(z${layerZ})：公主會被地圖圖示遮住`);
+    const stage = document.getElementById(stageId);
+    if (stage) {
+      const probe = document.createElement("div");
+      probe.className = "map-marker hotspot nearby";
+      probe.style.position = "absolute"; probe.style.left = "0"; probe.style.top = "0";
+      stage.appendChild(probe);
+      const probeZ = zOf(probe);
+      probe.remove();
+      if (Number.isFinite(probeZ) && !(tokenZ > probeZ)) errors.push(`${tokenId}(z${tokenZ}) 未高於 hotspot(nearby)(z${probeZ})`);
+    }
+  };
+  checkTokenAboveIcons("playerToken", "mapStage", "hotspotLayer");
+  checkTokenAboveIcons("castlePlayerToken", "castleStage", "castleMarkerLayer");
+  checkTokenAboveIcons("worldPlayerToken", "worldStage", "worldMarkerLayer");
+  const urbanTokenZ = zOf(document.getElementById("playerToken"));
+  const lifeLayerZ = zOf(document.getElementById("mapLifeLayer"));
+  if (Number.isFinite(lifeLayerZ) && !(urbanTokenZ > lifeLayerZ)) errors.push(`playerToken(z${urbanTokenZ}) 未高於裝飾層 mapLifeLayer(z${lifeLayerZ})`);
+  const destPanelZ = zOf(document.getElementById("destinationPanel"));
+  if (Number.isFinite(destPanelZ) && !(urbanTokenZ < destPanelZ)) errors.push(`playerToken(z${urbanTokenZ}) 未低於目的地面板 destinationPanel(z${destPanelZ})：公主不應蓋過地圖操作 UI`);
+
   const passed = errors.length === 0;
   const result = document.createElement("pre");
   result.id = "mapAvatarResult";

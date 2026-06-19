@@ -90,3 +90,32 @@
 * **3code 完成判定**：
   * **GATE §1（機器判定）**：`node --check`（含改動之 selftests.js）／`docLint docs/design.md`（sol 0）／`repoLint .` 0；headless selftest PASS、console 0 error。補 selftest 斷言（D5）：公主 token computed z-index 高於地點標記與裝飾層、低於目的地面板；既有 `?selftest=map-avatar` 維持綠燈。
   * **GATE §5（實機 visual-qa，異動渲染堆疊）**：將公主 token 移到地點圖示／裝飾元素位置——①公主**完整顯示不被遮**；②地區／城堡／世界三面一致；③hotspot 仍可點擊進入場景（`pointer-events:none` 保留）；④公主不蓋過目的地面板等操作 UI；⑤token 放大／無背板現況不退化。寬＋窄視窗逐面紀錄為證。
+
+## 6. 實作與驗證結果（3code，2026-06-19）
+
+> 沿 #101／#111／#120／#132／#150／#153／#157／#161／#166／#177／#178 焦點修正慣例：本焦點變更之 GATE 驗證結果記於本節與 PR 留言。`docs/design.md` 未改（Option A，docLint sol 0）。三審查點均採 §4 建議預設（Option A／調 `.player` z-index／僅三地圖面，USR 於本對話以「GO CODE」核准）。
+
+### 實作（依 §3 D1–D5）
+
+* **D1／D2／D3（[styles/map.css]）**：新增 ID 選擇器規則 `#playerToken, #castlePlayerToken, #worldPlayerToken { z-index: 20; }`。三 token 原有效 z-index 為 11（`.player` 經 mobile.css 各斷點覆蓋 18／11、最終 11），落在地圖圖示之下；ID 選擇器特異度（1,0,0）高於所有 `.player` 類別／媒體查詢規則（0,1,0），故跨**所有斷點**統一勝出為 20，無 `!important`、不動既有 `.player`／`.hotspot`／`.map-life-layer` 規則。一處規則、三 token 共用（D3）。
+* **D4（保留既有行為）**：僅設 z-index，未動 `.player` 之 `pointer-events:none`（地點 hotspot 仍可點擊）、未動 token 尺寸與 `.map-doll::before` 背板移除（#161／#9 放大無背板現況不退化，map-avatar intTest#26 仍綠）。z-index 20 < 目的地面板 `.destination-panel`（24），公主不蓋過地圖操作 UI。
+* **D5（回歸守門，[game-engine/testing/selftests.js]）**：擴充 `?selftest=map-avatar` 加入 #180 z-order 斷言——三 token 之 computed z-index 均高於對應標記層（`#hotspotLayer`／`#castleMarkerLayer`／`#worldMarkerLayer`）與合成 `.hotspot.nearby`，且 urban token 高於裝飾層 `#mapLifeLayer`、低於 `#destinationPanel`。
+
+### GATE §1（機器判定，全綠）
+
+* `node --check`：`game-engine/testing/selftests.js`／`game-engine/main.js` → OK。
+* `docLint docs/design.md`（sol）→ **0**；`repoLint .` → **0**。
+* headless selftest（chromium，本機 server :4188 服務本分支檔案）全 PASS、console **0 error／0 warning**：
+  * **`map-avatar`（含 #180 新斷言）**：`passed:true`——跨地圖渲染＋intTest#26（token 放大 ≥100px、無背板）＋intTest#27（走到再進入／途中略過）＋**#180 z-order**（三 token z20 高於標記層／nearby、高於裝飾層、低於目的地面板）。
+  * **回歸**：`map-walk`、`scene-nav`、`data-audit`（0 err）、`monkey`（300 步、0 err）→ 全 `passed:true`。
+* 依賴安全：純靜態網站、無 package 相依，`npm audit` 不適用（STACK techStackStaticWeb）。
+
+### GATE §5（業界水準審查＋視覺證據）
+
+> 本增量異動渲染堆疊（z-order），以實機量測＋修前／修後視覺佐證。
+
+* **跨斷點 computed z-index 量測**（vw 390／773／1280／1600 一致）：公主 token = **20**、`#hotspotLayer` = 12、`.hotspot.nearby` = 12、`#mapLifeLayer` = 7、`#destinationPanel` = 24 ⇒ 序為 `7 < 12 < 20 < 24`：公主高於所有地圖圖示、低於地圖操作 UI。
+* **修前／修後視覺**（urban 地圖，公主 token 疊於地點標記 `workwearStall` 上）：修前（強制回 z11）公主被標記方塊遮住、僅露下緣；修後（z20）公主完整顯示於標記之上。
+* **鏡頭 A／B**：①三面公主置頂不被遮、②hotspot 仍可點擊（`pointer-events:none` 保留）、③不蓋過目的地面板（20<24）、④token 放大／無背板不退化（intTest#26 綠）、⑤裝飾動畫層（z7）不再遮公主、⑥純 CSS／無 JS 邏輯變更（monkey 300 步、data-audit 0 err 無副作用）——逐項以量測／selftest／截圖坐實。
+* **分級**：`務必要修` **0**；`可以接受`——z-index 取 20（安全窗 13–23 之中值），留足與圖示（≤12）及 UI（24）之上下緩衝。
+* **結論：可宣稱完成。**
