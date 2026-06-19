@@ -1,7 +1,7 @@
 ---
 name: techStackStaticWeb
 date: 2026-06-12
-description: 靜態類技術選型 Profile —— HTML + JS + CSS（無框架）；產物為網站包，統一以 static-serve Helm chart 部署，可選 Pages/CDN。
+description: 靜態類技術選型 Profile —— HTML + JS + CSS（無框架）；產物為網站包，統一以 static-serve Helm chart 部署，並一律額外輸出裸網站包供第三方平台。
 ---
 
 # I. 主旨目的
@@ -25,7 +25,7 @@ description: 靜態類技術選型 Profile —— HTML + JS + CSS（無框架）
   * 測試：smoke / 連結檢查或 Playwright（選配）。
   * 部署：見「部署方法」。
 * **部署方法**：**統一 Helm**——網站包掛入**標準 static-serve Helm chart**（nginx/caddy），藏 K8s gateway 後共用 TLS 終結與鑑權；單一 release/sys。
-* **可選可攜路徑**：同一網站包可直推 GitHub Pages／CDN；由 design.md 指定採 Helm 後置或外部靜態託管。
+* **平行靜態資源包（一律附加）**：同一網站包除掛入 static-serve chart 外，**一律額外輸出一份裸靜態檔可攜物**（平行交付物，見 [2tech-devSet-release/RELEASE.md] §3），供 GitHub Pages／CDN 等第三方靜態託管；是否實際推上第三方由 design.md 指定，但輸出該包不以此為條件。
 * **主題 tokens（Material Design 3）**：品牌種子色與字體屬設計決策（記於 `docs/design-visual/`，含參考稿），經 Material Theme Builder 由種子生成 token、**生成一次、commit 為定本後唯讀引用、不重生**（避免色彩漂移）。頁面/build 以 CSS 變數（如 `--md-sys-color-primary`）套用；衍生值由工具/AI 產生，不手工逐一刻。token 定本歸 `contract-local` 或前端 `theme/`。
 * **元件通則**：引用**通用 hmiIntf 契約**之跨 repo UX 通則，以 MD3 為基座，不自訂重造。
 * **視覺規範**：涉及說明網站時依 hmiIntf 視覺規範之說明網站規範實作。
