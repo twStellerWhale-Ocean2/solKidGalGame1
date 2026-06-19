@@ -3558,6 +3558,31 @@ body {
   ) {
     --adv-dialog-height: clamp(360px, 48%, 470px);
   }
+
+  /* issue #167 D5: 寬版（桌機 ≥821px）角色水平改為 33%/66%；窄版（≤820px）維持既有 25%/75%。 */
+  .adv-scene:is(
+    [data-mode="scene"],
+    [data-mode="hint"],
+    [data-mode="quest"],
+    [data-mode="complete"],
+    [data-mode="shop"],
+    [data-mode="wardrobe"],
+    [data-mode="refund"]
+  ) .adv-princess {
+    left: calc(33% - (var(--adv-character-stage-height) * var(--adv-character-stage-aspect) / 2));
+  }
+
+  .adv-scene:is(
+    [data-mode="scene"],
+    [data-mode="hint"],
+    [data-mode="quest"],
+    [data-mode="complete"],
+    [data-mode="shop"],
+    [data-mode="wardrobe"],
+    [data-mode="refund"]
+  ) .adv-npc {
+    left: calc(66% - (var(--adv-character-stage-height) * var(--adv-character-stage-aspect) / 2));
+  }
 }
 
 @media (max-width: 820px) {
@@ -3599,4 +3624,54 @@ body {
     bottom: max(10px, env(safe-area-inset-bottom));
     max-height: calc(100% - 70px);
   }
+}
+
+/* ============================================================
+   issue #167: 統一場景對話方塊選項樣式、調整透明度與商品白底使試穿可見
+   （承 issue #70 視覺小說分層 --adv-dialog-* token 系統；
+    設計決策見 docs/design-issue167.md D1–D4，確切數值經實機 visual-qa 校準）
+   ============================================================ */
+
+/* D2：第三層（逛店/退款/換裝）對話方塊較第二層更透明（dialog-bg 0.46→0.23 之半），
+   使其後角色試穿透出；僅降方塊容器底色，選項/命令按鈕保有自身底色維持可讀（分層）。 */
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) {
+  --adv-dialog-bg: rgba(47, 38, 52, 0.23);
+}
+
+/* D1：第三層明細面板的命令/動作鈕收斂為對話選項同一家族（取代 shop 粉紅漸層），
+   沿用 .choice-button 之 --adv-dialog-* 暗色玻璃質感；動作鈕以 accent 邊框維持主要操作辨識（同一機制、非另起一套）。 */
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-action {
+  color: var(--adv-dialog-text);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(0, 0, 0, 0.045)),
+    rgba(58, 46, 64, 0.78);
+  border: 2px solid var(--adv-dialog-accent);
+  box-shadow: 0 8px 16px rgba(18, 12, 22, 0.22);
+}
+
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-action:focus-visible,
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-action.adv-focus {
+  background:
+    linear-gradient(180deg, rgba(241, 154, 193, 0.22), rgba(0, 0, 0, 0.02)),
+    rgba(70, 52, 76, 0.9);
+  border-color: var(--adv-dialog-accent-strong);
+}
+
+/* D4：第三層商品縮圖白底改為 20% 半透明白，使其後試穿透出（取代不透明奶油底 #fffaf0）。 */
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-preview,
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-image {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* D3：退款無可退款項時不顯示突兀白方塊，改為暗色主題下之輕量留白提示
+   （沿用 --adv-dialog-muted、透明底、收合高度，使其後試穿仍可見）。 */
+.adv-scene[data-mode="refund"] .item-panel-empty {
+  min-height: 0;
+  height: auto;
+  align-self: start;
+  padding: 10px 12px;
+  color: var(--adv-dialog-muted);
+  background: transparent;
+  border: 0;
+  font-weight: 800;
 }
