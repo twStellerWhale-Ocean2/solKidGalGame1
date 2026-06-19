@@ -11,7 +11,7 @@ export const assetTargetOverrides = Object.freeze({
   "urban-dress-boutique/dress-blue-harbor": { left: 162, top: 399, right: 348, bottom: 646 },
   "urban-dress-boutique/dress-rose-festival": { left: 164, top: 404, right: 346, bottom: 651 },
   "urban-dress-boutique/dress-snowflake-gown": { left: 143, top: 404, right: 368, bottom: 712 },
-  "urban-hair-salon/hairstyle-twin-braid": { left: 245, top: 340, right: 503, bottom: 626 },
+  "urban-hair-salon/hairstyle-twin-braid": { left: 151, top: 281, right: 357, bottom: 559, topInset: 22, bottomInset: 15 },
   "urban-tailor-studio/bottom-cocoa-shorts": { left: 194, top: 499, right: 319, bottom: 604 },
   "urban-tailor-studio/bottom-navy-shorts": { left: 193, top: 494, right: 319, bottom: 616 },
   "urban-tailor-studio/bottom-rose-skirt": { left: 160, top: 489, right: 351, bottom: 726 }
