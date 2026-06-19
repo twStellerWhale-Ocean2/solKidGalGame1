@@ -15,10 +15,11 @@ On Windows, you can start the local server and open the tool with:
 This is still a static site flow. The local server only avoids Chrome `file://`
 module loading restrictions during development.
 
-Pick a garment on the **left** (category → item) — that selection drives
-everything. The **素材包** dropdown above the categories filters items by content
-pack (multi-select checkboxes; pick one pack or several, or 全選/全不選). Drag the
-splitters on either side of the preview to resize the left/right columns.
+Pick a garment from the **left** list. The **素材包** (content pack) and **類型**
+(category) dropdowns above the list each filter the items by multi-select
+checkboxes (pick one or several, or 全選/全不選). The **mouse wheel zooms** the
+preview, and the splitters on either side of the preview resize the left/right
+columns.
 
 ## Positioning a garment (issue #176)
 

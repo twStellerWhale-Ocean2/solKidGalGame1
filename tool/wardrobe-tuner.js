@@ -18,6 +18,9 @@ const itemMap = new Map(shopItems.map((item) => [item.id, item]));
 // 素材包（content pack）清單與篩選集（預設全選；模組層級，避免 state 初始化前的 TDZ）。
 const allPacks = [...new Set(shopItems.map(packOfItem).filter(Boolean))].sort();
 let selectedPacks = new Set(allPacks);
+// 類型（UI category）多選篩選集（預設全選）。
+const allCats = categories.map((c) => c.id);
+let selectedCats = new Set(allCats);
 // 第一層：類別投影框（= 該類 safeBox）。第二層：各單品 targetBox（覆寫→裁切原始框→safeBox）。
 const workingSafeBox = Object.fromEntries(
   Object.entries(wardrobeLayerBoundsByType).map(([type, b]) => [type, b.safeBox ? { ...b.safeBox } : fullCanvas()])
@@ -25,17 +28,19 @@ const workingSafeBox = Object.fromEntries(
 const workingItemBox = {}; // key `<pack>/<name>` → { left, top, right, bottom }（lazy seed）
 const baseOutfit = Object.fromEntries(Object.keys(wardrobeLayerBoundsByType).map((type) => [type, "none"]));
 const state = {
-  categoryId: categories[0]?.id || "",
-  selectedItemId: firstItemForCategory(categories[0]?.id)?.id || "",
+  selectedItemId: firstShownItem()?.id || "",
   editMode: "item", // "type"（① 類型框/safeBox）或 "item"（② 單品框/targetBox）
+  zoom: 1,
   outfit: { ...baseOutfit }
 };
 
 const dom = {
-  summaryLine: q("#summaryLine"), categoryTabs: q("#categoryTabs"), itemList: q("#itemList"),
+  summaryLine: q("#summaryLine"), itemList: q("#itemList"),
   packFilterToggle: q("#packFilterToggle"), packFilterMenu: q("#packFilterMenu"),
   packAll: q("#packAll"), packNone: q("#packNone"), packCheckboxes: q("#packCheckboxes"),
-  previewLabel: q("#previewLabel"), previewDoll: q("#previewDoll"),
+  catFilterToggle: q("#catFilterToggle"), catFilterMenu: q("#catFilterMenu"),
+  catAll: q("#catAll"), catNone: q("#catNone"), catCheckboxes: q("#catCheckboxes"),
+  previewLabel: q("#previewLabel"), previewDoll: q("#previewDoll"), previewStage: q(".preview-stage"),
   typeOverlay: q("#typeOverlay"), itemOverlay: q("#itemOverlay"), selectedInfo: q("#selectedInfo"),
   modeTabs: q("#modeTabs"), modeHelp: q("#modeHelp"),
   applyAll: q("#applyAll"), applyStatus: q("#applyStatus")
@@ -52,6 +57,7 @@ const paperDollRenderer = createPaperDollRenderer({
 
 bindEvents();
 renderPackFilter();
+renderCategoryFilter();
 equipSelectedItem();
 renderAll();
 
@@ -65,7 +71,18 @@ function bindEvents() {
     if (e.target.checked) selectedPacks.add(pack); else selectedPacks.delete(pack);
     afterPackChange();
   });
-  document.addEventListener("click", (e) => { if (!e.target.closest(".pack-filter")) dom.packFilterMenu.hidden = true; });
+  dom.catFilterToggle.addEventListener("click", () => { dom.catFilterMenu.hidden = !dom.catFilterMenu.hidden; });
+  dom.catAll.addEventListener("click", () => { selectedCats = new Set(allCats); afterCatChange(); });
+  dom.catNone.addEventListener("click", () => { selectedCats = new Set(); afterCatChange(); });
+  dom.catCheckboxes.addEventListener("change", (e) => {
+    const cat = e.target?.value;
+    if (!cat) return;
+    if (e.target.checked) selectedCats.add(cat); else selectedCats.delete(cat);
+    afterCatChange();
+  });
+  document.addEventListener("click", (e) => {
+    document.querySelectorAll(".pack-filter").forEach((dd) => { if (!dd.contains(e.target)) { const m = dd.querySelector(".pack-menu"); if (m) m.hidden = true; } });
+  });
   dom.modeTabs.addEventListener("click", (e) => {
     const mode = e.target.closest("button")?.dataset.mode;
     if (mode) { state.editMode = mode; renderAll(); }
@@ -75,6 +92,12 @@ function bindEvents() {
   setupDrag(dom.itemOverlay);
   setupColumnResize();
   window.addEventListener("resize", () => paperDollRenderer.applyLayerTransforms(dom.previewDoll));
+  // 中央試穿畫面：滑鼠滾輪縮放（以 stage transform scale；drag 用 getBoundingClientRect 故不受影響）。
+  dom.previewStage?.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    state.zoom = clampN(state.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1), 0.4, 4);
+    dom.previewStage.style.transform = `scale(${Math.round(state.zoom * 1000) / 1000})`;
+  }, { passive: false });
 }
 
 // 左右欄皆可拖曳調寬：左分隔條改 --left-w（=clientX）、右分隔條改 --right-w（=innerWidth-clientX）。
@@ -100,7 +123,6 @@ function setupColumnResize() {
 
 function renderAll() {
   renderSummary();
-  renderCategoryTabs();
   renderItemList();
   renderModeTabs();
   renderSelectedInfo();
@@ -115,29 +137,32 @@ function renderModeTabs() {
 }
 
 function renderSummary() {
-  dom.summaryLine.textContent = `${shopItems.length} items / ${categories.length} categories · 左選單品 → 上選①/② → 圖上拖拉或右側數值 · canvas ${CANVAS.W}×${CANVAS.H}`;
+  dom.summaryLine.textContent = `${itemsShown().length}/${shopItems.length} items · 素材包＋類型多選篩選 · 拖綠框（角＝梯形）· 滾輪縮放 · canvas ${CANVAS.W}×${CANVAS.H}`;
 }
 
-function renderCategoryTabs() {
-  dom.categoryTabs.innerHTML = "";
+function renderCategoryFilter() {
+  dom.catCheckboxes.innerHTML = "";
   categories.forEach((category) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = category.id === state.categoryId ? "active" : "";
-    button.textContent = `${category.label} (${itemsForCategory(category.id).length})`;
-    button.addEventListener("click", () => {
-      state.categoryId = category.id;
-      state.selectedItemId = firstItemForCategory(category.id)?.id || "";
-      equipSelectedItem();
-      renderAll();
-    });
-    dom.categoryTabs.append(button);
+    const count = shopItems.filter((i) => catOfItem(i) === category.id).length;
+    const label = document.createElement("label");
+    label.className = "pack-check";
+    label.innerHTML = `<input type="checkbox" value="${escapeHtml(category.id)}"${selectedCats.has(category.id) ? " checked" : ""}><span>${escapeHtml(category.label)}</span><em>${count}</em>`;
+    dom.catCheckboxes.append(label);
   });
+  const n = selectedCats.size;
+  const summary = n === allCats.length ? "全部" : n === 0 ? "無" : n === 1 ? (categories.find((c) => c.id === [...selectedCats][0])?.label || "1") : `${n} 類`;
+  dom.catFilterToggle.textContent = `類型：${summary} ▾`;
+}
+
+function afterCatChange() {
+  ensureValidSelection();
+  renderCategoryFilter();
+  renderAll();
 }
 
 function renderItemList() {
   dom.itemList.innerHTML = "";
-  itemsForCategory(state.categoryId).forEach((item) => {
+  itemsShown().forEach((item) => {
     const row = document.createElement("button");
     row.type = "button";
     row.className = `item-row${item.id === state.selectedItemId ? " active" : ""}`;
@@ -171,12 +196,10 @@ function afterPackChange() {
 }
 
 function ensureValidSelection() {
-  let items = itemsForCategory(state.categoryId);
-  if (!items.length) {
-    const cat = categories.find((c) => itemsForCategory(c.id).length);
-    if (cat) { state.categoryId = cat.id; items = itemsForCategory(cat.id); }
+  const items = itemsShown();
+  if (!items.some((i) => i.id === state.selectedItemId)) {
+    state.selectedItemId = (items.find((i) => i.storeId !== "starter") || items[0])?.id || "";
   }
-  if (!items.some((i) => i.id === state.selectedItemId)) state.selectedItemId = items[0]?.id || "";
   equipSelectedItem();
 }
 
@@ -381,8 +404,9 @@ function renderBoundsOf(b) { return { left: b.left || 0, top: b.top || 0, right:
 function hasRenderOffset(b) { return (b.left || 0) !== 0 || (b.top || 0) !== 0 || (b.right || 0) !== 0 || (b.bottom || 0) !== 0; }
 function r3(v) { return Math.round(v * 1000) / 1000; }
 function packOfItem(item) { const m = /wardrobe\/([^/]+)\/assets\//.exec(item?.image || ""); return m ? m[1] : ""; }
-function itemsForCategory(categoryId) { const c = categories.find((x) => x.id === categoryId); return c ? shopItems.filter((item) => c.types.includes(item.type) && selectedPacks.has(packOfItem(item))) : []; }
-function firstItemForCategory(categoryId) { return itemsForCategory(categoryId).find((item) => item.storeId !== "starter") || itemsForCategory(categoryId)[0]; }
+function catOfItem(item) { const c = categories.find((cat) => cat.types.includes(item.type)); return c ? c.id : ""; }
+function itemsShown() { return shopItems.filter((item) => selectedCats.has(catOfItem(item)) && selectedPacks.has(packOfItem(item))); }
+function firstShownItem() { const items = itemsShown(); return items.find((item) => item.storeId !== "starter") || items[0]; }
 function assetUrl(src) { if (!src) return ""; return src.startsWith("content-package/") || src.startsWith("content-base/") ? `../${src}` : src; }
 function priceText(item) { return Number.isFinite(item.cost) && item.cost > 0 ? `${item.cost} coins` : "Free"; }
 function escapeHtml(value = "") { return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;"); }
