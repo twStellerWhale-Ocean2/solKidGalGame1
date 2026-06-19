@@ -1,3 +1,5 @@
+import { warpFractions } from "./warp.js";
+
 export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, layerOrder, canvasWidth = 512, canvasHeight = 768 }) {
   function avatarMarkup(surface, outfitState, character = getCharacter?.()) {
     const layers = activePaperDollLayers(outfitState, character);
@@ -7,7 +9,7 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
         <span
           class="paper-doll-layer paper-doll-layer-${cssName(layer.slot)} paper-doll-layer-type-${cssName(layer.type || layer.slot)}"
           style="--layer-img:url('${assetUrl(layer.src)}');${boundsStyle(layer.bounds)}"
-          ${trapAttr(layer.bounds)}
+          ${warpAttr(layer.bounds)}
           aria-hidden="true"
         ></span>
       `).join("")}
@@ -32,7 +34,7 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
       doll.dataset.hand = outfit.hand || "none";
       doll.dataset.expression = expression;
       applyLayerTransforms(doll);
-      trapObserver?.observe(doll);
+      warpObserver?.observe(doll);
     });
   }
 
@@ -73,8 +75,8 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
     const box = bounds.targetBox;
     if (box && ["left", "top", "right", "bottom"].every((edge) => Number.isFinite(box[edge]))) {
       // 目標矩形（#176）：以畫布相對百分比定位，素材經 background-size 非等比填滿；
-      // 落點與尺度由矩形決定、不隨來圖外框漂移。梯形 warp（topInset/bottomInset）另由
-      // applyLayerTransforms 以投影 matrix3d 套用（見下）。
+      // 落點與尺度由矩形決定、不隨來圖外框漂移。四角形變 warp（corners／舊 inset）另由
+      // applyLayerTransforms 以投影 matrix3d 套用（見下，issue #191）。
       const pct = {
         top: (box.top / canvasHeight) * 100,
         right: ((canvasWidth - box.right) / canvasWidth) * 100,
@@ -91,37 +93,33 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
       .join(";");
   }
 
-  // 梯形（#176）：targetBox 帶 topInset／bottomInset（canvas px，左右對稱內縮量）時，
-  // 以 box 寬度比例存進 data-trap，渲染後由 applyLayerTransforms 換算 matrix3d 拉伸。
-  function trapAttr(bounds = {}) {
+  // 四角形變（#191）：targetBox 帶 corners（或舊 topInset／bottomInset）時，warpFractions
+  // 換算成四角相對渲染元素之比例存進 data-warp，渲染後由 applyLayerTransforms 套 matrix3d。
+  function warpAttr(bounds = {}) {
     const box = bounds.targetBox;
     if (!box) return "";
-    const w = box.right - box.left;
-    const topInset = Number(box.topInset) || 0;
-    const bottomInset = Number(box.bottomInset) || 0;
-    if (!w || (topInset === 0 && bottomInset === 0)) return "";
-    return `data-trap="${topInset / w},${bottomInset / w}"`;
+    const fr = warpFractions(box);
+    return fr ? `data-warp="${fr.map((v) => Math.round(v * 1e4) / 1e4).join(",")}"` : "";
   }
 
-  // 對帶 data-trap 的 layer 以實際渲染尺寸算投影 matrix3d，把矩形拉成等腰梯形（左右對稱）。
+  // 對帶 data-warp 的 layer 以實際渲染尺寸算投影 matrix3d，把矩形映到任意四邊形。
   function applyLayerTransforms(container) {
     if (!container) return;
-    container.querySelectorAll(".paper-doll-layer[data-trap]").forEach((el) => {
-      const [tf, bf] = String(el.dataset.trap).split(",").map(Number);
+    container.querySelectorAll(".paper-doll-layer[data-warp]").forEach((el) => {
+      const f = String(el.dataset.warp).split(",").map(Number);
       const w = el.offsetWidth;
       const h = el.offsetHeight;
-      if (!w || !h || ((tf || 0) === 0 && (bf || 0) === 0)) { el.style.transform = ""; return; }
-      const tx = (tf || 0) * w;
-      const bx = (bf || 0) * w;
+      if (!w || !h || f.length < 8 || f.some((v) => !Number.isFinite(v))) { el.style.transform = ""; return; }
       el.style.transformOrigin = "0 0";
-      el.style.transform = trapMatrix(w, h, tx, bx);
+      el.style.transform = warpMatrix(w, h, f);
     });
   }
 
-  function trapMatrix(w, h, tx, bx) {
+  // f = [nwX,nwY, neX,neY, swX,swY, seX,seY]，比例 → 乘渲染寬高得目標四角（順序 nw,ne,sw,se）。
+  function warpMatrix(w, h, f) {
     const t = general2DProjection(
       0, 0, w, 0, 0, h, w, h,
-      tx, 0, w - tx, 0, bx, h, w - bx, h
+      f[0] * w, f[1] * h, f[2] * w, f[3] * h, f[4] * w, f[5] * h, f[6] * w, f[7] * h
     );
     for (let i = 0; i < 9; i++) t[i] = t[i] / t[8];
     const m = [t[0], t[3], 0, t[6], t[1], t[4], 0, t[7], 0, 0, 1, 0, t[2], t[5], 0, t[8]];
@@ -155,7 +153,7 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
     return multmm(d, adj(s));
   }
 
-  const trapObserver = typeof ResizeObserver !== "undefined"
+  const warpObserver = typeof ResizeObserver !== "undefined"
     ? new ResizeObserver((entries) => entries.forEach((e) => applyLayerTransforms(e.target)))
     : null;
 
