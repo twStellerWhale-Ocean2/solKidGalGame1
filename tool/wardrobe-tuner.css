@@ -366,3 +366,38 @@ button.active {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+.apply-section {
+  margin-bottom: 18px;
+}
+
+.apply-button {
+  width: 100%;
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  border-color: #cc4c87;
+  background: #cc4c87;
+  color: #fff;
+}
+
+.apply-button:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.apply-status {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #6f5b73;
+  min-height: 18px;
+}
+
+.apply-status-ok {
+  color: #1f7a4d;
+}
+
+.apply-status-err {
+  color: #b3203f;
+}

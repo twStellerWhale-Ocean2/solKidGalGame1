@@ -44,7 +44,8 @@ const dom = {
   resetItem: q("#resetItem"), resetType: q("#resetType"), resetAll: q("#resetAll"),
   testImage: q("#testImage"), clearTest: q("#clearTest"),
   outRules: q("#outRules"), copyRules: q("#copyRules"),
-  outOverrides: q("#outOverrides"), copyOverrides: q("#copyOverrides")
+  outOverrides: q("#outOverrides"), copyOverrides: q("#copyOverrides"),
+  applyAll: q("#applyAll"), applyStatus: q("#applyStatus")
 };
 
 const paperDollRenderer = createPaperDollRenderer({
@@ -92,6 +93,32 @@ function bindEvents() {
   dom.clearTest.addEventListener("click", () => { delete state.testImageByType[selectedType()]; dom.testImage.value = ""; renderPreview(); });
   dom.copyRules.addEventListener("click", () => copy(dom.outRules, dom.copyRules, "Copy rules.js safeBox"));
   dom.copyOverrides.addEventListener("click", () => copy(dom.outOverrides, dom.copyOverrides, "Copy per-item overrides"));
+  dom.applyAll.addEventListener("click", applyToFiles);
+}
+
+// 把目前兩份匯出就地寫回 rules.js（① 類型框）與 asset-target-overrides.js（② 單品框）。
+async function applyToFiles() {
+  dom.applyAll.disabled = true;
+  setApplyStatus("套用中…", "");
+  try {
+    const res = await fetch("/tool/apply-wardrobe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rules: dom.outRules.value, overrides: dom.outOverrides.value })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    setApplyStatus(`已套用 → ${data.written.join("、")}。重新整理遊戲即可看到。`, "ok");
+  } catch (error) {
+    setApplyStatus(`套用失敗：${error.message}（請改用下方 Copy 手動貼回，或確認 dev server 為 server.mjs）`, "err");
+  } finally {
+    dom.applyAll.disabled = false;
+  }
+}
+
+function setApplyStatus(text, kind) {
+  dom.applyStatus.textContent = text;
+  dom.applyStatus.className = `apply-status${kind ? ` apply-status-${kind}` : ""}`;
 }
 
 function renderAll() {

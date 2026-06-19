@@ -44,8 +44,13 @@ coordinates. You set that rectangle in two layers:
 
 ## Apply your tuning
 
-1. **Copy rules.js safeBox** → paste into `rules.js` `wardrobeLayerBoundsByType`.
-2. **Copy per-item overrides** → paste into `asset-target-overrides.js`.
+- **✓ 套用到檔案 (Apply)** writes both blocks straight back to disk via the local
+  `server.mjs` dev endpoint (`POST /tool/apply-wardrobe`) — no copy-paste. It only
+  rewrites the `wardrobeLayerBoundsByType` block in `rules.js` and the
+  `assetTargetOverrides` block in `asset-target-overrides.js` (whitelisted files).
+  Reload the game to see the result. (Requires the server to be `node server.mjs`.)
+- Manual fallback if you prefer: **Copy rules.js safeBox** → paste into `rules.js`;
+  **Copy per-item overrides** → paste into `asset-target-overrides.js`.
 
 ## Test Image (any size)
 
