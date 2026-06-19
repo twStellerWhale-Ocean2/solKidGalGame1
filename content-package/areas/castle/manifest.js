@@ -71,9 +71,9 @@ const castleLessonBank = Object.freeze({
   kingHall: {
     title: "Help in the King's Hall",
     questions: [
-      { questionType: "sentence-choice", prompt: "Please look at the crown.", promptZh: "請看看王冠。", answer: "Yes, I see the crown.", choices: ["Yes, I see the crown.","Yes, I see the soup.","Yes, I see the fish."], choicesZh: ["好的，我看到王冠。","好的，我看到湯。","好的，我看到魚。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "Please stand by me.", promptZh: "請站在我旁邊。", answer: "OK, I will stand by you.", choices: ["OK, I will stand by you.","OK, I will run away.","OK, I will read the note."], choicesZh: ["好，我會站在你旁邊。","好，我會跑走。","好，我會去讀便條。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "The hall is big. Can we go now?", promptZh: "大廳很大。我們可以走了嗎？", answer: "Sure, we can go now.", choices: ["Sure, we can go now.","Sure, the cat has a hat.","Sure, the bread is hot."], choicesZh: ["好啊，我們現在可以走了。","好啊，貓有一頂帽子。","好啊，麵包很燙。"], reward: jobReward }
+      { questionType: "sentence-choice", prompt: "Please bring me the crown.", promptZh: "請把王冠拿給我。", answer: "Sure thing! Here is the crown.", choices: ["Sure thing! Here is the crown.","Sure thing! Here is the cup.","Sure thing! Here is the candle."], choicesZh: ["沒問題！王冠在這裡。","沒問題！杯子在這裡。","沒問題！蠟燭在這裡。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Please put the royal cups on the table.", promptZh: "請把皇家杯子放在桌上。", answer: "OK, I will put the cups on the table.", choices: ["OK, I will put the cups on the table.","OK, I will put the cups on the floor.","OK, I will put the cups on the throne."], choicesZh: ["好，我會把杯子放在桌上。","好，我會把杯子放在地上。","好，我會把杯子放在王座上。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Please sweep the floor by the throne.", promptZh: "請把王座旁的地板掃乾淨。", answer: "Sure, I will sweep the floor.", choices: ["Sure, I will sweep the floor.","Sure, I will sweep the throne.","Sure, I will sweep the table."], choicesZh: ["好啊，我會把地板掃乾淨。","好啊，我會掃王座。","好啊，我會掃桌子。"], reward: jobReward }
     ]
   },
   queenStudy: {
@@ -89,15 +89,15 @@ const castleLessonBank = Object.freeze({
     questions: [
       { questionType: "sentence-choice", prompt: "Please put the bread on the table.", promptZh: "請把麵包放在餐桌上。", answer: "OK, I will put the bread on the table.", choices: ["OK, I will put the bread on the table.","OK, I will put the crown in the soup.","OK, I will put the bread on the bed."], choicesZh: ["好，我會把麵包放在餐桌上。","好，我會把王冠放進湯裡。","好，我會把麵包放在床上。"], reward: jobReward },
       { questionType: "sentence-choice", prompt: "Please get water for lunch.", promptZh: "請幫午餐拿水。", answer: "Sure, here is the water.", choices: ["Sure, here is the water.","Sure, here is the towel.","Sure, here is the book."], choicesZh: ["好啊，水在這裡。","好啊，毛巾在這裡。","好啊，書在這裡。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "The kitchen is busy. Please be safe.", promptZh: "廚房很忙。請注意安全。", answer: "OK, I will not run.", choices: ["OK, I will not run.","OK, I will run fast.","OK, I will play with the soup."], choicesZh: ["好，我不會跑。","好，我會跑很快。","好，我會玩湯。"], reward: jobReward }
+      { questionType: "sentence-choice", prompt: "Please wash these plates.", promptZh: "請把這些盤子洗一洗。", answer: "OK, I will wash the plates.", choices: ["OK, I will wash the plates.","OK, I will wash the pot.","OK, I will wash the spoons."], choicesZh: ["好，我會洗盤子。","好，我會洗鍋子。","好，我會洗湯匙。"], reward: jobReward }
     ]
   },
   knightsRoom: {
     title: "Help in the Knights' Room",
     questions: [
-      { questionType: "sentence-choice", prompt: "Please look at the shield.", promptZh: "請看看盾牌。", answer: "Yes, the shield is round.", choices: ["Yes, the shield is round.","Yes, the bread is cold.","Yes, the book is on the desk."], choicesZh: ["好的，盾牌是圓的。","好的，麵包是冷的。","好的，書在書桌上。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "Please stand by me.", promptZh: "請站在我旁邊。", answer: "OK, I will stand by you.", choices: ["OK, I will stand by you.","OK, I will stand on the table.","OK, I will stand near the door."], choicesZh: ["好，我會站在你旁邊。","好，我會站在餐桌上。","好，我會站在門旁邊。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "Please look at the flag.", promptZh: "請看看旗子。", answer: "Sure, I see the flag.", choices: ["Sure, I see the flag.","Sure, I see the towel.","Sure, I see the fish."], choicesZh: ["好啊，我看到旗子。","好啊，我看到毛巾。","好啊，我看到魚。"], reward: jobReward }
+      { questionType: "sentence-choice", prompt: "Please polish my shield.", promptZh: "請把我的盾牌擦亮。", answer: "Sure thing! I will polish your shield.", choices: ["Sure thing! I will polish your shield.","Sure thing! I will polish your helmet.","Sure thing! I will polish your boots."], choicesZh: ["沒問題！我會把你的盾牌擦亮。","沒問題！我會把你的頭盔擦亮。","沒問題！我會把你的靴子擦亮。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Please put the sword on the rack.", promptZh: "請把劍放到架子上。", answer: "OK, I will put the sword on the rack.", choices: ["OK, I will put the sword on the rack.","OK, I will put the sword on the bed.","OK, I will put the sword on the floor."], choicesZh: ["好，我會把劍放到架子上。","好，我會把劍放在床上。","好，我會把劍放在地上。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Please carry the heavy armour to the table.", promptZh: "請把這套重盔甲搬到桌上。", answer: "Sure, I can carry the armour.", choices: ["Sure, I can carry the armour.","Sure, I can carry the flag.","Sure, I can carry the cup."], choicesZh: ["好啊，我可以搬這套盔甲。","好啊，我可以搬旗子。","好啊，我可以搬杯子。"], reward: jobReward }
     ]
   },
   maidsRoom: {
@@ -105,7 +105,7 @@ const castleLessonBank = Object.freeze({
     questions: [
       { questionType: "sentence-choice", prompt: "Please fold this white cloth.", promptZh: "請折這塊白布。", answer: "OK, I can fold it.", choices: ["OK, I can fold it.","OK, I can hold the cloth.","OK, I can sit on the cloth."], choicesZh: ["好，我可以折它。","好，我可以拿著布。","好，我可以坐在布上。"], reward: jobReward },
       { questionType: "sentence-choice", prompt: "Please put the cloth in the basket.", promptZh: "請把布放進籃子裡。", answer: "Sure, I will put it in the basket.", choices: ["Sure, I will put it in the basket.","Sure, I will put the crown on the fish.","Sure, I will run in the room."], choicesZh: ["好啊，我會把它放進籃子裡。","好啊，我會把王冠放在魚上。","好啊，我會在房間裡跑。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "Thank you for your help, Princess.", promptZh: "謝謝你的幫忙，公主。", answer: "You're welcome, Lala!", choices: ["You're welcome, Lala!","The hall is big.","This is a hot soup."], choicesZh: ["不客氣，拉拉！","大廳很大。","這是一碗熱湯。"], reward: jobReward }
+      { questionType: "sentence-choice", prompt: "Please put the clean towels on the shelf.", promptZh: "請把乾淨的毛巾放到架子上。", answer: "OK, I will put the towels on the shelf.", choices: ["OK, I will put the towels on the shelf.","OK, I will put the towels on the floor.","OK, I will put the towels on the bed."], choicesZh: ["好，我會把毛巾放到架子上。","好，我會把毛巾放在地上。","好，我會把毛巾放在床上。"], reward: jobReward }
     ]
   }
 });

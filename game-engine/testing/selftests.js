@@ -1353,6 +1353,17 @@ async function runDataAudit(api) {
     const t = String(text).trimStart().toLowerCase();
     return JOB_ANSWER_OPENERS.some((opener) => t.startsWith(opener));
   };
+  // issue #182：打工題幹須為角色實際交派之勞務差事；下列非勞動樣式（純觀看／站位／閒聊離場／道別客套）不得作為打工題幹。
+  const NON_JOB_PROMPT_PATTERNS = [
+    { re: /\blook at\b/i, why: "純觀看（look at）非勞務" },
+    { re: /\bstand (by|near|next to|beside|on)\b/i, why: "站位（stand by/near）非勞務" },
+    { re: /\bcan we (go|leave)\b/i, why: "閒聊離場（can we go）非勞務" },
+    { re: /\bthank you for your help\b/i, why: "道別客套（thank you for your help）非工作題幹" }
+  ];
+  const nonJobPromptReason = (prompt) => {
+    const hit = NON_JOB_PROMPT_PATTERNS.find((p) => p.re.test(String(prompt)));
+    return hit ? hit.why : "";
+  };
   const mapContracts = await collectMapContractAudit(api, errors);
 
   Object.entries(categoryCounts).forEach(([category, count]) => {
@@ -1458,6 +1469,9 @@ async function runDataAudit(api) {
         // issue #149：words 改由引擎自正解英文導出（不再逐題手寫），故不檢查 words。
         // issue #155：打工正解須以自然應允語句開頭（幫忙請求→公主應允的固定樣式）。
         if (q.answer && !startsWithAckOpener(q.answer)) errors.push(`${where} job answer must open with an acknowledgement (${JOB_ANSWER_OPENERS.slice(0, 8).join("/")}…) — got "${q.answer}"`);
+        // issue #182：打工題幹須為角色實際交派之勞務差事，不得為純觀看／站位／閒聊／道別。
+        const nonJobReason = nonJobPromptReason(q.prompt);
+        if (nonJobReason) errors.push(`${where} job prompt is not a work task（${nonJobReason}）— "${q.prompt}"`);
         if (!q.reward || !Number.isFinite(q.reward.coins)) errors.push(`${where} missing reward.coins`);
         if (!q.promptZh) errors.push(`${where} missing promptZh (中文協助所需)`);
         if (!Array.isArray(q.choicesZh) || q.choicesZh.length !== q.choices.length || q.choicesZh.some((z) => !z)) errors.push(`${where} choicesZh incomplete (中文協助所需)`);
