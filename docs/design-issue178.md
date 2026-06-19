@@ -86,3 +86,39 @@
 * **3code 完成判定**：
   * **GATE §1（機器判定）**：`node --check`（含 main.js／新模組／selftests.js）／`docLint docs/design.md`（sol 0）／`repoLint .` 0；headless selftest PASS、console 0 error。補 selftest 斷言（可機判部分）：①走動控制器以「按住方向集合」驅動可產生**連續多步**位移（非單步）；②keyup／blur／visibilitychange 後**停止**移動（按住集合清空）；③`event.repeat` 之合成 keydown 不額外驅動位移（無雙倍速）；④三處走動面（含 `moveOnWorldMap`）皆改變對應座標、且既有 `?selftest=map-avatar`（含 intTest#27）維持綠燈。
   * **GATE §5（實機 playtest／visual-qa，異動輸入手感）**：按住方向鍵——①**即時起步**（按下即連續走、無明顯起步停頓）；②移速明顯較前快且**仍能停在 hotspot 觸發半徑內**進入場景；③鬆鍵即停、切分頁／失焦不卡走；④地區／城堡／世界三面一致；⑤指標拖曳與點選走到再進入仍正常。latency／手感屬體感，難以單元化者明列為人工 playtest 驗收、逐面紀錄為證。
+
+## 6. 實作與驗證結果（3code，2026-06-19）
+
+> 沿 #101／#111／#120／#132／#150／#153／#157／#166／#177 焦點修正慣例：本焦點變更之 GATE 驗證結果記於本節與 PR 留言。`docs/design.md` 未改（Option A，docLint sol 0）。三審查點均採 §4 建議預設（Option A／等速提速／僅鍵盤三面，USR 於本對話以「OK GO CODE」核准）。
+
+### 實作（依 §3 D1–D6）
+
+* **D1／D2／D3／D5（新模組 [game-engine/map/keyboard-walk.js]）**：`createKeyboardWalkController({ stepMs })` 維護「按住方向集合」＋ `requestAnimationFrame` 連續移動迴圈——`press(dir, moveFn)` 立即走一步（保留原即時手感）並啟動迴圈、之後每 `stepMs`（33ms，≈30 步/秒）以方向向量呼叫 `moveFn(dx,dy)` 連續推進，**免 OS 自動重複初始延遲**（D1）；同向重按由 `held` 集合去重、**忽略 OS 自動重複**之合成 keydown，避免雙倍速（D2）；`release(dir)` 鬆鍵清除、集合空即停；`clear()` 一次清空並停止。控制器**純函式、不碰 DOM／遊戲狀態**，`now／requestFrame／cancelFrame` 可注入替身供 headless 測試；`directionForKey(key)` 對映方向鍵與 WASD。另導出方向→向量、支援對角走動（向量合成、`clamp` 守邊界）。
+* **D3 三面接線（[game-engine/main.js]）**：三處 keydown 走動分支（`mapStage`／`castleStage`／`worldStage`）改以 `directionForKey` 判方向、呼叫單一共用實例 `mapWalkController.press(dir, moveOnMap／moveOnCastleMap／moveOnWorldMap)`，以「方向→位移回呼」容納 `moveOnAreaMap`（地區／城堡）與 `moveOnWorldMap`（世界）兩種底層；保留各 handler 的 `+`／`-` 縮放與 Enter／空白互動分支不動。
+* **D4 調速（[game-engine/main.js]）**：新增常數 `MAP_WALK_STEP_MS=33`、`MAP_WALK_SPEED={area:2.0,castle:1.9,world:2.2}`（每步位移量較前 1.45／1.35／1.6 提速約 ⅓）；`moveOnAreaMap` 預設 speed、`moveOnCastleMap`／`moveOnWorldMap` 之 speed 改引用該常數。有效移速 ≈ 60／57／66 單位/秒（座標域 0–100），每步 2.0 ≪ `nearbyRadius` 6.8／5.8、停靠可控。
+* **D5 生命週期（[game-engine/main.js]）**：`window` keyup→`release`、`window` blur→`clear`、`document` visibilitychange（隱藏）→`clear`、`changeView` 起手→`clear`，杜絕「鬆鍵仍續走」之卡走。
+* **D6 範圍**：僅改鍵盤三面；指標拖曳（`beginMapDrag` 等）與世界地圖點選走到再進入（`requestWorldTravel`／`finishWorldTravel`）未動。
+* **回歸守門（[game-engine/testing/selftests.js]）**：新增 `runMapWalkSelfTest`（`?selftest=map-walk`）；`moveOnCastleMap` 加入測試 api 匯出。
+
+### GATE §1（機器判定，全綠）
+
+* `node --check`：`game-engine/map/keyboard-walk.js`／`game-engine/main.js`／`game-engine/testing/selftests.js` → 全 OK。
+* `docLint docs/design.md`（sol）→ **0**；`repoLint .` → **0**。
+* headless selftest（chromium，`.codex/run-selftests-178.mjs`）全 PASS、console **0 error**：
+  * **`map-walk`（本案新增）**：`passed:true`——A 方向鍵／WASD 對映正確；B 控制器即時起步（press 即 1 步）＋連續多步（推進時鐘後 ≥5 步）＋放鍵即停；C 同向重複按鍵忽略（即時步數仍 1、方向不重複登記）；D `clear` 後停止並清空；E 地區／城堡／世界三面座標皆隨對應 move 函式改變。
+  * **回歸**：`map-avatar`（跨地圖渲染＋intTest#27 走到再進入／途中略過）、`scene-nav`、`monkey`（300 步）、`data-audit`（shopCount 11）、`chat`、`playtimer`、`job-cycle` → 全 `passed:true`、console 0。
+* 依賴安全：純靜態網站、無 package 相依，`npm audit` 不適用（STACK techStackStaticWeb）。
+
+### GATE §4／§5（業界水準審查＋端對端 runtime 證據）
+
+> 本增量**未異動任何渲染 UI**（無版面／元件視覺變更，僅輸入時序與移速），故 GATE §5 鏡頭 C 逐頁截圖不適用；改以地圖互動之**端對端 runtime 證據**佐證（GATE §4：可操作流程＋資料狀態改變＋測試檔案＋runtime 紀錄）。
+
+* **端對端探針（`.codex/probe-178.mjs`，真實 keydown/keyup）**：urban 地圖、真實事件驅動已接線控制器——按 `ArrowRight`：`x0=20 → 20ms 後 22`（**即時起步**，免 OS 重複延遲）；注入 `repeat=true` 合成 keydown 後按住 ~300ms→`x=38`（連續走 18 單位／≈9 步，**OS 自動重複未致雙倍速**）；keyup 後 `38→38`（**放鍵即停、不卡走**）；console 0 error。`PROBE-PASS`。
+* **鏡頭 A（輸入/互動能力盤點）**：①即時起步、②連續走動、③放鍵即停、④失焦/切頁/切面即停、⑤忽略 OS 自動重複不雙倍、⑥三面一致、⑦Enter/空白互動與 +/- 縮放鍵保留、⑧指標拖曳與點選走到再進入無回歸（map-avatar intTest#27 綠）、⑨移速可控停靠（每步 2.0≪半徑 6.8）、⑩觸控路徑不退化——逐項以 probe／selftest／程式碼坐實。
+* **鏡頭 B（專家缺口，遊戲輸入工程視角）**：⑪卡走防護（keyup 漏發風險已以 blur/visibilitychange/changeView clear 補上）；⑫對角走動（雙鍵向量合成、clamp 守邊界，合理無害）；⑬persist 頻率（連續走動每步 persist ≈30/秒，**≤ 改動前 OS 自動重複之 persist 頻率**，無新增效能回歸）；⑭走動僅改 player/world 座標、與帳號/週期無耦合（無副作用）。
+* **分級**：`務必要修` **0**（核心三項即時起步／連續/即停＋三面＋回歸全綠）；`可以接受`——移速常數（`stepMs 33`、`2.0/1.9/2.2`）為初版值，留 opr 實機 playtest 微調（§4② 採等速提速）。
+* **結論：可宣稱完成。**
+
+### 交付物（test-summary.pdf 待 USR 裁決）
+
+* 沿 #157／#166／#177 焦點修正慣例，本節即 GATE 報告；本增量無渲染 UI 變更，是否另產 A5 直向 [docs/test-summary.pdf] 待 USR 裁決。`.codex/` 下 selftest／probe 驅動腳本為暫存（`.codex/` 已 gitignore）、不作交付物。
