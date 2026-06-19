@@ -282,10 +282,14 @@ function buildRulesSnippet() {
   }).join(",\n")}\n});`;
 }
 function buildOverridesSnippet() {
-  const entries = Object.keys(workingItemBox)
-    .filter((key) => !sameBox(workingItemBox[key], assetContentBoxByPackName[key] || null))
-    .sort()
-    .map((key) => `  ${JSON.stringify(key)}: ${boxLiteral(workingItemBox[key])}`);
+  // 合併「既有已存覆寫」（本次工具未碰到的單品須保留，避免套用時被洗掉）與本次編輯；
+  // 本次調回與裁切原始框相同者視為還原 identity、不寫入。
+  const merged = { ...assetTargetOverrides };
+  for (const key of Object.keys(workingItemBox)) {
+    if (sameBox(workingItemBox[key], assetContentBoxByPackName[key] || null)) delete merged[key];
+    else merged[key] = { ...workingItemBox[key] };
+  }
+  const entries = Object.keys(merged).sort().map((key) => `  ${JSON.stringify(key)}: ${boxLiteral(merged[key])}`);
   return `export const assetTargetOverrides = Object.freeze({\n${entries.join(",\n")}${entries.length ? "\n" : ""}});`;
 }
 async function applyToFiles() {
