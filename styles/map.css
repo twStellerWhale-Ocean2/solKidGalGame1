@@ -96,6 +96,18 @@
   pointer-events: none;
 }
 
+/* issue #180：地圖公主 token 永遠顯示於所有地圖圖示之上、不被遮擋。
+   地圖圖示堆疊最高為 #hotspotLayer 與 .hotspot.nearby（z-index 12）、裝飾層 .map-life-layer（7）；
+   公主 token 原有效 z-index 為 11（.player 經 mobile.css 各斷點覆蓋），落在 hotspot 層之下而被遮。
+   以三個 token 的 ID 選擇器（特異度高於所有 .player 類別／媒體查詢規則）統一拉升至 20，
+   確保跨所有斷點皆勝出且高於地圖圖示；20 仍低於地圖操作 UI 面板 .destination-panel（24），
+   故公主置於地圖圖示之上、但不蓋過目的地面板等操作 UI。pointer-events:none 維持，地點仍可點擊。 */
+#playerToken,
+#castlePlayerToken,
+#worldPlayerToken {
+  z-index: 20;
+}
+
 .player.walking {
   animation: hop 0.24s ease;
 }
