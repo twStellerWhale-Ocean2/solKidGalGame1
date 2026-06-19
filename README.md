@@ -181,6 +181,7 @@ area、角色、可玩公主與衣物都是 `content-package/` 下的**模組化
 
 ## 變更紀錄
 
+- 2026-06-19（issue #177）：設計杜絕同一遊玩週期內重複刷錢。過去在同一個遊玩週期內（玩到時間用完、休息一次為一個週期），同一個場景的打工可以反覆作答、反覆答對、反覆賺 coins；改為**每個場景的打工在同一個遊玩週期內最多只能答對賺一次**——某場景打工答對後，該場景的打工會在這個週期內消失（不能再作答），等休息後進入下一個遊玩週期才重新出現、可再作答。只針對打工（答對發 coins）；生活聊天（答對加心情並延長遊玩時間、不發 coins）暫不套用此限制。確切下架時的畫面呈現待 dev 以實機驗證校準。設計決策詳見 [docs/design-issue177.md](docs/design-issue177.md)。本項為 2plan 初稿，待 dev／opr 校準。
 - 2026-06-19（issue #164）：設計擴充場景內切換時的語音行為。承 #156（離開場景即收束語音），再補兩點：①在**場景內進出子互動（聊天／逛店／打工等）或返回場景選單**時，也即時停止前一段正在播放的語音、改接當下話題，不讓上一段聲音殘留跨層級；②**同一個場景的歡迎詞每次造訪只播一次**——首次進入場景時角色會打招呼，之後在子互動與場景選單之間往返不再重複播放，離開場景回地圖後再次進入才會重新招呼一次。沿用 #156 之即時停止降級（瀏覽器無法對進行中語句淡出時改以即時停止、不中斷遊戲）。設計決策詳見 [docs/design-issue164.md](docs/design-issue164.md)。本項為 2plan 初稿，待 dev／opr 校準。
 - 2026-06-19（issue #168）：已實作 wardrobe 服裝對位與素材規則。服裝、鞋帽與配件 layer 依 `wardrobeLayerBoundsByType` 類別級 render bounds 與 `safeBox` 穿到 `shared-512x768-v1` 公主 base 上，同類衣物共用對位範圍，不以每件單獨 nudge 或 CSS 特例處理；`data-audit` 會檢查 layer type、bounds、alpha safeBox，以及正式 wardrobe layer／商品縮圖必須為 GPT 產生／修圖的 PNG／WebP 童話手繪 bitmap、禁止 SVG 作為正式服裝素材或完成品替代。已以 `?selftest=data-audit` 與 wardrobe-detail 手機直向／桌機 visual QA 驗證。
 - 2026-06-19（issue #163）：已實作預設可玩公主與初始主題修訂。Yumi 改為深藍髮；原 Sol 對外改名 Mary 並改為深綠髮，但保留內部 `sol` id 以相容舊存檔；新帳號的識別色與背景花紋改為一次性隨機並保存。角色 base 以 GPT 產生／修圖來源校準為童話手繪風格 raster 素材，不使用 SVG、CSS 濾鏡或 renderer 特例代替；除指定髮色與使用 Rosa 眼睛校準 Mary／Yumi 外，未改動服裝、姿勢、比例、透明底與 rig 對位。已以 `?selftest=profile-color`、`?selftest=data-audit` 與選角 visual QA 驗證。
