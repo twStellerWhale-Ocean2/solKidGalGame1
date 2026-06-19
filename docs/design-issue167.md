@@ -117,3 +117,44 @@
     * 角色水平：窄版 `25%`／`75%`、寬版 `33%`／`66%`，寬窄構圖一致。
     * 三鏡頭：A（HMI 最低能力：選購時可見試穿、選項可讀）＋B（兒童 UX：手機直向對比與一致性）＋C 逐頁（上列五項 × 寬窄對照）。逐頁發現＋截圖＋分級，must-fix 全修。
 * **交付物（test-summary.pdf 待 USR 裁決）**：沿 #101／#111／#120／#132／#150／#166 焦點 UI 修正慣例，3code 之 GATE 報告記於本檔對應節；是否另產 A5 直向 [docs/test-summary.pdf] 待 USR 裁決，QA 截圖為暫存產物、不作交付物。
+
+## 6. 實作與驗證結果（3code，2026-06-19）
+
+> 沿 #101／#111／#120／#132／#150／#166 焦點 UI 修正慣例：本焦點變更之 GATE 驗證結果記於本節。design.md 未改（Option A，docLint sol 0）。
+
+### ⚠️ 現況校正（以產物為準，STATES §2）
+
+* **plan §1／§3 現況量測之透明度與配色基準有誤，3code 以實機 computed style 校正**：plan 依 [styles/adv.css] 靜態值記為「`.adv-box` 近不透明奶油 `rgba(255,250,246,0.97)`、`.choice-button` `#fff`」；惟 **實機 computed style 顯示對話方塊實際走 issue #70「視覺小說分層」暗色玻璃 token 系統**（[styles/mobile.css] `.adv-scene:is(scene…refund)` 區塊，約 L3314+）：
+  * 對話方塊底色＝ `var(--adv-dialog-bg)` ＝ `rgba(47, 38, 52, 0.46)`（暗紫半透明，**非** `0.97` 奶油），且 `.adv-box` 為 `position:absolute` 浮於滿版角色層（z-index 5 / 2）之上——故方塊確實覆蓋試穿，D2 命題成立、僅基準值不同。
+  * Chat／Work 選項鈕＝ `rgba(58,46,64,0.74)` 暗色玻璃（**非** `#fff`）；Shop／Refund 動作鈕＝ `.shop-buy-button` 粉紅漸層——此即真正「配色分散」（暗色玻璃 vs 粉紅漸層）。
+  * 角色水平**現況本即 25%／75%**（token 系統 calc，[styles/mobile.css] L3390/3404），故 issue「窄版維持 25/75」＝保留、「寬版改 33/66」＝僅改 ≥821px。
+* **影響**：實作落點由 plan 預估之 [styles/adv.css]／[styles/shop.css] 改為**統一落在 issue #70 視覺小說 token 區塊（[styles/mobile.css]）**（屬 sys/mod 內部自由區，design.md ＜I／II＞ spec 不受影響）。**透明度「對半」基準改以實機 `0.46` 計**（→ `0.23`），非 plan/USR 當時依誤值討論之 `0.97`→`0.48`。意圖（第三層更透、試穿可見）不變；確切值經實機 visual-qa 確認試穿清楚透出且文字／按鈕仍可讀。**此差異已回報 USR**。
+
+### 實作（皆落在 [styles/mobile.css] issue #70 視覺小說 token 區塊）
+
+* **D1**：第三層（shop/wardrobe/refund）`.item-panel-action` 由 `.shop-buy-button` 粉紅漸層改沿用 `.choice-button` 暗色玻璃家族（`rgba(58,46,64,0.78)`＋頂光漸層、`--adv-dialog-text` 文字），動作鈕以 `--adv-dialog-accent` 邊框維持主要操作辨識（同一機制、非另起一套）；返回鈕 `.item-panel-back` 既已為 `.choice-button.leave-choice`、本即同家族。
+* **D2**：第三層 `--adv-dialog-bg` 由共用 `0.46` 覆寫為 `0.23`（對半），方塊更透、試穿透出；只降方塊容器底，選項／命令鈕保有自身 `~0.78` 底色維持可讀（分層）。
+* **D3**：`.adv-scene[data-mode="refund"] .item-panel-empty` 改透明底、`border:0`、`height:auto`、`--adv-dialog-muted` 文字——退款無可退款項時不再有突兀白方塊，僅留輕量「No … treasures to refund.」提示、其後試穿可見（純 CSS、未動 [item-panel.js]／[main.js]）。
+* **D4**：第三層 `.item-preview`／`.item-image` 白底由 `#fffaf0` 改 `rgba(255,255,255,0.2)`（20% 白），商品縮圖不再以實心白底壓住試穿。
+* **D5**：寬版（≥821px）`.adv-princess`／`.adv-npc` 水平改 `33%`／`66%`（於既有 `@media (min-width:821px)` 區塊以同 calc 體例覆寫）；窄版維持既有 `25%`／`75%`。
+
+### GATE §1（機器判定）
+
+* `node --check`（`game-engine/main.js`／`game-engine/render/item-panel.js`）→ **OK**（本案未改 JS，D3 純 CSS）。
+* `docLint docs/design.md`（sol）→ **PASS（0 違規）**；`repoLint -Path .` → **PASS（0 違規）**。
+* headless selftest（system Chrome）：`map-avatar` → `passed:true, errors:[]`；`data-audit` → `passed:true`（`shopCount:11`、各類 10 件）；console／pageerror **0**（含 8 截圖 pass 期間）。
+* 依賴安全：純靜態網站、無 package 相依，`npm audit` 不適用。
+
+### GATE §5（實機 visual-qa，computed style 為準＋截圖佐證，寬 1280＋窄 390）
+
+| 項目 | 寬版 | 窄版 | 結果 |
+|---|---|---|---|
+| D2 方塊透明度 | `--adv-dialog-bg:0.23`、試穿princess透出 | 同 | ✅ 試穿清楚可見、文字（光暈描邊）仍可讀 |
+| D1 命令/動作鈕 | shop「Buy …」/ refund「Refund 50」皆暗色玻璃＋accent 邊框 | 同 | ✅ 與 Chat 選項同家族、粉紅漸層消除 |
+| D3 退款空清單 | 僅輕量 muted 提示、無白方塊（height 63px） | 同 | ✅ 試穿透出、保留「No … to refund.」 |
+| D4 商品白底 | `.item-preview` `rgba(255,255,255,0.2)` | 同 | ✅ 縮圖仍可辨、試穿透出 |
+| D5 角色水平 | princess 33% / npc 66% | princess 25% / npc 75% | ✅ 寬窄各自正確 |
+| 回歸（Chat/Work scene） | 選項暗色玻璃、correct/wrong 不變 | 同 | ✅ 未受影響 |
+
+* 三鏡頭：A（HMI 最低能力：選購時試穿可見、選項可讀，達成）＋B（兒童 UX：手機直向對比 OK、配色一致）＋C 逐頁（shop／refund-item／refund-empty／chat × 寬窄共 8 截圖審視）。`務必要修`：原 Shop/Refund 粉紅漸層與 Chat 暗色玻璃分散——**已修**（D1）；退款突兀白方塊——**已修**（D3）。其餘為可接受。
+* **結論：可宣稱完成（GATE §1 全綠、§5 三鏡頭 must-fix 全修）。**
