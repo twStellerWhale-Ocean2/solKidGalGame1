@@ -1353,6 +1353,17 @@ async function runDataAudit(api) {
     const t = String(text).trimStart().toLowerCase();
     return JOB_ANSWER_OPENERS.some((opener) => t.startsWith(opener));
   };
+  // issue #182：打工題幹須為角色實際交派之勞務差事；下列非勞動樣式（純觀看／站位／閒聊離場／道別客套）不得作為打工題幹。
+  const NON_JOB_PROMPT_PATTERNS = [
+    { re: /\blook at\b/i, why: "純觀看（look at）非勞務" },
+    { re: /\bstand (by|near|next to|beside|on)\b/i, why: "站位（stand by/near）非勞務" },
+    { re: /\bcan we (go|leave)\b/i, why: "閒聊離場（can we go）非勞務" },
+    { re: /\bthank you for your help\b/i, why: "道別客套（thank you for your help）非工作題幹" }
+  ];
+  const nonJobPromptReason = (prompt) => {
+    const hit = NON_JOB_PROMPT_PATTERNS.find((p) => p.re.test(String(prompt)));
+    return hit ? hit.why : "";
+  };
   const mapContracts = await collectMapContractAudit(api, errors);
 
   Object.entries(categoryCounts).forEach(([category, count]) => {
@@ -1434,7 +1445,7 @@ async function runDataAudit(api) {
       });
     });
   });
-  const characterRegistry = await collectPaperDollCharacterAudit(api, errors);
+  const characterRegistry = await collectPaperDollCharacterAudit(api, errors, warnings);
   const characterScale = await collectCharacterScaleAudit(api, errors, warnings);
 
   // issue #96 設計契約 §3：場景自帶題庫之結構與中文覆蓋一致性（手寫固定、每題自帶中文、進場取題）。
@@ -1458,6 +1469,9 @@ async function runDataAudit(api) {
         // issue #149：words 改由引擎自正解英文導出（不再逐題手寫），故不檢查 words。
         // issue #155：打工正解須以自然應允語句開頭（幫忙請求→公主應允的固定樣式）。
         if (q.answer && !startsWithAckOpener(q.answer)) errors.push(`${where} job answer must open with an acknowledgement (${JOB_ANSWER_OPENERS.slice(0, 8).join("/")}…) — got "${q.answer}"`);
+        // issue #182：打工題幹須為角色實際交派之勞務差事，不得為純觀看／站位／閒聊／道別。
+        const nonJobReason = nonJobPromptReason(q.prompt);
+        if (nonJobReason) errors.push(`${where} job prompt is not a work task（${nonJobReason}）— "${q.prompt}"`);
         if (!q.reward || !Number.isFinite(q.reward.coins)) errors.push(`${where} missing reward.coins`);
         if (!q.promptZh) errors.push(`${where} missing promptZh (中文協助所需)`);
         if (!Array.isArray(q.choicesZh) || q.choicesZh.length !== q.choices.length || q.choicesZh.some((z) => !z)) errors.push(`${where} choicesZh incomplete (中文協助所需)`);
@@ -1526,7 +1540,7 @@ async function runDataAudit(api) {
   document.body.prepend(result);
 }
 
-async function collectPaperDollCharacterAudit(api, errors) {
+async function collectPaperDollCharacterAudit(api, errors, warnings = []) {
   const registry = api.characterRegistry || {};
   const characters = [];
   const expectedPlayableIds = ["lumi", "yumi", "sol", "rosa"];
@@ -2037,12 +2051,36 @@ async function collectCharacterScaleAudit(api, errors, warnings = []) {
   for (const { item, layer } of layerRefs) {
     try {
       const metrics = await imageMetrics(layer.src);
-      if (metrics.width !== contract.canvasWidth || metrics.height !== contract.canvasHeight) {
-        errors.push(`${layer.slot || "wardrobe"} layer ${layer.src} is ${metrics.width}x${metrics.height}, expected ${contract.canvasWidth}x${contract.canvasHeight}`);
-      }
       const expectedBounds = api.wardrobeLayerBoundsForType?.(layer.type || item.type);
-      if (metrics.alphaBBox && expectedBounds?.safeBox && !boxContainsAlpha(expectedBounds.safeBox, metrics.alphaBBox)) {
-        errors.push(`${item.id}/${layer.slot} alpha box ${JSON.stringify(metrics.alphaBBox)} is outside ${item.type} safeBox ${JSON.stringify(expectedBounds.safeBox)}`);
+      const targetBox = layer.bounds?.targetBox || null;
+      if (targetBox) {
+        // #176 緊貼裁切模型：素材為去空白邊 bitmap，經 per-item targetBox 等比 fit 回畫布。
+        if (metrics.width > contract.canvasWidth || metrics.height > contract.canvasHeight) {
+          errors.push(`${layer.slot || "wardrobe"} layer ${layer.src} is ${metrics.width}x${metrics.height}, larger than canvas ${contract.canvasWidth}x${contract.canvasHeight}`);
+        }
+        if (metrics.alphaBBox) {
+          const b = metrics.alphaBBox;
+          if (b.left > 2 || b.top > 2 || b.right < metrics.width - 2 || b.bottom < metrics.height - 2) {
+            errors.push(`${item.id}/${layer.slot} bitmap not tightly trimmed (alpha ${JSON.stringify(b)} in ${metrics.width}x${metrics.height})`);
+          }
+        }
+        // 手動 per-item 校準可超出類別 safeBox（safeBox 退為軟性指引）；落在畫布外才算錯，
+        // 僅超出 safeBox 則告警（提醒檢查是否誤拖，如明顯偏離中心）。
+        const onCanvas = targetBox.left >= -2 && targetBox.top >= -2
+          && targetBox.right <= contract.canvasWidth + 2 && targetBox.bottom <= contract.canvasHeight + 2;
+        if (!onCanvas) {
+          errors.push(`${item.id}/${layer.slot} targetBox ${JSON.stringify(targetBox)} is outside the ${contract.canvasWidth}x${contract.canvasHeight} canvas`);
+        } else if (expectedBounds?.safeBox && !boxContainsAlpha(expectedBounds.safeBox, targetBox)) {
+          warnings.push(`${item.id}/${layer.slot} targetBox ${JSON.stringify(targetBox)} extends beyond ${item.type} safeBox (manual tune — verify placement)`);
+        }
+      } else {
+        // 舊滿版模型：素材為 512x768、alpha 落在類別 safeBox 內。
+        if (metrics.width !== contract.canvasWidth || metrics.height !== contract.canvasHeight) {
+          errors.push(`${layer.slot || "wardrobe"} layer ${layer.src} is ${metrics.width}x${metrics.height}, expected ${contract.canvasWidth}x${contract.canvasHeight}`);
+        }
+        if (metrics.alphaBBox && expectedBounds?.safeBox && !boxContainsAlpha(expectedBounds.safeBox, metrics.alphaBBox)) {
+          errors.push(`${item.id}/${layer.slot} alpha box ${JSON.stringify(metrics.alphaBBox)} is outside ${item.type} safeBox ${JSON.stringify(expectedBounds.safeBox)}`);
+        }
       }
       wardrobeLayers.push({
         itemId: item.id,
@@ -2050,6 +2088,7 @@ async function collectCharacterScaleAudit(api, errors, warnings = []) {
         slot: layer.slot,
         type: layer.type,
         bounds: renderBounds(layer.bounds),
+        targetBox,
         safeBox: expectedBounds?.safeBox || null,
         ...metrics
       });

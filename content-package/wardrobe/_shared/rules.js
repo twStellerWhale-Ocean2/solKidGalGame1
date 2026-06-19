@@ -42,15 +42,18 @@ export const outfitSlots = [
 // safeBox 是素材透明像素應落入的類別級範圍，供 data-audit 檢查 GPT 童話手繪 bitmap 是否對齊角色 rig。
 const fullCanvasBounds = Object.freeze({ left: 0, top: 0, right: 0, bottom: 0 });
 
-const layerBounds = (safeBox, renderBounds = fullCanvasBounds) => Object.freeze({
+// targetBox（選配，#176）：素材有效內容應投影到的畫布矩形（canvas 座標 left/top/right/bottom）。
+// 設定後渲染改以畫布相對百分比把任意尺寸素材 contain-fit 進此矩形；未設定則沿用 render bounds（px inset）舊行為。
+const layerBounds = (safeBox, renderBounds = fullCanvasBounds, targetBox = null) => Object.freeze({
   ...renderBounds,
-  safeBox: Object.freeze(safeBox)
+  safeBox: Object.freeze(safeBox),
+  ...(targetBox ? { targetBox: Object.freeze({ ...targetBox }) } : {})
 });
 
 export const wardrobeLayerBoundsByType = Object.freeze({
   hairstyle: layerBounds({ left: 168, top: 280, right: 352, bottom: 570 }, { left: -6, top: -23, right: 6, bottom: 23 }),
-  top: layerBounds({ left: 150, top: 390, right: 370, bottom: 570 }, { left: -4, top: -9, right: 4, bottom: 9 }),
-  bottom: layerBounds({ left: 160, top: 510, right: 360, bottom: 690 }, { left: -6, top: -32, right: 6, bottom: 32 }),
+  top: layerBounds({ left: 149, top: 389, right: 369, bottom: 569 }, { left: -4, top: -9, right: 4, bottom: 9 }),
+  bottom: layerBounds({ left: 161, top: 459, right: 361, bottom: 666 }, { left: -6, top: -32, right: 6, bottom: 32 }),
   dress: layerBounds({ left: 145, top: 405, right: 375, bottom: 730 }, { left: -5, top: -19, right: 5, bottom: 19 }),
   outer: layerBounds({ left: 145, top: 385, right: 375, bottom: 660 }, { left: -4, top: -16, right: 4, bottom: 16 }),
   shoes: layerBounds({ left: 216, top: 720, right: 300, bottom: 768 }, { left: -4, top: -3, right: 4, bottom: 3 }),
