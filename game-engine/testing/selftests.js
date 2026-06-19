@@ -52,6 +52,7 @@ export function installTestingHooks(api) {
   runPlayTimerSelfTest(api);
   runMoodExtendSelfTest(api);
   runChatSelfTest(api);
+  runJobCycleSelfTest(api);
   runSceneNavSelfTest(api);
   runProfileColorSelfTest(api);
   runChineseRewardSelfTest(api);
@@ -421,6 +422,98 @@ function runChatSelfTest(api) {
   result.id = "chatTestResult";
   result.textContent = JSON.stringify({
     test: "chat",
+    passed: errors.length === 0,
+    errors: errors.slice(0, 10)
+  });
+  document.body.prepend(result);
+}
+
+// issue #177（spec#11 反洗 coins）：驗證「每場景打工每遊玩週期限答對一次」——打工答對後該場景打工於本週期
+// 下架（firstLayerActionKeys 不再含 "practice"、isJobDone 真）；聊天答對不計入、不下架打工（D6）；跨週期
+// （休息後續玩）重置可再作答（D4）；舊存檔（無 jobsDone／雜質）正規化為安全字串陣列（D5）。以 castle kingHall 跑。
+function runJobCycleSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "job-cycle") return;
+  const errors = [];
+  const clock = api.playClock;
+  const accounts = api.accounts;
+  let createdId = null;
+  const MIN = 60000;
+  const keys = (place) => api.firstLayerActionKeys(place);
+  const jobsDone = () => api.state.playLimit.cycle.jobsDone;
+  const answerActive = () => {
+    const lesson = api.getActiveLesson();
+    if (!lesson) throw new Error("no active lesson after open");
+    const btn = [...api.elements.choiceList.querySelectorAll("button")].find((b) => b.dataset.choice === lesson.answer);
+    if (!btn) throw new Error("correct choice button not found");
+    api.answerLesson(btn, lesson.answer);
+  };
+  const openChat = (place) => api.openQuestAdv(api.hotspotById(place), { bankKey: "chatLesson", mode: "chat" });
+  const openJob = (place) => api.openQuestAdv(api.hotspotById(place));
+  try {
+    if (!clock || typeof api.firstLayerActionKeys !== "function") throw new Error("test hooks (playClock/firstLayerActionKeys) missing");
+    const baseline = accounts.list().length;
+    createdId = accounts.create().id;
+    clock.setOffset(0);
+    clock.setDurations(2, 1);
+    clock.tick(); // idle → play：開新遊玩週期（cycle.jobsDone 空）
+    api.state.coins = 100;
+    api.state.mood = 0;
+
+    // 0) 起始：jobsDone 空、kingHall 提供 practice 與 chat、isJobDone 假。
+    if (jobsDone().length !== 0) errors.push(`start jobsDone=${JSON.stringify(jobsDone())}, expected []`);
+    if (!keys("kingHall").includes("practice")) errors.push("start: practice action missing at kingHall");
+    if (clock.isJobDone("kingHall")) errors.push("start: isJobDone(kingHall) true, expected false");
+
+    // 1) 聊天答對：不計入 jobsDone、不下架打工（D6）。
+    openChat("kingHall");
+    answerActive();
+    if (clock.isJobDone("kingHall")) errors.push("after chat: isJobDone(kingHall) true (chat must not mark job done)");
+    if (jobsDone().includes("kingHall")) errors.push("after chat: kingHall in jobsDone (chat must not count)");
+    if (!keys("kingHall").includes("practice")) errors.push("after chat: practice missing (chat must not 下架 job)");
+
+    // 2) 打工答對：發 coins、jobsDone 含 kingHall、isJobDone 真、practice 下架、chat 仍在。
+    const coinsBefore = api.state.coins;
+    openJob("kingHall");
+    answerActive();
+    if (api.state.coins <= coinsBefore) errors.push(`after job: coins=${api.state.coins}, expected > ${coinsBefore}`);
+    if (!clock.isJobDone("kingHall")) errors.push("after job: isJobDone(kingHall) false, expected true");
+    if (!jobsDone().includes("kingHall")) errors.push("after job: kingHall not in jobsDone");
+    if (keys("kingHall").includes("practice")) errors.push("after job: practice still offered (job not 下架 within cycle)");
+    if (!keys("kingHall").includes("chat")) errors.push("after job: chat action missing (chat must remain)");
+
+    // 3) 跨週期（休息後續玩）重置：jobsDone 空、isJobDone 假、practice 復原（D4）。
+    // 快轉到「剛過本回合 sessionEndsAt」（聊天已延長過 session，故依實際 sessionEndsAt 推進、不用固定值），
+    // 落在休息窗內 → tick 結算並進入休息。
+    clock.advance(Math.max(0, clock.limit.sessionEndsAt - clock.now() + 1000));
+    let ev = clock.tick();           // → 結算並進入休息
+    if (ev.phase !== "rest") errors.push(`expiry phase=${ev.phase}, expected rest`);
+    clock.advance(1 * MIN + 1000);   // 休息（1 分鐘）屆滿
+    if (clock.resume() !== true) errors.push("resume failed after rest finished");
+    if (jobsDone().length !== 0) errors.push(`new cycle jobsDone=${JSON.stringify(jobsDone())}, expected []`);
+    if (clock.isJobDone("kingHall")) errors.push("new cycle: isJobDone(kingHall) true, expected reset");
+    if (!keys("kingHall").includes("practice")) errors.push("new cycle: practice not restored after reset");
+
+    // 4) 正規化舊存檔（無 jobsDone／雜質）→ 安全空陣列、僅留字串 id（D5）。
+    const n1 = clock.normalizeLimit({ cycle: { answered: 2, correct: 1 } });
+    if (!Array.isArray(n1.cycle.jobsDone) || n1.cycle.jobsDone.length !== 0) errors.push(`normalize missing jobsDone → ${JSON.stringify(n1.cycle.jobsDone)}, expected []`);
+    const n2 = clock.normalizeLimit({ cycle: { jobsDone: ["boutique", 3, null, "kingHall"] } });
+    if (JSON.stringify(n2.cycle.jobsDone) !== JSON.stringify(["boutique", "kingHall"])) errors.push(`normalize jobsDone filter → ${JSON.stringify(n2.cycle.jobsDone)}, expected ["boutique","kingHall"]`);
+
+    api.closeAdv();
+    accounts.remove(createdId);
+    createdId = null;
+    if (accounts.list().length !== baseline) errors.push(`account count after cleanup = ${accounts.list().length}, expected ${baseline}`);
+  } catch (error) {
+    errors.push(error.message);
+  } finally {
+    if (createdId) accounts.remove(createdId);
+    clock?.setOffset(0);
+  }
+  const result = document.createElement("pre");
+  result.id = "jobCycleTestResult";
+  result.textContent = JSON.stringify({
+    test: "job-cycle",
     passed: errors.length === 0,
     errors: errors.slice(0, 10)
   });
