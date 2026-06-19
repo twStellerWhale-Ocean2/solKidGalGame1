@@ -13,7 +13,12 @@ import {
   randomProfileColor,
   randomBackgroundPattern
 } from "./_shared/paper-doll-assets.js";
-import { outfitSlots, paperDollLayerOrder } from "./_shared/rules.js";
+import {
+  outfitSlots,
+  paperDollLayerOrder,
+  wardrobeLayerBoundsByType,
+  wardrobeLayerBoundsForType
+} from "./_shared/rules.js";
 import { castleRoyalCloakRoomItems } from "./castle-royal-cloak-room/manifest.js";
 import { castleSeamstressItems } from "./castle-seamstress/manifest.js";
 import { ruralFieldCobblerItems } from "./rural-field-cobbler/manifest.js";
@@ -37,6 +42,8 @@ export {
   outfitSlots,
   paperDollBaseLayer,
   paperDollLayerOrder,
+  wardrobeLayerBoundsByType,
+  wardrobeLayerBoundsForType,
   isPlayableCharacterId,
   normalizeProfileColor,
   playableCharacterById,

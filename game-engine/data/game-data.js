@@ -12,6 +12,8 @@ export {
   outfitSlots,
   paperDollBaseLayer,
   paperDollLayerOrder,
+  wardrobeLayerBoundsByType,
+  wardrobeLayerBoundsForType,
   playableCharacterById,
   isPlayableCharacterId,
   normalizeProfileColor,

@@ -289,7 +289,7 @@ WARDROBE -->|"🎚️paramWardrobeLayerBounds=`type defaults`"| SYS
     * paramPlayMaxMinutes=`20`
     * paramMoodMinutesPerPoint=`1`
   * [etyCfg自訂modWardrobe組態]
-    * paramWardrobeLayerBounds=`type defaults`
+    * paramWardrobeLayerBounds=`wardrobeLayerBoundsByType`（每個 item type 定義 render bounds 與 `safeBox`）
 
 ## C. 補充設計(選配)
 
@@ -504,7 +504,7 @@ erDiagram
   1. 於衣櫃穿戴已擁有商品。
 * 預期結果：
   1. 紙娃娃 outfit 更新且互斥 slot 正確處理；目前 baked-in playwear base 不得出現黑底，且 starter 髮型／服裝不會重複疊在 base 上。
-  2. 已穿戴商品依其 item type／slot 套用類別級 layer bounds；未出現單件專用 CSS nudge 或未登記的一次性位移。
+  2. 已穿戴商品依其 item type／slot 套用 `wardrobeLayerBoundsByType` 類別級 layer bounds；`data-audit` 會檢查 layer type、render bounds、`safeBox` 與 PNG／WebP bitmap 限制，且未出現單件專用 CSS nudge 或未登記的一次性位移。
 
 #### intTest#09-驗證 [runAct自訂玩家退款]
 

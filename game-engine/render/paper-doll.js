@@ -5,8 +5,8 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
       <div class="avatar-shadow"></div>
       ${layers.map((layer) => `
         <span
-          class="paper-doll-layer paper-doll-layer-${layer.slot}"
-          style="--layer-img:url('${assetUrl(layer.src)}')"
+          class="paper-doll-layer paper-doll-layer-${cssName(layer.slot)} paper-doll-layer-type-${cssName(layer.type || layer.slot)}"
+          style="--layer-img:url('${assetUrl(layer.src)}');${boundsStyle(layer.bounds)}"
           aria-hidden="true"
         ></span>
       `).join("")}
@@ -35,7 +35,7 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
 
   function activePaperDollLayers(outfitState = {}, character = getCharacter?.()) {
     const layersBySlot = new Map(layerOrder.map((slot) => [slot, []]));
-    layersBySlot.get("base").push({ slot: "base", src: character?.baseLayer || baseLayer });
+    layersBySlot.get("base").push({ slot: "base", type: "base", src: character?.baseLayer || baseLayer });
     const slots = [
       "hairstyle",
       outfitState.dress && outfitState.dress !== "none" ? "dress" : "bottom",
@@ -64,6 +64,16 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
   function assetUrl(src) {
     const path = src?.startsWith("content-package/") || src?.startsWith("content-base/") ? `../${src}` : src;
     return path?.replaceAll("'", "%27");
+  }
+
+  function boundsStyle(bounds = {}) {
+    return ["top", "right", "bottom", "left"]
+      .map((edge) => `--layer-${edge}:${Number.isFinite(bounds[edge]) ? bounds[edge] : 0}px`)
+      .join(";");
+  }
+
+  function cssName(value = "unknown") {
+    return String(value).replace(/[^a-zA-Z0-9_-]/g, "-");
   }
 
   return { avatarMarkup, renderPaperDolls };

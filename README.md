@@ -179,7 +179,7 @@ area、角色、可玩公主與衣物都是 `content-package/` 下的**模組化
 
 ## 變更紀錄
 
-- 2026-06-19（issue #168）：設計修正 wardrobe 服裝對位與素材規則。服裝、鞋帽與配件 layer 須依類別級上下左右邊界／安全框穿到 `shared-512x768-v1` 公主 base 上，同類衣物共用對位範圍，不以每件單獨 nudge 或 CSS 特例處理；正式 wardrobe layer 與商品縮圖須以 GPT 產生／修圖為童話手繪風格 bitmap 並轉透明 WebP／PNG，禁止 SVG 作為正式服裝素材或完成品替代。完成判定須看實際穿上後的手機直向與桌機視覺效果。本項為 2plan 初稿，待 dev／opr 校準。
+- 2026-06-19（issue #168）：已實作 wardrobe 服裝對位與素材規則。服裝、鞋帽與配件 layer 依 `wardrobeLayerBoundsByType` 類別級 render bounds 與 `safeBox` 穿到 `shared-512x768-v1` 公主 base 上，同類衣物共用對位範圍，不以每件單獨 nudge 或 CSS 特例處理；`data-audit` 會檢查 layer type、bounds、alpha safeBox，以及正式 wardrobe layer／商品縮圖必須為 GPT 產生／修圖的 PNG／WebP 童話手繪 bitmap、禁止 SVG 作為正式服裝素材或完成品替代。已以 `?selftest=data-audit` 與 wardrobe-detail 手機直向／桌機 visual QA 驗證。
 - 2026-06-19（issue #163）：已實作預設可玩公主與初始主題修訂。Yumi 改為深藍髮；原 Sol 對外改名 Mary 並改為深綠髮，但保留內部 `sol` id 以相容舊存檔；新帳號的識別色與背景花紋改為一次性隨機並保存。角色 base 以 GPT 產生／修圖來源校準為童話手繪風格 raster 素材，不使用 SVG、CSS 濾鏡或 renderer 特例代替；除指定髮色與使用 Rosa 眼睛校準 Mary／Yumi 外，未改動服裝、姿勢、比例、透明底與 rig 對位。已以 `?selftest=profile-color`、`?selftest=data-audit` 與選角 visual QA 驗證。
 - 2026-06-19（issue #161）：設計調整地圖公主圖示。地圖上的公主圖示放大約一倍使其更醒目，並移除腳下的識別色橢圓背板讓畫面更簡潔；圖地分離改倚賴角色本身既有的深色投影與白描邊，地圖上不再以背板呈現各帳號識別色（識別色仍用於大頭照卡片底色與帳號辨識）。屬 spec#9 地圖 token 標示之精修。設計決策詳見 [docs/design-issue161.md](docs/design-issue161.md)。本項為 2plan 初稿，待 dev／opr 校準。
 - 2026-06-19（issue #166）：設計讓地圖一眼看出哪些地點可以逛店買東西。地圖上的地點圖示原本全是圓形，看不出哪些有賣東西；改為**有販售（可逛店）的地點以方形圖示呈現**，與一般地點（圓形）、城門／傳送（門形）區隔，讓孩子一眼就找得到可以用 coins 換外觀的商店。規則依場景是否有商品自動套用、各地區（含城堡）一致，新增商店也會自動變方形。確切的方形樣式與大小待 dev 以實機 visual-qa（寬＋窄、四區含城堡）校準。設計決策詳見 [docs/design-issue166.md](docs/design-issue166.md)。本項為 2plan 初稿，待 dev／opr 校準。

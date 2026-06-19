@@ -1158,7 +1158,7 @@ async function runDataAudit(api) {
     });
   });
   const characterRegistry = await collectPaperDollCharacterAudit(api, errors);
-  const characterScale = await collectCharacterScaleAudit(api, errors);
+  const characterScale = await collectCharacterScaleAudit(api, errors, warnings);
 
   // issue #96 設計契約 §3：場景自帶題庫之結構與中文覆蓋一致性（手寫固定、每題自帶中文、進場取題）。
   const lessonAudit = { places: 0, questions: 0, byArea: {} };
@@ -1514,7 +1514,50 @@ function expectedBodyHeightPx(heightCm, contract) {
   return Math.round((heightCm / contract.fullCanvasHeightCm) * contract.canvasHeight);
 }
 
-async function collectCharacterScaleAudit(api, errors) {
+function assetPathWithoutQuery(src = "") {
+  return String(src).split(/[?#]/)[0].toLowerCase();
+}
+
+function assertWardrobeBitmapAsset(src, where, errors) {
+  const path = assetPathWithoutQuery(src);
+  if (!path) {
+    errors.push(`${where} missing bitmap asset`);
+    return;
+  }
+  if (path.endsWith(".svg")) {
+    errors.push(`${where} uses SVG; wardrobe layer/thumb assets must be GPT-generated PNG/WebP bitmap art`);
+  }
+  if (!path.endsWith(".webp") && !path.endsWith(".png")) {
+    errors.push(`${where} must be PNG/WebP bitmap art, got ${src}`);
+  }
+}
+
+function numericBounds(bounds = {}) {
+  return ["left", "top", "right", "bottom"].every((edge) => Number.isFinite(bounds[edge]));
+}
+
+function renderBounds(bounds = {}) {
+  return {
+    left: bounds.left,
+    top: bounds.top,
+    right: bounds.right,
+    bottom: bounds.bottom
+  };
+}
+
+function sameRenderBounds(a = {}, b = {}) {
+  return ["left", "top", "right", "bottom"].every((edge) => a[edge] === b[edge]);
+}
+
+function boxContainsAlpha(safeBox, alphaBox, tolerance = 2) {
+  if (!safeBox || !alphaBox) return true;
+  return alphaBox.left >= safeBox.left - tolerance &&
+    alphaBox.top >= safeBox.top - tolerance &&
+    alphaBox.right <= safeBox.right + tolerance &&
+    alphaBox.bottom <= safeBox.bottom + tolerance;
+}
+
+async function collectCharacterScaleAudit(api, errors, warnings = []) {
   const contract = api.characterScaleContract || {
     canvasWidth: 512,
     canvasHeight: 768,
@@ -1605,15 +1648,46 @@ async function collectCharacterScaleAudit(api, errors) {
     }
   }
 
-  const layerRefs = uniqueBy(api.shopItems.flatMap((item) => item.layers || []), (layer) => layer.src);
+  const wardrobeLayerRefs = [];
+  (api.shopItems || []).forEach((item) => {
+    if (item.storeId !== "starter") {
+      assertWardrobeBitmapAsset(item.image, `${item.id}/thumb`, errors);
+    }
+    (item.layers || []).forEach((layer, index) => {
+      const where = `${item.id}/layer#${index + 1}`;
+      const expectedBounds = api.wardrobeLayerBoundsForType?.(item.type) || api.wardrobeLayerBoundsByType?.[item.type];
+      assertWardrobeBitmapAsset(layer.src, where, errors);
+      if (layer.type !== item.type) errors.push(`${where} type ${layer.type || "missing"} does not match item type ${item.type}`);
+      if (!expectedBounds) errors.push(`${where} has no class-level bounds for type ${item.type}`);
+      if (!numericBounds(layer.bounds)) errors.push(`${where} has invalid render bounds`);
+      if (expectedBounds && !sameRenderBounds(renderBounds(layer.bounds), renderBounds(expectedBounds))) {
+        errors.push(`${where} render bounds do not match class-level bounds for ${item.type}`);
+      }
+      wardrobeLayerRefs.push({ item, layer });
+    });
+  });
+
+  const layerRefs = uniqueBy(wardrobeLayerRefs, ({ layer }) => layer.src);
   const wardrobeLayers = [];
-  for (const layer of layerRefs) {
+  for (const { item, layer } of layerRefs) {
     try {
       const metrics = await imageMetrics(layer.src);
       if (metrics.width !== contract.canvasWidth || metrics.height !== contract.canvasHeight) {
         errors.push(`${layer.slot || "wardrobe"} layer ${layer.src} is ${metrics.width}x${metrics.height}, expected ${contract.canvasWidth}x${contract.canvasHeight}`);
       }
-      wardrobeLayers.push({ slot: layer.slot, ...metrics });
+      const expectedBounds = api.wardrobeLayerBoundsForType?.(layer.type || item.type);
+      if (metrics.alphaBBox && expectedBounds?.safeBox && !boxContainsAlpha(expectedBounds.safeBox, metrics.alphaBBox)) {
+        errors.push(`${item.id}/${layer.slot} alpha box ${JSON.stringify(metrics.alphaBBox)} is outside ${item.type} safeBox ${JSON.stringify(expectedBounds.safeBox)}`);
+      }
+      wardrobeLayers.push({
+        itemId: item.id,
+        itemType: item.type,
+        slot: layer.slot,
+        type: layer.type,
+        bounds: renderBounds(layer.bounds),
+        safeBox: expectedBounds?.safeBox || null,
+        ...metrics
+      });
     } catch (error) {
       errors.push(error.message);
     }
@@ -1624,6 +1698,7 @@ async function collectCharacterScaleAudit(api, errors) {
     npcAssetCount: npcAssets.length,
     paperDollAssetCount: paperDoll.length,
     wardrobeLayerCount: wardrobeLayers.length,
+    wardrobeLayerBoundsByType: api.wardrobeLayerBoundsByType || {},
     npcAssets,
     paperDoll,
     wardrobeLayers
