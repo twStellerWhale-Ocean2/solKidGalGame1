@@ -1,3 +1,5 @@
+import { createKeyboardWalkController, directionForKey } from "../map/keyboard-walk.js";
+
 export function installTestingHooks(api) {
   window.LuminaraTest = {
     exportMarkdown: api.buildSaveMarkdown,
@@ -52,12 +54,98 @@ export function installTestingHooks(api) {
   runPlayTimerSelfTest(api);
   runMoodExtendSelfTest(api);
   runChatSelfTest(api);
+  runJobCycleSelfTest(api);
   runSceneNavSelfTest(api);
   runProfileColorSelfTest(api);
   runChineseRewardSelfTest(api);
   runCharacterVoiceSelfTest(api);
   runMapAvatarSelfTest(api);
+  runMapWalkSelfTest(api);
   runAboutSelfTest(api);
+}
+
+// issue #178：鍵盤地圖走動控制器——自管連續移動迴圈（消除起步停頓）、放鍵/失焦即停、忽略 OS 自動重複、三面座標改變。
+function runMapWalkSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "map-walk") return;
+  const errors = [];
+
+  // A. 方向鍵對映（方向鍵＋WASD；非走動鍵回傳 null）
+  const dirChecks = [
+    ["ArrowUp", "up"], ["w", "up"], ["W", "up"],
+    ["ArrowDown", "down"], ["s", "down"],
+    ["ArrowLeft", "left"], ["a", "left"],
+    ["ArrowRight", "right"], ["d", "right"],
+    ["Enter", null], ["1", null], [" ", null]
+  ];
+  for (const [key, expected] of dirChecks) {
+    if (directionForKey(key) !== expected) {
+      errors.push(`directionForKey(${JSON.stringify(key)}) 期望 ${expected}，得 ${directionForKey(key)}`);
+    }
+  }
+
+  // B. 控制器：即時起步 ＋ 連續多步 ＋ 放鍵即停（注入假時鐘與 raf 佇列，免依賴真實 OS 自動重複）
+  let clock = 0;
+  const pending = [];
+  const steps = [];
+  const ctrl = createKeyboardWalkController({
+    stepMs: 33,
+    now: () => clock,
+    requestFrame: (cb) => { pending.push(cb); return pending.length; },
+    cancelFrame: () => {}
+  });
+  const pump = () => { const cb = pending.shift(); if (cb) cb(); };
+
+  ctrl.press("up", (dx, dy) => steps.push([dx, dy]));
+  if (steps.length !== 1) errors.push(`press 應即時走一步，實得 ${steps.length}`);
+  if (!ctrl.isWalking()) errors.push("press 後連續移動迴圈未啟動");
+  for (let i = 0; i < 4; i++) { clock += 33; pump(); }   // 每前進 33ms 應再推進一步
+  if (steps.length < 5) errors.push(`連續走動步數不足（期望 ≥5，實得 ${steps.length}）`);
+  const heldSteps = steps.length;
+  ctrl.release("up");
+  if (ctrl.isWalking()) errors.push("放鍵後迴圈未停止");
+  clock += 99; pump(); pump();
+  if (steps.length !== heldSteps) errors.push("放鍵後仍持續走動（卡走）");
+
+  // C. 忽略 OS 自動重複：同向重按不額外即時走步、不重複登記方向
+  const repeatSteps = [];
+  const ctrlRepeat = createKeyboardWalkController({
+    stepMs: 33, now: () => 0, requestFrame: () => 1, cancelFrame: () => {}
+  });
+  const repeatMove = (dx, dy) => repeatSteps.push([dx, dy]);
+  ctrlRepeat.press("right", repeatMove);
+  ctrlRepeat.press("right", repeatMove);   // 模擬 OS 自動重複的合成 keydown
+  if (repeatSteps.length !== 1) errors.push(`同向重複按鍵應被忽略，期望即時步數 1，實得 ${repeatSteps.length}`);
+  if (ctrlRepeat.heldDirections().length !== 1) errors.push("同向重複按鍵不應重複登記方向");
+
+  // D. clear（失焦／切面）即停並清空按住狀態
+  ctrlRepeat.clear();
+  if (ctrlRepeat.isWalking() || ctrlRepeat.heldDirections().length !== 0) {
+    errors.push("clear 後未停止或未清空按住狀態");
+  }
+
+  // E. 三處走動面：座標皆隨對應 move 函式改變（地區／城堡／世界）
+  const movedX = (label, area, moveFn) => {
+    const before = { ...api.currentPlayerPoint(area) };
+    moveFn(1, 0);
+    const after = api.currentPlayerPoint(area);
+    if (!(Math.abs(after.x - before.x) > 0.001)) errors.push(`${label}鍵盤走動未改變座標`);
+  };
+  api.openArea("urban");
+  api.renderMap();
+  movedX("地區地圖", "urban", api.moveOnMap);
+  api.openArea("castle");
+  api.renderCastleMap();
+  movedX("城堡地圖", "castle", api.moveOnCastleMap);
+  api.openWorldMap();
+  api.renderWorldMap();
+  movedX("世界地圖", "world", api.moveOnWorldMap);
+
+  const passed = errors.length === 0;
+  const result = document.createElement("pre");
+  result.id = "mapWalkResult";
+  result.textContent = JSON.stringify({ test: "map-walk", passed, errors });
+  document.body.prepend(result);
 }
 
 // issue #99：跨地圖公主頭像一致顯示（intTest#26）＋世界地圖走到再進入與途中略過（intTest#27）。
@@ -137,6 +225,34 @@ function runMapAvatarSelfTest(api) {
   api.requestWorldTravel("rural");
   api.requestWorldTravel("rural");
   if (api.state.area !== "rural") errors.push("途中略過：再次點選未立即進入 rural");
+
+  // issue #180：地圖公主 token 永遠顯示於地圖圖示之上、但低於地圖操作 UI 面板。
+  // 守住「公主 token z-index 高於地點標記層／hotspot(nearby)／裝飾層，且低於目的地面板」。
+  const zOf = (el) => (el ? parseInt(getComputedStyle(el).zIndex, 10) : NaN);
+  const checkTokenAboveIcons = (tokenId, stageId, markerLayerId) => {
+    const tokenZ = zOf(document.getElementById(tokenId));
+    if (!Number.isFinite(tokenZ)) { errors.push(`${tokenId} z-index 非數值（公主 token 缺有效堆疊層級）`); return; }
+    const layerZ = zOf(document.getElementById(markerLayerId));
+    if (Number.isFinite(layerZ) && !(tokenZ > layerZ)) errors.push(`${tokenId}(z${tokenZ}) 未高於標記層 ${markerLayerId}(z${layerZ})：公主會被地圖圖示遮住`);
+    const stage = document.getElementById(stageId);
+    if (stage) {
+      const probe = document.createElement("div");
+      probe.className = "map-marker hotspot nearby";
+      probe.style.position = "absolute"; probe.style.left = "0"; probe.style.top = "0";
+      stage.appendChild(probe);
+      const probeZ = zOf(probe);
+      probe.remove();
+      if (Number.isFinite(probeZ) && !(tokenZ > probeZ)) errors.push(`${tokenId}(z${tokenZ}) 未高於 hotspot(nearby)(z${probeZ})`);
+    }
+  };
+  checkTokenAboveIcons("playerToken", "mapStage", "hotspotLayer");
+  checkTokenAboveIcons("castlePlayerToken", "castleStage", "castleMarkerLayer");
+  checkTokenAboveIcons("worldPlayerToken", "worldStage", "worldMarkerLayer");
+  const urbanTokenZ = zOf(document.getElementById("playerToken"));
+  const lifeLayerZ = zOf(document.getElementById("mapLifeLayer"));
+  if (Number.isFinite(lifeLayerZ) && !(urbanTokenZ > lifeLayerZ)) errors.push(`playerToken(z${urbanTokenZ}) 未高於裝飾層 mapLifeLayer(z${lifeLayerZ})`);
+  const destPanelZ = zOf(document.getElementById("destinationPanel"));
+  if (Number.isFinite(destPanelZ) && !(urbanTokenZ < destPanelZ)) errors.push(`playerToken(z${urbanTokenZ}) 未低於目的地面板 destinationPanel(z${destPanelZ})：公主不應蓋過地圖操作 UI`);
 
   const passed = errors.length === 0;
   const result = document.createElement("pre");
@@ -421,6 +537,98 @@ function runChatSelfTest(api) {
   result.id = "chatTestResult";
   result.textContent = JSON.stringify({
     test: "chat",
+    passed: errors.length === 0,
+    errors: errors.slice(0, 10)
+  });
+  document.body.prepend(result);
+}
+
+// issue #177（spec#11 反洗 coins）：驗證「每場景打工每遊玩週期限答對一次」——打工答對後該場景打工於本週期
+// 下架（firstLayerActionKeys 不再含 "practice"、isJobDone 真）；聊天答對不計入、不下架打工（D6）；跨週期
+// （休息後續玩）重置可再作答（D4）；舊存檔（無 jobsDone／雜質）正規化為安全字串陣列（D5）。以 castle kingHall 跑。
+function runJobCycleSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "job-cycle") return;
+  const errors = [];
+  const clock = api.playClock;
+  const accounts = api.accounts;
+  let createdId = null;
+  const MIN = 60000;
+  const keys = (place) => api.firstLayerActionKeys(place);
+  const jobsDone = () => api.state.playLimit.cycle.jobsDone;
+  const answerActive = () => {
+    const lesson = api.getActiveLesson();
+    if (!lesson) throw new Error("no active lesson after open");
+    const btn = [...api.elements.choiceList.querySelectorAll("button")].find((b) => b.dataset.choice === lesson.answer);
+    if (!btn) throw new Error("correct choice button not found");
+    api.answerLesson(btn, lesson.answer);
+  };
+  const openChat = (place) => api.openQuestAdv(api.hotspotById(place), { bankKey: "chatLesson", mode: "chat" });
+  const openJob = (place) => api.openQuestAdv(api.hotspotById(place));
+  try {
+    if (!clock || typeof api.firstLayerActionKeys !== "function") throw new Error("test hooks (playClock/firstLayerActionKeys) missing");
+    const baseline = accounts.list().length;
+    createdId = accounts.create().id;
+    clock.setOffset(0);
+    clock.setDurations(2, 1);
+    clock.tick(); // idle → play：開新遊玩週期（cycle.jobsDone 空）
+    api.state.coins = 100;
+    api.state.mood = 0;
+
+    // 0) 起始：jobsDone 空、kingHall 提供 practice 與 chat、isJobDone 假。
+    if (jobsDone().length !== 0) errors.push(`start jobsDone=${JSON.stringify(jobsDone())}, expected []`);
+    if (!keys("kingHall").includes("practice")) errors.push("start: practice action missing at kingHall");
+    if (clock.isJobDone("kingHall")) errors.push("start: isJobDone(kingHall) true, expected false");
+
+    // 1) 聊天答對：不計入 jobsDone、不下架打工（D6）。
+    openChat("kingHall");
+    answerActive();
+    if (clock.isJobDone("kingHall")) errors.push("after chat: isJobDone(kingHall) true (chat must not mark job done)");
+    if (jobsDone().includes("kingHall")) errors.push("after chat: kingHall in jobsDone (chat must not count)");
+    if (!keys("kingHall").includes("practice")) errors.push("after chat: practice missing (chat must not 下架 job)");
+
+    // 2) 打工答對：發 coins、jobsDone 含 kingHall、isJobDone 真、practice 下架、chat 仍在。
+    const coinsBefore = api.state.coins;
+    openJob("kingHall");
+    answerActive();
+    if (api.state.coins <= coinsBefore) errors.push(`after job: coins=${api.state.coins}, expected > ${coinsBefore}`);
+    if (!clock.isJobDone("kingHall")) errors.push("after job: isJobDone(kingHall) false, expected true");
+    if (!jobsDone().includes("kingHall")) errors.push("after job: kingHall not in jobsDone");
+    if (keys("kingHall").includes("practice")) errors.push("after job: practice still offered (job not 下架 within cycle)");
+    if (!keys("kingHall").includes("chat")) errors.push("after job: chat action missing (chat must remain)");
+
+    // 3) 跨週期（休息後續玩）重置：jobsDone 空、isJobDone 假、practice 復原（D4）。
+    // 快轉到「剛過本回合 sessionEndsAt」（聊天已延長過 session，故依實際 sessionEndsAt 推進、不用固定值），
+    // 落在休息窗內 → tick 結算並進入休息。
+    clock.advance(Math.max(0, clock.limit.sessionEndsAt - clock.now() + 1000));
+    let ev = clock.tick();           // → 結算並進入休息
+    if (ev.phase !== "rest") errors.push(`expiry phase=${ev.phase}, expected rest`);
+    clock.advance(1 * MIN + 1000);   // 休息（1 分鐘）屆滿
+    if (clock.resume() !== true) errors.push("resume failed after rest finished");
+    if (jobsDone().length !== 0) errors.push(`new cycle jobsDone=${JSON.stringify(jobsDone())}, expected []`);
+    if (clock.isJobDone("kingHall")) errors.push("new cycle: isJobDone(kingHall) true, expected reset");
+    if (!keys("kingHall").includes("practice")) errors.push("new cycle: practice not restored after reset");
+
+    // 4) 正規化舊存檔（無 jobsDone／雜質）→ 安全空陣列、僅留字串 id（D5）。
+    const n1 = clock.normalizeLimit({ cycle: { answered: 2, correct: 1 } });
+    if (!Array.isArray(n1.cycle.jobsDone) || n1.cycle.jobsDone.length !== 0) errors.push(`normalize missing jobsDone → ${JSON.stringify(n1.cycle.jobsDone)}, expected []`);
+    const n2 = clock.normalizeLimit({ cycle: { jobsDone: ["boutique", 3, null, "kingHall"] } });
+    if (JSON.stringify(n2.cycle.jobsDone) !== JSON.stringify(["boutique", "kingHall"])) errors.push(`normalize jobsDone filter → ${JSON.stringify(n2.cycle.jobsDone)}, expected ["boutique","kingHall"]`);
+
+    api.closeAdv();
+    accounts.remove(createdId);
+    createdId = null;
+    if (accounts.list().length !== baseline) errors.push(`account count after cleanup = ${accounts.list().length}, expected ${baseline}`);
+  } catch (error) {
+    errors.push(error.message);
+  } finally {
+    if (createdId) accounts.remove(createdId);
+    clock?.setOffset(0);
+  }
+  const result = document.createElement("pre");
+  result.id = "jobCycleTestResult";
+  result.textContent = JSON.stringify({
+    test: "job-cycle",
     passed: errors.length === 0,
     errors: errors.slice(0, 10)
   });
@@ -1145,6 +1353,17 @@ async function runDataAudit(api) {
     const t = String(text).trimStart().toLowerCase();
     return JOB_ANSWER_OPENERS.some((opener) => t.startsWith(opener));
   };
+  // issue #182：打工題幹須為角色實際交派之勞務差事；下列非勞動樣式（純觀看／站位／閒聊離場／道別客套）不得作為打工題幹。
+  const NON_JOB_PROMPT_PATTERNS = [
+    { re: /\blook at\b/i, why: "純觀看（look at）非勞務" },
+    { re: /\bstand (by|near|next to|beside|on)\b/i, why: "站位（stand by/near）非勞務" },
+    { re: /\bcan we (go|leave)\b/i, why: "閒聊離場（can we go）非勞務" },
+    { re: /\bthank you for your help\b/i, why: "道別客套（thank you for your help）非工作題幹" }
+  ];
+  const nonJobPromptReason = (prompt) => {
+    const hit = NON_JOB_PROMPT_PATTERNS.find((p) => p.re.test(String(prompt)));
+    return hit ? hit.why : "";
+  };
   const mapContracts = await collectMapContractAudit(api, errors);
 
   Object.entries(categoryCounts).forEach(([category, count]) => {
@@ -1250,6 +1469,9 @@ async function runDataAudit(api) {
         // issue #149：words 改由引擎自正解英文導出（不再逐題手寫），故不檢查 words。
         // issue #155：打工正解須以自然應允語句開頭（幫忙請求→公主應允的固定樣式）。
         if (q.answer && !startsWithAckOpener(q.answer)) errors.push(`${where} job answer must open with an acknowledgement (${JOB_ANSWER_OPENERS.slice(0, 8).join("/")}…) — got "${q.answer}"`);
+        // issue #182：打工題幹須為角色實際交派之勞務差事，不得為純觀看／站位／閒聊／道別。
+        const nonJobReason = nonJobPromptReason(q.prompt);
+        if (nonJobReason) errors.push(`${where} job prompt is not a work task（${nonJobReason}）— "${q.prompt}"`);
         if (!q.reward || !Number.isFinite(q.reward.coins)) errors.push(`${where} missing reward.coins`);
         if (!q.promptZh) errors.push(`${where} missing promptZh (中文協助所需)`);
         if (!Array.isArray(q.choicesZh) || q.choicesZh.length !== q.choices.length || q.choicesZh.some((z) => !z)) errors.push(`${where} choicesZh incomplete (中文協助所需)`);

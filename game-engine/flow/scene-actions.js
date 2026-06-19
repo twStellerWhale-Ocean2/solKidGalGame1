@@ -42,7 +42,8 @@ export function isShopHotspot(hotspot) {
 export function firstLayerActionsFor(hotspot, options = {}) {
   if (hotspot?.kind === "room") return ROOM_ACTIONS;
   const chat = options.hasChat ? [chatAction()] : [];
-  const practice = options.hasLessons ? [practiceAction()] : [];
+  // issue #177：打工於本遊玩週期已答對者下架（jobDoneThisCycle），該場景本週期不再提供 Work；下一週期重置。
+  const practice = options.hasLessons && !options.jobDoneThisCycle ? [practiceAction()] : [];
   if (isShopHotspot(hotspot)) {
     return Object.freeze([
       ...chat,

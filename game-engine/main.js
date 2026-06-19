@@ -57,6 +57,7 @@ import { FLOW_STAGE_LABELS } from "./flow/stages.js";
 import { createMapActorRuntime, mapActorMotionTypes } from "./map/actors.js";
 import { updateMarkerEdgeVisibility } from "./map/marker-visibility.js";
 import { createAreaMapViewportController } from "./map/viewport.js";
+import { createKeyboardWalkController, directionForKey } from "./map/keyboard-walk.js";
 import { renderItemDetailPanel } from "./render/item-panel.js";
 import { createPaperDollRenderer } from "./render/paper-doll.js";
 import { renderBuildInfo, renderAbout, renderVoiceSettings } from "./render/settings.js";
@@ -94,12 +95,20 @@ import {
   MAX_LIMIT_MINUTES,
   MIN_LIMIT_MINUTES,
   extendSession,
+  isJobDone,
+  markJobDone,
+  normalizePlayLimit,
   playAllowance,
   playStatus,
   recordAnswer as recordCycleAnswer,
   resumeFromRest,
   tick as tickPlayLimit
 } from "./system/play-clock.js";
+
+// issue #178：鍵盤地圖走動參數——自管連續移動迴圈的步進間隔與各面移速，取代倚賴 OS 按鍵自動重複（消除起步停頓、加快移速）。
+const MAP_WALK_STEP_MS = 33;   // 連續走動步進間隔（≈30 步/秒）；首步即時、之後每 33ms 推進，免 OS 自動重複初始延遲。
+const MAP_WALK_SPEED = Object.freeze({ area: 2.0, castle: 1.9, world: 2.2 });   // 每步位移量（座標域 0–100；較前 1.45/1.35/1.6 提速約 ⅓）。
+const mapWalkController = createKeyboardWalkController({ stepMs: MAP_WALK_STEP_MS });
 
 let state = loadLocalState();
 let activeHotspot = null;
@@ -492,6 +501,7 @@ function openWorldMap() {
 }
 
 function changeView(viewName) {
+  mapWalkController.clear();   // issue #178：切換畫面即停走動，避免按住狀態跨畫面殘留卡走
   if (["diary", "settings", "english", "save"].includes(viewName)) {
     openSystemMenu(viewName);
     return;
@@ -1507,7 +1517,7 @@ function nearbyCastleHotspot() {
 }
 
 function moveOnAreaMap(areaId, dx, dy, options = {}) {
-  const speed = options.speed || 1.45;
+  const speed = options.speed || MAP_WALK_SPEED.area;
   const token = options.token || elements.playerToken;
   const current = currentPlayerPoint(areaId) || nodeMapForArea(areaId)[areaRegistry[areaId]?.defaultNode];
   if (!current) return;
@@ -1531,7 +1541,7 @@ function moveOnAreaMap(areaId, dx, dy, options = {}) {
 
 function moveOnCastleMap(dx, dy) {
   moveOnAreaMap("castle", dx, dy, {
-    speed: 1.35,
+    speed: MAP_WALK_SPEED.castle,
     nearbyRadius: 5.8,
     token: elements.castlePlayerToken,
     onNearby: (hotspot) => { activeCastleHotspot = hotspot; },
@@ -1626,7 +1636,7 @@ function nearbyWorldDestination(radius = 9) {
 
 // issue #99：世界地圖鍵盤自由走動（比照地區地圖 moveOnAreaMap）。
 function moveOnWorldMap(dx, dy) {
-  const speed = 1.6;
+  const speed = MAP_WALK_SPEED.world;
   const current = currentPlayerPoint("world") || { x: 51, y: 32 };
   state.world = {
     x: clamp(current.x + dx * speed, 0, 100),
@@ -1752,7 +1762,7 @@ function renderDestinationPicker() {
         <strong>${hotspot.label}</strong>
         <small>${destinationActionText(hotspot)}</small>
       </span>
-      <span class="destination-badge">${hasLessonsForPlace(hotspot.id) ? "Practice" : isShop ? "Shop" : "Visit"}</span>
+      <span class="destination-badge">${jobAvailableForPlace(hotspot.id) ? "Practice" : isShop ? "Shop" : "Visit"}</span>
     `;
     button.addEventListener("click", () => chooseDestination(hotspot.id));
     elements.destinationList.appendChild(button);
@@ -1760,7 +1770,7 @@ function renderDestinationPicker() {
 }
 
 function destinationActionText(hotspot) {
-  if (hasLessonsForPlace(hotspot.id)) return `${sceneConfigFor(hotspot).npc} has a local English task.`;
+  if (jobAvailableForPlace(hotspot.id)) return `${sceneConfigFor(hotspot).npc} has a local English task.`;
   if (isShopHotspot(hotspot)) {
     const categoriesText = allowedShopCategories(hotspot).map(categoryLabel).join(" / ");
     return `Try ${categoriesText.toLowerCase()} rewards.`;
@@ -1924,7 +1934,7 @@ function travelActionLabel(hotspot) {
     return sceneConfigFor(hotspot).travelAction || "World Map";
   }
   if (hotspot.kind === "future") return "Soon";
-  if (hasLessonsForPlace(hotspot.id)) return "Practice";
+  if (jobAvailableForPlace(hotspot.id)) return "Practice";
   if (isShopHotspot(hotspot)) return "Shop";
   return sceneConfigFor(hotspot).travelAction || "Visit";
 }
@@ -2059,7 +2069,7 @@ function openRoomScene(hotspot = hotspotById("princessRoom")) {
 }
 
 function renderFirstLayerSceneActions(hotspot) {
-  firstLayerActionsFor(hotspot, { hasLessons: hasLessonsForPlace(hotspot?.id), hasChat: hasChatForPlace(hotspot?.id) }).forEach((action) => {
+  firstLayerActionsFor(hotspot, { hasLessons: hasLessonsForPlace(hotspot?.id), hasChat: hasChatForPlace(hotspot?.id), jobDoneThisCycle: isJobDone(state, hotspot?.id) }).forEach((action) => {
     addAdvOption(sceneActionLabel(action), () => handleFirstLayerSceneAction(action, hotspot), {
       leave: action.handlerKey === "leave",
       navigation: action.navigation && action.handlerKey !== "leave"
@@ -2102,11 +2112,15 @@ function handleFirstLayerSceneAction(action, hotspot) {
 }
 
 function openPracticeAction(hotspot) {
-  if (hasLessonsForPlace(hotspot?.id)) {
+  if (jobAvailableForPlace(hotspot?.id)) {
     openQuestAdv(hotspot);
     return;
   }
-  openHintAdv(hotspot, hotspot?.hint || "There is no English practice ready here.");
+  // issue #177：本週期已答對此場景打工 → 已下架，提示休息後再來；否則沿用「此處無打工」提示。
+  const doneThisCycle = hasLessonsForPlace(hotspot?.id) && isJobDone(state, hotspot?.id);
+  openHintAdv(hotspot, doneThisCycle
+    ? "You've already finished this place's work this playtime. Take a rest and come back!"
+    : (hotspot?.hint || "There is no English practice ready here."));
 }
 
 // issue #135：生活聊天入口——以 chatLesson 開啟對話題，答對加心情並在護眼上限內延長遊玩時間（不發 coins）。
@@ -2275,7 +2289,7 @@ function openHintAdv(hotspot, line = hotspot.hint) {
   openAdvBase(hotspot, "hint");
   setExpressions("thinking", "normal");
   setAdvLine(line);
-  elements.advPrompt.textContent = hasLessonsForPlace(hotspot?.id)
+  elements.advPrompt.textContent = jobAvailableForPlace(hotspot?.id)
     ? "Choose Practice to start this place's English."
     : "This place is for travel or story only.";
   elements.advFeedback.textContent = "";
@@ -2787,6 +2801,12 @@ function hasLessonsForPlace(place) {
   return Boolean(place && sceneConfigs[place]?.lesson?.questions?.length);
 }
 
+// issue #177：場景打工於「本遊玩週期尚未答對」時才視為可作答（答對後下架、下一週期重置）；
+// 供場景選單、地圖目的地卡與提示文案一致判斷「是否仍提供此打工」。
+function jobAvailableForPlace(place) {
+  return hasLessonsForPlace(place) && !isJobDone(state, place);
+}
+
 function hasChatForPlace(place) {
   return Boolean(place && sceneConfigs[place]?.chatLesson?.questions?.length);
 }
@@ -2839,6 +2859,9 @@ function answerLesson(button, choice) {
       : advChineseUsed
         ? "Nice learning with Chinese help! No coins this time."
         : "No coins this time — try to answer sooner next time.";
+    // issue #177：打工答對 → 標記本場景打工於本遊玩週期已完成（下架，不可再作答），下一週期重置；
+    // 僅打工計入（在此 job 分支內），聊天不計（spec#11 反洗 coins）。即使本次無 coins（中文／第三次）仍下架。
+    markJobDone(state, activeLesson.place);
   }
   addUnique("completedLessons", [activeLesson.id]);
   addUnique("learnedWords", activeLesson.words);
@@ -3604,7 +3627,7 @@ function bindEvents() {
     if (elements.castleStage?.offsetParent !== null) renderCastleMap();
   });
   elements.castleStage?.addEventListener("keydown", (event) => {
-    const key = event.key.toLowerCase();
+    const walkDirection = directionForKey(event.key);
     if (event.key === "+" || event.key === "=") {
       event.preventDefault();
       event.stopPropagation();
@@ -3613,22 +3636,11 @@ function bindEvents() {
       event.preventDefault();
       event.stopPropagation();
       zoomAreaMapFromKeyboard("castle", -1);
-    } else if (event.key === "ArrowUp" || key === "w") {
+    } else if (walkDirection) {
+      // issue #178：自管連續走動（按住即時起步、免 OS 自動重複初始延遲）；同向重複 keydown 由控制器忽略。
       event.preventDefault();
       event.stopPropagation();
-      moveOnCastleMap(0, -1);
-    } else if (event.key === "ArrowDown" || key === "s") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnCastleMap(0, 1);
-    } else if (event.key === "ArrowLeft" || key === "a") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnCastleMap(-1, 0);
-    } else if (event.key === "ArrowRight" || key === "d") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnCastleMap(1, 0);
+      mapWalkController.press(walkDirection, moveOnCastleMap);
     } else if ((event.key === "Enter" || event.key === " ") && activeCastleHotspot) {
       event.preventDefault();
       event.stopPropagation();
@@ -3640,6 +3652,7 @@ function bindEvents() {
   elements.castleStage?.addEventListener("pointerup", finishCastleMapDrag);
   elements.castleStage?.addEventListener("pointercancel", finishCastleMapDrag);
   elements.worldStage?.addEventListener("keydown", (event) => {
+    const walkDirection = directionForKey(event.key);
     if (event.key === "+" || event.key === "=") {
       event.preventDefault();
       event.stopPropagation();
@@ -3648,22 +3661,11 @@ function bindEvents() {
       event.preventDefault();
       event.stopPropagation();
       zoomAreaMapFromKeyboard("world", -1);
-    } else if (event.key === "ArrowUp" || event.key.toLowerCase() === "w") {
+    } else if (walkDirection) {
+      // issue #178：自管連續走動（按住即時起步、免 OS 自動重複初始延遲）。
       event.preventDefault();
       event.stopPropagation();
-      moveOnWorldMap(0, -1);
-    } else if (event.key === "ArrowDown" || event.key.toLowerCase() === "s") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnWorldMap(0, 1);
-    } else if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnWorldMap(-1, 0);
-    } else if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnWorldMap(1, 0);
+      mapWalkController.press(walkDirection, moveOnWorldMap);
     } else if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       event.stopPropagation();
@@ -3675,7 +3677,7 @@ function bindEvents() {
   elements.worldStage?.addEventListener("pointerup", finishWorldMapDrag);
   elements.worldStage?.addEventListener("pointercancel", finishWorldMapDrag);
   elements.mapStage.addEventListener("keydown", (event) => {
-    const key = event.key.toLowerCase();
+    const walkDirection = directionForKey(event.key);
     const areaId = activeTravelMapArea();
     if (event.key === "+" || event.key === "=") {
       event.preventDefault();
@@ -3685,22 +3687,11 @@ function bindEvents() {
       event.preventDefault();
       event.stopPropagation();
       zoomAreaMapFromKeyboard(areaId, -1);
-    } else if (event.key === "ArrowUp" || key === "w") {
+    } else if (walkDirection) {
+      // issue #178：自管連續走動（按住即時起步、免 OS 自動重複初始延遲）。
       event.preventDefault();
       event.stopPropagation();
-      moveOnMap(0, -1);
-    } else if (event.key === "ArrowDown" || key === "s") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnMap(0, 1);
-    } else if (event.key === "ArrowLeft" || key === "a") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnMap(-1, 0);
-    } else if (event.key === "ArrowRight" || key === "d") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnMap(1, 0);
+      mapWalkController.press(walkDirection, moveOnMap);
     } else if ((event.key === "Enter" || event.key === " ") && activeHotspot) {
       event.preventDefault();
       event.stopPropagation();
@@ -3711,6 +3702,15 @@ function bindEvents() {
   elements.mapStage.addEventListener("pointermove", moveMapDrag);
   elements.mapStage.addEventListener("pointerup", finishMapDrag);
   elements.mapStage.addEventListener("pointercancel", finishMapDrag);
+  // issue #178：放開方向鍵／視窗失焦／分頁隱藏時清掉走動控制器的按住狀態，避免「鬆鍵仍續走」之卡走。
+  window.addEventListener("keyup", (event) => {
+    const walkDirection = directionForKey(event.key);
+    if (walkDirection) mapWalkController.release(walkDirection);
+  });
+  window.addEventListener("blur", () => mapWalkController.clear());
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) mapWalkController.clear();
+  });
   window.addEventListener("keydown", (event) => {
     if (elements.characterSelect?.classList.contains("show")) {
       if (event.key === "Escape" && !elements.characterSelect.classList.contains("first-run")) {
@@ -3885,7 +3885,11 @@ installTestingHooks({
     setDurations: (playMinutes, restMinutes) => {
       state.playLimit.playMinutes = playMinutes;
       state.playLimit.restMinutes = restMinutes;
-    }
+    },
+    // issue #177：每場景打工每遊玩週期限答對一次測試介面。
+    markJobDone: (place) => markJobDone(state, place),
+    isJobDone: (place) => isJobDone(state, place),
+    normalizeLimit: (candidate) => normalizePlayLimit(candidate)
   },
   get shopPreviewItemId() { return shopPreviewItemId; },
   set shopPreviewItemId(nextItemId) { shopPreviewItemId = nextItemId; },
@@ -3898,6 +3902,15 @@ installTestingHooks({
   answerLesson,
   openQuestAdv,
   handleFirstLayerSceneAction,
+  // issue #177：回傳場景第一層動作 handlerKey 清單（含本週期打工下架判斷），供 selftest 驗證「答對後 practice 下架」。
+  firstLayerActionKeys: (place) => {
+    const hotspot = hotspotById(place);
+    return firstLayerActionsFor(hotspot, {
+      hasLessons: hasLessonsForPlace(hotspot?.id),
+      hasChat: hasChatForPlace(hotspot?.id),
+      jobDoneThisCycle: isJobDone(state, hotspot?.id)
+    }).map((action) => action.handlerKey);
+  },
   backToSceneMenu,
   getActiveLesson: () => activeLesson,
   getAdvMode: () => advMode,
@@ -3988,6 +4001,7 @@ installTestingHooks({
   wardrobeLayerBoundsByType,
   wardrobeLayerBoundsForType,
   persist,
+  moveOnCastleMap,
   renderWorldMap,
   renderCastleMap,
   render,
