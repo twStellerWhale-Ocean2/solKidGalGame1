@@ -44,6 +44,9 @@ Lumi ADV stageScale = 1.20
 * 可玩公主 runtime 角色圖只保留 `base.webp`；選角畫面須直接以 CSS 裁切 `base.webp` 的頭部、肩膀與胸口上緣作為 portrait，不另維護角色 `thumb.webp`。
 * starter items（例如 `softBrownHair`、`starterPajama` 或後續替代品）保留為舊存檔相容項；在 baked-in playwear base 策略下可為空 layer/no-op，但預設與舊存檔正規化不得造成 starter 髮型或 starter 服裝重複疊圖。
 * 四位可玩公主的美術方向：Lumi、Yumi、Mary、Rosa 依使用者指定方向對應，並轉為同 rig、透明背景、同 baseline 的正式 WebP；其中 Yumi 僅改深藍髮、Mary 僅改深綠髮，除髮色外不得改動服裝、姿勢、比例、臉型、透明底或 rig 對位。若未來要完全自由替換髮型或衣物，需另行改回中性 base + 髮型 layer + 衣物 layer 策略。
+* wardrobe layer 與商品縮圖須為 GPT 產生或修圖之童話手繪風格 bitmap 素材，正式交付為透明 WebP／PNG；不得使用 SVG、CSS 幾何、向量拼貼、emoji 或 placeholder 作為正式服裝 layer、商品縮圖或完成品替代素材。
+* wardrobe layer 對位須以類別級上下左右邊界／安全框組態管理，依 item type／slot（如 hairstyle、top、bottom、dress、outer、shoes、headTop、headSide、faceEyes、faceMask、neck、hand）共用對位範圍；新增同類衣物預設繼承該類範圍，不得每件衣服各自新增一次性 nudge、改 CSS selector 或靠大量透明留白調整位置。
+* wardrobe layer 完成判定須實際穿到角色 base 上檢查，不得只檢查檔案存在；手機直向與桌機尺寸皆須抽查代表性類別，確認衣物位置、比例、接縫與跨角色共用 layer 對位。
 * 露膚衣物層（短袖、涼鞋／赤腳、手部配件邊界）須逐一在各膚色角色上檢查接縫，不得殘留為單一膚色繪製的色塊。
 * 不得為個別可玩公主新增 CSS nudge、改畫布尺寸或用透明留白調整 layer 對位；對位錯誤須回到素材修正。
 
@@ -64,3 +67,4 @@ Lumi ADV stageScale = 1.20
 * 2026/6/16：依使用者改圖決策調整 issue #123 契約，改採四張指定 PNG 轉 WebP 的 baked-in 短髮 playwear base，starter items 改為相容 no-op 以避免預設重複疊圖。
 * 2026/6/16：依使用者要求移除角色 `thumb.webp` runtime 用途，選角 portrait 改由 `base.webp` CSS 裁切頭胸部。
 * 2026/6/19：依 issue #163 補入 Yumi 深藍髮、Mary 深綠髮、Mary 沿用 `sol` stable id，以及角色 base 須以 GPT 產生或修圖為童話手繪 raster 素材且不得以 SVG／濾鏡／renderer 特例代替之限制。
+* 2026/6/19：依 issue #168 補入 wardrobe layer 類別級對位、GPT 童話手繪 bitmap 素材與禁止 SVG 作為正式服裝素材之規則。
