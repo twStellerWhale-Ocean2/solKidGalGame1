@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wardrobe Tuner</title>
+  <link rel="stylesheet" href="../styles/paper-doll.css">
+  <link rel="stylesheet" href="./wardrobe-tuner.css">
+</head>
+<body>
+  <main class="tool-shell">
+    <aside class="catalog-pane">
+      <header class="tool-header">
+        <h1>Wardrobe Tuner</h1>
+        <div id="summaryLine" class="summary-line"></div>
+      </header>
+
+      <nav id="categoryTabs" class="category-tabs" aria-label="Wardrobe categories"></nav>
+      <section id="itemList" class="item-list" aria-label="Wardrobe items"></section>
+    </aside>
+
+    <section class="preview-pane">
+      <div class="preview-stage">
+        <div id="previewLabel" class="preview-label"></div>
+        <span id="previewDoll" class="paper-doll adv-doll tuner-doll" data-doll="tuner"></span>
+      </div>
+    </section>
+
+    <aside class="control-pane">
+      <section class="control-section">
+        <h2>Layer Type</h2>
+        <div id="typeTabs" class="type-tabs"></div>
+      </section>
+
+      <section class="control-section">
+        <h2>Render Bounds</h2>
+        <div class="bound-grid">
+          <label>Top <input id="boundTop" type="number" step="1"></label>
+          <label>Right <input id="boundRight" type="number" step="1"></label>
+          <label>Bottom <input id="boundBottom" type="number" step="1"></label>
+          <label>Left <input id="boundLeft" type="number" step="1"></label>
+        </div>
+        <div class="nudge-grid">
+          <button id="nudgeUp" type="button">Up</button>
+          <button id="nudgeDown" type="button">Down</button>
+          <button id="nudgeLeft" type="button">Left</button>
+          <button id="nudgeRight" type="button">Right</button>
+          <button id="resetType" type="button">Reset Type</button>
+          <button id="resetAll" type="button">Reset All</button>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <h2>Output</h2>
+        <textarea id="outputSnippet" readonly spellcheck="false"></textarea>
+        <button id="copyOutput" type="button">Copy Parameters</button>
+      </section>
+    </aside>
+  </main>
+
+  <script type="module" src="./wardrobe-tuner.js"></script>
+</body>
+</html>
