@@ -56,6 +56,7 @@ Lumi ADV stageScale = 1.20
 * World Map：`content-base/world/assets/world-map.webp`，實際像素與 manifest 須為 `1024x1536`。
 * Area Map：每個 enabled area 用 `content-package/areas/<area>/assets/map-1536.webp`，實際像素與 manifest 須為 `1536x1536`。
 * Scene background：每個 runtime ADV 場景背景須為單張 `1024x1024` WebP，由 sceneArt renderer 統一載入；場景 CSS 不得硬編碼背景 URL 或建立 fallback 背景圖。
+* 場景背景整張圖皆須為正式繪製內容；不得以上下模糊、延展、frosted cover、失焦補版或 renderer 特例補足尺寸。合理景深、霧氣、光暈可保留，但不得替代原本應可辨識的場景區域。
 * 手機直向寬度不足時以正式 `1024x1024` 圖中央裁切左右，不得疊加 blur／frosted cover。
 * ADV 對話 UI 採低飽和深色高不透明底，維持高對比；不得用白霧洗掉人物、衣物或背景。
 * CSS 只處理 UI chrome、排版、陰影、選取與安全裝飾；不得用幾何、SVG 拼貼、emoji fallback 或 placeholder 宣稱完成。
@@ -68,4 +69,5 @@ Lumi ADV stageScale = 1.20
 * 2026/6/16：依使用者要求移除角色 `thumb.webp` runtime 用途，選角 portrait 改由 `base.webp` CSS 裁切頭胸部。
 * 2026/6/19：依 issue #163 補入 Yumi 深藍髮、Mary 深綠髮、Mary 沿用 `sol` stable id，以及角色 base 須以 GPT 產生或修圖為童話手繪 raster 素材且不得以 SVG／濾鏡／renderer 特例代替之限制。
 * 2026/6/19：依 issue #168 補入 wardrobe layer 類別級對位、GPT 童話手繪 bitmap 素材與禁止 SVG 作為正式服裝素材之規則。
+* 2026/6/19：依 issue #179 補入 ADV 場景背景不得以上下模糊、延展或 renderer 特例補版之規則。
 * 2026/6/19：依 issue #176 將 wardrobe layer 由 512×768 滿版對齊改為**去空白邊緊貼裁切 bitmap ＋ per-item `targetBox`（canvas 座標）等比 fit** 對位；類別 `safeBox` 續界定該類投影範圍，base 角色 rig 仍為 512×768。`tool/trim-wardrobe-assets.mjs` 量測/裁切並產生內容框對照表；`data-audit` 改驗 `targetBox` 落於 `safeBox` 內且素材已緊貼裁切。
