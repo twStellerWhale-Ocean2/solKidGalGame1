@@ -57,6 +57,7 @@ import { FLOW_STAGE_LABELS } from "./flow/stages.js";
 import { createMapActorRuntime, mapActorMotionTypes } from "./map/actors.js";
 import { updateMarkerEdgeVisibility } from "./map/marker-visibility.js";
 import { createAreaMapViewportController } from "./map/viewport.js";
+import { createKeyboardWalkController, directionForKey } from "./map/keyboard-walk.js";
 import { renderItemDetailPanel } from "./render/item-panel.js";
 import { createPaperDollRenderer } from "./render/paper-doll.js";
 import { renderBuildInfo, renderAbout, renderVoiceSettings } from "./render/settings.js";
@@ -103,6 +104,11 @@ import {
   resumeFromRest,
   tick as tickPlayLimit
 } from "./system/play-clock.js";
+
+// issue #178：鍵盤地圖走動參數——自管連續移動迴圈的步進間隔與各面移速，取代倚賴 OS 按鍵自動重複（消除起步停頓、加快移速）。
+const MAP_WALK_STEP_MS = 33;   // 連續走動步進間隔（≈30 步/秒）；首步即時、之後每 33ms 推進，免 OS 自動重複初始延遲。
+const MAP_WALK_SPEED = Object.freeze({ area: 2.0, castle: 1.9, world: 2.2 });   // 每步位移量（座標域 0–100；較前 1.45/1.35/1.6 提速約 ⅓）。
+const mapWalkController = createKeyboardWalkController({ stepMs: MAP_WALK_STEP_MS });
 
 let state = loadLocalState();
 let activeHotspot = null;
@@ -495,6 +501,7 @@ function openWorldMap() {
 }
 
 function changeView(viewName) {
+  mapWalkController.clear();   // issue #178：切換畫面即停走動，避免按住狀態跨畫面殘留卡走
   if (["diary", "settings", "english", "save"].includes(viewName)) {
     openSystemMenu(viewName);
     return;
@@ -1510,7 +1517,7 @@ function nearbyCastleHotspot() {
 }
 
 function moveOnAreaMap(areaId, dx, dy, options = {}) {
-  const speed = options.speed || 1.45;
+  const speed = options.speed || MAP_WALK_SPEED.area;
   const token = options.token || elements.playerToken;
   const current = currentPlayerPoint(areaId) || nodeMapForArea(areaId)[areaRegistry[areaId]?.defaultNode];
   if (!current) return;
@@ -1534,7 +1541,7 @@ function moveOnAreaMap(areaId, dx, dy, options = {}) {
 
 function moveOnCastleMap(dx, dy) {
   moveOnAreaMap("castle", dx, dy, {
-    speed: 1.35,
+    speed: MAP_WALK_SPEED.castle,
     nearbyRadius: 5.8,
     token: elements.castlePlayerToken,
     onNearby: (hotspot) => { activeCastleHotspot = hotspot; },
@@ -1629,7 +1636,7 @@ function nearbyWorldDestination(radius = 9) {
 
 // issue #99：世界地圖鍵盤自由走動（比照地區地圖 moveOnAreaMap）。
 function moveOnWorldMap(dx, dy) {
-  const speed = 1.6;
+  const speed = MAP_WALK_SPEED.world;
   const current = currentPlayerPoint("world") || { x: 51, y: 32 };
   state.world = {
     x: clamp(current.x + dx * speed, 0, 100),
@@ -3620,7 +3627,7 @@ function bindEvents() {
     if (elements.castleStage?.offsetParent !== null) renderCastleMap();
   });
   elements.castleStage?.addEventListener("keydown", (event) => {
-    const key = event.key.toLowerCase();
+    const walkDirection = directionForKey(event.key);
     if (event.key === "+" || event.key === "=") {
       event.preventDefault();
       event.stopPropagation();
@@ -3629,22 +3636,11 @@ function bindEvents() {
       event.preventDefault();
       event.stopPropagation();
       zoomAreaMapFromKeyboard("castle", -1);
-    } else if (event.key === "ArrowUp" || key === "w") {
+    } else if (walkDirection) {
+      // issue #178：自管連續走動（按住即時起步、免 OS 自動重複初始延遲）；同向重複 keydown 由控制器忽略。
       event.preventDefault();
       event.stopPropagation();
-      moveOnCastleMap(0, -1);
-    } else if (event.key === "ArrowDown" || key === "s") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnCastleMap(0, 1);
-    } else if (event.key === "ArrowLeft" || key === "a") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnCastleMap(-1, 0);
-    } else if (event.key === "ArrowRight" || key === "d") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnCastleMap(1, 0);
+      mapWalkController.press(walkDirection, moveOnCastleMap);
     } else if ((event.key === "Enter" || event.key === " ") && activeCastleHotspot) {
       event.preventDefault();
       event.stopPropagation();
@@ -3656,6 +3652,7 @@ function bindEvents() {
   elements.castleStage?.addEventListener("pointerup", finishCastleMapDrag);
   elements.castleStage?.addEventListener("pointercancel", finishCastleMapDrag);
   elements.worldStage?.addEventListener("keydown", (event) => {
+    const walkDirection = directionForKey(event.key);
     if (event.key === "+" || event.key === "=") {
       event.preventDefault();
       event.stopPropagation();
@@ -3664,22 +3661,11 @@ function bindEvents() {
       event.preventDefault();
       event.stopPropagation();
       zoomAreaMapFromKeyboard("world", -1);
-    } else if (event.key === "ArrowUp" || event.key.toLowerCase() === "w") {
+    } else if (walkDirection) {
+      // issue #178：自管連續走動（按住即時起步、免 OS 自動重複初始延遲）。
       event.preventDefault();
       event.stopPropagation();
-      moveOnWorldMap(0, -1);
-    } else if (event.key === "ArrowDown" || event.key.toLowerCase() === "s") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnWorldMap(0, 1);
-    } else if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnWorldMap(-1, 0);
-    } else if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnWorldMap(1, 0);
+      mapWalkController.press(walkDirection, moveOnWorldMap);
     } else if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       event.stopPropagation();
@@ -3691,7 +3677,7 @@ function bindEvents() {
   elements.worldStage?.addEventListener("pointerup", finishWorldMapDrag);
   elements.worldStage?.addEventListener("pointercancel", finishWorldMapDrag);
   elements.mapStage.addEventListener("keydown", (event) => {
-    const key = event.key.toLowerCase();
+    const walkDirection = directionForKey(event.key);
     const areaId = activeTravelMapArea();
     if (event.key === "+" || event.key === "=") {
       event.preventDefault();
@@ -3701,22 +3687,11 @@ function bindEvents() {
       event.preventDefault();
       event.stopPropagation();
       zoomAreaMapFromKeyboard(areaId, -1);
-    } else if (event.key === "ArrowUp" || key === "w") {
+    } else if (walkDirection) {
+      // issue #178：自管連續走動（按住即時起步、免 OS 自動重複初始延遲）。
       event.preventDefault();
       event.stopPropagation();
-      moveOnMap(0, -1);
-    } else if (event.key === "ArrowDown" || key === "s") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnMap(0, 1);
-    } else if (event.key === "ArrowLeft" || key === "a") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnMap(-1, 0);
-    } else if (event.key === "ArrowRight" || key === "d") {
-      event.preventDefault();
-      event.stopPropagation();
-      moveOnMap(1, 0);
+      mapWalkController.press(walkDirection, moveOnMap);
     } else if ((event.key === "Enter" || event.key === " ") && activeHotspot) {
       event.preventDefault();
       event.stopPropagation();
@@ -3727,6 +3702,15 @@ function bindEvents() {
   elements.mapStage.addEventListener("pointermove", moveMapDrag);
   elements.mapStage.addEventListener("pointerup", finishMapDrag);
   elements.mapStage.addEventListener("pointercancel", finishMapDrag);
+  // issue #178：放開方向鍵／視窗失焦／分頁隱藏時清掉走動控制器的按住狀態，避免「鬆鍵仍續走」之卡走。
+  window.addEventListener("keyup", (event) => {
+    const walkDirection = directionForKey(event.key);
+    if (walkDirection) mapWalkController.release(walkDirection);
+  });
+  window.addEventListener("blur", () => mapWalkController.clear());
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) mapWalkController.clear();
+  });
   window.addEventListener("keydown", (event) => {
     if (elements.characterSelect?.classList.contains("show")) {
       if (event.key === "Escape" && !elements.characterSelect.classList.contains("first-run")) {
@@ -4017,6 +4001,7 @@ installTestingHooks({
   wardrobeLayerBoundsByType,
   wardrobeLayerBoundsForType,
   persist,
+  moveOnCastleMap,
   renderWorldMap,
   renderCastleMap,
   render,
