@@ -92,6 +92,12 @@ createServer(async (request, response) => {
     await handleApplyWardrobe(request, response);
     return;
   }
+  // 便利轉址：/tool 與 /tool/ → Wardrobe Tuner（避免目錄路徑 404）。
+  if (request.method === "GET" && (url.pathname === "/tool" || url.pathname === "/tool/")) {
+    response.writeHead(302, { Location: "/tool/wardrobe-tuner.html" });
+    response.end();
+    return;
+  }
   await serveStatic(request, response);
 }).listen(port, "127.0.0.1", () => {
   console.log(`Luminara local server running at http://127.0.0.1:${port}/`);
