@@ -15,6 +15,15 @@ On Windows, you can start the local server and open the tool with:
 This is still a static site flow. The local server only avoids Chrome `file://`
 module loading restrictions during development.
 
+### In-game dev entry (issue #212)
+
+When the game itself is opened from a **local dev host** (`location.hostname` is
+`127.0.0.1`, `localhost` or `[::1]`), the princess **Choose your princess** dialog
+shows a **衣物調整工具** button right below the `Start` button — clicking it
+navigates to `tool/wardrobe-tuner.html`. This entry is **dev-only**: it is gated by
+front-end environment detection and never appears on the public GitHub Pages site.
+Full apply/manage actions still require the dev server (`node server.mjs`).
+
 Pick a garment from the **left** list. The **素材包** (content pack) and **類型**
 (category) dropdowns above the list each filter the items by multi-select
 checkboxes (pick one or several, or 全選/全不選). The **mouse wheel zooms** the
