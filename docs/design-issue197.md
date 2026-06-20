@@ -27,7 +27,7 @@
 * **D1 spec#7 補述（＜I＞ USR-gated 回修）**：spec#7 增列「各類圖像資產須符合各自宣告之標準像素尺寸與檔重預算，使純靜態載入不因過大圖檔變慢；合規守門見＜II＞/＜III＞」。spec# 編號維持 1–11 不變。
 * **D2 標準表落點（＜II.B (D) 重點組態）**：於 [etyCfg自訂modContent組態] 新增 `paramAssetStandards`＝per-class `{pixelSize, maxKB}`——characterBase 512×768·350、scene 1024×1024·500、areaMap 1536×1536·600、worldMap 1024×1536·600、wardrobeThumb 256×256·60、wardrobeLayer 512×768·120、ui 視類別宣告。作為資產 lint 之尺寸與檔重 SSOT；**初始檔重門檻，code 可依實測 USR-gated 微調**。
 * **D3 運作個案承接**：＜II.A solCase#7.2＞（維護者擴充內容）與 ＜II.B sysCase#5.3＞（modContent 匯入內容包）增列「新增/替換資產須通過尺寸＋檔重 lint，超標須重壓縮至預算內或具名豁免方可納入」。
-* **D4 整合測試（＜III.D intTest#48）**：新增「驗證 圖像資產標準尺寸與檔重預算」——列舉全 runtime 資產→讀像素尺寸與位元組→比對 paramAssetStandards（尺寸＝標準值、位元組 ≤ 預算）→標記違規與具名豁免；既有基底 intTest#02／#47。
+* **D4 整合測試（＜III.D intTest#49）**：新增「驗證 圖像資產標準尺寸與檔重預算」——列舉全 runtime 資產→讀像素尺寸與位元組→比對 paramAssetStandards（尺寸＝標準值、位元組 ≤ 預算）→標記違規與具名豁免；既有基底 intTest#02／#47。
 * **D5 ＜IV＞反映**：＜IV.A 測試指令＞增列資產 lint 沿用並擴充 `?selftest=data-audit`（新增全類別涵蓋與檔重檢查）；＜IV.B spec#7 成效＞增列資產尺寸／檔重合規率、過大圖檔檢出率、現存超標重壓縮完成率、地圖與場景載入時間。
 * **README（產品手冊初稿）**：「擴充內容（給維護者）」增列各類標準尺寸與檔重預算說明；新增 #197 變更紀錄。
 
@@ -43,7 +43,7 @@
 
 ## 5. 交付物與審查點（plan）
 
-* **交付物**：design.md 回修（spec#7 補述／paramAssetStandards／solCase#7.2／sysCase#5.3／intTest#48／＜IV＞）＋ README 初稿改動＋本設計note。docLint sol = 0、CHECKLIST 完成、無新增/移除契約引用。
+* **交付物**：design.md 回修（spec#7 補述／paramAssetStandards／solCase#7.2／sysCase#5.3／intTest#49／＜IV＞）＋ README 初稿改動＋本設計note。docLint sol = 0、CHECKLIST 完成、無新增/移除契約引用。
 * **審查點**：推送 Draft PR，每 3 分鐘輪詢四訊號等待 USR 審查；核准後達 `DESIGN-READY`，交棒 code 於同分支補 lint 實作與現存資產處置。
 
 ## 6. code 階段：實作與 GATE 驗證紀錄
@@ -52,7 +52,7 @@
 
 * **標準表 SSOT**：新增 [content-package/_shared/asset-standards.js]——`assetStandards`（per-class `{mode, width, height, maxKB, label}`）＋ `classifyAssetPath()`（依路徑歸類，較依引用欄位穩健）＋ `assetSizeExemptions`（目前空）。
 * **資產 lint**：[game-engine/testing/selftests.js] `data-audit` 新增 `collectAssetSizeBudgetAudit()`——列舉全 runtime 圖像資產（角色 base／NPC／場景／地區地圖／世界地圖／衣物縮圖＋layer／UI）→ 以 `fetch→blob.size` 量檔重、`imageNaturalSize` 量像素 → 比對標準（exact 等於／bound 容於）＋ 檔重預算；違規入 `errors`、結果入 `assetSizeBudget`。純靜態無 build，於瀏覽器量測。
-* **設計修正（code 發現、已同步 design.md）**：plan 假設 wardrobe layer 為固定 512×768，實測為**緊貼裁切之內容 bitmap**（去白邊、可變尺寸，#176 以 targetBox 等比 fit 回畫布，如 200×289／158×271）。故衣物 layer／縮圖改採 **bound 模式**（寬高須容於畫布、非等於），固定畫布類（地圖／場景／角色 base／UI）維持 exact。已回修 design.md ＜II.B (D)＞ paramAssetStandards 與 ＜III.D intTest#48＞（docLint sol=0）。
+* **設計修正（code 發現、已同步 design.md）**：plan 假設 wardrobe layer 為固定 512×768，實測為**緊貼裁切之內容 bitmap**（去白邊、可變尺寸，#176 以 targetBox 等比 fit 回畫布，如 200×289／158×271）。故衣物 layer／縮圖改採 **bound 模式**（寬高須容於畫布、非等於），固定畫布類（地圖／場景／角色 base／UI）維持 exact。已回修 design.md ＜II.B (D)＞ paramAssetStandards 與 ＜III.D intTest#49＞（docLint sol=0）。
 * **現存超標重壓縮**（ImageMagick，維持像素尺寸、無模糊補版）：地區地圖 rural 865→550KB(q80)／urban 793→508KB(q88)／wild 774→456KB(q88)；wild 場景 elf-glade 553→406(q85)／tree-spirit-grove 521→427／red-hood-path 521→430／halfling-village 513→419／dwarf-cottage 509→408／three-pigs 500→401(q88)——共 9 檔，省約 2.3 MB。無具名豁免。
 
 ### 6.2 GATE §1（機器判定，全綠）

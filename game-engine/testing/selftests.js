@@ -61,6 +61,7 @@ export function installTestingHooks(api) {
   runChineseRewardSelfTest(api);
   runCharacterVoiceSelfTest(api);
   runMapAvatarSelfTest(api);
+  runCharacterSilhouetteSelfTest(api);
   runMapWalkSelfTest(api);
   runAboutSelfTest(api);
 }
@@ -259,6 +260,63 @@ function runMapAvatarSelfTest(api) {
   const result = document.createElement("pre");
   result.id = "mapAvatarResult";
   result.textContent = JSON.stringify({ test: "map-avatar", passed, errors });
+  document.body.prepend(result);
+}
+
+// issue #199：角色常態圖地分離須套在透明合成輪廓上，試穿光暈只作為互動狀態提示。
+function runCharacterSilhouetteSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "character-silhouette") return;
+  const errors = [];
+  const filterOf = (selector) => {
+    const el = document.querySelector(selector);
+    return el ? getComputedStyle(el).filter : "";
+  };
+  const expectDropShadow = (label, value, minCount = 1) => {
+    const count = (value.match(/drop-shadow/g) || []).length;
+    if (count < minCount) errors.push(`${label} drop-shadow 層數不足：${value || "(empty)"}`);
+  };
+  const expectLayerUnshadowed = (label, rootSelector) => {
+    const layer = document.querySelector(`${rootSelector} .paper-doll-layer`);
+    if (!layer) { errors.push(`${label} 缺少 paper-doll-layer`); return; }
+    const value = getComputedStyle(layer).filter;
+    if (value && value !== "none") errors.push(`${label} layer 仍有 filter，會造成多層 wardrobe 陰影疊加：${value}`);
+  };
+
+  api.render();
+  api.openQuestAdv(api.hotspotById("kingHall"));
+  expectDropShadow("ADV 公主 stage", filterOf(".adv-doll .paper-doll-stage"), 3);
+  expectLayerUnshadowed("ADV 公主", ".adv-doll");
+  expectDropShadow("ADV NPC", filterOf(".adv-npc"), 3);
+
+  const doll = document.querySelector(".adv-doll");
+  doll?.classList.add("try-on-active");
+  expectDropShadow("試穿狀態光暈", filterOf(".adv-doll.try-on-active"), 2);
+  doll?.classList.remove("try-on-active");
+  const inactiveTryOnFilter = filterOf(".adv-doll");
+  if (inactiveTryOnFilter && inactiveTryOnFilter !== "none") {
+    errors.push(`未試穿狀態 adv-doll 容器不應殘留狀態光暈：${inactiveTryOnFilter}`);
+  }
+  expectDropShadow("試穿結束後 ADV 公主 stage", filterOf(".adv-doll .paper-doll-stage"), 3);
+
+  api.openWorldMap();
+  api.renderWorldMap();
+  expectDropShadow("地圖 token stage", filterOf(".map-doll .paper-doll-stage"), 3);
+  expectLayerUnshadowed("地圖 token", ".map-doll");
+
+  if (api.accounts?.list?.().length === 0) api.accounts.create();
+  api.openAccountSelect({ mustChoose: false });
+  const bustRoot = document.querySelector(".bust-doll");
+  if (!bustRoot) {
+    errors.push("帳號或人物頭胸照缺少 .bust-doll");
+  } else {
+    expectDropShadow("頭胸照 stage", filterOf(".bust-doll .paper-doll-stage"), 3);
+    expectLayerUnshadowed("頭胸照", ".bust-doll");
+  }
+
+  const result = document.createElement("pre");
+  result.id = "characterSilhouetteResult";
+  result.textContent = JSON.stringify({ test: "character-silhouette", passed: errors.length === 0, errors });
   document.body.prepend(result);
 }
 
@@ -1457,7 +1515,7 @@ async function runDataAudit(api) {
   });
   const characterRegistry = await collectPaperDollCharacterAudit(api, errors, warnings);
   const characterScale = await collectCharacterScaleAudit(api, errors, warnings);
-  // issue #197：圖像資產標準尺寸與檔重預算 lint（intTest#48）。
+  // issue #197：圖像資產標準尺寸與檔重預算 lint（intTest#49）。
   const assetSizeBudget = await collectAssetSizeBudgetAudit(api, errors);
 
   // issue #96 設計契約 §3：場景自帶題庫之結構與中文覆蓋一致性（手寫固定、每題自帶中文、進場取題）。
@@ -1823,7 +1881,7 @@ function stripAssetQuery(src) {
   return String(src).split("?")[0];
 }
 
-// issue #197：圖像資產標準尺寸與檔重預算 lint（intTest#48）。
+// issue #197：圖像資產標準尺寸與檔重預算 lint（intTest#49）。
 // 列舉全 runtime 圖像資產 → 比對 assetStandards 之像素尺寸與檔重預算（maxKB），
 // 攔下像素合規但檔重過大之過大圖檔（純靜態載入緩慢主因）；具名豁免另列。
 async function collectAssetSizeBudgetAudit(api, errors = []) {
