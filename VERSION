@@ -1,8 +1,9 @@
 {
-  "version": "0.51.0",
-  "date": "2026-06-20",
+  "version": "0.51.1",
+  "date": "2026-06-21",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    { "version": "0.51.1", "date": "2026-06-21", "type": "refactor", "playerVisible": true, "issue": "#210", "summaryZh": "衣物改以資源包為單位：各地區收斂為單一服飾店、整包販售多類別衣物（含髮型），商店可用類別分頁瀏覽；既有存檔已購衣物以 id 相容保留" },
     { "version": "0.51.0", "date": "2026-06-20", "type": "chore", "playerVisible": false, "summaryZh": "導入結構化 VERSION 版號 SSOT（version.js／CHANGELOG／About 改為投影、附防漂移檢查）；補標既有 99 個 merge PR 之 Conventional Commits 型別後回算版號基準＝0.51.0（51 feat→minor、29 fix、9 refactor、6 docs、3 test、2 perf、0 breaking）" },
     { "version": "2026.06.19-character-theme-defaults", "date": "2026-06-19", "type": "feat", "playerVisible": true, "issue": "#163", "summaryZh": "Yumi 深藍髮、Mary 深綠髮與新帳號隨機初始主題" },
     { "version": "2026.06.16-speech-quality", "date": "2026-06-16", "type": "feat", "playerVisible": true, "issue": "#109", "summaryZh": "Web Speech API 語音品質改善：80% 語速、voice fallback、佇列與診斷紀錄" },

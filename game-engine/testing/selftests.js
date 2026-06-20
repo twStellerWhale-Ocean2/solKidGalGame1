@@ -1477,8 +1477,10 @@ async function runDataAudit(api) {
   Object.entries(categoryCounts).forEach(([category, count]) => {
     if (count < 10) errors.push(`${category} has ${count} paid items`);
   });
+  // issue #210：一區一店、一店一包——商店改賣整包多類別，移除舊「≤2 類」上限；
+  // 改驗每店至少一類（供 #166 shop marker 與逛店類別分頁）。
   shopLocations.forEach((hotspot) => {
-    if ((hotspot.shopCategories || []).length > 2) errors.push(`${hotspot.id} has more than two shop categories`);
+    if (!(hotspot.shopCategories || []).length) errors.push(`${hotspot.id} shop has no shopCategories`);
   });
   api.shopItems.forEach((item) => {
     if (item.storeId === "starter") return;
