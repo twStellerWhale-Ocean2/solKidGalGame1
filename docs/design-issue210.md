@@ -49,12 +49,21 @@
 ### D6：被合併商店之殘留清理
 * item `storeId` 重映射至各區單店；移除被併商店之 `locations` 項、對應 NPC（`npcImage`）、`scene` 設定（`urbanSceneConfigs` 等）、自帶題庫（`*LessonBank`／`*ChatLessonBank`）entries，以及地圖 `nodes`／`links` 引用，避免殘留懸空引用。地圖節點收斂後之座標佈點沿 #125 由 dev 以實機 visual-qa 校準。
 
-## 4. 審查點（⚠️ 待 USR 於 PR 裁決）
+## 4. 審查點裁決（USR 已定案，2026-06-21）
 
-* **① spec#7 落點**：本案採「**就地精修 spec#7**」措辭（衣物以資源包為模組化單位、一店一包、一區一店），不新增獨立 spec#、spec 編號不增減；待 USR 於 PR 核准此 USR-gated 回修。
-* **② packStyle 收斂為區級**：合併後每區一個資源包＝一個 `packStyle`（#196 art-gen 三層描述詞之中層）；既有素材沿用、**不重生**（本案非美術翻新）；後續若要區內多風格再議。
-* **③ 單店門面取捨**：urban 5 併 1（castle／rural／wild 2 併 1）後，保留哪一個 NPC／`scene`／座標作為該區單店門面，由 code 提案、USR 以視覺確認。
-* **④ 地圖佈點**：店減少後各地圖節點佈局沿 #125 由 dev／opr 實機校準，本 note 不釘死座標。
+* **① spec#7 落點 → 定案：就地精修 spec#7**：採就地精修 spec#7 措辭（衣物以資源包為模組化單位、一店一包、一區一店），不新增獨立 spec#、spec 編號不增減。
+* **② packStyle 收斂為區級 → 定案：採行**：合併後每區一個資源包＝一個 `packStyle`（#196 art-gen 三層描述詞之中層）；既有素材沿用、**不重生**（本案非美術翻新）；後續若要區內多風格再議。
+* **③ 單店門面 → 定案：每區保留下列門面，其餘併入並清理**：
+
+| 地區 | 保留門面（label／NPC／scene／icon） | 併入並清理之店 |
+|---|---|---|
+| urban | Dress Boutique／Rena／scene-urban-dress-boutique／👗 | hairSalon・tailorStudio・shoeShop・accessoryShop |
+| castle | Castle Seamstress／Seamstress Bea／scene-castle-seamstress／👚 | royalCloakRoom |
+| rural | Workwear Stall／Workwear Keeper／scene-rural-workwear-stall／👚 | fieldCobbler |
+| wild | Fairy Atelier／Faye／scene-wild-fairy-atelier／👗 | dwarfCottage |
+
+* 保留店之 `shopCategories` 擴為其資源包涵蓋之全部類別；被併店之 `locations` 項、NPC、`scene`、自帶題庫與 `nodes`／`links` 引用一併移除（見 D6）。
+* **④ 地圖佈點 → 定案：交 dev**：店減少後各地圖節點佈局沿 #125 由 dev／opr 實機 visual-qa 校準，本 note 不釘死座標。
 
 ## 5. 產物分工與 GATE 計畫
 
