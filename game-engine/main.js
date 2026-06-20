@@ -3506,10 +3506,14 @@ function bindEvents() {
   elements.characterConfirm?.addEventListener("click", confirmCharacterSelect);
   elements.characterCancel?.addEventListener("click", cancelCharacterSelect);
   // issue #212：本機開發環境才揭示「衣物調整工具」dev 入口；正式發佈站保持 hidden、不接線。
-  if (isLocalDevEnv() && elements.wardrobeTunerDevButton) {
-    elements.wardrobeTunerDevButton.removeAttribute("hidden");
-    elements.wardrobeTunerDevButton.addEventListener("click", () => {
-      window.location.assign(WARDROBE_TUNER_DEV_PATH);
+  // 兩處入口（選公主、選帳號）共用同一閘門與導向，避免條件分歧。
+  if (isLocalDevEnv()) {
+    [elements.wardrobeTunerDevButton, elements.wardrobeTunerDevButtonAccount].forEach((button) => {
+      if (!button) return;
+      button.removeAttribute("hidden");
+      button.addEventListener("click", () => {
+        window.location.assign(WARDROBE_TUNER_DEV_PATH);
+      });
     });
   }
   elements.characterSelect?.addEventListener("click", (event) => {
