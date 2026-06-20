@@ -2,10 +2,11 @@
   "_comment": "issue #196 全域 house style（三層描述詞之第 1 層）。維護工具可編輯；wardrobe 影像生成腳本據此組 prompt。game runtime 不引用本檔。",
   "houseStyle": {
     "name": "solKidGalGame 童話手繪 house style",
-    "look": "soft hand-drawn children's fairytale storybook illustration of a single clothing item; gentle watercolour and coloured-pencil shading; warm, friendly, clean rounded shapes; princess dress-up game aesthetic; NOT photorealistic, NOT a 3D render, NOT anime cel, NOT pixel art",
+    "look": "soft hand-drawn children's fairytale storybook illustration of a single clothing item, gentle watercolour and coloured-pencil shading, warm friendly clean rounded shapes, princess dress-up game aesthetic; NOT photorealistic, NOT a 3D render, NOT anime cel, NOT pixel art",
+    "worn": "Draw the garment in the exact shape it takes when WORN on a slim standing girl seen straight from the FRONT (the body is invisible/transparent — show no skin, no body, no head, no hands, no legs). Show ONLY the outward front-facing surface as it looks when worn. This is a single flat front layer for a paper-doll: never a folded catalogue/flat-lay shot, never spread open to reveal the inside, lining, underside or back, never a top-down view. A single-layer item only (no separate back piece).",
     "linework": "soft dark outline, smooth clean edges",
     "shading": "gentle watercolour and coloured-pencil shading with soft highlights"
   },
-  "exclusions": "Draw a single clothing item ONLY. No person, no body, no mannequin, no doll, no head, no face, no hands, no legs, no scene, no background, no floor, no ground shadow, no text, no label, no watermark, no border, no frame. Fully transparent background.",
+  "exclusions": "No person, no visible body, no mannequin, no doll, no head, no face, no hands, no legs, no skin, no scene, no background, no floor, no ground shadow, no text, no label, no watermark, no border, no frame. Do not show the inside, lining, underside, back or reverse of the garment; do not lay it flat or spread it open; front-as-worn view only. Fully transparent background.",
   "output": { "size": 512, "mode": "fill", "format": "webp", "transparent": true, "maxKB": 120 }
 }

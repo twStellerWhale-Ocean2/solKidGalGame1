@@ -53,6 +53,7 @@ Lumi ADV stageScale = 1.20
 * wardrobe 素材採「**生成一張 → 不滿意改描述詞 → 重生**」流程（不採多候選自動挑選）；維護工具（[tool/wardrobe-tuner.js]）於現有 `📁資料夾`／`🗑刪除` 外提供 `📝描述詞`（編輯三層描述詞 JSON）與 `♻重生`（依目前描述詞重生並覆蓋）。
 * 素材**留痕寫入圖檔本身 metadata**（WebP comment／XMP：`model`／`prompt`／`date`），不另存 sidecar 檔；產圖與壓縮流程不得 `-strip` 掉該 metadata（如需壓縮去其餘 metadata，須保留或重寫 provenance）。
 * 影像生成屬 **dev 期維護工具**、產出 commit 為 raster；runtime 不得即時呼叫影像模型，亦不得以 SVG／濾鏡代替素材。
+* wardrobe 單品須畫成**穿戴正視（worn front view）**：以穿在隱形正面站姿身上的形狀呈現、**只見外側表面、單層**，不露內裡／背面／底面、非俯視、非平攤商品照。披風／外套採**前面閉合之斗篷形**以維持單層（不需背片，呼應 #195 單品單層、移除 outerBack）；鞋類採**正視圖、優先靴子**（長短靴皆可），不俯視露鞋底。留痕（model／prompt／date）因環境工具限制暫存各包 `style.json` 之 `items[asset]._gen`（待 cwebp／exiftool 等可寫 WebP metadata 之工具到位再內嵌圖檔）。
 
 ## C. 場景與素材通則
 
