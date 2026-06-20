@@ -1377,6 +1377,15 @@ async function runDataAudit(api) {
     if (!shopIds.has(item.storeId)) errors.push(`${item.id} points to missing store ${item.storeId}`);
     if (item.type === "room") errors.push(`${item.id} is a removed room/furniture item`);
   });
+  // issue #195：單品單層不變式——移除 outfitSet bundle 與 outer 雙層（outerBack/outerFront）設計後，
+  // 每件 wardrobe item 至多對應一個外觀層、不為整套綁定商品、不使用前後雙層 outer 槽。
+  api.shopItems.forEach((item) => {
+    if (item.type === "outfitSet") errors.push(`${item.id} is a removed outfitSet bundle (single-item-single-layer)`);
+    if (Array.isArray(item.layers) && item.layers.length > 1) errors.push(`${item.id} has ${item.layers.length} layers (single-item-single-layer violated)`);
+    (item.layers || []).forEach((layer) => {
+      if (layer.slot === "outerBack" || layer.slot === "outerFront") errors.push(`${item.id} uses removed two-layer outer slot ${layer.slot}`);
+    });
+  });
   const market = api.hotspotById("market");
   if (isShopLocation(market)) errors.push("market is still a shop");
   // issue #138：消除 kind:"shop" 特例——確認 manifests 無殘留的 kind:"shop"。

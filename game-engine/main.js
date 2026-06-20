@@ -1232,9 +1232,6 @@ function isWearableItem(item) {
 function isItemEquipped(item, outfit = state.outfit) {
   if (!item) return false;
   if (item.type === "room") return outfit.room === item.id;
-  if (item.type === "outfitSet") {
-    return Object.entries(item.equips || {}).every(([slot, itemId]) => outfit[slot] === itemId);
-  }
   return outfit[item.type] === item.id;
 }
 
@@ -1243,14 +1240,6 @@ function equipOutfitItem(item, outfit = state.outfit) {
   if (item.type === "room") {
     outfit.room = item.id;
     return outfit;
-  }
-  if (item.type === "outfitSet") {
-    Object.entries(item.equips || {}).forEach(([slot, itemId]) => {
-      const component = itemById(itemId);
-      if (component) equipOutfitItem(component, outfit);
-      else outfit[slot] = itemId;
-    });
-    return normalizeVisibleOutfit(outfit);
   }
   if (item.type === "dress") {
     outfit.top = "none";
@@ -1265,12 +1254,6 @@ function equipOutfitItem(item, outfit = state.outfit) {
 
 function unequipOutfitItem(item, outfit = state.outfit) {
   if (!item || item.type === "room") return outfit;
-  if (item.type === "outfitSet") {
-    Object.keys(item.equips || {}).forEach((slot) => {
-      outfit[slot] = "none";
-    });
-    return normalizeVisibleOutfit(outfit);
-  }
   outfit[item.type] = "none";
   return normalizeVisibleOutfit(outfit);
 }
@@ -2354,8 +2337,7 @@ function wardrobeEmptyText(category = shopCategory) {
     dresses: "Buy dresses at the Dress Boutique or Fairy Atelier first.",
     hair: "Buy hairstyles at the Hair Salon first.",
     hats: "Buy hats at the Accessory Atelier, Royal Cloak Room, or Field Cobbler first.",
-    outfitSets: "Buy outfit sets at the Dress Boutique first.",
-    outerwear: "Buy outerwear at the Dress Boutique, Royal Cloak Room, or Dwarf Cottage first.",
+    outerwear: "Buy outerwear at the Royal Cloak Room or Dwarf Cottage first.",
     shoes: "Buy shoes at the Shoe Shop first.",
     tops: "Buy tops at the Tailor Studio, Castle Seamstress, or Workwear Stall first."
   };
@@ -2580,9 +2562,7 @@ function tryOnFeedbackText(item, source) {
   const affordable = state.coins >= item.cost;
   const status = owned ? equipped ? "Equipped now" : "Owned treasure" : affordable ? "Ready to buy" : `Need ${item.cost - state.coins} more coins`;
   if (item.type === "room") return `${item.name}: ${status}.`;
-  const action = item.type === "outfitSet"
-    ? source === "wardrobe" ? `Trying the full set on ${princessName()}` : "Trying the full set before buying"
-    : source === "wardrobe" ? `Trying it on ${princessName()}` : `Trying it on ${princessName()} before buying`;
+  const action = source === "wardrobe" ? `Trying it on ${princessName()}` : `Trying it on ${princessName()} before buying`;
   return `${item.name}: ${action}. ${status}.`;
 }
 
@@ -2613,16 +2593,8 @@ function buyItemInAdv(item) {
   }
   state.coins -= item.cost;
   playTone("buy");
-  const unlockIds = purchaseUnlockIds(item);
-  const newlyUnlockedIds = unlockIds.filter((itemId) => !state.owned.includes(itemId));
-  unlockIds.forEach((itemId) => {
-    if (!state.owned.includes(itemId)) state.owned.push(itemId);
-  });
-  recordPurchaseSources(item, newlyUnlockedIds);
-  if (item.type === "outfitSet") {
-    ensureBundleUnlocksState();
-    state.bundleUnlocks[item.id] = newlyUnlockedIds.filter((itemId) => itemId !== item.id);
-  }
+  state.owned.push(item.id);
+  recordPurchaseSources(item);
   if (item.type !== "room") equipOutfitItem(item);
   awardBadge("First Shopping");
   updateProgressBadges();
@@ -2638,37 +2610,15 @@ function buyItemInAdv(item) {
   renderAdvShop(true);
 }
 
-function purchaseUnlockIds(item) {
-  if (item?.type !== "outfitSet") return [item.id];
-  return [item.id, ...Object.values(item.equips || {})].filter(Boolean);
-}
-
-function ensureBundleUnlocksState() {
-  if (!state.bundleUnlocks || Array.isArray(state.bundleUnlocks) || typeof state.bundleUnlocks !== "object") {
-    state.bundleUnlocks = {};
-  }
-}
-
 function ensurePurchaseStoreIdsState() {
   if (!state.purchaseStoreIds || Array.isArray(state.purchaseStoreIds) || typeof state.purchaseStoreIds !== "object") {
     state.purchaseStoreIds = {};
   }
 }
 
-function recordPurchaseSources(item, newlyUnlockedIds) {
+function recordPurchaseSources(item) {
   ensurePurchaseStoreIdsState();
   state.purchaseStoreIds[item.id] = item.storeId;
-  if (item.type !== "outfitSet") return;
-  const bundleSource = bundlePurchaseSource(item.id);
-  newlyUnlockedIds
-    .filter((itemId) => itemId !== item.id)
-    .forEach((itemId) => {
-      state.purchaseStoreIds[itemId] = bundleSource;
-    });
-}
-
-function bundlePurchaseSource(bundleId) {
-  return `bundle:${bundleId}`;
 }
 
 function renderRefundDetail(preserveFocus = false) {
@@ -2735,19 +2685,8 @@ function refundItemInAdv(item) {
 
 function refundRemovalIds(item) {
   ensurePurchaseStoreIdsState();
-  if (item?.type !== "outfitSet") {
-    delete state.purchaseStoreIds[item.id];
-    return [item.id];
-  }
-  ensureBundleUnlocksState();
-  const recordedUnlocks = Array.isArray(state.bundleUnlocks[item.id]) ? state.bundleUnlocks[item.id] : [];
-  delete state.bundleUnlocks[item.id];
   delete state.purchaseStoreIds[item.id];
-  const bundleSource = bundlePurchaseSource(item.id);
-  recordedUnlocks.forEach((itemId) => {
-    if (state.purchaseStoreIds[itemId] === bundleSource) delete state.purchaseStoreIds[itemId];
-  });
-  return [item.id, ...recordedUnlocks].filter(Boolean);
+  return [item.id];
 }
 
 function clearRemovedEquippedItems(itemIds) {
