@@ -42,6 +42,7 @@ export function createElements() {
     accountEmpty: $("#accountEmpty"),
     accountNewButton: $("#accountNewButton"),
     accountBack: $("#accountBack"),
+    wardrobeTunerDevButtonAccount: $("#wardrobeTunerDevButtonAccount"),
     goMapButton: $("#goMapButton"),
     wardrobeCount: $("#wardrobeCount"),
     wardrobeTabs: $("#wardrobeTabs"),
