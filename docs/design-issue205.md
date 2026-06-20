@@ -80,3 +80,49 @@
     * ③跨週期（`startSession`／`resumeFromRest`）後重置；④舊存檔（無 `jobsDone`）正規化為空；⑤聊天答對不寫入 `jobsDone`（沿用）。
   * **GATE §5（實機 visual-qa）**：某場景打工**全額答對**→ Work 消失；另一輪**用中文協助答對（0 coins）**→ Work **仍在**、可再進入；再以全額答對 → Work 消失。逐項以 DOM 動作標籤＋狀態（`isJobDone`／`jobsDone`／coins）為證（沿 #177：preview renderer 對本遊戲逾時，改 DOM＋狀態佐證，GATE §4 合格）。
 * **交付物**：沿 #157／#166／#177 焦點修正慣例，GATE 報告記於本 note §6（3code 補）與 PR 留言；A5 `test-summary.pdf` 待 USR 裁決。
+
+## 6. 實作與驗證結果（3code，2026-06-21）
+
+> 沿 #157／#166／#177 焦點修正慣例：本焦點變更之 GATE 驗證結果記於本節與 PR 留言。`docs/design.md` 未改（Option A，docLint sol 0）。
+
+### 實作（依 §3 D1–D5）
+
+* **D1／D2（[game-engine/main.js] `answerLesson`）**：打工(job) 答對分支之 `markJobDone(state, activeLesson.place)` 改為 `if (coins > 0) markJobDone(...)`——唯本次實得 coins（`full`／`half`）才下架；`none` 階（按過中文 `advChineseUsed`／答錯≥2 次）coins=0 → 不下架、本週期仍可再作答。`addUnique("completedLessons")`／日誌維持無條件記錄（學習成就，與下架無關）。
+* **D3／D5（不動）**：[game-engine/flow/scene-actions.js]、`jobAvailableForPlace`（六處呈現面）、[game-engine/system/play-clock.js]（`markJobDone`／`isJobDone`／`cycle.jobsDone`／`startSession` 重置／`normalizePlayLimit`）未改；因唯一寫入者 `markJobDone` 之呼叫條件改變，新下架條件經 `isJobDone` 自動傳播至全部呈現面（最小爆炸半徑）。
+* **D4（不動）**：答案順序沿用既有 `renderChoices` 之 `shuffled`（每次進入打工重排），未新增重排（USR 裁決）。
+* **selftest（[game-engine/testing/selftests.js] `runJobCycleSelfTest`）**：新增步驟 3b「0 coins 答對不下架」（`answerZeroCoin`：答錯 2 次 → `none` 階 → 答對但 coins=0），斷言 coins 不變、`isJobDone` 偽、`jobsDone` 不含該場景、practice 仍提供；既有步驟 0–4 沿用。
+* **VERSION bump**：`feat` → minor → `0.52.0`（`playerVisible:true`、issue #205）；`node scripts/genVersion.mjs` 重生 `game-engine/build/version.js`／`CHANGELOG.md`，`--check` 防漂移 PASS。
+* **rebase 重算（PR 久候期間 main 已前進）**：審查期間 PR #219（`fix` #207）先行 merge、main 版號 bump 至 `0.51.1`，致本分支 `VERSION`／`CHANGELOG`／`version.js` 衝突。依 STATES「merge 前先 rebase 並以 main 現值重算增量」：rebase 至最新 `origin/main`，版號以 `0.51.1` 為基底重算（minor → 仍 `0.52.0`）、history 併入 #207（[#205, #207, 0.51.0, …]），投影重生、防漂移 PASS，並重跑全套 GATE 確認無回歸。
+
+### GATE §1（機器判定，全綠）
+
+* `node --check`：`game-engine/main.js`／`game-engine/testing/selftests.js` → OK。
+* `npx tsc --noEmit --project jsconfig.json` → OK；`node scripts/assetLint.mjs` → PASS（171 圖、0 違規）。
+* `node scripts/genVersion.mjs --check` → PASS（版號投影無漂移）。
+* `docLint docs/design.md`（sol）→ **0**；`repoLint .` → **0**。
+* 瀏覽器 selftest（本機 `node server.mjs` :4191、Playwright 驅動、注入時鐘）全 `passed:true`、console **0 error**：
+  * **`job-cycle`（本案更新）**：含新增步驟 3b——0 coins 答對（`none` 階）→ coins 不變、`isJobDone` 偽、`jobsDone` 不含 kingHall、practice 仍在；既有步驟（全額答對下架／聊天不計入／跨週期重置／normalize 舊存檔）續綠。
+  * **回歸**：`chat`／`playtimer`／`scene-nav`／`map-avatar`／`data-audit`（shopCount 11、0 errors）／`save-load`／`monkey`（300 步）→ 全 `passed:true`、errors `[]`。
+* 依賴安全：純靜態網站、無 package 相依，`npm audit` 不適用。
+
+### GATE §2 產品能力矩陣（摘要）
+
+| story/case | 產品能力 | 實作入口 | 測試 | 狀態 |
+|---|---|---|---|---|
+| spec#11（反洗 coins）／spec#9（週期） | 打工以本次實得 coins（>0）為本週期下架條件 | `answerLesson`：`if (coins>0) markJobDone` | `job-cycle` 步驟 2（全額下架） | 已測通過 |
+| 本案核心 | 0 coins 答對（中文／第三次）不下架、可再賺 | 同上條件不成立 | `job-cycle` 步驟 3b（新增） | 已測通過 |
+| D4 範圍 | 答案順序沿用既有 shuffle、不另改 | `renderChoices` `shuffled`（不動） | 回歸 `chat`／`monkey` | 已測通過 |
+
+結論摘要：**3/3 核心能力已測通過、0 未實作、0 責任邊界不符。**
+
+### GATE §5（業界水準審查，異動面＝場景選單 Work 顯隱條件）
+
+* 本增量**無新增 UI 元素、無版面／樣式／文案結構變動**；唯一 UI 影響為既有「Work」動作於場景選單之顯隱**改由 `coins>0` 條件驅動**，屬 #177 既有呈現面之條件調整。
+* **鏡頭 C（scene 選單，唯一異動面）**：以 `job-cycle` selftest 之 `firstLayerActionKeys(place)` 於真實帳號＋注入時鐘下驅動 castle `kingHall` 場景選單為證——全額答對後 Work 下架（`["chat"]`）、0 coins 答對後 Work 仍在（`["chat","practice"]`）、跨週期重置後復原；console 0 error。截圖因本機 preview renderer 對本遊戲 canvas／語音持續佔用而逾時，沿 #177 改以 DOM 動作標籤＋狀態變更（`isJobDone`／`jobsDone`／coins）為證（GATE §4 合格證據：可操作流程＋資料狀態改變＋測試檔案＋runtime 紀錄）。
+* **跨畫面一致性**：下架僅針對打工(job)，Chat／逛店／退款／換裝依各自旗標不受影響（回歸 selftest 綠）。
+* 分級：`務必要修` 0（核心條件變更已達成且 selftest 守門）；`可以接受`——0 coins 答對之 `feedbackText` 維持既有「No coins this time…」未加「再試可賺」提示（非阻斷、低影響，留 opr 視需要再議）。
+* **結論：可宣稱完成。**
+
+### 交付物（test-summary.pdf 待 USR 裁決）
+
+* 沿 #157／#166／#177 焦點修正慣例，本節即 GATE 報告；是否另產 A5 直向 [docs/test-summary.pdf] 待 USR 裁決。Playwright 驅動為暫存、不作交付物。

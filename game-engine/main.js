@@ -2803,8 +2803,10 @@ function answerLesson(button, choice) {
         ? "Nice learning with Chinese help! No coins this time."
         : "No coins this time — try to answer sooner next time.";
     // issue #177：打工答對 → 標記本場景打工於本遊玩週期已完成（下架，不可再作答），下一週期重置；
-    // 僅打工計入（在此 job 分支內），聊天不計（spec#11 反洗 coins）。即使本次無 coins（中文／第三次）仍下架。
-    markJobDone(state, activeLesson.place);
+    // 僅打工計入（在此 job 分支內），聊天不計（spec#11 反洗 coins）。
+    // issue #205：改以「本次實得 coins（>0）」為下架條件——答對但 0 coins（中文協助／第三次以上 none 階）
+    // 不下架、本週期仍可在該場景再作答賺取 coins；full／half（coins>0）一如既往下架。
+    if (coins > 0) markJobDone(state, activeLesson.place);
   }
   addUnique("completedLessons", [activeLesson.id]);
   addUnique("learnedWords", activeLesson.words);
