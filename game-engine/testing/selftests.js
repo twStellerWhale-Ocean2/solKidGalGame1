@@ -64,6 +64,44 @@ export function installTestingHooks(api) {
   runCharacterSilhouetteSelfTest(api);
   runMapWalkSelfTest(api);
   runAboutSelfTest(api);
+  runDevToolsSelfTest(api);
+}
+
+// issue #212：本機開發環境 dev 入口（衣物調整工具）閘門驗證。
+// ①純函式 isLocalDevHost 白名單斷言；②按鈕揭示狀態與當前 host 一致；③導向採相對路徑。
+function runDevToolsSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "dev-tools") return;
+  const errors = [];
+
+  // ① 閘門純函式：本機 host → true；正式站／空字串 → false。
+  const expectHost = (host, expected) => {
+    const got = api.isLocalDevHost(host);
+    if (got !== expected) errors.push(`isLocalDevHost(${JSON.stringify(host)})=${got}, expected ${expected}`);
+  };
+  [["127.0.0.1", true], ["localhost", true], ["[::1]", true], ["LocalHost", true],
+   ["foo.github.io", false], ["example.com", false], ["", false]].forEach(([h, e]) => expectHost(h, e));
+
+  // ② dev 入口揭示狀態須與 isLocalDevEnv() 一致（本機顯示／非本機隱藏不變式）。
+  const button = api.elements.wardrobeTunerDevButton;
+  const isDev = api.isLocalDevEnv();
+  if (!button) {
+    errors.push("找不到 #wardrobeTunerDevButton");
+  } else if ((!button.hidden) !== isDev) {
+    errors.push(`dev 入口顯示=${!button.hidden}，但 isLocalDevEnv()=${isDev}（應一致）`);
+  }
+
+  // ③ 導向目標須為相對路徑，不寫死埠號／主機（避免與正式站絕對網址綁定）。
+  const path = api.wardrobeTunerDevPath || "";
+  if (/^(https?:)?\/\//i.test(path) || path.startsWith("/") || path.includes("4174")) {
+    errors.push(`dev 入口導向路徑非相對：「${path}」`);
+  }
+
+  const passed = errors.length === 0;
+  const result = document.createElement("pre");
+  result.id = "devToolsResult";
+  result.textContent = JSON.stringify({ test: "dev-tools", passed, errors });
+  document.body.prepend(result);
 }
 
 // issue #178：鍵盤地圖走動控制器——自管連續移動迴圈（消除起步停頓）、放鍵/失焦即停、忽略 OS 自動重複、三面座標改變。

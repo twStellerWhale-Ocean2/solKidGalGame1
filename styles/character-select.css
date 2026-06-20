@@ -221,6 +221,24 @@
   gap: 10px;
 }
 
+/* issue #212：本機開發環境專用「衣物調整工具」入口，置於 Start 鈕下方；
+   正式發佈站由前端環境閘門以 hidden 隱藏（見 game-engine/app/env.js）。 */
+.character-select-devtool {
+  margin-top: 12px;
+  width: 100%;
+  border: 1px dashed currentColor;
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+.character-select-devtool::before {
+  content: "🛠 ";
+}
+
+.character-select-devtool[hidden] {
+  display: none;
+}
+
 /* 首次進入無存檔：不可取消，必須先選角＋命名 */
 .character-select-overlay.first-run .character-select-cancel {
   display: none;
