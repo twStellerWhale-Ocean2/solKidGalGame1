@@ -1,0 +1,11 @@
+{
+  "_comment": "issue #196 全域 house style（三層描述詞之第 1 層）。維護工具可編輯；wardrobe 影像生成腳本據此組 prompt。game runtime 不引用本檔。",
+  "houseStyle": {
+    "name": "solKidGalGame 童話手繪 house style",
+    "look": "soft hand-drawn children's fairytale storybook illustration of a single clothing item; gentle watercolour and coloured-pencil shading; warm, friendly, clean rounded shapes; princess dress-up game aesthetic; NOT photorealistic, NOT a 3D render, NOT anime cel, NOT pixel art",
+    "linework": "soft dark outline, smooth clean edges",
+    "shading": "gentle watercolour and coloured-pencil shading with soft highlights"
+  },
+  "exclusions": "Draw a single clothing item ONLY. No person, no body, no mannequin, no doll, no head, no face, no hands, no legs, no scene, no background, no floor, no ground shadow, no text, no label, no watermark, no border, no frame. Fully transparent background.",
+  "output": { "size": 512, "mode": "fill", "format": "webp", "transparent": true, "maxKB": 120 }
+}

@@ -1,0 +1,22 @@
+{
+  "_comment": "issue #196 本素材包風格（第 2 層 packStyle）＋各單品描述（第 3 層 itemDesc）。維護工具可編輯，影像生成腳本據此組 prompt。",
+  "packStyle": {
+    "name": "皇家斗篷室 Royal Cloak Room",
+    "reference": "European royal / regal aristocratic, gentle fairytale version",
+    "palette": ["gold", "ivory white", "jewel blue", "soft wine red", "mint"],
+    "motifs": ["stars and moons", "pearls", "jewel clasp", "gold trim"],
+    "linework": "fine and delicate",
+    "mood": "regal, elegant, gentle"
+  },
+  "items": {
+    "outer-yellow-cardigan": "a little soft buttoned yellow knit cardigan",
+    "outer-starry-cape": "a flowing royal helper cape scattered with small golden stars",
+    "outer-mint-cardigan": "a soft mint-green royal knit cardigan with white collar and buttons",
+    "outer-rose-cardigan": "a soft rose-pink royal knit cardigan with white collar and buttons",
+    "outer-moon-cape": "a royal cape decorated with a crescent moon and small stars",
+    "outer-aurora-cape": "a flowing royal cape with a soft aurora gradient sheen",
+    "headtop-pearl-tiara": "a delicate royal tiara set with small pearls",
+    "headtop-starry-tiara": "a royal tiara topped with little star-shaped gems",
+    "headtop-ruby-tiara": "a royal tiara set with a single red ruby gem"
+  }
+}
