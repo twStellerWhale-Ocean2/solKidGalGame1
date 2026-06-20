@@ -64,6 +64,44 @@ export function installTestingHooks(api) {
   runCharacterSilhouetteSelfTest(api);
   runMapWalkSelfTest(api);
   runAboutSelfTest(api);
+  runDevToolsSelfTest(api);
+}
+
+// issue #212：本機開發環境 dev 入口（衣物調整工具）閘門驗證。
+// ①純函式 isLocalDevHost 白名單斷言；②按鈕揭示狀態與當前 host 一致；③導向採相對路徑。
+function runDevToolsSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "dev-tools") return;
+  const errors = [];
+
+  // ① 閘門純函式：本機 host → true；正式站／空字串 → false。
+  const expectHost = (host, expected) => {
+    const got = api.isLocalDevHost(host);
+    if (got !== expected) errors.push(`isLocalDevHost(${JSON.stringify(host)})=${got}, expected ${expected}`);
+  };
+  [["127.0.0.1", true], ["localhost", true], ["[::1]", true], ["LocalHost", true],
+   ["foo.github.io", false], ["example.com", false], ["", false]].forEach(([h, e]) => expectHost(h, e));
+
+  // ② dev 入口揭示狀態須與 isLocalDevEnv() 一致（本機顯示／非本機隱藏不變式）。
+  const button = api.elements.wardrobeTunerDevButton;
+  const isDev = api.isLocalDevEnv();
+  if (!button) {
+    errors.push("找不到 #wardrobeTunerDevButton");
+  } else if ((!button.hidden) !== isDev) {
+    errors.push(`dev 入口顯示=${!button.hidden}，但 isLocalDevEnv()=${isDev}（應一致）`);
+  }
+
+  // ③ 導向目標須為相對路徑，不寫死埠號／主機（避免與正式站絕對網址綁定）。
+  const path = api.wardrobeTunerDevPath || "";
+  if (/^(https?:)?\/\//i.test(path) || path.startsWith("/") || path.includes("4174")) {
+    errors.push(`dev 入口導向路徑非相對：「${path}」`);
+  }
+
+  const passed = errors.length === 0;
+  const result = document.createElement("pre");
+  result.id = "devToolsResult";
+  result.textContent = JSON.stringify({ test: "dev-tools", passed, errors });
+  document.body.prepend(result);
 }
 
 // issue #178：鍵盤地圖走動控制器——自管連續移動迴圈（消除起步停頓）、放鍵/失焦即停、忽略 OS 自動重複、三面座標改變。
@@ -337,11 +375,12 @@ function runAboutSelfTest(api) {
   const items = api.elements.aboutVersionList?.querySelectorAll(".about-version-item") || [];
   if (items.length < 10) errors.push(`版本沿革少於 10 筆（實得 ${items.length}）`);
 
-  // 首筆版本須與當前版本顯示一致（單一資料源、避免雙軌）
+  // 版號 SSOT 模型（VERSION 為單一源、版號釘選於 merge）：當前版本為 SemVer，
+  // 玩家版本沿革只投影 VERSION.history 中 playerVisible 之 feat/fix；internal／dev-only 版本
+  // （如純工具改動）不進玩家沿革，故「當前版本」不必等於沿革首筆。改驗當前版本為非空且符 SemVer。
   const currentVersion = (api.elements.versionValue?.textContent || "").trim();
-  const firstVersion = (items[0]?.querySelector("strong")?.textContent || "").trim();
   if (!currentVersion) errors.push("當前版本顯示為空");
-  if (firstVersion !== currentVersion) errors.push(`首筆版本（${firstVersion}）與當前版本（${currentVersion}）不一致`);
+  else if (!/^\d+\.\d+\.\d+$/.test(currentVersion)) errors.push(`當前版本非 SemVer：「${currentVersion}」`);
 
   // 版本卡已併入 About：Settings 不得殘留、About 須具備
   const settingsView = document.getElementById("settingsView");
@@ -1423,6 +1462,16 @@ async function runDataAudit(api) {
     const hit = NON_JOB_PROMPT_PATTERNS.find((p) => p.re.test(String(prompt)));
     return hit ? hit.why : "";
   };
+  // issue #204：打工正解須體現思考決策（選擇／判斷／建議／計算），不得為複述題幹。去除應允開頭與停用詞後，
+  // 若正解內容詞全部已見於題幹（未加入任何題幹以外的內容詞），即為「換人稱回述角色指令或顯而易見動作」之 echo confirmation，視為複述。
+  const RESTATE_STOPWORDS = new Set(["a","an","the","is","are","am","be","i","you","he","she","it","we","they","me","my","your","our","to","of","in","on","at","under","over","by","for","and","or","but","please","now","here","there","this","that","these","those","do","does","did","will","can","could","let","us","so","with","up","down","into","them","their","yes","yeah","no","ok","okay","sure","thing","course","well","certainly","alright","right","away","thanks","thank","too","just"]);
+  const jobContentWords = (text) => String(text).toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter((w) => w && !RESTATE_STOPWORDS.has(w));
+  const answerRestatesPrompt = (prompt, answer) => {
+    const a = jobContentWords(answer);
+    if (a.length < 1) return false;
+    const p = new Set(jobContentWords(prompt));
+    return a.every((w) => p.has(w));
+  };
   const mapContracts = await collectMapContractAudit(api, errors);
 
   Object.entries(categoryCounts).forEach(([category, count]) => {
@@ -1542,6 +1591,8 @@ async function runDataAudit(api) {
         // issue #182：打工題幹須為角色實際交派之勞務差事，不得為純觀看／站位／閒聊／道別。
         const nonJobReason = nonJobPromptReason(q.prompt);
         if (nonJobReason) errors.push(`${where} job prompt is not a work task（${nonJobReason}）— "${q.prompt}"`);
+        // issue #204：打工正解須體現思考決策，不得為複述題幹（換人稱回述角色指令或顯而易見動作）。
+        if (q.prompt && q.answer && answerRestatesPrompt(q.prompt, q.answer)) errors.push(`${where} job answer merely restates the prompt (must be a thinking decision, not an echo) — "${q.answer}"`);
         if (!q.reward || !Number.isFinite(q.reward.coins)) errors.push(`${where} missing reward.coins`);
         if (!q.promptZh) errors.push(`${where} missing promptZh (中文協助所需)`);
         if (!Array.isArray(q.choicesZh) || q.choicesZh.length !== q.choices.length || q.choicesZh.some((z) => !z)) errors.push(`${where} choicesZh incomplete (中文協助所需)`);
@@ -1576,6 +1627,16 @@ async function runDataAudit(api) {
         else if (q.reward.coins !== 0) errors.push(`${where} chat reward.coins must be 0`);
         if (!q.promptZh) errors.push(`${where} missing promptZh (中文協助所需)`);
         if (!Array.isArray(q.choicesZh) || q.choicesZh.length !== q.choices.length || q.choicesZh.some((z) => !z)) errors.push(`${where} choicesZh incomplete (中文協助所需)`);
+        // issue #204：生活聊天干擾選項須屬同場景語域（與題幹或正解有共同內容詞），不採超現實荒謬句。
+        // 題幹＋正解內容詞不足 2 個（純寒暄問候、無可靠語域錨點）時跳過此啟發式檢查，避免誤判。
+        const chatCtx = new Set([...jobContentWords(q.prompt || ""), ...jobContentWords(q.answer || "")]);
+        if (chatCtx.size >= 2) {
+          (q.choices || []).forEach((c) => {
+            if (c === q.answer) return;
+            const wc = jobContentWords(c);
+            if (wc.length && !wc.some((w) => chatCtx.has(w))) errors.push(`${where} chat distractor is out of scene (no shared word with prompt/answer) — "${c}"`);
+          });
+        }
       });
     });
   });

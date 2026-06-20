@@ -35,6 +35,7 @@ export function createElements() {
     backgroundPatternGrid: $("#backgroundPatternGrid"),
     characterConfirm: $("#characterConfirm"),
     characterCancel: $("#characterCancel"),
+    wardrobeTunerDevButton: $("#wardrobeTunerDevButton"),
     accountSelect: $("#accountSelect"),
     accountSelectCard: $(".account-select-card"),
     accountList: $("#accountList"),

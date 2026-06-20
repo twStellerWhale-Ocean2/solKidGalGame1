@@ -1,5 +1,6 @@
 import { buildInfo, copyright, versionHistory } from "./build/version.js";
 import { $, $$, createElements } from "./app/elements.js";
+import { isLocalDevEnv, isLocalDevHost, WARDROBE_TUNER_DEV_PATH } from "./app/env.js";
 import {
   areaForHotspot,
   allowedShopCategoriesFor,
@@ -3504,6 +3505,13 @@ function bindEvents() {
   elements.changeCharacterButton?.addEventListener("click", () => openCharacterSelect({ forced: false }));
   elements.characterConfirm?.addEventListener("click", confirmCharacterSelect);
   elements.characterCancel?.addEventListener("click", cancelCharacterSelect);
+  // issue #212：本機開發環境才揭示「衣物調整工具」dev 入口；正式發佈站保持 hidden、不接線。
+  if (isLocalDevEnv() && elements.wardrobeTunerDevButton) {
+    elements.wardrobeTunerDevButton.removeAttribute("hidden");
+    elements.wardrobeTunerDevButton.addEventListener("click", () => {
+      window.location.assign(WARDROBE_TUNER_DEV_PATH);
+    });
+  }
   elements.characterSelect?.addEventListener("click", (event) => {
     if (event.target.matches("[data-character-cancel]") && !elements.characterSelect.classList.contains("first-run")) {
       cancelCharacterSelect();
@@ -3871,6 +3879,10 @@ installTestingHooks({
   createRandomQuest,
   difficultyConfig,
   elements,
+  // issue #212：dev-tooling 閘門，供 dev-tools selftest 純函式斷言與按鈕揭示驗證。
+  isLocalDevHost,
+  isLocalDevEnv,
+  wardrobeTunerDevPath: WARDROBE_TUNER_DEV_PATH,
   equipOutfitItem,
   focusCastle: (place = "princessRoom") => {
     const hotspot = hotspotById(place);
