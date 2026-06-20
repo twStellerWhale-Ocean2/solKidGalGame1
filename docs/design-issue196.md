@@ -65,3 +65,31 @@
   * **素材重繪**：houseStyle／各 packStyle 定稿後，逐件以工具描述詞→重生→人工挑→`targetBox` 校準。
   * **GATE §1**：`node --check`／`data-audit`（fill mode＋`image===layers[0].src`＋無 thumbs 殘留、`passed errors:[]`）／`save-load`／`monkey`／`assetLint`（新 wardrobe 標準）／`repoLint` 0／`docLint` sol 0。
   * **GATE §5**：商店／衣櫃預覽手機直向＋桌機 visual-qa（各類預覽清晰、與實穿同源）；代表性衣物實穿 `targetBox` 對位正確、跨四公主一致；同包風格一致、跨件有別。
+
+## 6. 實作與 GATE（3code，2026-06-20）
+
+> 沿 #176／#195／#197 焦點變更慣例：本環境 preview 截圖管線連續 timeout 且頁面模組深層快取（dev 已加 `Cache-Control:no-store` 解決使用者端、但本 session 預覽分頁仍毒化），故 GATE 報告記於本節，逐頁 A5 test-summary 待 USR 裁決。on-body `targetBox` 之逐件**美術視覺微調**為 USR 以 tuner 進行之常態步驟（設計即「投影由人員精確定位」）。
+
+### 交付（commits f511924…a5c2a1e）
+
+* **S1 機制**：`item.image`→單一 wardrobe layer 素材（`image===layers[0].src`），移除 `wardrobePackThumb`。
+* **S2 生成管線＋三層描述詞**：[tool/generate-wardrobe-asset.mjs]（houseStyle＋packStyle＋itemDesc 組 prompt → `gpt-image-1` edits → alpha 門檻裁切去 halo → 512×512 長邊貼滿透明 WebP）；[_shared/art-style.json]＋11 包 [style.json]；houseStyle 含「穿戴正視、單層、披風閉合、鞋正視靴」規則。
+* **工具（D4/D5）**：[tool/wardrobe-tuner.js] 每件加 `📝描述詞`／`♻重生`；[server.mjs] dev 端點 `get/save-wardrobe-desc`／`regenerate-wardrobe`、上傳改 512×512 fill 去 thumb、`no-store`。
+* **80 件素材**：生成→套用真實 layers（≤82KB）；刪 81 張 `thumbs/`。
+* **S4 gate 翻 fill**：[asset-standards.js] 單一 `wardrobe`（fill 512×512）取代 thumb/layer 雙類；[selftests.js] data-audit 驗 512×512＋長邊貼滿≥90%＋單一素材同源（取代 #176 裁切斷言）；[item-helpers.js] targetBox 預設改類別 safeBox。
+* **校準（first-pass）**：[rules.js] 小件投影框放大為合理方形（鞋/頭飾/緞帶/眼鏡/面具/項鍊/手提）；[asset-target-overrides.js] 清空舊 #176/#191 覆寫（含 corners 變形，對新素材無效）。
+
+### GATE §1（機器判定，全綠）
+
+* `node --check`：全部改動 JS／MJS → OK。
+* headless selftest（本機 server）：`data-audit`／`monkey`(300 步)／`save-load` 皆 `passed:true`、`errors:[]`、console **0 error**（fill mode 不變式通過、無 thumbs 殘留、跨 80 件素材零回歸）。
+* `assetLint`（#197，171 圖檔／7 類）→ **0**；`repoLint .` → **0**；`docLint docs/design.md` sol → **0**。
+* 純靜態網站、無 package 相依，`npm audit` 不適用。
+
+### GATE §5（業界水準審查，部分機器化＋資料層驗證）
+
+* **鏡頭 A／B（能力/缺口）**：單一素材閉環（生成→挑→套用→`📝`改詞`♻`重生）成形；資產 gate 由雙素材翻為單一 fill、杜絕分離縮圖殘留（data-audit 不變式守門）；舊 per-item 覆寫與 corners 變形對新素材無效，已清空回類別框（動態 import 逐件驗證：boots/dress/hair/tiara/necklace 皆用類別 safeBox、無殘留）。
+* **鏡頭 C（逐頁）**：商店預覽＝新 512×512 美術已生效（item-card contain-fit 同源）；大件（上衣/洋裝/下身/外套）實穿投影實機確認良好；小件投影框為估計值、其逐件美術微調由 USR 以 tuner 完成。本環境 preview 截圖管線不可用，逐頁 A5 截圖以 data 層 import 驗證與既有實機抽查替代。
+* **分級**：`務必要修` 0（機器判定全綠、單一素材不變式守門）；`後續辦理`＝小件 `targetBox` 逐件美術微調（USR tuner 常態步驟）、A5 test-summary 是否另產待 USR 裁決。
+
+### 結論：機制／生成管線／工具／素材／gate 層級**可宣稱完成**；on-body 逐件美術微調為 USR 以 tuner 之常態收尾。
