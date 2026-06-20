@@ -32,10 +32,13 @@
 .adv-doll {
   width: 390px;
   height: 560px;
+  /* issue #207：ADV 公主立繪常態陰影改為簡潔深灰立體投影（spec#12／sysCase#12.2）——
+     緊貼描邊維持圖地分離，接觸＋景深兩層改為方向性深灰投影並大幅收束大柔邊，
+     避免多層柔邊疊加被讀為角色光暈或糊化腳底陰影；保留三層結構（character-silhouette selftest ≥3）。 */
   --character-silhouette-filter:
-    drop-shadow(0 0 1px rgba(64, 43, 53, 0.58))
-    drop-shadow(0 2px 3px rgba(58, 37, 46, 0.34))
-    drop-shadow(0 16px 22px rgba(58, 37, 46, 0.22));
+    drop-shadow(0 0 1px rgba(45, 45, 52, 0.92))
+    drop-shadow(2px 4px 3px rgba(45, 45, 52, 0.5))
+    drop-shadow(4px 9px 6px rgba(45, 45, 52, 0.4));
 }
 
 .avatar-shadow,

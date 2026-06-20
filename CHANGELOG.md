@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.51.1 — 2026-06-20
+- fix (#207): 公主與場景人物 ADV 立繪改用簡潔深灰立體投影，去除詭異光暈與糊化腳底陰影
+
 ## 0.51.0 — 2026-06-20 _(internal)_
 - chore: 導入結構化 VERSION 版號 SSOT（version.js／CHANGELOG／About 改為投影、附防漂移檢查）；補標既有 99 個 merge PR 之 Conventional Commits 型別後回算版號基準＝0.51.0（51 feat→minor、29 fix、9 refactor、6 docs、3 test、2 perf、0 breaking）
 
