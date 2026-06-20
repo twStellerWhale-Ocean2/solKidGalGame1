@@ -1461,6 +1461,16 @@ async function runDataAudit(api) {
     const hit = NON_JOB_PROMPT_PATTERNS.find((p) => p.re.test(String(prompt)));
     return hit ? hit.why : "";
   };
+  // issue #204：打工正解須體現思考決策（選擇／判斷／建議／計算），不得為複述題幹。去除應允開頭與停用詞後，
+  // 若正解內容詞全部已見於題幹（未加入任何題幹以外的內容詞），即為「換人稱回述角色指令或顯而易見動作」之 echo confirmation，視為複述。
+  const RESTATE_STOPWORDS = new Set(["a","an","the","is","are","am","be","i","you","he","she","it","we","they","me","my","your","our","to","of","in","on","at","under","over","by","for","and","or","but","please","now","here","there","this","that","these","those","do","does","did","will","can","could","let","us","so","with","up","down","into","them","their","yes","yeah","no","ok","okay","sure","thing","course","well","certainly","alright","right","away","thanks","thank","too","just"]);
+  const jobContentWords = (text) => String(text).toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter((w) => w && !RESTATE_STOPWORDS.has(w));
+  const answerRestatesPrompt = (prompt, answer) => {
+    const a = jobContentWords(answer);
+    if (a.length < 1) return false;
+    const p = new Set(jobContentWords(prompt));
+    return a.every((w) => p.has(w));
+  };
   const mapContracts = await collectMapContractAudit(api, errors);
 
   Object.entries(categoryCounts).forEach(([category, count]) => {
@@ -1580,6 +1590,8 @@ async function runDataAudit(api) {
         // issue #182：打工題幹須為角色實際交派之勞務差事，不得為純觀看／站位／閒聊／道別。
         const nonJobReason = nonJobPromptReason(q.prompt);
         if (nonJobReason) errors.push(`${where} job prompt is not a work task（${nonJobReason}）— "${q.prompt}"`);
+        // issue #204：打工正解須體現思考決策，不得為複述題幹（換人稱回述角色指令或顯而易見動作）。
+        if (q.prompt && q.answer && answerRestatesPrompt(q.prompt, q.answer)) errors.push(`${where} job answer merely restates the prompt (must be a thinking decision, not an echo) — "${q.answer}"`);
         if (!q.reward || !Number.isFinite(q.reward.coins)) errors.push(`${where} missing reward.coins`);
         if (!q.promptZh) errors.push(`${where} missing promptZh (中文協助所需)`);
         if (!Array.isArray(q.choicesZh) || q.choicesZh.length !== q.choices.length || q.choicesZh.some((z) => !z)) errors.push(`${where} choicesZh incomplete (中文協助所需)`);
@@ -1614,6 +1626,16 @@ async function runDataAudit(api) {
         else if (q.reward.coins !== 0) errors.push(`${where} chat reward.coins must be 0`);
         if (!q.promptZh) errors.push(`${where} missing promptZh (中文協助所需)`);
         if (!Array.isArray(q.choicesZh) || q.choicesZh.length !== q.choices.length || q.choicesZh.some((z) => !z)) errors.push(`${where} choicesZh incomplete (中文協助所需)`);
+        // issue #204：生活聊天干擾選項須屬同場景語域（與題幹或正解有共同內容詞），不採超現實荒謬句。
+        // 題幹＋正解內容詞不足 2 個（純寒暄問候、無可靠語域錨點）時跳過此啟發式檢查，避免誤判。
+        const chatCtx = new Set([...jobContentWords(q.prompt || ""), ...jobContentWords(q.answer || "")]);
+        if (chatCtx.size >= 2) {
+          (q.choices || []).forEach((c) => {
+            if (c === q.answer) return;
+            const wc = jobContentWords(c);
+            if (wc.length && !wc.some((w) => chatCtx.has(w))) errors.push(`${where} chat distractor is out of scene (no shared word with prompt/answer) — "${c}"`);
+          });
+        }
       });
     });
   });

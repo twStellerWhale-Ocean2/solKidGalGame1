@@ -74,7 +74,7 @@ const wildLessonBank = Object.freeze({
   elfGlade: {
     title: "Help in the Elf Glade",
     questions: [
-      { questionType: "sentence-choice", prompt: "I have watered all the flowers, but I still cannot see the bell. Please tell me your progress.", promptZh: "我已經澆完所有花，但還是沒看到鈴鐺。請告訴我你的進度。", answer: "Of course! I have watered all the flowers.", choices: ["Of course! I have watered all the flowers.","Of course! I was water all the flowers.","Of course! I watered all the flowers yesterday."], choicesZh: ["當然！我已經澆完所有花了。","當然！我過去正在澆所有花。","當然！我昨天澆完所有花。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "I have watered all the flowers, but I still cannot see the bell. Where should we look next?", promptZh: "我已經澆完所有花，但還是沒看到鈴鐺。我們接下來該找哪裡？", answer: "Of course! Since the flowers are done, let's search under the leaves next.", choices: ["Of course! Since the flowers are done, let's search under the leaves next.","Of course! Let's water all the flowers again.","Of course! Let's stop looking for the bell."], choicesZh: ["當然！花都澆完了，我們接下來找葉子底下吧。","當然！我們把所有花再澆一次。","當然！我們別找鈴鐺了。"], reward: jobReward },
       { questionType: "sentence-choice", prompt: "The flower which glows the brightest may hide the bell. Please tell me where to look.", promptZh: "發光最亮的那朵花可能藏著鈴鐺。請告訴我該往哪裡找。", answer: "Sure! The flower which glows is hiding the bell.", choices: ["Sure! The flower who glows is hiding the bell.","Sure! The flower which glows is hiding the bell.","Sure! The flower glowed will hiding the bell."], choicesZh: ["好的！那朵人會發光的花藏著鈴鐺。","好的！那朵會發光的花藏著鈴鐺。","好的！那朵發光花將正在藏鈴鐺。"], reward: jobReward },
       { questionType: "sentence-choice", prompt: "If we ring the bell, the elves will hear us. Please help me say the plan.", promptZh: "如果我們搖鈴，精靈們就會聽到我們。請幫我說出這個計畫。", answer: "Certainly! If we ring the bell, the elves will come.", choices: ["Certainly! If we rang the bell, the elves hear us yesterday.","Certainly! If we ring the bell, the elves heard us.","Certainly! If we ring the bell, the elves will come."], choicesZh: ["當然！如果我們昨天搖鈴，精靈聽到我們。","當然！如果我們搖鈴，精靈聽過我們。","當然！如果我們搖鈴，精靈們就會來。"], reward: jobReward }
     ]
@@ -84,15 +84,15 @@ const wildLessonBank = Object.freeze({
     questions: [
       { questionType: "sentence-choice", prompt: "I have looked near the door, but I have not found the wheel. Please tell me what you found.", promptZh: "我已經找過門邊，但還沒找到輪子。請告訴我你找到什麼。", answer: "Of course! I have found the missing wheel.", choices: ["Of course! I have found the missing wheel.","Of course! I has found the missing wheel.","Of course! I was find the missing wheel."], choicesZh: ["當然！我已經找到不見的輪子了。","當然！我已經找到不見的輪子。","當然！我過去正在找到不見的輪子。"], reward: jobReward },
       { questionType: "sentence-choice", prompt: "The hammer that I made is on the bench. Please tell me which tool we need.", promptZh: "我做的槌子在長椅上。請告訴我我們需要哪個工具。", answer: "Sure! The hammer that Pip made is on the bench.", choices: ["Sure! The hammer who Pip made is on the bench.","Sure! The hammer that Pip made is on the bench.","Sure! The hammer was on the bench yesterday."], choicesZh: ["好的！皮普做的人槌子在長椅上。","好的！皮普做的槌子在長椅上。","好的！槌子昨天在長椅上。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "If we fix the wheel, the cart will move again. Please help me say our plan.", promptZh: "如果我們修好輪子，推車就會再動起來。請幫我說出我們的計畫。", answer: "Certainly! If we fix the wheel, the cart will move again.", choices: ["Certainly! If we fixed the wheel, the cart moves yesterday.","Certainly! If we fix the wheel, the cart moved again.","Certainly! If we fix the wheel, the cart will move again."], choicesZh: ["當然！如果我們昨天修好輪子，推車移動。","當然！如果我們修好輪子，推車以前動了。","當然！如果我們修好輪子，推車就會再動起來。"], reward: jobReward }
+      { questionType: "sentence-choice", prompt: "The cart is stuck with a broken wheel. What is our best plan?", promptZh: "推車的輪子壞了卡住了。我們最好的計畫是什麼？", answer: "Certainly! If we fix the wheel first, the cart will move again.", choices: ["Certainly! If we fix the wheel first, the cart will move again.","Certainly! If we paint the cart, the wheel will fix itself.","Certainly! If we leave the cart, the wheel will grow back."], choicesZh: ["當然！如果我們先修好輪子，推車就會再動起來。","當然！如果我們把推車漆一漆，輪子就會自己修好。","當然！如果我們把推車丟著，輪子就會自己長回來。"], reward: jobReward }
     ]
   },
   stoneGolemPass: {
     title: "Help at Stone Golem Pass",
     questions: [
       { questionType: "sentence-choice", prompt: "I have cleaned part of the sign. Please tell me how much is done.", promptZh: "我已經清掉一部分路牌。請告訴我完成多少了。", answer: "Of course! I have cleaned half of the sign.", choices: ["Of course! I have cleaned half of the sign.","Of course! I has cleaned half of the sign.","Of course! I was clean half of the sign."], choicesZh: ["當然！我已經清掉一半路牌了。","當然！我已經清掉一半路牌。","當然！我過去正在清一半路牌。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "The rock which fell from the hill is blocking the road. Please describe the problem.", promptZh: "從山上掉下來的石頭擋住了路。請描述這個問題。", answer: "Sure! The rock which fell is blocking the road.", choices: ["Sure! The rock that fell is near the road.","Sure! The rock which fell is blocking the road.","Sure! The rock will blocked the road yesterday."], choicesZh: ["好的！掉下來的石頭在路旁邊。","好的！掉下來的石頭正在擋路。","好的！石頭昨天將會擋路。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "If we move the rock, travellers will pass safely. Please help me say the plan.", promptZh: "如果我們移開石頭，旅人就可以安全通過。請幫我說出這個計畫。", answer: "Certainly! If we move the rock, travellers will pass safely.", choices: ["Certainly! If we move the rock, travellers passed yesterday.","Certainly! If we move the rock, travellers will be safe.","Certainly! If we move the rock, travellers will pass safely."], choicesZh: ["當然！如果我們移開石頭，旅人昨天通過了。","當然！如果我們移開石頭，旅人就會安全。","當然！如果我們移開石頭，旅人就能安全通過。"], reward: jobReward }
+      { questionType: "sentence-choice", prompt: "A big rock fell from the hill. Which problem should we fix first?", promptZh: "一塊大石頭從山上掉下來。我們該先解決哪個問題？", answer: "Sure! The rock which fell is blocking the road, so let's clear it first.", choices: ["Sure! The rock which fell is blocking the road, so let's clear it first.","Sure! The rock which fell is too pretty, so let's paint it.","Sure! The rock which fell is sleeping, so let's not wake it."], choicesZh: ["好的！掉下來的石頭擋住了路，我們先把它清開。","好的！掉下來的石頭太漂亮了，我們把它漆一漆。","好的！掉下來的石頭在睡覺，我們別吵醒它。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Travellers are waiting behind the rock. What should we do to help them?", promptZh: "旅人們被擋在石頭後面等著。我們該怎麼幫他們？", answer: "Certainly! If we move the rock aside, travellers will pass safely.", choices: ["Certainly! If we move the rock aside, travellers will pass safely.","Certainly! If we make the rock bigger, travellers will be happy.","Certainly! If we sit on the rock, travellers will wait forever."], choicesZh: ["當然！如果我們把石頭移到旁邊，旅人就能安全通過。","當然！如果我們把石頭弄得更大，旅人就會很開心。","當然！如果我們坐在石頭上，旅人就會永遠等下去。"], reward: jobReward }
     ]
   },
   halflingVillage: {
@@ -107,22 +107,22 @@ const wildLessonBank = Object.freeze({
     title: "Help at the Wizard Hut",
     questions: [
       { questionType: "sentence-choice", prompt: "I have labelled two jars, and you have labelled one more. Please report our progress.", promptZh: "我已經貼好兩個罐子，你又貼好一個。請回報我們的進度。", answer: "Of course! We have labelled three jars.", choices: ["Of course! We have labelled three jars.","Of course! We has labelled three jars.","Of course! We were label three jars."], choicesZh: ["當然！我們已經貼好三個罐子。","當然！我們已經貼好三個罐子。","當然！我們過去正在貼三個罐子。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "The jar that glows blue is the herb jar I need. Please tell me which jar to take.", promptZh: "發藍光的罐子是我需要的藥草罐。請告訴我該拿哪一個。", answer: "Sure! The jar that glows blue is the herb jar.", choices: ["Sure! The jar who glows blue is the herb jar.","Sure! The jar that glows blue is the herb jar.","Sure! The jar glowed blue yesterday."], choicesZh: ["好的！發藍光的人罐子是藥草罐。","好的！發藍光的罐子是藥草罐。","好的！罐子昨天發藍光。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "I need the herb jar for the potion. Which jar should I take?", promptZh: "我需要藥草罐來做藥水。我該拿哪一個罐子？", answer: "Sure! Let's take the jar that glows blue.", choices: ["Sure! Let's take the jar that glows blue.","Sure! Let's take the jar that is empty and dusty.","Sure! Let's take every jar on the shelf."], choicesZh: ["好的！我們拿那個發藍光的罐子。","好的！我們拿那個空空又布滿灰塵的罐子。","好的！我們把架上每個罐子都拿走。"], reward: jobReward },
       { questionType: "sentence-choice", prompt: "The shelf is very high. Please help me say the safe plan.", promptZh: "架子很高。請幫我說出安全的計畫。", answer: "Certainly! If we use the ladder, we will reach the shelf safely.", choices: ["Certainly! If we jump, we will reach the shelf.","Certainly! We should throw the jars down.","Certainly! If we use the ladder, we will reach the shelf safely."], choicesZh: ["當然！如果我們跳，就能拿到架子。","當然！我們應該把罐子丟下來。","當然！如果我們使用梯子，就能安全拿到架子上的東西。"], reward: jobReward }
     ]
   },
   redHoodPath: {
     title: "Help on Red Riding Hood Path",
     questions: [
-      { questionType: "sentence-choice", prompt: "I have cleared the leaves near the first tree. Please tell me your progress.", promptZh: "我已經清掉第一棵樹旁的落葉。請告訴我你的進度。", answer: "Of course! I have cleared the leaves.", choices: ["Of course! I have cleared the leaves.","Of course! I has cleared the leaves.","Of course! I was clear the leaves tomorrow."], choicesZh: ["當然！我已經清掉落葉了。","當然！我已經清掉落葉。","當然！我明天正在清落葉。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "Grandma, who is ill, needs this basket. Please say who the basket is for.", promptZh: "生病的奶奶需要這個籃子。請說出這個籃子是給誰的。", answer: "Sure! The basket is for Grandma, who is ill.", choices: ["Sure! The basket is for Grandma, which is a road.","Sure! The basket is for Grandma, who is ill.","Sure! The basket was for Grandma yesterday."], choicesZh: ["好的！籃子是給奶奶，道路的那個。","好的！籃子是給生病的奶奶。","好的！籃子昨天是給奶奶的。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "I have cleared the leaves near the first tree. What should we do next?", promptZh: "我已經清掉第一棵樹旁的落葉。我們接下來該做什麼？", answer: "Of course! Since the first tree is clear, let's move to the next tree.", choices: ["Of course! Since the first tree is clear, let's move to the next tree.","Of course! Let's drop all the leaves back again.","Of course! Let's climb up and take a nap."], choicesZh: ["當然！第一棵樹清好了，我們接著去下一棵樹吧。","當然！我們把所有落葉再倒回去。","當然！我們爬上去睡個午覺吧。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Grandma, who is ill, is waiting for food. What should we put in her basket?", promptZh: "生病的奶奶正在等食物。我們該在她的籃子裡放什麼？", answer: "Sure! For Grandma, who is ill, let's pack warm soup and bread.", choices: ["Sure! For Grandma, who is ill, let's pack warm soup and bread.","Sure! For Grandma, who is ill, let's pack cold rocks and mud.","Sure! For Grandma, who is ill, let's pack nothing at all."], choicesZh: ["好的！為了生病的奶奶，我們裝些熱湯和麵包。","好的！為了生病的奶奶，我們裝些冰冷的石頭和泥巴。","好的！為了生病的奶奶，我們什麼都不裝。"], reward: jobReward },
       { questionType: "sentence-choice", prompt: "We should stay safe on the path. Please give me good advice.", promptZh: "我們在小路上應該保持安全。請給我好的建議。", answer: "Certainly! We should stay on the path and not talk to strangers.", choices: ["Certainly! We should talk to every stranger.","Certainly! We should leave the path and run.","Certainly! We should stay on the path and not talk to strangers."], choicesZh: ["當然！我們應該和每個陌生人說話。","當然！我們應該離開小路去跑。","當然！我們應該走在小路上，不和陌生人說話。"], reward: jobReward }
     ]
   },
   threePigsCottage: {
     title: "Help at the Three Pigs Cottage",
     questions: [
-      { questionType: "sentence-choice", prompt: "I have tied one side of the straw roof. Please tell me what you have done.", promptZh: "我已經綁好稻草屋頂的一邊。請告訴我你做了什麼。", answer: "Of course! I have tied the straw down.", choices: ["Of course! I have tied the straw down.","Of course! I has tied the straw down.","Of course! I was tie the straw tomorrow."], choicesZh: ["當然！我已經把稻草綁好了。","當然！我已經把稻草綁好。","當然！我明天正在綁稻草。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "I have tied one side of the straw roof. What should we do with the other side?", promptZh: "我已經綁好稻草屋頂的一邊。另一邊我們該怎麼處理？", answer: "Of course! Since one side is tied, let's tie the other side too.", choices: ["Of course! Since one side is tied, let's tie the other side too.","Of course! Let's untie the side we just finished.","Of course! Let's leave the roof loose in the wind."], choicesZh: ["當然！一邊綁好了，我們把另一邊也綁起來。","當然！我們把剛綁好的那邊解開。","當然！我們讓屋頂在風中鬆鬆垮垮的吧。"], reward: jobReward },
       { questionType: "sentence-choice", prompt: "One cottage is made of brick, and two are made of straw. Please help me describe them.", promptZh: "一間小屋是磚頭做的，兩間是稻草做的。請幫我描述它們。", answer: "Sure! Two cottages are made of straw.", choices: ["Sure! Two cottages are made of brick.","Sure! Two cottages are made of straw.","Sure! Two cottages are made of wood."], choicesZh: ["好的！兩間小屋是磚頭做的。","好的！兩間小屋是稻草做的。","好的！兩間小屋是木頭做的。"], reward: jobReward },
       { questionType: "sentence-choice", prompt: "If the wind blows again, we need the safest house. Please say the plan.", promptZh: "如果風又吹起來，我們需要最安全的房子。請說出這個計畫。", answer: "Certainly! If the wind blows, the brick house will stand.", choices: ["Certainly! If the wind blows, the straw house may fall.","Certainly! If the wind blew, the brick house stand yesterday.","Certainly! If the wind blows, the brick house will stand."], choicesZh: ["當然！如果風吹，稻草屋可能會倒。","當然！如果風吹了，磚房昨天站。","當然！如果風吹起來，磚房會站得住。"], reward: jobReward }
     ]
@@ -131,8 +131,8 @@ const wildLessonBank = Object.freeze({
     title: "Help in the Tree Spirit Grove",
     questions: [
       { questionType: "sentence-choice", prompt: "I have prepared the soil. Please tell me what you have done with the seed.", promptZh: "我已經準備好土壤。請告訴我你對種子做了什麼。", answer: "Of course! I have planted the glowing seed.", choices: ["Of course! I have planted the glowing seed.","Of course! I has planted the glowing seed.","Of course! I was plant the glowing seed."], choicesZh: ["當然！我已經種下發光種子了。","當然！我已經種下發光種子。","當然！我過去正在種發光種子。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "The tree that whispers is the oldest one. Please help me name the right tree.", promptZh: "會低語的那棵樹是最古老的。請幫我說出正確的樹。", answer: "Sure! The tree that whispers is the oldest one.", choices: ["Sure! The tree who whispers is the oldest one.","Sure! The tree that whispers is the oldest one.","Sure! The tree will oldest when it whispered."], choicesZh: ["好的！會低語的人樹是最古老的。","好的！會低語的那棵樹是最古老的。","好的！樹低語時將會最老。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "If the seed gets moonlight, it will grow. Please help me say what will happen.", promptZh: "如果種子得到月光，它就會成長。請幫我說出會發生什麼。", answer: "Certainly! If the seed gets moonlight, it will grow.", choices: ["Certainly! If the seed gets water, it will grow.","Certainly! If the seed got sunlight, it grew.","Certainly! If the seed gets moonlight, it will grow."], choicesZh: ["當然！如果種子得到水，它就會成長。","當然！如果種子得到陽光，它以前長大了。","當然！如果種子得到月光，它就會成長。"], reward: jobReward }
+      { questionType: "sentence-choice", prompt: "The oldest tree holds the grove's magic. Which tree should we ask for help?", promptZh: "最古老的樹守護著樹林的魔法。我們該向哪棵樹求助？", answer: "Sure! Let's ask the tree that whispers, the oldest one.", choices: ["Sure! Let's ask the tree that whispers, the oldest one.","Sure! Let's ask the tree that is just a small seed.","Sure! Let's ask the tree that fell down long ago."], choicesZh: ["好的！我們去問那棵會低語的、最古老的樹。","好的！我們去問那棵還只是小種子的樹。","好的！我們去問那棵很久以前倒下的樹。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "The glowing seed is planted. How can we help it grow tall?", promptZh: "發光的種子種好了。我們該怎麼幫它長高？", answer: "Certainly! If the seed gets moonlight, it will grow tall and strong.", choices: ["Certainly! If the seed gets moonlight, it will grow tall and strong.","Certainly! If the seed gets no light at all, it will grow fast.","Certainly! If we step on the seed, it will grow flowers."], choicesZh: ["當然！如果種子得到月光，它就會長得又高又壯。","當然！如果種子完全照不到光，它就會長得很快。","當然！如果我們踩種子，它就會長出花。"], reward: jobReward }
     ]
   }
 });
@@ -145,14 +145,14 @@ const wildChatLessonBank = Object.freeze({
   elfGlade: {
     title: "Chat in the Elf Glade",
     questions: [
-      { questionType: "sentence-choice", prompt: "How have you been, Princess?", promptZh: "公主，你最近過得如何？", answer: "Oh, I have been really well, Elia!", choices: ["Oh, I have been really well, Elia!","I was carrying fish when the book will sing."], choicesZh: ["喔，我最近過得很好，艾莉亞！","書會唱歌時，我正在搬魚。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "The flowers that glow are beautiful tonight.", promptZh: "今晚這些會發光的花很美。", answer: "Yes, the flowers that glow are so beautiful!", choices: ["The cart which is blue is beside the path.","Yes, the flowers that glow are so beautiful!"], choicesZh: ["藍色推車在小路旁。","對啊，會發光的花好美！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "How have you been, Princess?", promptZh: "公主，你最近過得如何？", answer: "Oh, I have been really well, Elia!", choices: ["Oh, I have been really well, Elia!","I have not been very well lately."], choicesZh: ["喔，我最近過得很好，艾莉亞！","我最近不太好。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "The flowers that glow are beautiful tonight.", promptZh: "今晚這些會發光的花很美。", answer: "Yes, the flowers that glow are so beautiful!", choices: ["Hmm, the flowers that glow look dull tonight.","Yes, the flowers that glow are so beautiful!"], choicesZh: ["嗯，那些會發光的花今晚看起來有點黯淡。","對啊，會發光的花好美！"], reward: chatReward }
     ]
   },
   stoneGolemPass: {
     title: "Chat at Stone Golem Pass",
     questions: [
-      { questionType: "sentence-choice", prompt: "I have felt lonely at the pass today.", promptZh: "我今天在山路上覺得有點孤單。", answer: "Oh, do not worry! I will visit you again.", choices: ["Oh, do not worry! I will visit you again.","The sign has fallen near the bridge."], choicesZh: ["喔，別擔心！我會再來看你的。","路牌倒在橋旁邊。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "I have felt lonely at the pass today.", promptZh: "我今天在山路上覺得有點孤單。", answer: "Oh, do not worry! I will visit you again.", choices: ["Oh, do not worry! I will visit you again.","I have felt happy and busy at the pass today."], choicesZh: ["喔，別擔心！我會再來看你的。","我今天在山口過得很開心也很忙。"], reward: chatReward },
       { questionType: "sentence-choice", prompt: "The travellers who pass here need a clear road.", promptZh: "經過這裡的旅人需要一條清楚的路。", answer: "Yes, the travellers who pass here really need a clear road.", choices: ["The travellers which is pass here need soup.","Yes, the travellers who pass here really need a clear road."], choicesZh: ["經過這裡的物旅人需要湯。","對啊，經過這裡的旅人真的需要一條清楚的路。"], reward: chatReward }
     ]
   },
@@ -173,8 +173,8 @@ const wildChatLessonBank = Object.freeze({
   redHoodPath: {
     title: "Chat on Red Riding Hood Path",
     questions: [
-      { questionType: "sentence-choice", prompt: "Where are you going today, Princess?", promptZh: "公主，你今天要去哪裡？", answer: "I am going to Grandma's house with you!", choices: ["I am going to Grandma's house with you!","I have ate the road yesterday."], choicesZh: ["我要和你一起去奶奶家呀！","我昨天已經吃掉路。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "The path is long, and I feel safer with a friend.", promptZh: "路很長，有朋友一起走我覺得比較安全。", answer: "Of course, if the path is long, I will walk with you.", choices: ["The basket who walks is blue.","Of course, if the path is long, I will walk with you."], choicesZh: ["會走路的人籃子是藍色的。","當然，如果路很長，我會陪你一起走。"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Where are you going today, Princess?", promptZh: "公主，你今天要去哪裡？", answer: "I am going to Grandma's house with you!", choices: ["I am going to Grandma's house with you!","I am staying right here today."], choicesZh: ["我要和你一起去奶奶家呀！","我今天就待在這裡。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "The path is long, and I feel safer with a friend.", promptZh: "路很長，有朋友一起走我覺得比較安全。", answer: "Of course, if the path is long, I will walk with you.", choices: ["The path is short, so I will go alone.","Of course, if the path is long, I will walk with you."], choicesZh: ["這條路很短，我自己走就好。","當然，如果路很長，我會陪你一起走。"], reward: chatReward }
     ]
   },
   threePigsCottage: {
@@ -188,7 +188,7 @@ const wildChatLessonBank = Object.freeze({
     title: "Chat in the Tree Spirit Grove",
     questions: [
       { questionType: "sentence-choice", prompt: "How have you been, Princess?", promptZh: "公主，你最近過得如何？", answer: "I have been helping my friends all day!", choices: ["I have been helping my friends all day!","I has been under the roof."], choicesZh: ["我今天一整天都在幫朋友呢！","我一直在屋頂下面。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Thank you for caring for the peaceful grove.", promptZh: "謝謝你照顧這片平靜的樹林。", answer: "Thank you so much for the peaceful grove!", choices: ["The door which is round is a hammer.","Thank you so much for the peaceful grove!"], choicesZh: ["圓圓的門是一把槌子。","真謝謝你給我這片平靜的樹林！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Thank you for caring for the peaceful grove.", promptZh: "謝謝你照顧這片平靜的樹林。", answer: "Thank you so much for the peaceful grove!", choices: ["Sorry, I have not cared for the grove at all.","Thank you so much for the peaceful grove!"], choicesZh: ["抱歉，我根本沒有照顧這片樹林。","真謝謝你給我這片平靜的樹林！"], reward: chatReward }
     ]
   },
   fairyAtelier: {
@@ -201,7 +201,7 @@ const wildChatLessonBank = Object.freeze({
   dwarfCottage: {
     title: "Chat at the Dwarf Cottage",
     questions: [
-      { questionType: "sentence-choice", prompt: "It is good to see you again, Princess.", promptZh: "很高興又見到你，公主。", answer: "It is so good to see you too, Pip!", choices: ["It is so good to see you too, Pip!","I were seeing the wheel tomorrow."], choicesZh: ["我也好高興又見到你，皮普！","我明天正在看車輪。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "It is good to see you again, Princess.", promptZh: "很高興又見到你，公主。", answer: "It is so good to see you too, Pip!", choices: ["It is so good to see you too, Pip!","Sorry, I cannot see you for long today."], choicesZh: ["我也好高興又見到你，皮普！","抱歉，我今天不能陪你太久。"], reward: chatReward },
       { questionType: "sentence-choice", prompt: "The coat that I made is warm.", promptZh: "我做的這件外套很暖和。", answer: "Wow, the coat that you made is so warm!", choices: ["The coat who made me is warm.","Wow, the coat that you made is so warm!"], choicesZh: ["做我的人外套很暖。","哇，你做的外套好暖和！"], reward: chatReward }
     ]
   }
