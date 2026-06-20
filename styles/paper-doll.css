@@ -5,6 +5,13 @@
   contain: layout paint;
 }
 
+/* issue #194：合成 stage——所有 layer 之共同容器（代表 512:768 紙娃娃合成）。
+   全身 doll 為 inset:0 透明殼、不改變呈現；頭胸照（.bust-doll）對整個 stage 施加單一等比裁切（見下）。 */
+.paper-doll-stage {
+  position: absolute;
+  inset: 0;
+}
+
 /* issue #161：地圖公主 token 放大約一倍（54×70 → 108×140）並移除識別色橢圓背板（原 #131／#153 的 .map-doll::before）。
    去背板後地圖上不再呈現各帳號識別色（spec#9，以視覺簡潔為先）；圖地分離續由 doll 既有深色投影＋白描邊承擔（見下方 .map-doll .paper-doll-layer）。 */
 .map-doll {
@@ -83,15 +90,29 @@
   inset: 0;
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 
 .bust-doll .avatar-shadow {
   display: none;
 }
 
-/* issue #132：側欄、帳號卡與選角卡共用此唯一頭胸裁切（.bust-doll 為單一裁切邏輯，各處外框僅負責方框與底色）。 */
+/* issue #194：頭胸照與全身著裝統一產生方式。
+   舊作法（#132）對「每個 layer 各自的 background」施加 background-size:245%／position:50% 47% 重縮放——
+   對無 targetBox 的 base 恰好裁出頭胸，但 #176 後 wardrobe layer 改為 per-item targetBox 小矩形，
+   同樣的逐 layer 重縮放使衣物在自己的小框內被放大置中、脫離身體而跑到臉上（本議題 bug）。
+   改法：bust 不再覆寫 layer 的 background，改為對整個 512:768 合成 stage 施加單一等比裁切；
+   stage 內 base（contain）與 wardrobe（per-item targetBox／warp）沿用與全身著裝完全相同的對位幾何，
+   bust 僅是其等比頭胸裁切。下列 stage 參數由 #132 既有 base 取景（245%／50% 47%，方形外框）等價換算，
+   base 取景維持不變（width 245%＝舊 background 寬、512:768 比例定 height 367.5%、left/top 對齊舊可視窗）。 */
+.bust-doll .paper-doll-stage {
+  inset: auto;
+  left: -72.5%;
+  top: -125.7%;
+  width: 245%;
+  height: 367.5%;
+}
+
 .bust-doll .paper-doll-layer {
-  background-size: 245% auto;
-  background-position: 50% 47%;
   filter: drop-shadow(0 8px 12px rgba(58, 37, 46, 0.14));
 }

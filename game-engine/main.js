@@ -259,6 +259,9 @@ function profileColorFor(characterId = state.activeCharacterId, color = state.pr
 function renderBustInto(frameEl, characterId, outfitState, color, pattern = "none") {
   if (!frameEl) return;
   frameEl.innerHTML = `<span class="paper-doll bust-doll">${bustMarkupFor(characterId, outfitState)}</span>`;
+  // issue #194：bust 改採與全身著裝相同之 layer 幾何後，帶 warp 的 wardrobe layer 須補套投影 matrix3d
+  // （側欄 side-bust 由 renderPaperDolls 處理；此處 innerHTML 注入之帳號卡／選角卡 bust 另行套用）。
+  paperDollRenderer.applyLayerTransforms(frameEl);
   if (color != null) {
     frameEl.style.setProperty("--active-profile-color", color);
     frameEl.style.setProperty("--profile-color", color);
