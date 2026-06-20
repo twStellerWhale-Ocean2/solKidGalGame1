@@ -90,7 +90,7 @@ import {
   setActiveAccountId,
   updateAccountMeta
 } from "./state/accounts.js";
-import { installTestingHooks } from "./testing/selftests.js?v=20260619-issue179-scene-art-qa";
+import { installTestingHooks } from "./testing/selftests.js?v=20260620-issue196-wardrobe-fill";
 import { createSaveLoadController } from "./system/save-load.js";
 import {
   MAX_LIMIT_MINUTES,

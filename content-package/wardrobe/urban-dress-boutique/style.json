@@ -1,0 +1,32 @@
+{
+  "_comment": "issue #196 本素材包風格（packStyle）＋各單品描述（itemDesc）。維護工具可編輯。",
+  "packStyle": {
+    "name": "都會洋裝精品 Dress Boutique",
+    "reference": "pretty urban party and festival dresses",
+    "palette": [
+      "blue",
+      "rose",
+      "snow white",
+      "mint",
+      "lilac",
+      "pearl",
+      "lavender"
+    ],
+    "motifs": [
+      "fitted bodice with flared skirt",
+      "ribbons",
+      "soft frills"
+    ],
+    "linework": "soft and elegant",
+    "mood": "pretty, festive, elegant"
+  },
+  "items": {
+    "dress-blue-harbor": "a blue harbor party dress with a fitted bodice and flared skirt",
+    "dress-rose-festival": "a rose festival dress with a fitted bodice and flared skirt",
+    "dress-snowflake-gown": "a white snowflake gown with a fitted bodice and long flared skirt",
+    "dress-mint-harbor": "a mint harbor party dress with a fitted bodice and flared skirt",
+    "dress-lilac-harbor": "a lilac harbor party dress with a fitted bodice and flared skirt",
+    "dress-pearl-harbor": "a pearl-white harbor party dress with a fitted bodice and flared skirt",
+    "dress-lavender-festival": "a lavender festival dress with a fitted bodice and flared skirt"
+  }
+}

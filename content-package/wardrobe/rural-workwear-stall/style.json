@@ -1,0 +1,28 @@
+{
+  "_comment": "issue #196 本素材包風格（packStyle）＋各單品描述（itemDesc）。維護工具可編輯。",
+  "packStyle": {
+    "name": "鄉野工裝攤 Workwear Stall",
+    "reference": "practical countryside workwear, soft sailor tops and field skirts",
+    "palette": [
+      "violet",
+      "butter yellow",
+      "mint",
+      "sun yellow",
+      "coral"
+    ],
+    "motifs": [
+      "sailor collars",
+      "pockets",
+      "simple stitching"
+    ],
+    "linework": "sturdy soft",
+    "mood": "practical, cheerful, homely"
+  },
+  "items": {
+    "top-violet-sailor": "a violet sailor work top with a sailor collar",
+    "top-butter-sailor": "a butter-yellow sailor work top with a sailor collar",
+    "bottom-mint-skirt": "a mint field skirt",
+    "bottom-sun-skirt": "a sunny-yellow field skirt",
+    "bottom-coral-skirt": "a coral field skirt"
+  }
+}

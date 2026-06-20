@@ -4,8 +4,10 @@
 //
 // 尺寸模式（mode）：
 //   "exact"：固定畫布資產（地圖／場景／角色 base／UI），像素尺寸須「等於」標準值。
-//   "bound"：緊貼裁切之內容 bitmap（衣物 layer／縮圖，#176 以 targetBox 等比 fit 回畫布），
+//   "bound"：緊貼裁切之內容 bitmap（地圖裝飾層，以 targetBox 等比 fit 回畫布），
 //            素材本身為去白邊後的可變尺寸，僅要求「容於」標準畫布（寬高皆 ≤ 畫布）＋檔重預算。
+//   "fill"：固定方塊素材（衣物單品，#196），像素尺寸須「等於」標準值（512×512）、alpha 內容長邊貼滿
+//            （短邊置中留透明）——尺寸/檔重於本 lint，長邊貼滿之 alpha 檢查於瀏覽器 data-audit。
 //
 // 新增資產類別須先於本表登記方納入（intTest#49 對未涵蓋類別報錯，杜絕漏網）。
 export const assetStandards = {
@@ -13,21 +15,19 @@ export const assetStandards = {
   scene: { mode: "exact", width: 1024, height: 1024, maxKB: 500, label: "ADV 場景背景（固定畫布）" },
   areaMap: { mode: "exact", width: 1536, height: 1536, maxKB: 600, label: "地區地圖（固定畫布）" },
   worldMap: { mode: "exact", width: 1024, height: 1536, maxKB: 600, label: "世界地圖（固定畫布）" },
-  wardrobeThumb: { mode: "bound", width: 256, height: 256, maxKB: 60, label: "衣物縮圖（緊貼裁切，須容於畫布）" },
-  wardrobeLayer: { mode: "bound", width: 512, height: 768, maxKB: 120, label: "衣物 layer（緊貼裁切，須容於畫布）" },
+  wardrobe: { mode: "fill", width: 512, height: 512, maxKB: 120, label: "衣物單品（單一素材兼投影與商店預覽，512×512 長邊貼滿）" },
   mapLayer: { mode: "bound", width: 512, height: 512, maxKB: 80, label: "地圖裝飾層（map-layers，定位疊圖，緊貼裁切）" },
   ui: { mode: "exact", width: 1280, height: 720, maxKB: 120, label: "UI 介面圖（固定畫布）" }
 };
 
 // 依資產路徑判定其類別（較依引用欄位穩健——例如 starter 商品借用角色 base 作縮圖，
-// 仍應歸 characterBase 而非 wardrobeThumb）。回傳 null＝未涵蓋類別（intTest#49 報錯）。
+// 仍應歸 characterBase 而非 wardrobe）。回傳 null＝未涵蓋類別（intTest#49 報錯）。
 export function classifyAssetPath(path) {
   if (/\/world-map\.webp$/.test(path)) return "worldMap";
   if (/\/map-1536\.webp$/.test(path)) return "areaMap";
   if (/\/scenes\/[^/]+-1024\.webp$/.test(path)) return "scene";
   if (/\/map-layers\/[^/]+\.(webp|png)$/.test(path)) return "mapLayer";
-  if (/\/wardrobe\/[^/]+\/assets\/thumbs\/[^/]+\.webp$/.test(path)) return "wardrobeThumb";
-  if (/\/wardrobe\/[^/]+\/assets\/layers\/[^/]+\.webp$/.test(path)) return "wardrobeLayer";
+  if (/\/wardrobe\/[^/]+\/assets\/layers\/[^/]+\.webp$/.test(path)) return "wardrobe";
   if (/\/characters\/[^/]+\.webp$/.test(path) || /\/characters\/[^/]+\/assets\/[^/]+\.webp$/.test(path)) return "characterBase";
   if (/content-base\/ui\/[^/]+\.webp$/.test(path)) return "ui";
   return null;

@@ -1,0 +1,37 @@
+{
+  "_comment": "issue #196 本素材包風格（packStyle）＋各單品描述（itemDesc）。維護工具可編輯。",
+  "packStyle": {
+    "name": "都會訂製工作室 Tailor Studio",
+    "reference": "refined urban tailoring, puff-sleeve blouses and tidy bottoms",
+    "palette": [
+      "sky blue",
+      "peach",
+      "mint",
+      "lilac",
+      "cream",
+      "navy",
+      "rose",
+      "plum",
+      "cocoa"
+    ],
+    "motifs": [
+      "puff sleeves",
+      "sailor collars",
+      "ribbons"
+    ],
+    "linework": "refined soft",
+    "mood": "refined, tidy, sweet"
+  },
+  "items": {
+    "top-sky-blouse": "a sky-blue puff-sleeve blouse",
+    "top-peach-sailor": "a peach sailor top with a sailor collar",
+    "top-mint-blouse": "a mint puff-sleeve blouse",
+    "top-lilac-blouse": "a lilac puff-sleeve blouse",
+    "top-cream-blouse": "a cream puff-sleeve blouse",
+    "bottom-navy-shorts": "a pair of navy story shorts",
+    "bottom-rose-skirt": "a rose ribbon skirt",
+    "bottom-wild-shorts": "a pair of earthy story shorts",
+    "bottom-plum-shorts": "a pair of plum story shorts",
+    "bottom-cocoa-shorts": "a pair of cocoa-brown story shorts"
+  }
+}

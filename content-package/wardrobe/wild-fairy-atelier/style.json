@@ -1,0 +1,32 @@
+{
+  "_comment": "issue #196 本素材包風格（packStyle）＋各單品描述（itemDesc）。維護工具可編輯。",
+  "packStyle": {
+    "name": "森林精靈工坊 Fairy Atelier",
+    "reference": "ethereal woodland fairy, gossamer dresses and luminous accessories",
+    "palette": [
+      "coral",
+      "starlight silver",
+      "aurora pastel",
+      "rose",
+      "moon white",
+      "lilac"
+    ],
+    "motifs": [
+      "gossamer layers",
+      "stars",
+      "petals",
+      "soft glow"
+    ],
+    "linework": "fine and airy",
+    "mood": "ethereal, luminous, gentle"
+  },
+  "items": {
+    "dress-coral-festival": "a coral fairy festival dress with a fitted bodice and airy flared skirt",
+    "dress-starlight-gown": "a silver starlight fairy gown with a fitted bodice and long airy skirt",
+    "dress-aurora-gown": "an aurora-tinted fairy gown with a fitted bodice and long airy skirt",
+    "faceeyes-silver-glasses": "a pair of delicate silver fairy glasses, front view",
+    "facemask-moon-mask": "a small crescent-moon decorative eye mask, front view",
+    "neck-rose-necklace": "a delicate rose fairy necklace, front view",
+    "hand-lilac-bag": "a small lilac fairy pouch bag"
+  }
+}

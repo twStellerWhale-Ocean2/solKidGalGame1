@@ -55,13 +55,13 @@ export const wardrobeLayerBoundsByType = Object.freeze({
   bottom: layerBounds({ left: 161, top: 459, right: 361, bottom: 666 }, { left: -6, top: -32, right: 6, bottom: 32 }),
   dress: layerBounds({ left: 145, top: 405, right: 375, bottom: 730 }, { left: -5, top: -19, right: 5, bottom: 19 }),
   outer: layerBounds({ left: 145, top: 385, right: 375, bottom: 660 }, { left: -4, top: -16, right: 4, bottom: 16 }),
-  shoes: layerBounds({ left: 211, top: 720, right: 295, bottom: 768 }, { left: -4, top: -3, right: 4, bottom: 3 }),
-  headTop: layerBounds({ left: 190, top: 270, right: 330, bottom: 365 }, { left: -4, top: -14, right: 4, bottom: 14 }),
-  headSide: layerBounds({ left: 280, top: 335, right: 345, bottom: 420 }, { left: -10, top: -8, right: 10, bottom: 8 }),
-  faceEyes: layerBounds({ left: 205, top: 335, right: 315, bottom: 390 }, { left: 0, top: 12, right: 0, bottom: -12 }),
-  faceMask: layerBounds({ left: 205, top: 335, right: 315, bottom: 392 }, { left: -6, top: -5, right: 6, bottom: 5 }),
-  neck: layerBounds({ left: 210, top: 385, right: 310, bottom: 470 }),
-  hand: layerBounds({ left: 280, top: 530, right: 365, bottom: 640 })
+  shoes: layerBounds({ left: 201, top: 656, right: 311, bottom: 766 }, { left: -4, top: -3, right: 4, bottom: 3 }),
+  headTop: layerBounds({ left: 186, top: 240, right: 326, bottom: 380 }, { left: -4, top: -14, right: 4, bottom: 14 }),
+  headSide: layerBounds({ left: 255, top: 300, right: 355, bottom: 400 }, { left: -10, top: -8, right: 10, bottom: 8 }),
+  faceEyes: layerBounds({ left: 201, top: 305, right: 311, bottom: 415 }, { left: 0, top: 12, right: 0, bottom: -12 }),
+  faceMask: layerBounds({ left: 201, top: 305, right: 311, bottom: 415 }, { left: -6, top: -5, right: 6, bottom: 5 }),
+  neck: layerBounds({ left: 201, top: 376, right: 311, bottom: 486 }),
+  hand: layerBounds({ left: 266, top: 512, right: 376, bottom: 622 })
 });
 
 export function wardrobeLayerBoundsForType(type) {
