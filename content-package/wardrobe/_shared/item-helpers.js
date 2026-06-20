@@ -1,4 +1,4 @@
-import { wardrobePackLayer, wardrobePackThumb } from "./paper-doll-assets.js";
+import { wardrobePackLayer } from "./paper-doll-assets.js";
 import { wardrobeLayerBoundsForType } from "./rules.js";
 import { assetContentBoxByPackName } from "./asset-content-box.generated.js";
 import { assetTargetOverrides } from "./asset-target-overrides.js";
@@ -19,9 +19,9 @@ export function createWardrobePackTools(packId) {
       src: wardrobePackLayer(packId, name)
     };
   };
-  const thumb = (name) => wardrobePackThumb(packId, name);
-
   function wearable({ id, storeId, type, name, cost, icon, asset, slot = type }) {
+    // #196：單一素材——商店預覽 image 即該件 wardrobe layer 素材（image===layers[0].src），不另設分離縮圖。
+    const itemLayer = layer(slot, asset, type);
     return {
       id,
       storeId,
@@ -29,8 +29,8 @@ export function createWardrobePackTools(packId) {
       name,
       cost,
       icon,
-      image: thumb(asset),
-      layers: [layer(slot, asset, type)]
+      image: itemLayer.src,
+      layers: [itemLayer]
     };
   }
 

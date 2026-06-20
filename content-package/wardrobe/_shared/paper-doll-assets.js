@@ -40,8 +40,5 @@ export const paperDollBaseLayer = playableCharacterById(defaultActiveCharacterId
 export const wardrobePackLayer = (packId, name) => (
   `content-package/wardrobe/${packId}/assets/layers/${name}.webp${dollAssetVersion}`
 );
-
-export const wardrobePackThumb = (packId, name) => (
-  `content-package/wardrobe/${packId}/assets/thumbs/${name}.webp${dollAssetVersion}`
-);
+// #196：移除分離商店縮圖（wardrobePackThumb）——商店預覽改重用 wardrobePackLayer 單一素材。
 //#endregion 衣物資源包素材

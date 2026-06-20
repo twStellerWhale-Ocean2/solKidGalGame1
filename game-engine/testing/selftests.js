@@ -2199,7 +2199,13 @@ async function collectCharacterScaleAudit(api, errors, warnings = []) {
   const wardrobeLayerRefs = [];
   (api.shopItems || []).forEach((item) => {
     if (item.storeId !== "starter") {
-      assertWardrobeBitmapAsset(item.image, `${item.id}/thumb`, errors);
+      // #196 單一素材不變式：商店預覽 image 即其單一 wardrobe layer 素材（無分離縮圖）。
+      const firstLayer = (item.layers || [])[0];
+      if (!firstLayer || item.image !== firstLayer.src) {
+        errors.push(`${item.id} image must equal layers[0].src (single asset, no separate thumb)`);
+      } else {
+        assertWardrobeBitmapAsset(item.image, `${item.id}/image`, errors);
+      }
     }
     (item.layers || []).forEach((layer, index) => {
       const where = `${item.id}/layer#${index + 1}`;
