@@ -1,0 +1,36 @@
+{
+  "_comment": "issue #210 區級資源包（rural）：一店一包、多類別共用同一郊區 packStyle；既有素材沿用不重生（#196 itemDesc 全數保留，由原 rural-workwear-stall／rural-field-cobbler 合併）。",
+  "packStyle": {
+    "name": "郊區服飾 Rural Outfitter",
+    "reference": "sturdy country fieldwear and trail gear — sailor work tops, field skirts, lace-up boots and woodland tiaras",
+    "palette": [
+      "violet",
+      "butter yellow",
+      "mint",
+      "sun yellow",
+      "coral",
+      "rustic brown",
+      "plum",
+      "aurora"
+    ],
+    "motifs": [
+      "sailor collars",
+      "field skirts",
+      "laces",
+      "wild flowers"
+    ],
+    "linework": "soft and sturdy",
+    "mood": "earthy, cheerful, practical"
+  },
+  "items": {
+    "top-violet-sailor": "a violet sailor work top with a sailor collar",
+    "top-butter-sailor": "a butter-yellow sailor work top with a sailor collar",
+    "bottom-mint-skirt": "a mint field skirt",
+    "bottom-sun-skirt": "a sunny-yellow field skirt",
+    "bottom-coral-skirt": "a coral field skirt",
+    "shoes-wild-boots": "a pair of rustic brown trail ankle boots with laces, shown from the front as worn standing upright, both boots side by side — do NOT show the soles or a top-down view",
+    "shoes-plum-boots": "a pair of plum field ankle boots with laces, shown from the front as worn standing upright, both boots side by side — do NOT show the soles or a top-down view",
+    "headtop-wild-tiara": "a small woodland tiara woven with tiny wild flowers",
+    "headtop-aurora-tiara": "a small field tiara with soft aurora-tinted gems"
+  }
+}

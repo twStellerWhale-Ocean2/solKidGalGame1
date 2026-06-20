@@ -2646,6 +2646,19 @@ body {
   gap: 10px;
 }
 
+/* issue #210：一區一店一包後，服飾店改賣整包多類別（含髮型）。商店模式須顯示類別分頁讓玩家切換瀏覽
+   各類別（取代舊「店僅 1–2 類、隱藏分頁」假設）；衣櫃 (wardrobe) 與退款 (refund) 維持原樣不顯示。 */
+.adv-scene[data-mode="shop"] #advShopTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+}
+
+.adv-scene[data-mode="shop"] .shop-area.show {
+  grid-template-rows: auto var(--item-panel-list-height) auto;
+}
+
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-list {
   grid-column: 1;
   grid-row: 1;

@@ -37,13 +37,12 @@ export const ruralArea = Object.freeze({
   nodes: {
     ruralEntrance: { id: "ruralEntrance", label: "World Road", x: 7, y: 78, links: ["pasture", "farm"] },
     mine: { id: "mine", label: "Mine", x: 64, y: 17, links: ["loggingCamp", "fishingShore", "ruralEntrance"] },
-    loggingCamp: { id: "loggingCamp", label: "Logging Camp", x: 45, y: 28, links: ["mine", "fishingShore", "mill", "fieldCobbler"] },
-    fishingShore: { id: "fishingShore", label: "Fishing Shore", x: 84, y: 76, links: ["loggingCamp", "farm", "mine", "fieldCobbler"] },
+    loggingCamp: { id: "loggingCamp", label: "Logging Camp", x: 45, y: 28, links: ["mine", "fishingShore", "mill"] },
+    fishingShore: { id: "fishingShore", label: "Fishing Shore", x: 84, y: 76, links: ["loggingCamp", "farm", "mine"] },
     pasture: { id: "pasture", label: "Pasture", x: 56, y: 34, links: ["ruralEntrance", "farm", "mill", "workwearStall"] },
     farm: { id: "farm", label: "Farm", x: 64, y: 58, links: ["pasture", "mill", "villageHome", "fishingShore", "workwearStall"] },
     mill: { id: "mill", label: "Mill", x: 33, y: 61, links: ["farm", "pasture", "loggingCamp", "villageHome", "workwearStall"] },
     workwearStall: { id: "workwearStall", label: "Workwear Stall", x: 42, y: 46, links: ["pasture", "farm", "mill"] },
-    fieldCobbler: { id: "fieldCobbler", label: "Field Cobbler", x: 50, y: 82, links: ["fishingShore", "loggingCamp", "mine"] },
     villageHome: { id: "villageHome", label: "Village Home", x: 15, y: 86, links: ["farm", "mill"] }
   },
   // locations 控制地圖圖示進入後的場景、NPC、商店與提示文字。
@@ -55,8 +54,7 @@ export const ruralArea = Object.freeze({
     { id: "pasture", area: "rural", node: "pasture", label: "Pasture", icon: "🐄", npc: "Farmer Theo", scene: "scene-rural-pasture", npcImage: npcImage("farmer-theo"), hint: "The pasture has sheep, cows, and hay." },
     { id: "farm", area: "rural", node: "farm", label: "Farm", icon: "🥕", npc: "Auntie Pom", scene: "scene-rural-farm", npcImage: npcImage("auntie-pom"), hint: "The farm fields grow vegetables and wheat." },
     { id: "mill", area: "rural", node: "mill", label: "Mill", icon: "🌬", npc: "Miller Bell", scene: "scene-rural-mill", npcImage: npcImage("miller-bell"), hint: "The windmill turns grain into flour." },
-    { id: "workwearStall", area: "rural", node: "workwearStall", label: "Workwear Stall", icon: "👚", npc: "Workwear Keeper", scene: "scene-rural-workwear-stall", npcImage: npcImage("workwear-stall-keeper"), shopCategories: ["tops", "bottoms"], defaultCategory: "tops", hint: "The Workwear Stall sells sturdy tops and bottoms." },
-    { id: "fieldCobbler", area: "rural", node: "fieldCobbler", label: "Field Cobbler", icon: "👞", npc: "Field Cobbler", scene: "scene-rural-field-cobbler", npcImage: npcImage("field-cobbler"), shopCategories: ["shoes", "hats"], defaultCategory: "shoes", hint: "The Field Cobbler sells shoes and hats for country roads." },
+    { id: "workwearStall", area: "rural", node: "workwearStall", label: "Workwear Stall", icon: "👚", npc: "Workwear Keeper", scene: "scene-rural-workwear-stall", npcImage: npcImage("workwear-stall-keeper"), shopCategories: ["tops", "bottoms", "shoes", "hats"], defaultCategory: "tops", hint: "The Workwear Stall now stocks the whole country wardrobe — tops, bottoms, boots and tiaras." },
     { id: "villageHome", area: "rural", node: "villageHome", label: "Village Home", icon: "🏡", npc: "Grandma Fina", scene: "scene-rural-home", npcImage: npcImage("grandma-fina"), hint: "The village home has a warm porch and garden." }
   ],
   // actors 是地圖上的動態環境效果，不是可點擊地點。
@@ -190,13 +188,6 @@ const ruralChatLessonBank = Object.freeze({
       { questionType: "sentence-choice", prompt: "These clothes look ready for the fields.", promptZh: "這些衣服看起來準備好去田裡了。", answer: "Wow, these clothes look really strong!", choices: ["Hmm, these clothes are not ready yet.","Wow, these clothes look really strong!"], choicesZh: ["嗯，這些衣服還沒準備好。","哇，這些衣服看起來真耐用！"], reward: chatReward }
     ]
   },
-  fieldCobbler: {
-    title: "Chat with the Field Cobbler",
-    questions: [
-      { questionType: "sentence-choice", prompt: "Why do you need strong shoes, Princess?", promptZh: "公主，你為什麼需要耐用的鞋？", answer: "Well, because the roads are very long!", choices: ["Well, because the roads are very long!","Because the books sold carrots."], choicesZh: ["嗯，因為路很長啊！","因為書賣了紅蘿蔔。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "These shoes were made for walking.", promptZh: "這些鞋是為走路做的。", answer: "Wow, these shoes look really strong!", choices: ["These shoes look too small for walking.","Wow, these shoes look really strong!"], choicesZh: ["這雙鞋看起來太小，不好走路。","哇，這些鞋看起來真耐用！"], reward: chatReward }
-    ]
-  }
 });
 //#endregion 生活聊天題庫
 
@@ -211,8 +202,7 @@ export const ruralSceneConfigs = mergeLessons(mergeLessons({
   pasture: { ...ruralProductionArt("pasture"), scene: "scene-rural-pasture", npc: "Farmer Theo", npcImage: npcImage("farmer-theo"), npcNaturalHeightCm: 175, travelAction: "Visit", travelLine: "Hi, Princess. I counted animals in the pasture today.", travelLineZh: "嗨，公主。我今天在牧場數動物。" },
   farm: { ...ruralProductionArt("farm"), scene: "scene-rural-farm", npc: "Auntie Pom", npcImage: npcImage("auntie-pom"), npcNaturalHeightCm: 155, travelAction: "Visit", travelLine: "Hello, Princess. I picked carrots on the farm today.", travelLineZh: "你好，公主。我今天在農場採紅蘿蔔。" },
   mill: { ...ruralProductionArt("mill"), scene: "scene-rural-mill", npc: "Miller Bell", npcImage: npcImage("miller-bell"), npcNaturalHeightCm: 162, travelAction: "Visit", travelLine: "Good day, Princess. I carried flour sacks to the mill.", travelLineZh: "日安，公主。我把麵粉袋搬到磨坊了。" },
-  workwearStall: { ...ruralShopArt("workwear-stall"), scene: "scene-rural-workwear-stall", npc: "Workwear Keeper", npcImage: npcImage("workwear-stall-keeper"), npcNaturalHeightCm: 168, travelAction: "Shop", travelLine: "Hello, Princess. I brought strong clothes for country work.", travelLineZh: "你好，公主。我帶來了適合鄉間工作的耐用衣服。", shopGreeting: "These tops and bottoms are ready for the fields.", shopGreetingZh: "這些上衣和褲子準備好在田裡使用了。" },
-  fieldCobbler: { ...ruralShopArt("field-cobbler"), scene: "scene-rural-field-cobbler", npc: "Field Cobbler", npcImage: npcImage("field-cobbler"), npcNaturalHeightCm: 165, travelAction: "Shop", travelLine: "Good morning, Princess. These shoes are made for country roads.", travelLineZh: "早安，公主。這些鞋是為鄉間道路做的。", shopGreeting: "Try these walking shoes before your next trip.", shopGreetingZh: "下一趟旅程前，試試這雙步行鞋吧。" },
+  workwearStall: { ...ruralShopArt("workwear-stall"), scene: "scene-rural-workwear-stall", npc: "Workwear Keeper", npcImage: npcImage("workwear-stall-keeper"), npcNaturalHeightCm: 168, travelAction: "Shop", travelLine: "Hello, Princess. I brought the whole country wardrobe today.", travelLineZh: "你好，公主。我今天帶來了整套鄉間服飾。", shopGreeting: "Tops, bottoms, boots and tiaras are ready for the fields.", shopGreetingZh: "上衣、褲子、靴子和頭飾都準備好下田了。" },
   villageHome: { ...ruralProductionArt("home"), scene: "scene-rural-home", npc: "Grandma Fina", npcImage: npcImage("grandma-fina"), npcNaturalHeightCm: 148, travelAction: "Visit", travelLine: "Hello, Princess. I made apple jam this morning.", travelLineZh: "你好，公主。我今天早上做了蘋果果醬。" }
 }, ruralLessonBank, { area: "rural", vocabProfile: ruralVocabularyProfile.id }),
   ruralChatLessonBank, { area: "rural", vocabProfile: ruralVocabularyProfile.id }, "chatLesson");
