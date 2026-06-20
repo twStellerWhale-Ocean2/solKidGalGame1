@@ -145,14 +145,14 @@ const wildChatLessonBank = Object.freeze({
   elfGlade: {
     title: "Chat in the Elf Glade",
     questions: [
-      { questionType: "sentence-choice", prompt: "How have you been, Princess?", promptZh: "公主，你最近過得如何？", answer: "Oh, I have been really well, Elia!", choices: ["Oh, I have been really well, Elia!","I was carrying fish when the book will sing."], choicesZh: ["喔，我最近過得很好，艾莉亞！","書會唱歌時，我正在搬魚。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "The flowers that glow are beautiful tonight.", promptZh: "今晚這些會發光的花很美。", answer: "Yes, the flowers that glow are so beautiful!", choices: ["The cart which is blue is beside the path.","Yes, the flowers that glow are so beautiful!"], choicesZh: ["藍色推車在小路旁。","對啊，會發光的花好美！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "How have you been, Princess?", promptZh: "公主，你最近過得如何？", answer: "Oh, I have been really well, Elia!", choices: ["Oh, I have been really well, Elia!","I have not been very well lately."], choicesZh: ["喔，我最近過得很好，艾莉亞！","我最近不太好。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "The flowers that glow are beautiful tonight.", promptZh: "今晚這些會發光的花很美。", answer: "Yes, the flowers that glow are so beautiful!", choices: ["Hmm, the flowers that glow look dull tonight.","Yes, the flowers that glow are so beautiful!"], choicesZh: ["嗯，那些會發光的花今晚看起來有點黯淡。","對啊，會發光的花好美！"], reward: chatReward }
     ]
   },
   stoneGolemPass: {
     title: "Chat at Stone Golem Pass",
     questions: [
-      { questionType: "sentence-choice", prompt: "I have felt lonely at the pass today.", promptZh: "我今天在山路上覺得有點孤單。", answer: "Oh, do not worry! I will visit you again.", choices: ["Oh, do not worry! I will visit you again.","The sign has fallen near the bridge."], choicesZh: ["喔，別擔心！我會再來看你的。","路牌倒在橋旁邊。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "I have felt lonely at the pass today.", promptZh: "我今天在山路上覺得有點孤單。", answer: "Oh, do not worry! I will visit you again.", choices: ["Oh, do not worry! I will visit you again.","I have felt happy and busy at the pass today."], choicesZh: ["喔，別擔心！我會再來看你的。","我今天在山口過得很開心也很忙。"], reward: chatReward },
       { questionType: "sentence-choice", prompt: "The travellers who pass here need a clear road.", promptZh: "經過這裡的旅人需要一條清楚的路。", answer: "Yes, the travellers who pass here really need a clear road.", choices: ["The travellers which is pass here need soup.","Yes, the travellers who pass here really need a clear road."], choicesZh: ["經過這裡的物旅人需要湯。","對啊，經過這裡的旅人真的需要一條清楚的路。"], reward: chatReward }
     ]
   },
@@ -173,8 +173,8 @@ const wildChatLessonBank = Object.freeze({
   redHoodPath: {
     title: "Chat on Red Riding Hood Path",
     questions: [
-      { questionType: "sentence-choice", prompt: "Where are you going today, Princess?", promptZh: "公主，你今天要去哪裡？", answer: "I am going to Grandma's house with you!", choices: ["I am going to Grandma's house with you!","I have ate the road yesterday."], choicesZh: ["我要和你一起去奶奶家呀！","我昨天已經吃掉路。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "The path is long, and I feel safer with a friend.", promptZh: "路很長，有朋友一起走我覺得比較安全。", answer: "Of course, if the path is long, I will walk with you.", choices: ["The basket who walks is blue.","Of course, if the path is long, I will walk with you."], choicesZh: ["會走路的人籃子是藍色的。","當然，如果路很長，我會陪你一起走。"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Where are you going today, Princess?", promptZh: "公主，你今天要去哪裡？", answer: "I am going to Grandma's house with you!", choices: ["I am going to Grandma's house with you!","I am staying right here today."], choicesZh: ["我要和你一起去奶奶家呀！","我今天就待在這裡。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "The path is long, and I feel safer with a friend.", promptZh: "路很長，有朋友一起走我覺得比較安全。", answer: "Of course, if the path is long, I will walk with you.", choices: ["The path is short, so I will go alone.","Of course, if the path is long, I will walk with you."], choicesZh: ["這條路很短，我自己走就好。","當然，如果路很長，我會陪你一起走。"], reward: chatReward }
     ]
   },
   threePigsCottage: {
@@ -188,7 +188,7 @@ const wildChatLessonBank = Object.freeze({
     title: "Chat in the Tree Spirit Grove",
     questions: [
       { questionType: "sentence-choice", prompt: "How have you been, Princess?", promptZh: "公主，你最近過得如何？", answer: "I have been helping my friends all day!", choices: ["I have been helping my friends all day!","I has been under the roof."], choicesZh: ["我今天一整天都在幫朋友呢！","我一直在屋頂下面。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Thank you for caring for the peaceful grove.", promptZh: "謝謝你照顧這片平靜的樹林。", answer: "Thank you so much for the peaceful grove!", choices: ["The door which is round is a hammer.","Thank you so much for the peaceful grove!"], choicesZh: ["圓圓的門是一把槌子。","真謝謝你給我這片平靜的樹林！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Thank you for caring for the peaceful grove.", promptZh: "謝謝你照顧這片平靜的樹林。", answer: "Thank you so much for the peaceful grove!", choices: ["Sorry, I have not cared for the grove at all.","Thank you so much for the peaceful grove!"], choicesZh: ["抱歉，我根本沒有照顧這片樹林。","真謝謝你給我這片平靜的樹林！"], reward: chatReward }
     ]
   },
   fairyAtelier: {
@@ -201,7 +201,7 @@ const wildChatLessonBank = Object.freeze({
   dwarfCottage: {
     title: "Chat at the Dwarf Cottage",
     questions: [
-      { questionType: "sentence-choice", prompt: "It is good to see you again, Princess.", promptZh: "很高興又見到你，公主。", answer: "It is so good to see you too, Pip!", choices: ["It is so good to see you too, Pip!","I were seeing the wheel tomorrow."], choicesZh: ["我也好高興又見到你，皮普！","我明天正在看車輪。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "It is good to see you again, Princess.", promptZh: "很高興又見到你，公主。", answer: "It is so good to see you too, Pip!", choices: ["It is so good to see you too, Pip!","Sorry, I cannot see you for long today."], choicesZh: ["我也好高興又見到你，皮普！","抱歉，我今天不能陪你太久。"], reward: chatReward },
       { questionType: "sentence-choice", prompt: "The coat that I made is warm.", promptZh: "我做的這件外套很暖和。", answer: "Wow, the coat that you made is so warm!", choices: ["The coat who made me is warm.","Wow, the coat that you made is so warm!"], choicesZh: ["做我的人外套很暖。","哇，你做的外套好暖和！"], reward: chatReward }
     ]
   }

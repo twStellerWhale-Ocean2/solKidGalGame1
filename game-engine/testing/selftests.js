@@ -1626,6 +1626,16 @@ async function runDataAudit(api) {
         else if (q.reward.coins !== 0) errors.push(`${where} chat reward.coins must be 0`);
         if (!q.promptZh) errors.push(`${where} missing promptZh (中文協助所需)`);
         if (!Array.isArray(q.choicesZh) || q.choicesZh.length !== q.choices.length || q.choicesZh.some((z) => !z)) errors.push(`${where} choicesZh incomplete (中文協助所需)`);
+        // issue #204：生活聊天干擾選項須屬同場景語域（與題幹或正解有共同內容詞），不採超現實荒謬句。
+        // 題幹＋正解內容詞不足 2 個（純寒暄問候、無可靠語域錨點）時跳過此啟發式檢查，避免誤判。
+        const chatCtx = new Set([...jobContentWords(q.prompt || ""), ...jobContentWords(q.answer || "")]);
+        if (chatCtx.size >= 2) {
+          (q.choices || []).forEach((c) => {
+            if (c === q.answer) return;
+            const wc = jobContentWords(c);
+            if (wc.length && !wc.some((w) => chatCtx.has(w))) errors.push(`${where} chat distractor is out of scene (no shared word with prompt/answer) — "${c}"`);
+          });
+        }
       });
     });
   });

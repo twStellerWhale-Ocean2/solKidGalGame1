@@ -210,92 +210,92 @@ const urbanChatLessonBank = Object.freeze({
   schoolClassroom: {
     title: "Chat in the School Classroom",
     questions: [
-      { questionType: "sentence-choice", prompt: "Good morning, Princess.", promptZh: "早安，公主。", answer: "Good morning, Teacher! I am ready.", choices: ["Good morning, Teacher! I am ready.","The fish is on the ice."], choicesZh: ["早安，老師！我準備好了。","魚在冰上。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "How do you feel today?", promptZh: "你今天感覺怎麼樣？", answer: "Oh, I am very happy today!", choices: ["The map is by the door.","Oh, I am very happy today!"], choicesZh: ["地圖在門旁邊。","喔，我今天超開心！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Good morning, Princess.", promptZh: "早安，公主。", answer: "Good morning, Teacher! I am ready.", choices: ["Good morning, Teacher! I am ready.","Sorry, I am not ready for class yet."], choicesZh: ["早安，老師！我準備好了。","抱歉，我還沒準備好上課。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "How do you feel today?", promptZh: "你今天感覺怎麼樣？", answer: "Oh, I am very happy today!", choices: ["Hmm, I do not feel happy today.","Oh, I am very happy today!"], choicesZh: ["嗯，我今天覺得不太開心。","喔，我今天超開心！"], reward: chatReward }
     ]
   },
   library: {
     title: "Chat in the Library",
     questions: [
-      { questionType: "sentence-choice", prompt: "What books do you like, Princess?", promptZh: "公主，你喜歡什麼書？", answer: "Oh, I love story books!", choices: ["Oh, I love story books!","I like wet docks."], choicesZh: ["喔，我超愛故事書！","我喜歡濕的碼頭。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "We speak softly in the library.", promptZh: "我們在圖書館裡輕聲說話。", answer: "OK, I will speak softly.", choices: ["I can shout here.","OK, I will speak softly."], choicesZh: ["我可以在這裡大叫。","好的，我會輕聲說話。"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "What books do you like, Princess?", promptZh: "公主，你喜歡什麼書？", answer: "Oh, I love story books!", choices: ["Oh, I love story books!","Sorry, I do not like these books."], choicesZh: ["喔，我超愛故事書！","抱歉，我不喜歡這些書。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "We speak softly in the library.", promptZh: "我們在圖書館裡輕聲說話。", answer: "OK, I will speak softly.", choices: ["No, I want to speak loudly in the library.","OK, I will speak softly."], choicesZh: ["不要，我想在圖書館裡大聲說話。","好的，我會輕聲說話。"], reward: chatReward }
     ]
   },
   temple: {
     title: "Chat at the Temple",
     questions: [
-      { questionType: "sentence-choice", prompt: "How do you feel here, Princess?", promptZh: "公主，你在這裡感覺如何？", answer: "I feel so calm here.", choices: ["I feel so calm here.","I am cleaning a shoe."], choicesZh: ["我在這裡覺得好平靜。","我正在清一隻鞋。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "These flowers smell sweet.", promptZh: "這些花聞起來很香。", answer: "Oh, the flowers are lovely!", choices: ["The stamps are on the boat.","Oh, the flowers are lovely!"], choicesZh: ["郵票在船上。","喔，這些花好美！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "How do you feel here, Princess?", promptZh: "公主，你在這裡感覺如何？", answer: "I feel so calm here.", choices: ["I feel so calm here.","I feel a bit noisy here."], choicesZh: ["我在這裡覺得好平靜。","我在這裡覺得有點吵。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "These flowers smell sweet.", promptZh: "這些花聞起來很香。", answer: "Oh, the flowers are lovely!", choices: ["Sorry, these flowers smell bad.","Oh, the flowers are lovely!"], choicesZh: ["抱歉，這些花聞起來很難聞。","喔，這些花好美！"], reward: chatReward }
     ]
   },
   administration: {
     title: "Chat at the Administration Building",
     questions: [
-      { questionType: "sentence-choice", prompt: "Nice to meet you, Princess.", promptZh: "很高興見到你，公主。", answer: "Nice to meet you too, Otto!", choices: ["Nice to meet you too, Otto!","The candle is under the fish."], choicesZh: ["我也很高興見到你，奧托！","蠟燭在魚下面。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Are you busy now?", promptZh: "你現在忙嗎？", answer: "No, I am free right now!", choices: ["The roses are on the shelf.","No, I am free right now!"], choicesZh: ["玫瑰在書架上。","不忙，我現在有空！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Nice to meet you, Princess.", promptZh: "很高興見到你，公主。", answer: "Nice to meet you too, Otto!", choices: ["Nice to meet you too, Otto!","Sorry, I do not want to meet you."], choicesZh: ["我也很高興見到你，奧托！","抱歉，我不想見你。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Are you busy now?", promptZh: "你現在忙嗎？", answer: "No, I am free right now!", choices: ["Yes, I am very busy right now.","No, I am free right now!"], choicesZh: ["對，我現在很忙。","不忙，我現在有空！"], reward: chatReward }
     ]
   },
   market: {
     title: "Chat at Market Square",
     questions: [
-      { questionType: "sentence-choice", prompt: "Are you hungry, Princess?", promptZh: "公主，你餓了嗎？", answer: "Yes, just a little!", choices: ["Yes, just a little!","The map is on the candle."], choicesZh: ["對啊，有一點點！","地圖在蠟燭上。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "This bread smells good.", promptZh: "這個麵包聞起來很香。", answer: "Thank you! It smells so good.", choices: ["The boat is quiet.","Thank you! It smells so good."], choicesZh: ["船很安靜。","謝謝！聞起來好香。"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Are you hungry, Princess?", promptZh: "公主，你餓了嗎？", answer: "Yes, just a little!", choices: ["Yes, just a little!","No, I am not hungry at all."], choicesZh: ["對啊，有一點點！","不，我一點也不餓。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "This bread smells good.", promptZh: "這個麵包聞起來很香。", answer: "Thank you! It smells so good.", choices: ["Sorry, this bread smells strange.","Thank you! It smells so good."], choicesZh: ["抱歉，這個麵包聞起來怪怪的。","謝謝！聞起來好香。"], reward: chatReward }
     ]
   },
   harbor: {
     title: "Chat at the Fish Shop",
     questions: [
-      { questionType: "sentence-choice", prompt: "Do you like the sea, Princess?", promptZh: "公主，你喜歡大海嗎？", answer: "Yes, I really like the sea.", choices: ["Yes, I really like the sea.","The book is under the bed."], choicesZh: ["喜歡，我很喜歡大海。","書在床底下。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "The fish are fresh today.", promptZh: "今天的魚很新鮮。", answer: "Wow, your fish look so fresh!", choices: ["The shoes are in the tree.","Wow, your fish look so fresh!"], choicesZh: ["鞋子在樹上。","哇，你的魚看起來好新鮮！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Do you like the sea, Princess?", promptZh: "公主，你喜歡大海嗎？", answer: "Yes, I really like the sea.", choices: ["Yes, I really like the sea.","No, I do not like the sea."], choicesZh: ["喜歡，我很喜歡大海。","不，我不喜歡大海。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "The fish are fresh today.", promptZh: "今天的魚很新鮮。", answer: "Wow, your fish look so fresh!", choices: ["Hmm, these fish do not look fresh.","Wow, your fish look so fresh!"], choicesZh: ["嗯，這些魚看起來不太新鮮。","哇，你的魚看起來好新鮮！"], reward: chatReward }
     ]
   },
   port: {
     title: "Chat at Harbor Port",
     questions: [
-      { questionType: "sentence-choice", prompt: "Do you like the sea, Princess?", promptZh: "公主，你喜歡大海嗎？", answer: "Yes, I love the sea so much!", choices: ["Yes, I love the sea so much!","The stamps are under the table."], choicesZh: ["對啊，我超愛大海！","郵票在桌子下面。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Have a safe trip, Princess.", promptZh: "祝你旅途平安，公主。", answer: "Thank you! Have a good day.", choices: ["I will shout in the library.","Thank you! Have a good day."], choicesZh: ["我會在圖書館大叫。","謝謝！祝你有美好的一天。"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Do you like the sea, Princess?", promptZh: "公主，你喜歡大海嗎？", answer: "Yes, I love the sea so much!", choices: ["Yes, I love the sea so much!","No, the sea is too cold for me."], choicesZh: ["對啊，我超愛大海！","不，大海對我來說太冷了。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Have a safe trip, Princess.", promptZh: "祝你旅途平安，公主。", answer: "Thank you! Have a good day.", choices: ["Oh no, I am scared of this trip.","Thank you! Have a good day."], choicesZh: ["喔不，我好怕這趟旅程。","謝謝！祝你有美好的一天。"], reward: chatReward }
     ]
   },
   boutique: {
     title: "Chat at the Dress Boutique",
     questions: [
-      { questionType: "sentence-choice", prompt: "Do you like this pink dress?", promptZh: "你喜歡這件粉紅色洋裝嗎？", answer: "I love this pink dress!", choices: ["I love this pink dress!","I like the wet dock."], choicesZh: ["我好愛這件粉紅洋裝！","我喜歡濕的碼頭。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Thank you for visiting my shop.", promptZh: "謝謝你來我的店。", answer: "Wow, your shop is so pretty!", choices: ["The fish are on ice.","Wow, your shop is so pretty!"], choicesZh: ["魚在冰上。","哇，你的店好漂亮！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Do you like this pink dress?", promptZh: "你喜歡這件粉紅色洋裝嗎？", answer: "I love this pink dress!", choices: ["I love this pink dress!","Sorry, I do not like this dress."], choicesZh: ["我好愛這件粉紅洋裝！","抱歉，我不喜歡這件洋裝。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Thank you for visiting my shop.", promptZh: "謝謝你來我的店。", answer: "Wow, your shop is so pretty!", choices: ["Sorry, your shop is a bit messy.","Wow, your shop is so pretty!"], choicesZh: ["抱歉，你的店有點亂。","哇，你的店好漂亮！"], reward: chatReward }
     ]
   },
   hairSalon: {
     title: "Chat at the Hair Salon",
     questions: [
-      { questionType: "sentence-choice", prompt: "Do you like your new hair?", promptZh: "你喜歡你的新髮型嗎？", answer: "I love my new hair!", choices: ["I love my new hair!","I like the town map."], choicesZh: ["我超愛我的新髮型！","我喜歡城鎮地圖。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "It is nice to see you today.", promptZh: "今天很高興見到你。", answer: "Nice to see you too, Lina!", choices: ["The fish is under the table.","Nice to see you too, Lina!"], choicesZh: ["魚在桌子下面。","我也很高興見到你，莉娜！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Do you like your new hair?", promptZh: "你喜歡你的新髮型嗎？", answer: "I love my new hair!", choices: ["I love my new hair!","Hmm, I do not like my new hair."], choicesZh: ["我超愛我的新髮型！","嗯，我不太喜歡我的新髮型。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "It is nice to see you today.", promptZh: "今天很高興見到你。", answer: "Nice to see you too, Lina!", choices: ["Sorry, I cannot stay to see you today.","Nice to see you too, Lina!"], choicesZh: ["抱歉，我今天不能留下來見你。","我也很高興見到你，莉娜！"], reward: chatReward }
     ]
   },
   tailorStudio: {
     title: "Chat at the Tailor Studio",
     questions: [
-      { questionType: "sentence-choice", prompt: "Do you like this blue top?", promptZh: "你喜歡這件藍色上衣嗎？", answer: "I really like this blue top!", choices: ["I really like this blue top!","I like this red fish."], choicesZh: ["我很喜歡這件藍色上衣！","我喜歡這條紅色魚。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "My shop is tidy today.", promptZh: "我的店今天很整齊。", answer: "Yes, your shop is so tidy!", choices: ["The sea is under the chair.","Yes, your shop is so tidy!"], choicesZh: ["海在椅子下面。","對啊，你的店好整齊！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Do you like this blue top?", promptZh: "你喜歡這件藍色上衣嗎？", answer: "I really like this blue top!", choices: ["I really like this blue top!","Sorry, I do not like this blue top."], choicesZh: ["我很喜歡這件藍色上衣！","抱歉，我不喜歡這件藍上衣。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "My shop is tidy today.", promptZh: "我的店今天很整齊。", answer: "Yes, your shop is so tidy!", choices: ["Hmm, your shop looks messy today.","Yes, your shop is so tidy!"], choicesZh: ["嗯，你的店今天看起來有點亂。","對啊，你的店好整齊！"], reward: chatReward }
     ]
   },
   shoeShop: {
     title: "Chat at the Shoe Shop",
     questions: [
-      { questionType: "sentence-choice", prompt: "Do you like these red shoes?", promptZh: "你喜歡這雙紅鞋嗎？", answer: "I love these red shoes!", choices: ["I love these red shoes!","I like the quiet candle."], choicesZh: ["我超愛這雙紅鞋！","我喜歡安靜的蠟燭。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Do the shoes fit well?", promptZh: "鞋子合腳嗎？", answer: "Yes, they fit really well!", choices: ["The ship is on the shelf.","Yes, they fit really well!"], choicesZh: ["船在架子上。","對啊，很合腳！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Do you like these red shoes?", promptZh: "你喜歡這雙紅鞋嗎？", answer: "I love these red shoes!", choices: ["I love these red shoes!","Sorry, I do not like these red shoes."], choicesZh: ["我超愛這雙紅鞋！","抱歉，我不喜歡這雙紅鞋。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Do the shoes fit well?", promptZh: "鞋子合腳嗎？", answer: "Yes, they fit really well!", choices: ["No, these shoes are too small for me.","Yes, they fit really well!"], choicesZh: ["不，這雙鞋對我來說太小了。","對啊，很合腳！"], reward: chatReward }
     ]
   },
   accessoryShop: {
     title: "Chat at the Accessory Atelier",
     questions: [
-      { questionType: "sentence-choice", prompt: "Do you like this red ribbon?", promptZh: "你喜歡這條紅緞帶嗎？", answer: "I love this red ribbon!", choices: ["I love this red ribbon!","I like this wet boat."], choicesZh: ["我好愛這條紅緞帶！","我喜歡這艘濕船。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "These hats are pretty today.", promptZh: "這些帽子今天很漂亮。", answer: "Wow, your hats are so pretty!", choices: ["The fish are on the shelf.","Wow, your hats are so pretty!"], choicesZh: ["魚在架子上。","哇，你的帽子真漂亮！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Do you like this red ribbon?", promptZh: "你喜歡這條紅緞帶嗎？", answer: "I love this red ribbon!", choices: ["I love this red ribbon!","Sorry, I do not like this red ribbon."], choicesZh: ["我好愛這條紅緞帶！","抱歉，我不喜歡這條紅緞帶。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "These hats are pretty today.", promptZh: "這些帽子今天很漂亮。", answer: "Wow, your hats are so pretty!", choices: ["Hmm, these hats are not pretty.","Wow, your hats are so pretty!"], choicesZh: ["嗯，這些帽子不怎麼漂亮。","哇，你的帽子真漂亮！"], reward: chatReward }
     ]
   },
   lighthouse: {
     title: "Chat at the Lighthouse",
     questions: [
-      { questionType: "sentence-choice", prompt: "Can you see the sea, Princess?", promptZh: "公主，你看得到大海嗎？", answer: "Yes, it is so beautiful!", choices: ["Yes, it is so beautiful!","The book is in the soup."], choicesZh: ["看得到，它好美！","書在湯裡。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Good night, Princess.", promptZh: "晚安，公主。", answer: "Good night, Captain!", choices: ["The shoes are loud.","Good night, Captain!"], choicesZh: ["鞋子很大聲。","晚安，船長！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Can you see the sea, Princess?", promptZh: "公主，你看得到大海嗎？", answer: "Yes, it is so beautiful!", choices: ["Yes, it is so beautiful!","No, the fog hides the sea today."], choicesZh: ["看得到，它好美！","不，今天的霧把海遮住了。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Good night, Princess.", promptZh: "晚安，公主。", answer: "Good night, Captain!", choices: ["It is too early to say good night.","Good night, Captain!"], choicesZh: ["現在說晚安還太早了。","晚安，船長！"], reward: chatReward }
     ]
   }
 });

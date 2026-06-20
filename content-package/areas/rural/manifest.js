@@ -137,21 +137,21 @@ const ruralChatLessonBank = Object.freeze({
   mine: {
     title: "Chat at the Mine",
     questions: [
-      { questionType: "sentence-choice", prompt: "My morning was busy but good. How was yours?", promptZh: "我的早上很忙，但還不錯。你的呢？", answer: "Oh, it was busy but good!", choices: ["Oh, it was busy but good!","The candles are under the boat."], choicesZh: ["喔，很忙，但還不錯！","蠟燭在船下面。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "I am a little tired after carrying stones.", promptZh: "搬完石頭後，我有一點累。", answer: "Oh, are you tired today?", choices: ["The roses are on ice.","Oh, are you tired today?"], choicesZh: ["玫瑰在冰上。","喔，你今天累了嗎？"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "My morning was busy but good. How was yours?", promptZh: "我的早上很忙，但還不錯。你的呢？", answer: "Oh, it was busy but good!", choices: ["Oh, it was busy but good!","Sorry, my morning was very bad."], choicesZh: ["喔，很忙，但還不錯！","抱歉，我今天早上過得很糟。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "I am a little tired after carrying stones.", promptZh: "搬完石頭後，我有一點累。", answer: "Oh, are you tired today?", choices: ["You should rest after carrying those stones.","Oh, are you tired today?"], choicesZh: ["搬完那些石頭，你應該休息一下。","喔，你今天累了嗎？"], reward: chatReward }
     ]
   },
   loggingCamp: {
     title: "Chat at the Logging Camp",
     questions: [
       { questionType: "sentence-choice", prompt: "Why did you come to the logging camp, Princess?", promptZh: "公主，你為什麼來伐木營地呢？", answer: "Well, because I want to help!", choices: ["Well, because I want to help!","Because the classroom is busy."], choicesZh: ["嗯，因為我想幫忙啊！","因為教室很忙。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "I will stack the logs before lunch.", promptZh: "我會在午餐前堆好木頭。", answer: "Sure, I can help you stack them!", choices: ["The flowers are by the fence.","Sure, I can help you stack them!"], choicesZh: ["花在圍欄旁。","好啊，我可以幫你把它們堆好！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "I will stack the logs before lunch.", promptZh: "我會在午餐前堆好木頭。", answer: "Sure, I can help you stack them!", choices: ["I think those logs are too heavy to stack.","Sure, I can help you stack them!"], choicesZh: ["我覺得那些木頭太重，堆不起來。","好啊，我可以幫你把它們堆好！"], reward: chatReward }
     ]
   },
   fishingShore: {
     title: "Chat at the Fishing Shore",
     questions: [
-      { questionType: "sentence-choice", prompt: "I walked along the shore this morning. What did you do?", promptZh: "我今天早上沿著海岸走。你做了什麼？", answer: "I walked along the shore too!", choices: ["I walked along the shore too!","I opened a book in the mine."], choicesZh: ["我也沿著海岸走了走！","我在礦場打開一本書。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "I walked along the shore this morning. What did you do?", promptZh: "我今天早上沿著海岸走。你做了什麼？", answer: "I walked along the shore too!", choices: ["I walked along the shore too!","I rested at home all morning."], choicesZh: ["我也沿著海岸走了走！","我整個早上都在家休息。"], reward: chatReward },
       { questionType: "sentence-choice", prompt: "The sea was calm and pretty today.", promptZh: "今天的大海平靜又漂亮。", answer: "Yes, the sea was calm and pretty!", choices: ["The log was under the candle.","Yes, the sea was calm and pretty!"], choicesZh: ["木頭在蠟燭下面。","對啊，大海平靜又漂亮！"], reward: chatReward }
     ]
   },
@@ -159,42 +159,42 @@ const ruralChatLessonBank = Object.freeze({
     title: "Chat at the Pasture",
     questions: [
       { questionType: "sentence-choice", prompt: "Why do you like the pasture, Princess?", promptZh: "公主，你為什麼喜歡牧場？", answer: "Well, because the animals are so sweet!", choices: ["Well, because the animals are so sweet!","Because the map is in the soup."], choicesZh: ["嗯，因為這些動物好可愛！","因為地圖在湯裡。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "The grass is green after the rain.", promptZh: "下雨後草地很綠。", answer: "Wow, your pasture is so green!", choices: ["The candle is louder than the cow.","Wow, your pasture is so green!"], choicesZh: ["蠟燭比牛更大聲。","哇，你的牧場好綠！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "The grass is green after the rain.", promptZh: "下雨後草地很綠。", answer: "Wow, your pasture is so green!", choices: ["No, the grass looks brown and dry.","Wow, your pasture is so green!"], choicesZh: ["不，草地看起來又枯又乾。","哇，你的牧場好綠！"], reward: chatReward }
     ]
   },
   farm: {
     title: "Chat at the Farm",
     questions: [
       { questionType: "sentence-choice", prompt: "How do you feel on the farm today?", promptZh: "你今天在農場感覺如何？", answer: "I feel really happy and warm!", choices: ["I feel really happy and warm!","I feel under the boat."], choicesZh: ["我覺得好開心、好溫暖！","我覺得在船下面。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "These vegetables look fresh.", promptZh: "這些蔬菜看起來很新鮮。", answer: "Wow, your vegetables look so fresh!", choices: ["The log is reading a candle.","Wow, your vegetables look so fresh!"], choicesZh: ["木頭正在讀蠟燭。","哇，你的蔬菜看起來好新鮮！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "These vegetables look fresh.", promptZh: "這些蔬菜看起來很新鮮。", answer: "Wow, your vegetables look so fresh!", choices: ["Hmm, these vegetables look old.","Wow, your vegetables look so fresh!"], choicesZh: ["嗯，這些蔬菜看起來不太新鮮。","哇，你的蔬菜看起來好新鮮！"], reward: chatReward }
     ]
   },
   mill: {
     title: "Chat at the Mill",
     questions: [
       { questionType: "sentence-choice", prompt: "Why is the mill one of your favourite places?", promptZh: "為什麼磨坊是你喜歡的地方之一？", answer: "Well, because the bread smells so nice!", choices: ["Well, because the bread smells so nice!","Because the kitchen smells nice."], choicesZh: ["嗯，因為麵包聞起來好香！","因為廚房聞起來很香。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Thank you for helping me near the mill.", promptZh: "謝謝你在磨坊旁幫我。", answer: "Thank you so much for the warm bread!", choices: ["The sheep is on the book.","Thank you so much for the warm bread!"], choicesZh: ["羊在書上。","真謝謝你的溫熱麵包！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Thank you for helping me near the mill.", promptZh: "謝謝你在磨坊旁幫我。", answer: "Thank you so much for the warm bread!", choices: ["Sorry, I could not help at the mill today.","Thank you so much for the warm bread!"], choicesZh: ["抱歉，我今天沒能在磨坊幫上忙。","真謝謝你的溫熱麵包！"], reward: chatReward }
     ]
   },
   villageHome: {
     title: "Chat at the Village Home",
     questions: [
       { questionType: "sentence-choice", prompt: "Why did you come to visit me, Princess?", promptZh: "公主，你為什麼來看我呢？", answer: "I just came to see you!", choices: ["I just came to see you!","I came to count boats in the mine."], choicesZh: ["我就是來看你的呀！","我來礦場數船。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "My home is warm today.", promptZh: "我的家今天很溫暖。", answer: "Your home is so warm and cosy!", choices: ["The hard hat is in the bread.","Your home is so warm and cosy!"], choicesZh: ["安全帽在麵包裡。","你的家好溫暖、好舒適！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "My home is warm today.", promptZh: "我的家今天很溫暖。", answer: "Your home is so warm and cosy!", choices: ["Really? Your home feels cold to me.","Your home is so warm and cosy!"], choicesZh: ["真的嗎？你家對我來說有點冷。","你的家好溫暖、好舒適！"], reward: chatReward }
     ]
   },
   workwearStall: {
     title: "Chat at the Workwear Stall",
     questions: [
       { questionType: "sentence-choice", prompt: "Why are these clothes good for country work?", promptZh: "為什麼這些衣服適合鄉間工作？", answer: "Well, because they are really strong!", choices: ["Well, because they are really strong!","Because they caught ten fish."], choicesZh: ["嗯，因為它們很耐用！","因為它們捕到十條魚。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "These clothes look ready for the fields.", promptZh: "這些衣服看起來準備好去田裡了。", answer: "Wow, these clothes look really strong!", choices: ["The candles are heavier than the cows.","Wow, these clothes look really strong!"], choicesZh: ["蠟燭比牛更重。","哇，這些衣服看起來真耐用！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "These clothes look ready for the fields.", promptZh: "這些衣服看起來準備好去田裡了。", answer: "Wow, these clothes look really strong!", choices: ["Hmm, these clothes are not ready yet.","Wow, these clothes look really strong!"], choicesZh: ["嗯，這些衣服還沒準備好。","哇，這些衣服看起來真耐用！"], reward: chatReward }
     ]
   },
   fieldCobbler: {
     title: "Chat with the Field Cobbler",
     questions: [
       { questionType: "sentence-choice", prompt: "Why do you need strong shoes, Princess?", promptZh: "公主，你為什麼需要耐用的鞋？", answer: "Well, because the roads are very long!", choices: ["Well, because the roads are very long!","Because the books sold carrots."], choicesZh: ["嗯，因為路很長啊！","因為書賣了紅蘿蔔。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "These shoes were made for walking.", promptZh: "這些鞋是為走路做的。", answer: "Wow, these shoes look really strong!", choices: ["The mill is under the fish.","Wow, these shoes look really strong!"], choicesZh: ["磨坊在魚下面。","哇，這些鞋看起來真耐用！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "These shoes were made for walking.", promptZh: "這些鞋是為走路做的。", answer: "Wow, these shoes look really strong!", choices: ["These shoes look too small for walking.","Wow, these shoes look really strong!"], choicesZh: ["這雙鞋看起來太小，不好走路。","哇，這些鞋看起來真耐用！"], reward: chatReward }
     ]
   }
 });

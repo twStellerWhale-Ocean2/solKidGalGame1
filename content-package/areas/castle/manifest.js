@@ -119,50 +119,50 @@ const castleChatLessonBank = Object.freeze({
   kingHall: {
     title: "Chat in the King's Hall",
     questions: [
-      { questionType: "sentence-choice", prompt: "Good morning, my dear.", promptZh: "早安，親愛的。", answer: "Good morning, Father! I am happy.", choices: ["Good morning, Father! I am happy.","The soup is hot."], choicesZh: ["早安，父王！我好開心。","湯很燙。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "How are you today?", promptZh: "你今天好嗎？", answer: "Oh, I am very well, thank you!", choices: ["Oh, I am very well, thank you!","I see the crown."], choicesZh: ["喔，我很好，謝謝！","我看到王冠。"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Good morning, my dear.", promptZh: "早安，親愛的。", answer: "Good morning, Father! I am happy.", choices: ["Good morning, Father! I am happy.","Sorry, I am not happy this morning."], choicesZh: ["早安，父王！我好開心。","抱歉，我今天早上不太開心。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "How are you today?", promptZh: "你今天好嗎？", answer: "Oh, I am very well, thank you!", choices: ["Oh, I am very well, thank you!","I am not feeling well today."], choicesZh: ["喔，我很好，謝謝！","我今天覺得不太舒服。"], reward: chatReward }
     ]
   },
   queenStudy: {
     title: "Chat in the Queen's Study",
     questions: [
-      { questionType: "sentence-choice", prompt: "Do you like this book?", promptZh: "你喜歡這本書嗎？", answer: "Yes, I like this book very much!", choices: ["Yes, I like this book very much!","I see the crown."], choicesZh: ["喜歡，我超喜歡這本書！","我看到王冠。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Thank you for sitting with me.", promptZh: "謝謝你坐在我身邊。", answer: "Thank you, Mother. I like this.", choices: ["Thank you, Mother. I like this.","The room is big."], choicesZh: ["謝謝，母后。我很喜歡這樣。","房間很大。"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Do you like this book?", promptZh: "你喜歡這本書嗎？", answer: "Yes, I like this book very much!", choices: ["Yes, I like this book very much!","Sorry, I do not like this book."], choicesZh: ["喜歡，我超喜歡這本書！","抱歉，我不喜歡這本書。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Thank you for sitting with me.", promptZh: "謝謝你坐在我身邊。", answer: "Thank you, Mother. I like this.", choices: ["Thank you, Mother. I like this.","Sorry, I cannot keep sitting here."], choicesZh: ["謝謝，母后。我很喜歡這樣。","抱歉，我沒辦法一直坐在這裡。"], reward: chatReward }
     ]
   },
   castleKitchen: {
     title: "Chat in the Castle Kitchen",
     questions: [
-      { questionType: "sentence-choice", prompt: "Are you hungry, Princess?", promptZh: "公主，你餓了嗎？", answer: "Yes, I am so hungry!", choices: ["Yes, I am so hungry!","The shield is round."], choicesZh: ["對啊，我好餓！","盾牌是圓的。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "This soup smells good.", promptZh: "這碗湯聞起來很香。", answer: "Yes! Some soup, please.", choices: ["Yes! Some soup, please.","I see the flag."], choicesZh: ["好耶！請給我一些湯。","我看到旗子。"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Are you hungry, Princess?", promptZh: "公主，你餓了嗎？", answer: "Yes, I am so hungry!", choices: ["Yes, I am so hungry!","No, I am not hungry right now."], choicesZh: ["對啊，我好餓！","不，我現在不餓。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "This soup smells good.", promptZh: "這碗湯聞起來很香。", answer: "Yes! Some soup, please.", choices: ["Yes! Some soup, please.","Sorry, this soup smells a bit strange."], choicesZh: ["好耶！請給我一些湯。","抱歉，這碗湯聞起來怪怪的。"], reward: chatReward }
     ]
   },
   knightsRoom: {
     title: "Chat in the Knights' Room",
     questions: [
-      { questionType: "sentence-choice", prompt: "Do you want to play a safe game?", promptZh: "你想玩一個安全的小遊戲嗎？", answer: "Yes, let us play now!", choices: ["Yes, let us play now!","The soup is on the desk."], choicesZh: ["好啊，我們現在玩吧！","湯在書桌上。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "I am checking my shield.", promptZh: "我正在檢查我的盾牌。", answer: "Wow, your shield is so strong!", choices: ["Wow, your shield is so strong!","This book is soft."], choicesZh: ["哇，你的盾牌好堅固！","這本書很柔軟。"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Do you want to play a safe game?", promptZh: "你想玩一個安全的小遊戲嗎？", answer: "Yes, let us play now!", choices: ["Yes, let us play now!","No, I do not want to play right now."], choicesZh: ["好啊，我們現在玩吧！","不，我現在不想玩。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "I am checking my shield.", promptZh: "我正在檢查我的盾牌。", answer: "Wow, your shield is so strong!", choices: ["Wow, your shield is so strong!","Be careful, your shield looks heavy."], choicesZh: ["哇，你的盾牌好堅固！","小心，你的盾牌看起來很重。"], reward: chatReward }
     ]
   },
   maidsRoom: {
     title: "Chat in the Maid's Room",
     questions: [
-      { questionType: "sentence-choice", prompt: "How are you, Princess?", promptZh: "公主，你好嗎？", answer: "Hi! I am very well.", choices: ["Hi! I am very well.","The crown is hot."], choicesZh: ["嗨！我很好。","王冠很燙。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "This room looks nice today.", promptZh: "今天這個房間看起來很漂亮。", answer: "Yes, the room looks so nice!", choices: ["Yes, the room looks so nice!","I want fish."], choicesZh: ["對啊，房間看起來好漂亮！","我想要魚。"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "How are you, Princess?", promptZh: "公主，你好嗎？", answer: "Hi! I am very well.", choices: ["Hi! I am very well.","Sorry, I am very busy and cannot talk."], choicesZh: ["嗨！我很好。","抱歉，我很忙，不能聊天。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "This room looks nice today.", promptZh: "今天這個房間看起來很漂亮。", answer: "Yes, the room looks so nice!", choices: ["Yes, the room looks so nice!","Hmm, this room looks a bit dusty today."], choicesZh: ["對啊，房間看起來好漂亮！","嗯，這個房間今天看起來有點灰。"], reward: chatReward }
     ]
   },
   royalCloakRoom: {
     title: "Chat in the Royal Cloak Room",
     questions: [
-      { questionType: "sentence-choice", prompt: "It is cold today, Princess.", promptZh: "公主，今天有點冷。", answer: "Yes, I love this warm cloak!", choices: ["Yes, I love this warm cloak!","I see six fish."], choicesZh: ["對啊，我好喜歡這件暖披風！","我看到六條魚。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "This hat is for a long walk.", promptZh: "這頂帽子適合長路旅行。", answer: "Oh, thank you! I will try the hat.", choices: ["Oh, thank you! I will try the hat.","The soup is on the table."], choicesZh: ["喔，謝謝！我來試試這頂帽子。","湯在餐桌上。"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "It is cold today, Princess.", promptZh: "公主，今天有點冷。", answer: "Yes, I love this warm cloak!", choices: ["Yes, I love this warm cloak!","Yes, I need a warmer cloak today."], choicesZh: ["對啊，我好喜歡這件暖披風！","對啊，我今天需要更暖的披風。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "This hat is for a long walk.", promptZh: "這頂帽子適合長路旅行。", answer: "Oh, thank you! I will try the hat.", choices: ["Oh, thank you! I will try the hat.","Thank you, but this hat is too small."], choicesZh: ["喔，謝謝！我來試試這頂帽子。","謝謝，可是這頂帽子太小了。"], reward: chatReward }
     ]
   },
   castleSeamstress: {
     title: "Chat with the Castle Seamstress",
     questions: [
-      { questionType: "sentence-choice", prompt: "Do you like this soft top?", promptZh: "你喜歡這件柔軟的上衣嗎？", answer: "Yes, I like this soft top very much!", choices: ["Yes, I like this soft top very much!","The shield is round."], choicesZh: ["喜歡，我很喜歡這件柔軟的上衣！","盾牌是圓的。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Thank you for coming to my room.", promptZh: "謝謝你來我的裁縫室。", answer: "Thank you for your help!", choices: ["Thank you for your help!","I see a fish."], choicesZh: ["謝謝你的幫忙！","我看到一條魚。"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Do you like this soft top?", promptZh: "你喜歡這件柔軟的上衣嗎？", answer: "Yes, I like this soft top very much!", choices: ["Yes, I like this soft top very much!","Sorry, I do not like this top."], choicesZh: ["喜歡，我很喜歡這件柔軟的上衣！","抱歉，我不喜歡這件上衣。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Thank you for coming to my room.", promptZh: "謝謝你來我的裁縫室。", answer: "Thank you for your help!", choices: ["Thank you for your help!","Sorry, I cannot come into your room."], choicesZh: ["謝謝你的幫忙！","抱歉，我不能進你的房間。"], reward: chatReward }
     ]
   }
 });
