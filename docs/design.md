@@ -274,7 +274,7 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
     * paramCardBackgroundAlpha=`0.45`
     * paramInitialThemeRandomization=`profileColor,backgroundPattern`
     * paramDefaultVoiceProfile=`default`
-    * paramAssetStandards=`per-class {pixelSize, maxKB, mode}：固定畫布 exact——characterBase/NPC 512×768·350、scene 1024×1024·500、areaMap 1536×1536·600、worldMap 1024×1536·600、ui 1280×720·120；緊貼裁切容於畫布 bound（素材去白邊後寬高≤畫布，#176 以 targetBox 等比 fit）——wardrobeThumb ≤256×256·60、wardrobeLayer ≤512×768·120`（資產 lint 之尺寸與檔重 SSOT；初始檔重門檻，code 可依實測 USR-gated 微調）
+    * paramAssetStandards=`per-class {pixelSize, maxKB, mode}：固定畫布 exact——characterBase/NPC 512×768·350、scene 1024×1024·500、areaMap 1536×1536·600、worldMap 1024×1536·600、ui 1280×720·120；緊貼裁切容於畫布 bound（素材去白邊後寬高≤畫布，#176 以 targetBox 等比 fit）——wardrobeThumb ≤256×256·60、wardrobeLayer ≤512×768·120、mapLayer（地圖裝飾層）≤512×512·80`（資產 lint 之尺寸與檔重 SSOT；初始檔重門檻，code 可依實測 USR-gated 微調）
   * [etyCfg自訂modScene組態]
     * paramChineseAudioLang=`zh-TW`
     * paramRewardSecondTryRatio=`0.5`
@@ -977,16 +977,16 @@ erDiagram
 #### intTest#49-驗證 圖像資產標準尺寸與檔重預算
 
 * 既有基底：intTest#02、intTest#47。
-* 新增項目：[sysGame系統]之全圖像資產標準尺寸與檔重預算 lint。
+* 新增項目：[sysGame系統]之全圖像資產標準尺寸與檔重預算 lint（檔案系統掃描全部 shipped 圖像檔，不只 registry／CSS 引用者）。
 * 步驟：
-  1. 列舉所有 runtime 載入之圖像資產並歸入 paramAssetStandards 之資產類別（角色／NPC base、wardrobe layer、商品縮圖、ADV 場景背景、地區地圖、世界地圖、UI 等）。
+  1. 以檔案系統 gate（scripts/assetLint.mjs）掃描 content-base/ 與 content-package/ 下全部圖像檔（含未被 registry／CSS 引用之 orphan 與裝飾資產），依 paramAssetStandards 類別歸類（角色／NPC base、wardrobe layer／縮圖、ADV 場景、地區／世界地圖、地圖裝飾層、UI 等）；瀏覽器 data-audit 另對 registry 引用資產做 runtime 載入＋尺寸／檔重檢查。
   2. 對每張資產讀取實際像素尺寸與檔案位元組大小。
-  3. 比對該類別標準：固定畫布類（地圖／場景／角色 base／UI）像素尺寸須等於標準值、緊貼裁切類（衣物 layer／縮圖）寬高須容於標準畫布；檔案位元組須不超出該類別檔重預算（maxKB）。
-  4. 將不符者標記為違規（尺寸不符或檔重超標），具名豁免項另列。
+  3. 比對該類別標準：固定畫布類（地圖／場景／角色 base／UI）像素尺寸須等於標準值、緊貼裁切類（衣物 layer／縮圖、地圖裝飾層）寬高須容於標準畫布；檔案位元組須不超出該類別檔重預算（maxKB）。
+  4. 將不符者標記為違規（尺寸不符或檔重超標），未分類者報為漏網類別，具名豁免項另列。
 * 預期結果：
   1. 每張資產之像素尺寸符合 paramAssetStandards 宣告之類別標準（固定畫布類等於、裁切類容於畫布）。
   2. 每張資產之檔案位元組不超出 paramAssetStandards 宣告之類別檔重預算；現存超標之過大圖檔已重壓縮至預算內，或列入具名豁免清單。
-  3. 每個實際載入之資產類別均在 paramAssetStandards 中有對應標準（無未涵蓋之漏網類別）。
+  3. content-base／content-package 下每個 shipped 圖像檔均歸入已登記類別、受尺寸與檔重把關（未分類即報漏網），無 orphan／CSS-only／裝飾資產逃逸 gate。
 
 ## E. 方案層級：文件程式化測試
 
@@ -1285,7 +1285,7 @@ erDiagram
 * **productReadme 來源**：`README.md`（本 repo 根目錄產品手冊；尚未採 buildStage 目錄慣例）
 * **部署方式**：靜態網站包，依 [techStackStaticWeb]；預設直推 GitHub Pages（Deploy from a branch，repository root 為站根，保留 .nojekyll），可選後置標準 static-serve Helm chart。namespace、release、主機與網域由部署者於實際部署時決定並記錄。
 * **建置指令**：無打包（no-op，直接收集靜態檔）；本機預覽 `python -m http.server 4173`，或 `node server.mjs`（預設 `http://127.0.0.1:4174/`）。
-* **測試指令**：型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=data-audit`／`?selftest=save-load`／`?selftest=accounts`／`?selftest=playtimer`／`?selftest=profile-color`／`?selftest=map-avatar`／`?selftest=character-silhouette`／`?selftest=monkey`／`?selftest=chinese-reward`／`?selftest=scene-nav`／`?selftest=visual-qa&surface=<id>`；場景背景資產 visual QA 需輸出全場景 contact sheet 與手機直向／桌機截圖；圖像資產標準尺寸與檔重預算 lint 沿用並擴充 `?selftest=data-audit`（於既有像素尺寸檢查外，新增全資產類別涵蓋與檔重預算檢查，對照 paramAssetStandards）；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`。
+* **測試指令**：型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=data-audit`／`?selftest=save-load`／`?selftest=accounts`／`?selftest=playtimer`／`?selftest=profile-color`／`?selftest=map-avatar`／`?selftest=character-silhouette`／`?selftest=monkey`／`?selftest=chinese-reward`／`?selftest=scene-nav`／`?selftest=visual-qa&surface=<id>`；場景背景資產 visual QA 需輸出全場景 contact sheet 與手機直向／桌機截圖；圖像資產標準尺寸與檔重預算之檔案系統 gate `node scripts/assetLint.mjs`（掃描 content-base／content-package 全部 shipped 圖像檔、不只 registry 引用，對照 paramAssetStandards），瀏覽器 `?selftest=data-audit` 另對 registry 引用資產做 runtime 尺寸／檔重檢查；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`。
 * **部署指令**：GitHub Pages「Deploy from a branch」，站根為 repository root，保留 `.nojekyll`；可選後置 static-serve Helm chart。
 
 ## B. 成效追蹤

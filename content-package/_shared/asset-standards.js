@@ -15,6 +15,7 @@ export const assetStandards = {
   worldMap: { mode: "exact", width: 1024, height: 1536, maxKB: 600, label: "世界地圖（固定畫布）" },
   wardrobeThumb: { mode: "bound", width: 256, height: 256, maxKB: 60, label: "衣物縮圖（緊貼裁切，須容於畫布）" },
   wardrobeLayer: { mode: "bound", width: 512, height: 768, maxKB: 120, label: "衣物 layer（緊貼裁切，須容於畫布）" },
+  mapLayer: { mode: "bound", width: 512, height: 512, maxKB: 80, label: "地圖裝飾層（map-layers，定位疊圖，緊貼裁切）" },
   ui: { mode: "exact", width: 1280, height: 720, maxKB: 120, label: "UI 介面圖（固定畫布）" }
 };
 
@@ -24,6 +25,7 @@ export function classifyAssetPath(path) {
   if (/\/world-map\.webp$/.test(path)) return "worldMap";
   if (/\/map-1536\.webp$/.test(path)) return "areaMap";
   if (/\/scenes\/[^/]+-1024\.webp$/.test(path)) return "scene";
+  if (/\/map-layers\/[^/]+\.(webp|png)$/.test(path)) return "mapLayer";
   if (/\/wardrobe\/[^/]+\/assets\/thumbs\/[^/]+\.webp$/.test(path)) return "wardrobeThumb";
   if (/\/wardrobe\/[^/]+\/assets\/layers\/[^/]+\.webp$/.test(path)) return "wardrobeLayer";
   if (/\/characters\/[^/]+\.webp$/.test(path) || /\/characters\/[^/]+\/assets\/[^/]+\.webp$/.test(path)) return "characterBase";

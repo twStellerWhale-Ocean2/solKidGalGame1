@@ -78,3 +78,9 @@
 
 * **交付物**：程式（asset-standards.js＋selftests.js）＋ 9 張重壓縮資產 ＋ design.md 回修（bound 語意）＋ README ＋ 本設計note。
 * **test-summary.pdf**：沿 #101／#150／#166／#176／#180／#195 焦點變更慣例，本節即 GATE 報告；是否另產 A5 直向 [docs/test-summary.pdf] **待 USR 裁決**。QA 截圖／montage 為暫存產物、不作交付物。
+
+### 6.5 審查回饋處置（Codex bot P2，已修）
+
+* **發現**：原 lint 僅列舉 registry／CSS 引用之資產（瀏覽器 data-audit 250 張），未引用之檔案（orphan／裝飾／CSS-only）會逃逸預算 gate——實測 [content-package/areas/urban/assets/map-layers/castle-flag.webp]（地圖裝飾層）未涵蓋、[wardrobe/starter/.../starter-rose-outfit.webp] 縮圖雖可歸類但未被 data-audit 列舉。瀏覽器 selftest 無法列舉檔案系統，故 registry 掃描有結構性盲區。
+* **處置**：新增**檔案系統 gate** [scripts/assetLint.mjs]——掃描 content-base／content-package **全部** 圖像檔（252 張）、依 `classifyAssetPath` 歸類、比對同一 SSOT（asset-standards.js）之尺寸＋檔重；**未分類即報漏網**，杜絕 orphan 逃逸。新增 `mapLayer` 類別（地圖裝飾層，bound ≤512×512·80KB）涵蓋 castle-flag。瀏覽器 data-audit 保留為 registry 引用資產之 runtime 載入＋尺寸檢查（互補）。
+* **驗證**：`node scripts/assetLint.mjs` → 掃描 252 檔、檢查 252、**0 違規**；`node --check` OK；data-audit 仍 passed。design.md ＜II.B (D)＞（+mapLayer）／＜III.D intTest#49＞（FS 掃描全檔、報漏網）／＜IV.A 測試指令＞（+assetLint.mjs）同步、docLint sol=0。已納 GATE §1 機器判定。
