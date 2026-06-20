@@ -375,11 +375,12 @@ function runAboutSelfTest(api) {
   const items = api.elements.aboutVersionList?.querySelectorAll(".about-version-item") || [];
   if (items.length < 10) errors.push(`版本沿革少於 10 筆（實得 ${items.length}）`);
 
-  // 首筆版本須與當前版本顯示一致（單一資料源、避免雙軌）
+  // 版號 SSOT 模型（VERSION 為單一源、版號釘選於 merge）：當前版本為 SemVer，
+  // 玩家版本沿革只投影 VERSION.history 中 playerVisible 之 feat/fix；internal／dev-only 版本
+  // （如純工具改動）不進玩家沿革，故「當前版本」不必等於沿革首筆。改驗當前版本為非空且符 SemVer。
   const currentVersion = (api.elements.versionValue?.textContent || "").trim();
-  const firstVersion = (items[0]?.querySelector("strong")?.textContent || "").trim();
   if (!currentVersion) errors.push("當前版本顯示為空");
-  if (firstVersion !== currentVersion) errors.push(`首筆版本（${firstVersion}）與當前版本（${currentVersion}）不一致`);
+  else if (!/^\d+\.\d+\.\d+$/.test(currentVersion)) errors.push(`當前版本非 SemVer：「${currentVersion}」`);
 
   // 版本卡已併入 About：Settings 不得殘留、About 須具備
   const settingsView = document.getElementById("settingsView");
