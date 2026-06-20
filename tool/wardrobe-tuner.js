@@ -395,7 +395,6 @@ function applyDrag(active, p) {
 function equipSelectedItem() { state.outfit = { ...baseOutfit }; equipItem(selectedItem(), state.outfit); }
 function equipItem(item, outfit) {
   if (!item) return;
-  if (item.type === "outfitSet") { Object.values(item.equips || {}).forEach((id) => equipItem(itemMap.get(id), outfit)); return; }
   if (item.type === "dress") { outfit.top = "none"; outfit.bottom = "none"; }
   if (item.type === "top" || item.type === "bottom") outfit.dress = "none";
   outfit[item.type] = item.id;

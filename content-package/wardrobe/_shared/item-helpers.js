@@ -34,20 +34,6 @@ export function createWardrobePackTools(packId) {
     };
   }
 
-  function outfitSet({ id, storeId = "boutique", name, cost, asset, equips }) {
-    return {
-      id,
-      storeId,
-      type: "outfitSet",
-      name,
-      cost,
-      icon: "Set",
-      image: thumb(asset),
-      layers: [],
-      equips
-    };
-  }
-
-  return { outfitSet, wearable };
+  return { wearable };
 }
 //#endregion 資源包工具

@@ -16,7 +16,6 @@ const ROOM_ACTIONS = Object.freeze([
   wardrobeAction("Shoes", "shoes", "👞"),
   wardrobeAction("Hats", "hats", "👑"),
   wardrobeAction("Accessories", "accessories", "🎀"),
-  wardrobeAction("Outfit Sets", "outfitSets", "✨"),
   leaveAction()
 ]);
 
