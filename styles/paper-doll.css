@@ -3,6 +3,10 @@
   width: 100%;
   height: 100%;
   contain: layout paint;
+  --character-silhouette-filter:
+    drop-shadow(0 0 1px rgba(64, 43, 53, 0.48))
+    drop-shadow(0 5px 8px rgba(58, 37, 46, 0.18))
+    drop-shadow(0 14px 18px rgba(58, 37, 46, 0.14));
 }
 
 /* issue #194：合成 stage——所有 layer 之共同容器（代表 512:768 紙娃娃合成）。
@@ -10,19 +14,28 @@
 .paper-doll-stage {
   position: absolute;
   inset: 0;
+  filter: var(--character-silhouette-filter);
 }
 
 /* issue #161：地圖公主 token 放大約一倍（54×70 → 108×140）並移除識別色橢圓背板（原 #131／#153 的 .map-doll::before）。
-   去背板後地圖上不再呈現各帳號識別色（spec#9，以視覺簡潔為先）；圖地分離續由 doll 既有深色投影＋白描邊承擔（見下方 .map-doll .paper-doll-layer）。 */
+   去背板後地圖上不再呈現各帳號識別色（spec#9，以視覺簡潔為先）；圖地分離由合成後 doll 的深色投影＋白描邊承擔。 */
 .map-doll {
   position: relative;
   width: 108px;
   height: 140px;
+  --character-silhouette-filter:
+    drop-shadow(0 0 1px rgba(58, 37, 46, 0.48))
+    drop-shadow(0 2px 3px rgba(58, 37, 46, 0.34))
+    drop-shadow(0 0 4px rgba(255, 255, 255, 0.95));
 }
 
 .adv-doll {
   width: 390px;
   height: 560px;
+  --character-silhouette-filter:
+    drop-shadow(0 0 1px rgba(64, 43, 53, 0.58))
+    drop-shadow(0 2px 3px rgba(58, 37, 46, 0.34))
+    drop-shadow(0 16px 22px rgba(58, 37, 46, 0.22));
 }
 
 .avatar-shadow,
@@ -54,7 +67,7 @@
   background-repeat: no-repeat;
   /* #176：帶 targetBox 的 wardrobe layer 以 --layer-fit:100% 100% 非等比填滿目標矩形；其餘（base 等）維持 contain。 */
   background-size: var(--layer-fit, contain);
-  filter: drop-shadow(0 14px 18px rgba(58, 37, 46, 0.16));
+  filter: none;
 }
 
 .paper-doll-layer-base { z-index: 2; }
@@ -71,17 +84,15 @@
 .paper-doll-layer-faceEyes,
 .paper-doll-layer-faceMask { z-index: 8; }
 
-/* issue #131：移除 #126 的識別色光暈 drop-shadow（糊化）；識別色改由 .map-doll::before 橢圓背版承載（spec#9）。
-   此處僅保留深色投影與白描邊維持頭像清晰銳利。 */
+/* issue #199：常態角色輪廓套在合成 stage，而非每個 layer；避免多層 wardrobe 各自投影造成髒邊。 */
 .map-doll .paper-doll-layer {
   background-position: center bottom;
-  filter:
-    drop-shadow(0 3px 4px rgba(58, 37, 46, 0.28))
-    drop-shadow(0 0 4px rgba(255, 255, 255, 0.95));
 }
 
 .adv-doll.try-on-active {
-  filter: drop-shadow(0 0 14px rgba(255, 214, 80, 0.62));
+  filter:
+    drop-shadow(0 0 14px rgba(255, 214, 80, 0.62))
+    drop-shadow(0 0 22px rgba(255, 247, 181, 0.28));
 }
 
 /* issue #132：資訊欄與帳號卡共用頭胸 bust——以同一套紙娃娃層裁切顯示頭與胸口的即時穿搭。 */
@@ -91,6 +102,10 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
+  --character-silhouette-filter:
+    drop-shadow(0 0 1px rgba(64, 43, 53, 0.42))
+    drop-shadow(0 4px 6px rgba(58, 37, 46, 0.16))
+    drop-shadow(0 8px 12px rgba(58, 37, 46, 0.12));
 }
 
 .bust-doll .avatar-shadow {
@@ -114,5 +129,5 @@
 }
 
 .bust-doll .paper-doll-layer {
-  filter: drop-shadow(0 8px 12px rgba(58, 37, 46, 0.14));
+  filter: none;
 }

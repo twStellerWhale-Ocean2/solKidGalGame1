@@ -1,12 +1,12 @@
 ---
 name: hmiIntf自訂角色尺度與美術規範
 date: 2026/6/19
-description: solKidGalGame 紙娃娃與 ADV 場景的角色自然尺度、共用 rig、可玩角色 base 分層、GPT 童話手繪 raster 素材與正式美術資產規範（自 README ch2.7 拆出之 contract-local 契約）。
+description: solKidGalGame 紙娃娃與 ADV 場景的角色自然尺度、共用 rig、可玩角色 base 分層、透明輪廓描邊、GPT 童話手繪 raster 素材與正式美術資產規範（自 README ch2.7 拆出之 contract-local 契約）。
 ---
 
 # I. 主旨目的
 
-定義 [sysGame系統] 之 ADV 場景人物、紙娃娃 rig 與正式美術資產的人機介面視覺契約。供 [modWardrobe模組]、[modScene模組] 與美術性測試共同遵循，避免 desktop 正常而 mobile 因比例或 CSS 換算造成身高與構圖不一致。
+定義 [sysGame系統] 之 ADV 場景人物、紙娃娃 rig、角色輪廓描邊與正式美術資產的人機介面視覺契約。供 [modWardrobe模組]、[modScene模組] 與美術性測試共同遵循，避免 desktop 正常而 mobile 因比例或 CSS 換算造成身高與構圖不一致。
 
 # II. 參考準備
 
@@ -61,6 +61,14 @@ Lumi ADV stageScale = 1.20
 * ADV 對話 UI 採低飽和深色高不透明底，維持高對比；不得用白霧洗掉人物、衣物或背景。
 * CSS 只處理 UI chrome、排版、陰影、選取與安全裝飾；不得用幾何、SVG 拼貼、emoji fallback 或 placeholder 宣稱完成。
 
+## D. 角色輪廓與陰影
+
+* ADV NPC 立繪、可玩公主紙娃娃、地圖 token 與頭胸照須以透明素材 alpha 為基準形成常態圖地分離；主要手段為貼合透明外框的深色描邊與位移較大的自然景深陰影。
+* 常態角色輪廓不得以大範圍亮色光暈、背景洗白或場景遮罩取代；光暈只可作為互動狀態提示（例如試穿中）或場景美術本身，不得混作角色本體可讀性的主要來源。
+* 不同 surface 可有不同強度：ADV 立繪可使用較明顯的輪廓與景深，地圖 token 與頭胸照須較銳利且不遮擋周邊 UI，紙娃娃全身著裝須避免多層 wardrobe layer 各自累積過重髒邊。
+* 若以 CSS `filter: drop-shadow()` 實作，應使用多層陰影區分輪廓描邊與自然陰影；描邊層偏深色、短距離、低模糊，景深層可較大位移與較柔和，但不得糊成不分透明輪廓的發光團。
+* 完成判定須以手機直向與桌機視口截圖檢查 ADV NPC、可玩公主紙娃娃、地圖 token、頭胸照與試穿狀態；確認常態輪廓清楚、試穿光暈僅於狀態中出現、關閉狀態後不殘留，且文字與操作控制不被陰影遮擋。
+
 # IV. 備註紀錄
 
 * 2026/6/13：自 README ch2.7／2.7.1 原文拆出，建立為 contract-local 契約（issue #88 方法論導入）。對應 [hmiIntf通用視覺規範] 為上位 UX 通則。
@@ -71,3 +79,4 @@ Lumi ADV stageScale = 1.20
 * 2026/6/19：依 issue #168 補入 wardrobe layer 類別級對位、GPT 童話手繪 bitmap 素材與禁止 SVG 作為正式服裝素材之規則。
 * 2026/6/19：依 issue #179 補入 ADV 場景背景不得以上下模糊、延展或 renderer 特例補版之規則。
 * 2026/6/19：依 issue #176 將 wardrobe layer 由 512×768 滿版對齊改為**去空白邊緊貼裁切 bitmap ＋ per-item `targetBox`（canvas 座標）等比 fit** 對位；類別 `safeBox` 續界定該類投影範圍，base 角色 rig 仍為 512×768。`tool/trim-wardrobe-assets.mjs` 量測/裁切並產生內容框對照表；`data-audit` 改驗 `targetBox` 落於 `safeBox` 內且素材已緊貼裁切。
+* 2026/6/20：依 issue #199 補入透明角色輪廓描邊與自然陰影規範，區分常態角色圖地分離與試穿等互動狀態光暈。
