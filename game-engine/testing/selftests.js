@@ -1881,9 +1881,10 @@ function stripAssetQuery(src) {
   return String(src).split("?")[0];
 }
 
-// issue #197：圖像資產標準尺寸與檔重預算 lint（intTest#49）。
-// 列舉全 runtime 圖像資產 → 比對 assetStandards 之像素尺寸與檔重預算（maxKB），
+// issue #197：圖像資產標準尺寸與檔重預算 lint（intTest#49）——registry 引用資產之 runtime 檢查。
+// 列舉 registry 引用之圖像資產 → 比對 assetStandards 之像素尺寸與檔重預算（maxKB），
 // 攔下像素合規但檔重過大之過大圖檔（純靜態載入緩慢主因）；具名豁免另列。
+// 註：瀏覽器無法列舉檔案系統，未引用之 orphan／CSS-only／裝飾資產由 scripts/assetLint.mjs（FS gate）全檔把關。
 async function collectAssetSizeBudgetAudit(api, errors = []) {
   const targets = [];
   const push = (cls, src) => { if (src) targets.push({ cls, src }); };
