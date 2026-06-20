@@ -50,7 +50,9 @@ import {
   voiceProfileForCharacterId,
   composeVoiceProfile,
   resolveVoiceProfile,
-  DEFAULT_VOICE_PROFILE
+  DEFAULT_VOICE_PROFILE,
+  pickVoiceByGender,
+  recommendedVoiceNamesForGender
 } from "./data/game-data.js";
 import { createAdvControls } from "./flow/adv-controls.js";
 import { firstLayerActionsFor, sceneActionLabel, isShopHotspot } from "./flow/scene-actions.js";
@@ -2919,9 +2921,15 @@ function renderSettings() {
 // 解決 getVoices() 初次回空、稍後 voiceschanged 才載入時設定清單卡在空狀態的問題。
 function renderVoiceSettingsPanel() {
   speechManager.init();
+  const voices = speechManager.listVoices();
+  // issue #209：每桶附上「裝置上實際存在」的同性別推薦語音清單，供設定 UI 置頂顯示（Auto 之外可改選）。
+  const buckets = usedVoiceBuckets().map((bucket) => ({
+    ...bucket,
+    recommended: recommendedVoiceNamesForGender(bucket.gender, voices)
+  }));
   renderVoiceSettings(elements, {
-    buckets: usedVoiceBuckets(),
-    voices: speechManager.listVoices(),
+    buckets,
+    voices,
     assignments: speechManager.getVoiceAssignments(),
     onAssign: (gender, personality, voiceName) => speechManager.setVoiceAssignment(gender, personality, voiceName)
   });
@@ -3060,7 +3068,6 @@ function createSpeechManager() {
     const lang = profile.lang || "en-US";
     const target = normalizeLang(lang);
     const primary = primaryLang(lang);
-    const hint = String(profile.voiceHint || "").toLowerCase();
     if (!available.length) {
       return { voice: null, fallbackReason: "voices-empty", voiceLoadState };
     }
@@ -3078,10 +3085,11 @@ function createSpeechManager() {
     const langMatches = available.filter((voice) => normalizeLang(voice.lang) === target);
     const primaryMatches = available.filter((voice) => primaryLang(voice.lang) === primary);
     const defaultVoice = available.find((voice) => voice.default) || available[0] || null;
-    const hintMatch = hint
-      ? [...langMatches, ...primaryMatches].find((voice) => String(voice.name || "").toLowerCase().includes(hint))
-      : null;
-    if (hintMatch) return { voice: hintMatch, fallbackReason: missTag, voiceLoadState };
+    // issue #209：使用者未指定時，依角色性別自動挑「裝置上存在的同性別具名 voice」（語言優先：先 en-US 再泛 en）。
+    // 取代舊有以 voiceHint 字串比對 voice 名稱之失效邏輯（瀏覽器 voice 名稱鮮少含 "female"／"male"，幾乎恆落空）。
+    const genderVoice = pickVoiceByGender(profile.gender, langMatches)
+      || pickVoiceByGender(profile.gender, primaryMatches);
+    if (genderVoice) return { voice: genderVoice, fallbackReason: missTag || "gender-default", voiceLoadState };
     if (langMatches[0]) return { voice: langMatches[0], fallbackReason: missTag, voiceLoadState };
     if (primaryMatches[0]) return { voice: primaryMatches[0], fallbackReason: missTag || `fallback-${primary}`, voiceLoadState };
     return { voice: defaultVoice, fallbackReason: missTag || "language-unavailable", voiceLoadState };

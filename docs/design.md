@@ -240,11 +240,11 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
   * **sysCase#8.1**：[modScene模組]承接[runAct自訂玩家取用中文協助]，以瀏覽器語音依 `zh-TW` 撥放題目或選項的中文（題庫含中文欄位；缺中文時降級為僅英文撥放）；可用 voice 清單載入後，中文優先選取 `zh-TW` voice，其次 `zh` voice，再降級 default voice，且降級須寫入語音診斷紀錄。
   * **sysCase#8.2**：[modScene模組]承接[runAct自訂系統結算協助獎勵]，依中文使用旗標與答對前送出次數，以全額／半額（paramRewardSecondTryRatio）／無 結算 coins。
 * **sysStory#9-承接角色差異化配音**：
-  * **sysCase#9.1**：[modScene模組]承接[runAct自訂系統角色配音]，依說話者宣告的角色特性查 [modContent模組] 的 [datIntf自訂角色音色目錄] 取得音頻參數（pitch／rate，年齡主要於此表現）套用發聲，並依說話者（性別×性格）類型解析實際 voice——優先採使用者於設定指定之語音，未指定則繼承其性別類型，再依 paramSpeechPreferredVoices 之語言優先 fallback 選取；所有經 [modScene模組] 之語音發聲（含角色配音、公主朗讀作答與中文協助）最終語速均另乘全域 paramSpeechRateScale 倍率以利兒童聽辨；特性缺漏、不在目錄、使用者未指定且瀏覽器無合適 voice 時降級為 paramDefaultVoiceProfile 之預設嗓音，並保留角色 profile 與實際 voice 採用結果。
+  * **sysCase#9.1**：[modScene模組]承接[runAct自訂系統角色配音]，依說話者宣告的角色特性查 [modContent模組] 的 [datIntf自訂角色音色目錄] 取得音頻參數（pitch／rate，年齡主要於此表現）套用發聲，並依說話者（性別×性格）類型解析實際 voice——優先採使用者於設定指定之語音，未指定則繼承其性別類型；仍未指定者，依內建「性別→候選語音名稱清單」（paramVoiceGenderCandidates）自瀏覽器 `getVoices()` 挑選**同性別**具名 voice（語言優先 en-US→en），命中不到（如 Android Google TTS 之 `en-us-x-…` 不具名代號）才再依 paramSpeechPreferredVoices 之語言優先 fallback 選取（fallbackReason 記 `gender-default`／語言 fallback）；不得以「性別字串子字串比對 voice 名稱」自動選取（瀏覽器 voice 名稱鮮少含 `female`／`male` 字樣，恆落空）；所有經 [modScene模組] 之語音發聲（含角色配音、公主朗讀作答與中文協助）最終語速均另乘全域 paramSpeechRateScale 倍率以利兒童聽辨；特性缺漏、不在目錄、使用者未指定且瀏覽器無合適 voice 時降級為 paramDefaultVoiceProfile 之預設嗓音，並保留角色 profile 與實際 voice 採用結果。
   * **sysCase#9.2**：[modScene模組]承接[runAct自訂系統公主朗讀作答]，於玩家選定選項時以目前玩家公主之音色朗讀所選選項文字；`playableVoiceById` 須覆蓋 `lumi`、`yumi`、`sol`、`rosa`，並沿用既有語音開關（關閉時不發聲）。
-  * **sysCase#9.3**：[modScene模組]承接[runAct自訂系統穩定語音播放]，以單一 `speechManager` 包裝 `SpeechSynthesisUtterance`；啟動時先讀 `getVoices()` 並監聽 `voiceschanged`，發聲前先採使用者為該（性別×性格）類型指定之 voice（未指定則繼承性別類型），再依 `lang` 與 voice hint 之語言優先 fallback 選取 voice，並於送入 utterance 之文字開頭加入固定前置留白（paramSpeechLeadingPad）以延後首字出聲、改善開頭清楚度；`speak()` 採佇列或 replace-last 策略，不得每次無條件 `speechSynthesis.cancel()`；`cancel()` 僅用於使用者明確停止、切換語音、同一語音重播、離開場景收束或場景內第一↔二層切換收束。離開場景（關閉場景對話、切換場景或返回地圖之共同收口）時須收束正在播放之語音、不殘留跨場景發聲——因 Web Speech API 之 `SpeechSynthesisUtterance.volume` 於 `speak()` 當下固定、無法對進行中語句即時調整音量（僅 `cancel()` 可中止），故以即時 `cancel()` 作為「約 1 秒內音量淡出」目標聽感之明確降級實作，並將該次 stop 來源寫入語音診斷紀錄。場景內第一↔二層切換（自場景選單進入第二層子互動，或自第二層返回第一層場景選單之共同收口）亦以相同即時 `cancel()` 收束前段語音、stop 來源標記為層級切換並寫入診斷，使語音改接當下話題、不跨層級殘留；收束須冪等且在當下情境 `speak()` 之前完成，不誤殺當下話題該播之語音。
+  * **sysCase#9.3**：[modScene模組]承接[runAct自訂系統穩定語音播放]，以單一 `speechManager` 包裝 `SpeechSynthesisUtterance`；啟動時先讀 `getVoices()` 並監聽 `voiceschanged`，發聲前先採使用者為該（性別×性格）類型指定之 voice（未指定則繼承性別類型），再依內建性別候選清單（paramVoiceGenderCandidates）挑同性別具名 voice、最後依 `lang` 之語言優先 fallback 選取 voice，並於送入 utterance 之文字開頭加入固定前置留白（paramSpeechLeadingPad）以延後首字出聲、改善開頭清楚度；`speak()` 採佇列或 replace-last 策略，不得每次無條件 `speechSynthesis.cancel()`；`cancel()` 僅用於使用者明確停止、切換語音、同一語音重播、離開場景收束或場景內第一↔二層切換收束。離開場景（關閉場景對話、切換場景或返回地圖之共同收口）時須收束正在播放之語音、不殘留跨場景發聲——因 Web Speech API 之 `SpeechSynthesisUtterance.volume` 於 `speak()` 當下固定、無法對進行中語句即時調整音量（僅 `cancel()` 可中止），故以即時 `cancel()` 作為「約 1 秒內音量淡出」目標聽感之明確降級實作，並將該次 stop 來源寫入語音診斷紀錄。場景內第一↔二層切換（自場景選單進入第二層子互動，或自第二層返回第一層場景選單之共同收口）亦以相同即時 `cancel()` 收束前段語音、stop 來源標記為層級切換並寫入診斷，使語音改接當下話題、不跨層級殘留；收束須冪等且在當下情境 `speak()` 之前完成，不誤殺當下話題該播之語音。
   * **sysCase#9.4**：[modScene模組]承接[runAct自訂系統記錄語音診斷]，監聽 utterance `start`、`end`、`error`、`boundary` 事件，記錄 queue 動作、voice 載入狀態、實際語音參數、錯誤代碼與是否因 autoplay/user activation、audio-busy、voice-unavailable、language-unavailable、interrupted 或 canceled 降級。
-  * **sysCase#9.5**：[modScene模組]承接[runAct自訂玩家設定角色語音]，提供各角色類型（性別×性格，僅列實際有角色採用之類型）之瀏覽器可用語音清單供設定選單選取，並將使用者指定持久化（[datIntf自訂角色音色目錄] 之使用者語音指定，存於 paramVoiceAssignmentKey）；指定之 voice 於本機 `getVoices()` 不存在時，依繼承（性別類型）或語言優先 fallback 解析並寫入語音診斷紀錄。
+  * **sysCase#9.5**：[modScene模組]承接[runAct自訂玩家設定角色語音]，提供各角色類型（性別×性格，僅列實際有角色採用之類型）之瀏覽器可用語音清單供設定選單選取，各桶下拉並將「裝置上實際存在之同性別推薦語音」（依 paramVoiceGenderCandidates 解析）置頂為 Recommended 群組、其餘歸 Other voices，以因應 Win11／Android 語音名稱混亂；並將使用者指定持久化（[datIntf自訂角色音色目錄] 之使用者語音指定，存於 paramVoiceAssignmentKey）；指定之 voice 於本機 `getVoices()` 不存在時，依繼承（性別類型）、性別候選清單或語言優先 fallback 解析並寫入語音診斷紀錄。
 * **sysStory#10-承接關於與版本沿革**：
   * **sysCase#10.1**：[modShell模組]承接[runAct自訂玩家檢視關於資訊]，於系統選單新增 About 頁籤，渲染作品版權宣告與最近 10 個版本的中文短主旨；當前版本資訊併入此頁籤，由 [datIntf自訂版本沿革目錄] 之首筆導出，Settings 不再另列版本卡。
 * **sysStory#11-承接場景互動分流與雙回饋**：
@@ -286,9 +286,10 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
     * paramSpeechDebounceMs=`120`
     * paramSpeechWarmupEnabled=`true`
     * paramSpeechDiagnosticsEnabled=`true`
-    * paramSpeechPreferredVoices=`user-assigned,lang-first`
+    * paramSpeechPreferredVoices=`user-assigned,gender-default,lang-first`
     * paramSpeechLeadingPad=`8 full-width spaces`
     * paramVoiceBucketDimensions=`gender,personality`
+    * paramVoiceGenderCandidates=`內建「性別→候選語音名稱(優先序)」清單（voiceNameCandidatesByGender，資料源 Readium Speech＋各平台官方命名），供未指定時自 getVoices() 挑同性別具名 voice；刻意不含 "male"/"female" 裸字`
   * [etyCfg自訂modState組態]
     * paramStorageKey=`luminara-princess-english-adv`
     * paramSaveMarker=`LUMINARA_SAVE_JSON`
@@ -305,7 +306,7 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
 
 ## C. 補充設計(選配)
 
-* [datIntf自訂角色音色目錄]：角色特性維度與其音頻參數對照，併同使用者語音指定之單一資料來源，供 [modScene模組] 查表配音。維度（如性別、年齡、性格）相互組合為音色項，每項對應 pitch／rate／語言與 voice hint，並含 `default` 降級項；pitch／rate 由維度合成（年齡主要於此表現）。角色（NPC 與可玩公主）以其特性宣告對應至一個音色項。實際播放之 voice 解析優先序為：使用者於設定為該（性別×性格）類型指定之語音 → 同性別類型之指定（繼承）→ 依目前瀏覽器 `getVoices()` 之語言優先 fallback；系統不硬編單一 voice name——使用者未指定時一律以語言優先選取以維持跨平台可攜，指定之 voice 於本機不存在時亦依上述順序降級。
+* [datIntf自訂角色音色目錄]：角色特性維度與其音頻參數對照，併同使用者語音指定之單一資料來源，供 [modScene模組] 查表配音。維度（如性別、年齡、性格）相互組合為音色項，每項對應 pitch／rate／語言與 voice hint，並含 `default` 降級項；pitch／rate 由維度合成（年齡主要於此表現）。角色（NPC 與可玩公主）以其特性宣告對應至一個音色項。實際播放之 voice 解析優先序為：使用者於設定為該（性別×性格）類型指定之語音 → 同性別類型之指定（繼承）→ 依內建「性別→候選語音名稱(優先序)」清單（voiceNameCandidatesByGender／paramVoiceGenderCandidates）自瀏覽器 `getVoices()` 挑同性別具名 voice → 依語言優先 fallback；系統不硬編單一 voice name——性別候選為「可擴充名稱清單」而非單一綁定，挑「裝置上實際存在且命中候選」者，命中不到才退語言優先以維持跨平台可攜（如 Android 不具名代號），指定之 voice 於本機不存在時亦依上述順序降級。候選清單刻意不含 `male`／`female` 裸字（瀏覽器 voice 名稱鮮少帶此字、且 `female` 內含 `male` 會誤判）。
 
 ```mermaid
 erDiagram
@@ -872,17 +873,19 @@ erDiagram
 #### intTest#41-驗證 [runAct自訂玩家設定角色語音] 指定、繼承與缺 voice 降級
 
 * 既有基底：intTest#22。
-* 新增項目：[sysGame系統]之使用者語音指定、性別繼承與指定 voice 缺失降級行為。
+* 新增項目：[sysGame系統]之使用者語音指定、性別繼承、未指定時依性別候選清單自動挑同性別 voice（#209）與指定 voice 缺失降級行為。
 * 步驟：
   1. 以 mock 之 `getVoices()` 提供多個具名 voice（如 `David`、`Zira`、`Mark`），於設定為某（性別×性格）類型指定其一並儲存。
   2. 對同性別但未指定的另一性格類型觸發配音。
   3. 重新整理頁面後再觸發步驟 1 之類型配音。
   4. 將步驟 1 指定之 voice 自 `getVoices()` 移除後再觸發其配音。
+  5. 清除所有使用者指定後，分別對女性與男性角色觸發配音（mock voice 清單之語言清單第一個為男聲 `David`，預設項為 `Zira`）。
 * 預期結果：
   1. 指定之類型以指定的 voice 發聲（actual voice name 與指定一致）。
   2. 同性別未指定之類型繼承該性別之指定 voice。
   3. 指定經 paramVoiceAssignmentKey 持久化，重整後仍生效。
-  4. 指定 voice 於本機不存在時，依繼承（性別類型）或語言優先 fallback 降級發聲，不丟例外，並於 [datIntf自訂語音診斷紀錄] 登記 fallback reason。
+  4. 指定 voice 於本機不存在時，依繼承（性別類型）、性別候選清單或語言優先 fallback 降級發聲，不丟例外，並於 [datIntf自訂語音診斷紀錄] 登記 fallback reason。
+  5. 無任何使用者指定時，女性角色挑到同性別女聲（`Zira`，非語言清單第一個的男聲 `David`）、男性角色挑到男聲（`David`／`Mark`），fallbackReason 為 `gender-default`；驗證系統不再以性別字串子字串比對 voice 名稱（#209 杜絕女角配到平台男聲）。
 
 #### intTest#42-驗證 語音首字前置留白
 
