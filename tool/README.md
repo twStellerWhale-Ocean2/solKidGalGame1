@@ -1,4 +1,8 @@
-# Wardrobe Tuner
+# Luminara Editor (Wardrobe + Map)
+
+> issue #218：原 Wardrobe Tuner 重構為比照專業遊戲編輯軟體的**多頁籤編輯器**——最上方是功能
+> 頁籤（**衣物設定** / **地圖設定**），左欄是選項清單，右欄是設定與儲存按鈕。檔名維持
+> `wardrobe-tuner.html` 不變（server 轉址與遊戲內 dev 入口都指向它）。
 
 Open from the local server:
 
@@ -24,11 +28,25 @@ navigates to `tool/wardrobe-tuner.html`. This entry is **dev-only**: it is gated
 front-end environment detection and never appears on the public GitHub Pages site.
 Full apply/manage actions still require the dev server (`node server.mjs`).
 
+## 衣物設定 (Wardrobe tab)
+
 Pick a garment from the **left** list. The **素材包** (content pack) and **類型**
 (category) dropdowns above the list each filter the items by multi-select
-checkboxes (pick one or several, or 全選/全不選). The **mouse wheel zooms** the
-preview, and the splitters on either side of the preview resize the left/right
-columns.
+checkboxes (pick one or several, or 全選/全不選). On the centre preview the
+**mouse wheel zooms** and **dragging an empty area pans** the figure (issue #218);
+the splitters on either side resize the left/right columns.
+
+The right-hand **編輯對象** toggle now has **three** states (issue #218):
+
+- **⊘ 無選擇** — hide both boxes so you can inspect the garment art itself.
+- **① 類型框** — show/edit only the blue type box (the green item box is hidden).
+- **② 單品框** — show/edit only the green item box (the blue type box is hidden).
+
+Each garment row's **📝** button opens a **metadata** dialog (name / price /
+description) instead of the old description-only prompt; reads no longer abort when
+`style.json` or the asset entry is missing — fields just start empty (issue #218).
+Saving writes the name/price back to the pack `manifest.js` and the description back
+to `style.json`, then reloads.
 
 ## Positioning a garment (issue #176)
 
@@ -93,3 +111,22 @@ The page reloads after add/delete so the manifests are re-read.
 `node tool/trim-wardrobe-assets.mjs` (dry-run) measures every layer asset's
 content box; `--apply` trims the transparent margins in place and regenerates
 `asset-content-box.generated.js`. Requires ImageMagick (`magick`).
+
+## 地圖設定 (Map tab, issue #218)
+
+The **地圖設定** function tab edits where each scene sits on a map. The sub-tabs
+choose the map: **World Map** (`content-package/areas/world.js` destinations) and
+each area — **Castle / Urban / Rural / Wild** (`<area>Area.nodes` in that area's
+`manifest.js`). x / y are percentages of the map's width / height.
+
+- **Drag a marker** on the map, or type into the **x / y** boxes on the right —
+  both stay in sync. The left list selects/highlights a node.
+- **✓ 儲存座標到檔案** writes the changed x / y straight back via the dev endpoint
+  `POST /tool/save-map-positions`. It only rewrites the first `x:` / `y:` after each
+  `id: "<id>"` (whitelisted to the five map files), preserving line endings.
+- **更換地圖** uploads a replacement image; the server cover-fits it to that map's
+  exact size/resolution (world `1024×1536`, areas `1536×1536`) with ImageMagick and
+  overwrites the map webp (`POST /tool/upload-map`). Reload the game to see it.
+
+Like the wardrobe apply/manage actions, map save/upload require the dev server
+(`node server.mjs`) and never run on the public GitHub Pages site.
