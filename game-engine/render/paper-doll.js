@@ -3,16 +3,21 @@ import { warpFractions } from "./warp.js";
 export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, layerOrder, canvasWidth = 512, canvasHeight = 768 }) {
   function avatarMarkup(surface, outfitState, character = getCharacter?.()) {
     const layers = activePaperDollLayers(outfitState, character);
+    // issue #194：所有 layer 包進單一 .paper-doll-stage（代表 512:768 合成）。全身 doll 之 stage 為 inset:0
+    // 透明殼、不改變呈現；頭胸照（.bust-doll）則對整個 stage 施加單一等比裁切，使 base 與 wardrobe layer
+    // 沿用完全相同的對位幾何（不再逐 layer 重縮放 background 而讓衣物脫離身體）。
     return `
-      <div class="avatar-shadow"></div>
-      ${layers.map((layer) => `
-        <span
-          class="paper-doll-layer paper-doll-layer-${cssName(layer.slot)} paper-doll-layer-type-${cssName(layer.type || layer.slot)}"
-          style="--layer-img:url('${assetUrl(layer.src)}');${boundsStyle(layer.bounds)}"
-          ${warpAttr(layer.bounds)}
-          aria-hidden="true"
-        ></span>
-      `).join("")}
+      <div class="paper-doll-stage">
+        <div class="avatar-shadow"></div>
+        ${layers.map((layer) => `
+          <span
+            class="paper-doll-layer paper-doll-layer-${cssName(layer.slot)} paper-doll-layer-type-${cssName(layer.type || layer.slot)}"
+            style="--layer-img:url('${assetUrl(layer.src)}');${boundsStyle(layer.bounds)}"
+            ${warpAttr(layer.bounds)}
+            aria-hidden="true"
+          ></span>
+        `).join("")}
+      </div>
     `;
   }
 
