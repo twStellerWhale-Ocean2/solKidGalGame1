@@ -152,3 +152,65 @@ export function voiceProfileForCharacterId(characterId) {
   return resolveVoiceProfile(playableVoiceById[characterId]);
 }
 //#endregion 角色音色宣告
+
+//#region 性別預設語音候選清單（issue #209 / 內建預設值，使用者可於設定覆蓋）
+// 緣由：瀏覽器具名 voice 的名稱跨平台不一（Win11／Android／macOS／Chrome 各異），且名稱幾乎不含
+// "male"／"female" 字樣，故「以性別字串子字串比對 voice 名稱」的舊自動挑選形同無效，常落到平台第一個
+// （可能為男聲）語音——女角因此被配到男聲（#209）。此處改以實查之常見語音名稱建「性別→候選名稱(優先序)」表，
+// speechManager 於使用者未指定時，依角色性別挑「裝置上實際存在且名稱命中候選」的同性別語音；命中不到
+// （如 Android Google TTS 之 `en-us-x-…` 不具名代號）才降級語言優先 fallback。性格（cheerful…）無對應系統
+// 語音，續以 pitch／rate 微調表現，不在此表。
+// 比對採小寫子字串；刻意不含 "male"／"female" 裸字（"female" 內含 "male" 會誤判，且平台 voice 名鮮少帶此字）。
+// 資料來源：Readium Speech 專案 voices 清單 ＋ 各平台官方語音命名（2026-06 查）。
+export const voiceNameCandidatesByGender = Object.freeze({
+  female: Object.freeze([
+    // Microsoft Online（Natural，Win11／Edge）
+    "aria", "jenny", "emma", "ava", "michelle", "ana",
+    "sonia", "libby", "maisie", "clara", "heather", "emily", "molly", "natasha", "hayley",
+    // Microsoft Windows Desktop
+    "zira", "hazel", "susan", "catherine", "linda",
+    // Apple macOS／iOS
+    "samantha", "allison", "nicky", "zoe", "joelle",
+    "kate", "stephanie", "serena", "martha", "matilda", "karen", "moira", "tessa", "fiona",
+    // Google／Chrome／Android（具名者）
+    "google uk english female", "google us english"
+  ]),
+  male: Object.freeze([
+    // Microsoft Online（Natural，Win11／Edge）
+    "andrew", "brian", "guy", "eric", "steffan", "christopher", "roger",
+    "ryan", "thomas", "william", "liam", "connor", "luke", "mitchell",
+    // Microsoft Windows Desktop
+    "david", "mark", "george", "richard", "sean",
+    // Apple macOS／iOS
+    "evan", "nathan", "tom", "alex", "aaron",
+    "jamie", "oliver", "daniel", "arthur", "gordon",
+    // Google／Chrome／Android（具名者）
+    "google uk english male"
+  ])
+});
+
+// 依性別與「裝置可用 voice 陣列」挑出命中候選的同性別 voice（依候選優先序）；無命中回 null。
+export function pickVoiceByGender(gender, candidateVoices) {
+  const tokens = voiceNameCandidatesByGender[String(gender || "").toLowerCase()];
+  if (!tokens || !Array.isArray(candidateVoices) || !candidateVoices.length) return null;
+  for (const token of tokens) {
+    const hit = candidateVoices.find((v) => String(v?.name || "").toLowerCase().includes(token));
+    if (hit) return hit;
+  }
+  return null;
+}
+
+// 列出「裝置上實際存在」且命中某性別候選的 voice 名稱（保留候選優先序、不重複），供設定 UI 顯示推薦清單。
+export function recommendedVoiceNamesForGender(gender, availableVoices) {
+  const tokens = voiceNameCandidatesByGender[String(gender || "").toLowerCase()];
+  if (!tokens || !Array.isArray(availableVoices)) return [];
+  const names = [];
+  for (const token of tokens) {
+    for (const v of availableVoices) {
+      const name = String(v?.name || "");
+      if (name && name.toLowerCase().includes(token) && !names.includes(name)) names.push(name);
+    }
+  }
+  return names;
+}
+//#endregion 性別預設語音候選清單

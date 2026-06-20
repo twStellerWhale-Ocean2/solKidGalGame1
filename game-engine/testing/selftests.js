@@ -1331,6 +1331,12 @@ function runCharacterVoiceSelfTest(api) {
           ];
           api.refreshSpeechVoices?.();
           api.clearVoiceAssignments();
+          // issue #209：使用者未指定時，依角色性別自動挑同性別語音——女角須挑到女聲(Zira)，而非語言清單第一個(此處為 male David)。
+          const femaleAuto = api.selectSpeechVoice({ lang: "en-US", gender: "female", personality: "cheerful" });
+          if (femaleAuto.voice?.name !== "Microsoft Zira") errors.push(`女角未自動配到女聲，實際 ${femaleAuto.voice?.name || "none"}`);
+          if (femaleAuto.fallbackReason !== "gender-default") errors.push(`女角自動配音未標記 gender-default，實際 ${femaleAuto.fallbackReason}`);
+          const maleAuto = api.selectSpeechVoice({ lang: "en-US", gender: "male", personality: "bold" });
+          if (!maleAuto.voice || !/David|Mark/.test(maleAuto.voice.name)) errors.push(`男角未自動配到男聲，實際 ${maleAuto.voice?.name || "none"}`);
           api.setVoiceAssignment("male", "bold", "Microsoft David");
           const maleBold = api.selectSpeechVoice({ lang: "en-US", gender: "male", personality: "bold" });
           if (maleBold.voice?.name !== "Microsoft David") errors.push(`語音指定未生效，實際 ${maleBold.voice?.name || "none"}`);

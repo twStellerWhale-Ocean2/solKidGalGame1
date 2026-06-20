@@ -33,7 +33,10 @@ export {
   npcVoiceByName,
   playableVoiceById,
   VOICE_DIMENSIONS,
-  voiceCatalogVersion
+  voiceCatalogVersion,
+  voiceNameCandidatesByGender,
+  pickVoiceByGender,
+  recommendedVoiceNamesForGender
 } from "../../content-package/voice/manifest.js";
 
 export const difficultyConfig = {
