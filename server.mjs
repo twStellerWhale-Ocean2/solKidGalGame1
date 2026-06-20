@@ -33,7 +33,10 @@ async function serveStatic(request, response) {
   }
   try {
     const content = await readFile(filePath);
-    response.writeHead(200, { "Content-Type": mimeTypes[extname(filePath)] || "application/octet-stream" });
+    response.writeHead(200, {
+      "Content-Type": mimeTypes[extname(filePath)] || "application/octet-stream",
+      "Cache-Control": "no-store" // dev 本機預覽：永不快取，使改檔即時生效（非 GitHub Pages 行為）
+    });
     response.end(content);
   } catch {
     response.writeHead(404);
