@@ -267,7 +267,7 @@ WARDROBE -->|"🎚️paramWardrobeLayerBounds=`type defaults`"| SYS
     * paramCardBackgroundAlpha=`0.45`
     * paramInitialThemeRandomization=`profileColor,backgroundPattern`
     * paramDefaultVoiceProfile=`default`
-    * paramAssetStandards=`per-class {pixelSize, maxKB}：characterBase 512×768·350、scene 1024×1024·500、areaMap 1536×1536·600、worldMap 1024×1536·600、wardrobeThumb 256×256·60、wardrobeLayer 512×768·120、ui 視資產類別宣告`（資產 lint 之尺寸與檔重 SSOT；初始檔重門檻，code 可依實測 USR-gated 微調）
+    * paramAssetStandards=`per-class {pixelSize, maxKB, mode}：固定畫布 exact——characterBase/NPC 512×768·350、scene 1024×1024·500、areaMap 1536×1536·600、worldMap 1024×1536·600、ui 1280×720·120；緊貼裁切容於畫布 bound（素材去白邊後寬高≤畫布，#176 以 targetBox 等比 fit）——wardrobeThumb ≤256×256·60、wardrobeLayer ≤512×768·120`（資產 lint 之尺寸與檔重 SSOT；初始檔重門檻，code 可依實測 USR-gated 微調）
   * [etyCfg自訂modScene組態]
     * paramChineseAudioLang=`zh-TW`
     * paramRewardSecondTryRatio=`0.5`
@@ -957,10 +957,10 @@ erDiagram
 * 步驟：
   1. 列舉所有 runtime 載入之圖像資產並歸入 paramAssetStandards 之資產類別（角色／NPC base、wardrobe layer、商品縮圖、ADV 場景背景、地區地圖、世界地圖、UI 等）。
   2. 對每張資產讀取實際像素尺寸與檔案位元組大小。
-  3. 比對該類別標準：像素尺寸須等於宣告之標準值、檔案位元組須不超出該類別檔重預算（maxKB）。
+  3. 比對該類別標準：固定畫布類（地圖／場景／角色 base／UI）像素尺寸須等於標準值、緊貼裁切類（衣物 layer／縮圖）寬高須容於標準畫布；檔案位元組須不超出該類別檔重預算（maxKB）。
   4. 將不符者標記為違規（尺寸不符或檔重超標），具名豁免項另列。
 * 預期結果：
-  1. 每張資產之像素尺寸等於 paramAssetStandards 宣告之類別標準值。
+  1. 每張資產之像素尺寸符合 paramAssetStandards 宣告之類別標準（固定畫布類等於、裁切類容於畫布）。
   2. 每張資產之檔案位元組不超出 paramAssetStandards 宣告之類別檔重預算；現存超標之過大圖檔已重壓縮至預算內，或列入具名豁免清單。
   3. 每個實際載入之資產類別均在 paramAssetStandards 中有對應標準（無未涵蓋之漏網類別）。
 

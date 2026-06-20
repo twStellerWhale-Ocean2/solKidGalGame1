@@ -1,4 +1,5 @@
 import { createKeyboardWalkController, directionForKey } from "../map/keyboard-walk.js";
+import { assetStandards, assetSizeExemptions, classifyAssetPath } from "../../content-package/_shared/asset-standards.js";
 
 export function installTestingHooks(api) {
   window.LuminaraTest = {
@@ -1456,6 +1457,8 @@ async function runDataAudit(api) {
   });
   const characterRegistry = await collectPaperDollCharacterAudit(api, errors, warnings);
   const characterScale = await collectCharacterScaleAudit(api, errors, warnings);
+  // issue #197：圖像資產標準尺寸與檔重預算 lint（intTest#48）。
+  const assetSizeBudget = await collectAssetSizeBudgetAudit(api, errors);
 
   // issue #96 設計契約 §3：場景自帶題庫之結構與中文覆蓋一致性（手寫固定、每題自帶中文、進場取題）。
   const lessonAudit = { places: 0, questions: 0, byArea: {} };
@@ -1532,6 +1535,7 @@ async function runDataAudit(api) {
     sceneBackgroundContract,
     characterRegistry,
     characterScale,
+    assetSizeBudget,
     lessonAudit,
     chatAudit,
     supportedActorMotions: [...supportedActorMotions],
@@ -1805,6 +1809,103 @@ function imageSceneContentMetrics(src) {
     image.onerror = () => reject(new Error(`Could not load ${src}`));
     image.src = src;
   });
+}
+
+// issue #197：讀取資產實際傳輸位元組（檔重）；純靜態無 build，於瀏覽器以 fetch→blob 量測。
+async function assetByteSize(src) {
+  const response = await fetch(src, { cache: "no-store" });
+  if (!response.ok) throw new Error(`fetch ${src} -> HTTP ${response.status}`);
+  const blob = await response.blob();
+  return blob.size;
+}
+
+function stripAssetQuery(src) {
+  return String(src).split("?")[0];
+}
+
+// issue #197：圖像資產標準尺寸與檔重預算 lint（intTest#48）。
+// 列舉全 runtime 圖像資產 → 比對 assetStandards 之像素尺寸與檔重預算（maxKB），
+// 攔下像素合規但檔重過大之過大圖檔（純靜態載入緩慢主因）；具名豁免另列。
+async function collectAssetSizeBudgetAudit(api, errors = []) {
+  const targets = [];
+  const push = (cls, src) => { if (src) targets.push({ cls, src }); };
+  // 角色 base（可玩公主）
+  Object.values(api.characterRegistry || {}).forEach((c) => push("characterBase", c.baseLayer));
+  // 場景人物像（NPC）＋ ADV 場景背景 ＋ 地區地圖
+  Object.values(api.areaRegistry || {}).forEach((area) => {
+    (area.locations || []).forEach((hotspot) => {
+      const config = api.sceneConfigFor(hotspot);
+      if (config?.npcImage) push("characterBase", config.npcImage);
+      if (config?.sceneArt?.src) push("scene", config.sceneArt.src);
+    });
+    if (area.mapImage) push("areaMap", area.mapImage);
+  });
+  // 世界地圖
+  if (api.worldMap?.mapImage) push("worldMap", api.worldMap.mapImage);
+  // 衣物縮圖與 layer
+  (api.shopItems || []).forEach((item) => {
+    push("wardrobeThumb", item.image);
+    (item.layers || []).forEach((layer) => push("wardrobeLayer", layer.src));
+  });
+  // UI 介面圖（CSS 背景、非 registry，明列以免漏網）
+  ["content-base/ui/diary-book.webp", "content-base/ui/settings-book.webp"].forEach((src) => push("ui", src));
+
+  // 去重（同一資產可能被多處引用，如 starter 商品借用角色 base 作縮圖）——以路徑為準
+  const seen = new Set();
+  const unique = targets.filter((t) => {
+    const key = stripAssetQuery(t.src);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  const checked = [];
+  for (const { src } of unique) {
+    const path = stripAssetQuery(src);
+    const cls = classifyAssetPath(path);
+    const std = cls ? assetStandards[cls] : null;
+    const exemptReason = Object.entries(assetSizeExemptions).find(([suffix]) => path.endsWith(suffix))?.[1] || null;
+    const record = { cls, src: path, expected: std ? { mode: std.mode, width: std.width, height: std.height, maxKB: std.maxKB } : null };
+    if (!std) {
+      errors.push(`asset ${path} has no registered standard class (未涵蓋漏網類別)`);
+      record.status = "no-standard";
+      checked.push(record);
+      continue;
+    }
+    try {
+      const [dims, bytes] = await Promise.all([imageNaturalSize(src), assetByteSize(src)]);
+      const kb = Math.round((bytes / 1024) * 10) / 10;
+      record.actual = { width: dims.width, height: dims.height, kb };
+      record.exempt = exemptReason;
+      // exact：固定畫布須等於標準；bound：緊貼裁切須容於畫布（寬高皆 ≤）。
+      const sizeOk = std.mode === "bound"
+        ? (dims.width <= std.width && dims.height <= std.height)
+        : (dims.width === std.width && dims.height === std.height);
+      const weightOk = bytes <= std.maxKB * 1024;
+      record.status = sizeOk && weightOk ? "passed" : (exemptReason ? "exempt" : "failed");
+      if (!exemptReason) {
+        if (!sizeOk) {
+          const cmp = std.mode === "bound" ? `exceeds canvas ${std.width}x${std.height}` : `expected ${std.width}x${std.height}`;
+          errors.push(`${cls} asset ${path} is ${dims.width}x${dims.height}, ${cmp}`);
+        }
+        if (!weightOk) errors.push(`${cls} asset ${path} is ${kb}KB, exceeds ${std.maxKB}KB budget`);
+      }
+    } catch (error) {
+      record.status = "error";
+      errors.push(`asset ${path} audit failed: ${error.message}`);
+    }
+    checked.push(record);
+  }
+
+  const failed = checked.filter((r) => ["failed", "no-standard", "error"].includes(r.status));
+  return {
+    standards: assetStandards,
+    count: checked.length,
+    failedCount: failed.length,
+    exemptCount: checked.filter((r) => r.status === "exempt").length,
+    failed,
+    checked
+  };
 }
 
 async function collectMapContractAudit(api, errors) {

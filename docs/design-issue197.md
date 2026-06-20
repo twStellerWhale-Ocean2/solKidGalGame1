@@ -45,3 +45,36 @@
 
 * **交付物**：design.md 回修（spec#7 補述／paramAssetStandards／solCase#7.2／sysCase#5.3／intTest#48／＜IV＞）＋ README 初稿改動＋本設計note。docLint sol = 0、CHECKLIST 完成、無新增/移除契約引用。
 * **審查點**：推送 Draft PR，每 3 分鐘輪詢四訊號等待 USR 審查；核准後達 `DESIGN-READY`，交棒 code 於同分支補 lint 實作與現存資產處置。
+
+## 6. code 階段：實作與 GATE 驗證紀錄
+
+### 6.1 實作
+
+* **標準表 SSOT**：新增 [content-package/_shared/asset-standards.js]——`assetStandards`（per-class `{mode, width, height, maxKB, label}`）＋ `classifyAssetPath()`（依路徑歸類，較依引用欄位穩健）＋ `assetSizeExemptions`（目前空）。
+* **資產 lint**：[game-engine/testing/selftests.js] `data-audit` 新增 `collectAssetSizeBudgetAudit()`——列舉全 runtime 圖像資產（角色 base／NPC／場景／地區地圖／世界地圖／衣物縮圖＋layer／UI）→ 以 `fetch→blob.size` 量檔重、`imageNaturalSize` 量像素 → 比對標準（exact 等於／bound 容於）＋ 檔重預算；違規入 `errors`、結果入 `assetSizeBudget`。純靜態無 build，於瀏覽器量測。
+* **設計修正（code 發現、已同步 design.md）**：plan 假設 wardrobe layer 為固定 512×768，實測為**緊貼裁切之內容 bitmap**（去白邊、可變尺寸，#176 以 targetBox 等比 fit 回畫布，如 200×289／158×271）。故衣物 layer／縮圖改採 **bound 模式**（寬高須容於畫布、非等於），固定畫布類（地圖／場景／角色 base／UI）維持 exact。已回修 design.md ＜II.B (D)＞ paramAssetStandards 與 ＜III.D intTest#48＞（docLint sol=0）。
+* **現存超標重壓縮**（ImageMagick，維持像素尺寸、無模糊補版）：地區地圖 rural 865→550KB(q80)／urban 793→508KB(q88)／wild 774→456KB(q88)；wild 場景 elf-glade 553→406(q85)／tree-spirit-grove 521→427／red-hood-path 521→430／halfling-village 513→419／dwarf-cottage 509→408／three-pigs 500→401(q88)——共 9 檔，省約 2.3 MB。無具名豁免。
+
+### 6.2 GATE §1（機器判定，全綠）
+
+* `node --check`：[asset-standards.js]、[selftests.js] → OK。
+* `docLint docs/design.md`(sol)=**0**；`repoLint .`=**0**。
+* headless selftest（chromium，本機 server `:4191` 服務本分支檔案）全 PASS、console **0 error**：
+  * **`data-audit`**：`passed:true`、errors `[]`——`assetSizeBudget` 250 資產、**failed 0／exempt 0**；各類上限：areaMap 550.2/600、worldMap 553.5/600、scene 490.8/500、characterBase 318.9/350、wardrobeThumb 16.7/60(bound)、wardrobeLayer 53.2/120(bound)、ui 24.2/120。
+  * **回歸**：`save-load`（coins 100→100、活躍角色一致）、`monkey`(300 步、0 err) → `passed:true`。
+* 依賴安全：純靜態網站、無 package 相依，`npm audit` 不適用（STACK techStackStaticWeb）。
+
+### 6.3 GATE §5（業界水準審查＋視覺證據）
+
+> 本增量異動之 UI 為 9 張重壓縮資產（3 地區地圖＋6 wild 場景）；以實機渲染＋before/after montage 佐證無畫質退化。
+
+* **鏡頭 A（資產治理能力）**：標準尺寸＋檔重雙軸 lint 全資產涵蓋（含舊無守門的 NPC／縮圖／layer／UI）、納 data-audit/GATE、現存超標已收斂、具名豁免機制備而未用——能力齊備。
+* **鏡頭 B（缺口）**：補上「過大圖檔零守門」之長期缺口；標準表收斂散落魔術數字為單一 SSOT；新增類別未登記即報錯（杜絕漏網）。
+* **鏡頭 C（逐頁畫質）**：elf-glade 實機渲染清晰、背景林木與瀑布細節完整、人物層對位正常；rural 地圖（q80 最激進，865→550）與 elf-glade（q85，553→406）before/after montage 視覺一致、無 banding/細節流失；其餘 7 檔採等量或更高品質（q85–88）、像素尺寸保留，至少同等。
+* **分級**：`務必要修` **0**；`可以接受`——重壓縮採 ImageMagick q80–88（業界網頁插圖常規品質），畫質肉眼無退化。
+* **結論：可宣稱完成。**
+
+### 6.4 交付物與審查點
+
+* **交付物**：程式（asset-standards.js＋selftests.js）＋ 9 張重壓縮資產 ＋ design.md 回修（bound 語意）＋ README ＋ 本設計note。
+* **test-summary.pdf**：沿 #101／#150／#166／#176／#180／#195 焦點變更慣例，本節即 GATE 報告；是否另產 A5 直向 [docs/test-summary.pdf] **待 USR 裁決**。QA 截圖／montage 為暫存產物、不作交付物。
