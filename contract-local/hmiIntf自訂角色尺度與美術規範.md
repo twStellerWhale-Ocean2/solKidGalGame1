@@ -44,15 +44,19 @@ Lumi ADV stageScale = 1.20
 * 可玩公主 runtime 角色圖只保留 `base.webp`；選角畫面須直接以 CSS 裁切 `base.webp` 的頭部、肩膀與胸口上緣作為 portrait，不另維護角色 `thumb.webp`。
 * starter items（例如 `softBrownHair`、`starterPajama` 或後續替代品）保留為舊存檔相容項；在 baked-in playwear base 策略下可為空 layer/no-op，但預設與舊存檔正規化不得造成 starter 髮型或 starter 服裝重複疊圖。
 * 四位可玩公主的美術方向：Lumi、Yumi、Mary、Rosa 依使用者指定方向對應，並轉為同 rig、透明背景、同 baseline 的正式 WebP；其中 Yumi 僅改深藍髮、Mary 僅改深綠髮，除髮色外不得改動服裝、姿勢、比例、臉型、透明底或 rig 對位。若未來要完全自由替換髮型或衣物，需另行改回中性 base + 髮型 layer + 衣物 layer 策略。
-* wardrobe layer 與商品縮圖須為 GPT 產生或修圖之童話手繪風格 bitmap 素材，正式交付為透明 WebP／PNG；不得使用 SVG、CSS 幾何、向量拼貼、emoji 或 placeholder 作為正式服裝 layer、商品縮圖或完成品替代素材。
-* wardrobe layer 素材為**去透明留白的緊貼裁切 bitmap**（issue #176）；對位以**類別級 `safeBox`（該類投影範圍）＋ per-item `targetBox`（canvas `512x768` 座標）**管理：引擎把素材等比 `contain` fit 進 `targetBox`，落點與尺度由 `targetBox` 決定。`targetBox` 預設落在該 item type／slot（如 hairstyle、top、bottom、dress、outer、shoes、headTop、headSide、faceEyes、faceMask、neck、hand）之類別 `safeBox` 內，`safeBox` 為軟性指引——手動 per-item 校準（含四角自由形變 `corners`：四角各自 px 偏移成任意四邊形，issue #191；相容舊梯形 `topInset`／`bottomInset`）可超出 `safeBox`，落在 `512×768` 畫布內即可（data-audit 對超出 safeBox 僅告警、落在畫布外才報錯）；新增同類衣物預設繼承類別 `safeBox`／`targetBox`，不得每件各自新增一次性 nudge、改 CSS selector 或靠透明留白調整位置。
+* wardrobe 單品須為 GPT／影像模型產生或修圖之童話手繪風格 bitmap 素材，正式交付為**單一 `512×512` 透明 WebP／PNG**，同時作為投影層與商店商品預覽（不另設分離商品縮圖）；不得使用 SVG、CSS 幾何、向量拼貼、emoji 或 placeholder 作為正式服裝素材或完成品替代素材。
+* wardrobe 單品素材為 **`512×512` 長邊貼滿（fill）之透明 bitmap**（issue #196，取代 #176 去白邊緊貼裁切之可變尺寸畫布；兼作投影層與商店預覽）：等比縮放使內容長邊貼滿至少一對對邊、短邊置中留透明、不變形。投影對位仍以**類別級 `safeBox`（該類投影範圍）＋ per-item `targetBox`（canvas `512x768` 座標，由維護者精確校準）**管理：引擎把 `512×512` 素材等比映射進 `targetBox`，落點與尺度由 `targetBox` 決定。`targetBox` 預設落在該 item type／slot（如 hairstyle、top、bottom、dress、outer、shoes、headTop、headSide、faceEyes、faceMask、neck、hand）之類別 `safeBox` 內，`safeBox` 為軟性指引——手動 per-item 校準（含四角自由形變 `corners`：四角各自 px 偏移成任意四邊形，issue #191；相容舊梯形 `topInset`／`bottomInset`）可超出 `safeBox`，落在 `512×768` 畫布內即可（data-audit 對超出 safeBox 僅告警、落在畫布外才報錯）；新增同類衣物預設繼承類別 `safeBox`／`targetBox`，不得每件各自新增一次性 nudge、改 CSS selector 或靠透明留白調整位置。
 * wardrobe layer 完成判定須實際穿到角色 base 上檢查，不得只檢查檔案存在；手機直向與桌機尺寸皆須抽查代表性類別，確認衣物位置、比例、接縫與跨角色共用 layer 對位。
 * 露膚衣物層（短袖、涼鞋／赤腳、手部配件邊界）須逐一在各膚色角色上檢查接縫，不得殘留為單一膚色繪製的色塊。
-* 不得為個別可玩公主新增 CSS nudge 或改畫布尺寸調整 layer 對位；wardrobe layer 對位錯誤回到 `targetBox` 校準或素材修正，不靠透明留白（素材應緊貼裁切）。
+* 不得為個別可玩公主新增 CSS nudge 或改畫布尺寸調整 layer 對位；wardrobe 對位錯誤回到 `targetBox` 校準或素材修正。
+* wardrobe 單品素材以**三層描述詞**驅動影像模型生成：全域 `houseStyle`（全作品統一童話手繪底層繪法）＋ 每個素材包 `packStyle`（`name`／`reference`／`palette`／`motifs`／`linework`／`mood`，僅變母題與配色、不改底層繪法）＋ 單品 `itemDesc`；產圖以同包既有 2–3 件素材為風格錨（影像 API `image[]`），以文字描述遊戲定位與紙娃娃用途（不把場景背景圖當輸入），排除身體／場景／邊框／文字／投影、要求透明底與單件，使同包一致、跨件有別。
+* wardrobe 素材採「**生成一張 → 不滿意改描述詞 → 重生**」流程（不採多候選自動挑選）；維護工具（[tool/wardrobe-tuner.js]）於現有 `📁資料夾`／`🗑刪除` 外提供 `📝描述詞`（編輯三層描述詞 JSON）與 `♻重生`（依目前描述詞重生並覆蓋）。
+* 素材**留痕寫入圖檔本身 metadata**（WebP comment／XMP：`model`／`prompt`／`date`），不另存 sidecar 檔；產圖與壓縮流程不得 `-strip` 掉該 metadata（如需壓縮去其餘 metadata，須保留或重寫 provenance）。
+* 影像生成屬 **dev 期維護工具**、產出 commit 為 raster；runtime 不得即時呼叫影像模型，亦不得以 SVG／濾鏡代替素材。
 
 ## C. 場景與素材通則
 
-* 正式 runtime 素材統一使用 WebP；地圖、ADV 背景、NPC、角色、衣物 layer、商品縮圖都須為正式 bitmap 美術。
+* 正式 runtime 素材統一使用 WebP；地圖、ADV 背景、NPC、角色、衣物 layer（兼商店預覽）都須為正式 bitmap 美術。
 * World Map：`content-base/world/assets/world-map.webp`，實際像素與 manifest 須為 `1024x1536`。
 * Area Map：每個 enabled area 用 `content-package/areas/<area>/assets/map-1536.webp`，實際像素與 manifest 須為 `1536x1536`。
 * Scene background：每個 runtime ADV 場景背景須為單張 `1024x1024` WebP，由 sceneArt renderer 統一載入；場景 CSS 不得硬編碼背景 URL 或建立 fallback 背景圖。
@@ -80,3 +84,4 @@ Lumi ADV stageScale = 1.20
 * 2026/6/19：依 issue #179 補入 ADV 場景背景不得以上下模糊、延展或 renderer 特例補版之規則。
 * 2026/6/19：依 issue #176 將 wardrobe layer 由 512×768 滿版對齊改為**去空白邊緊貼裁切 bitmap ＋ per-item `targetBox`（canvas 座標）等比 fit** 對位；類別 `safeBox` 續界定該類投影範圍，base 角色 rig 仍為 512×768。`tool/trim-wardrobe-assets.mjs` 量測/裁切並產生內容框對照表；`data-audit` 改驗 `targetBox` 落於 `safeBox` 內且素材已緊貼裁切。
 * 2026/6/20：依 issue #199 補入透明角色輪廓描邊與自然陰影規範，區分常態角色圖地分離與試穿等互動狀態光暈。
+* 2026/6/20：依 issue #196 將 wardrobe 單品由 #176 去白邊緊貼裁切（≤512×768）＋分離 256×256 商品縮圖，改為**單一 `512×512` 長邊貼滿透明素材**兼作投影層與商店預覽（移除分離縮圖）；素材由全域 houseStyle＋packStyle＋itemDesc 三層描述詞經影像模型生成、留痕寫入圖檔 metadata，維護工具加描述詞編輯與重生；資產標準 `wardrobe` 改為 fill 模式 512×512（取代 wardrobeThumb／wardrobeLayer 雙類，見 [docs/design.md] ＜II.D＞ paramAssetStandards、intTest#49）。投影仍以 per-item `targetBox` 由維護者校準。
