@@ -2247,6 +2247,12 @@ function runVisualQa(api) {
     return;
   }
 
+  // issue #194：頭胸照 bust 與全身著裝並排，驗證二者由同一合成幾何產生、衣物對位一致（intTest#31 bust 檢查）。
+  if (surface === "bust-outfit") {
+    renderBustOutfitQa(api);
+    return;
+  }
+
   if (surface === "wardrobe-detail") {
     const requestedItem = api.itemById(params.get("item"));
     const category = params.get("category") || api.categoryForType(requestedItem?.type)?.id || "dresses";
@@ -2405,6 +2411,59 @@ function runVisualQa(api) {
     return;
   }
 
+  api.render();
+}
+
+// issue #194：頭胸照 bust 與全身著裝並排 QA。兩者皆為 [data-doll]，由 api.render() 以同一 state.outfit 填層，
+// 差別僅 .bust-doll vs .adv-doll 之 CSS 裁切；藉此肉眼／截圖比對衣物是否在 bust 中仍對位於身體（不跑到臉上）。
+function renderBustOutfitQa(api) {
+  document.querySelector("#bustOutfitQa")?.remove();
+  document.querySelector("#bustOutfitQaStyle")?.remove();
+  const surface = document.createElement("main");
+  surface.id = "bustOutfitQa";
+  surface.innerHTML = `
+    <section class="bust-qa-card">
+      <div class="bust-qa-col">
+        <span class="bust-qa-tag">頭胸照 bust（資訊欄／帳號卡）</span>
+        <div class="bust-qa-frame"><span class="paper-doll bust-doll" data-doll="bust-qa" aria-hidden="true"></span></div>
+        <div class="bust-qa-frame bust-qa-frame-sm"><span class="paper-doll bust-doll" data-doll="bust-qa-sm" aria-hidden="true"></span></div>
+      </div>
+      <div class="bust-qa-col">
+        <span class="bust-qa-tag">全身著裝（場景）</span>
+        <span class="paper-doll adv-doll bust-qa-full" data-doll="full-qa" aria-hidden="true"></span>
+      </div>
+    </section>
+  `;
+  const style = document.createElement("style");
+  style.id = "bustOutfitQaStyle";
+  style.textContent = `
+    #bustOutfitQa {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)),
+        url("/content-package/areas/castle/assets/scenes/bedroom-1024.webp") center / cover no-repeat;
+    }
+    .bust-qa-card { display: flex; gap: 28px; align-items: flex-start; }
+    .bust-qa-col { display: grid; gap: 10px; justify-items: center; }
+    .bust-qa-tag { font: 700 14px/1.3 system-ui, sans-serif; color: #3a252e; }
+    .bust-qa-frame {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      overflow: hidden;
+      border-radius: 14px;
+      border: 1px solid rgba(120, 90, 105, 0.4);
+      background-color: color-mix(in srgb, #ffd9e6 45%, transparent);
+    }
+    .bust-qa-frame-sm { width: 58px; height: 58px; border-radius: 8px; }
+    .bust-qa-full { position: relative; width: 250px; height: 360px; }
+  `;
+  document.head.append(style);
+  document.body.append(surface);
   api.render();
 }
 
