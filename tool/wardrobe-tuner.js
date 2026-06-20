@@ -179,9 +179,13 @@ function renderItemList() {
         <span class="item-name"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.type)} / ${escapeHtml(item.id)}</span></span>
         <span class="item-price">${priceText(item)}</span>
       </button>
+      <button type="button" class="item-act" data-act="desc" title="編輯描述詞（itemDesc）">📝</button>
+      <button type="button" class="item-act" data-act="regen" title="以目前描述詞重生此單品">♻</button>
       <button type="button" class="item-act" data-act="open" title="開啟素材資料夾">📁</button>
       <button type="button" class="item-act" data-act="del" title="刪除此單品">🗑</button>`;
     row.querySelector(".item-main").addEventListener("click", () => { state.selectedItemId = item.id; equipSelectedItem(); renderAll(); });
+    row.querySelector('[data-act="desc"]').addEventListener("click", () => editItemDesc(item));
+    row.querySelector('[data-act="regen"]').addEventListener("click", () => regenItem(item));
     row.querySelector('[data-act="open"]').addEventListener("click", () => openItemFolder(item));
     row.querySelector('[data-act="del"]').addEventListener("click", () => deleteItem(item));
     dom.itemList.append(row);
@@ -204,6 +208,29 @@ async function deleteItem(item) {
     if (!d.ok) { window.alert(`刪除失敗：${d.error}`); return; }
     window.location.reload();
   } catch (e) { window.alert(`刪除失敗：${e.message}`); }
+}
+
+// issue #196：編輯該單品三層描述詞之 itemDesc（寫回該包 style.json），供 ♻ 重生使用。
+async function editItemDesc(item) {
+  try {
+    const cur = await postJson("/tool/get-wardrobe-desc", { pack: packOfItem(item), asset: assetOfItem(item) });
+    if (!cur.ok) { window.alert(`讀取描述詞失敗：${cur.error}`); return; }
+    const next = window.prompt(`「${item.name}」描述詞（itemDesc，存回 style.json，按 ♻ 重生套用）：`, cur.desc || "");
+    if (next == null || next.trim() === (cur.desc || "")) return;
+    const d = await postJson("/tool/save-wardrobe-desc", { pack: packOfItem(item), asset: assetOfItem(item), desc: next.trim() });
+    if (!d.ok) { window.alert(`儲存失敗：${d.error}`); return; }
+    window.alert("已儲存描述詞，按 ♻ 重生即以新描述生成。");
+  } catch (e) { window.alert(`描述詞失敗：${e.message}`); }
+}
+
+// issue #196：以目前三層描述詞呼叫影像模型重生此單品並覆蓋素材（dev only）。
+async function regenItem(item) {
+  if (!window.confirm(`重生「${item.name}」？\n以目前描述詞呼叫影像模型生成 512×512 並覆蓋素材（約 30–60 秒）。`)) return;
+  try {
+    const d = await postJson("/tool/regenerate-wardrobe", { pack: packOfItem(item), asset: assetOfItem(item) });
+    if (!d.ok) { window.alert(`重生失敗：${d.error}`); return; }
+    window.location.reload();
+  } catch (e) { window.alert(`重生失敗：${e.message}`); }
 }
 
 function populateAddSelects() {

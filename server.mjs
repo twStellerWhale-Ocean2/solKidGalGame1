@@ -224,11 +224,58 @@ async function handleUploadItem(request, response) {
   } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
 }
 
+// ===== issue #196：三層描述詞編輯 + 影像模型重生（dev only）=====
+function runNode(args) {
+  return new Promise((resolve, reject) => {
+    execFile(process.execPath, args, { cwd: root, encoding: "utf8", maxBuffer: 10 * 1024 * 1024, env: process.env },
+      (err, out, errout) => (err ? reject(new Error(errout || err.message)) : resolve(out)));
+  });
+}
+
+async function handleGetWardrobeDesc(request, response) {
+  try {
+    const { pack, asset } = JSON.parse(await readBody(request) || "{}");
+    safeName(pack, "pack"); safeName(asset, "asset");
+    const style = JSON.parse(await readFile(join(packDir(pack), "style.json"), "utf8"));
+    const v = style.items?.[asset];
+    json(response, 200, { ok: true, desc: typeof v === "string" ? v : (v?.desc || ""), packStyle: style.packStyle });
+  } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
+}
+
+async function handleSaveWardrobeDesc(request, response) {
+  try {
+    const { pack, asset, desc } = JSON.parse(await readBody(request) || "{}");
+    safeName(pack, "pack"); safeName(asset, "asset");
+    if (typeof desc !== "string" || !desc.trim()) throw new Error("desc required");
+    const file = join(packDir(pack), "style.json");
+    const src = await readFile(file, "utf8");
+    const eol = src.includes("\r\n") ? "\r\n" : "\n";
+    const style = JSON.parse(src);
+    if (!style.items) style.items = {};
+    const cur = style.items[asset];
+    style.items[asset] = (cur && typeof cur === "object") ? { ...cur, desc: desc.trim() } : desc.trim();
+    await writeFile(file, (JSON.stringify(style, null, 2) + "\n").replace(/\n/g, eol));
+    json(response, 200, { ok: true });
+  } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
+}
+
+async function handleRegenerateWardrobe(request, response) {
+  try {
+    const { pack, asset } = JSON.parse(await readBody(request) || "{}");
+    safeName(pack, "pack"); safeName(asset, "asset");
+    const out = await runNode(["tool/generate-wardrobe-asset.mjs", pack, "--item", asset, "--apply"]);
+    json(response, 200, { ok: true, log: out.trim().split("\n").slice(-2).join(" | ") });
+  } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
+}
+
 const WARDROBE_ROUTES = {
   "/tool/open-folder": handleOpenFolder,
   "/tool/delete-item": handleDeleteItem,
   "/tool/add-item": handleAddItem,
-  "/tool/upload-item": handleUploadItem
+  "/tool/upload-item": handleUploadItem,
+  "/tool/get-wardrobe-desc": handleGetWardrobeDesc,
+  "/tool/save-wardrobe-desc": handleSaveWardrobeDesc,
+  "/tool/regenerate-wardrobe": handleRegenerateWardrobe
 };
 
 createServer(async (request, response) => {
