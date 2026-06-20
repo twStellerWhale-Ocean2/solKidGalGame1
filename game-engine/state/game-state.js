@@ -122,7 +122,7 @@ export function normalizeState(candidate = {}) {
     || activeCharacter?.defaultName
     || base.playerName;
   merged.owned = Array.isArray(candidate.owned)
-    ? [...new Set([...base.owned, ...candidate.owned.map(migrateLegacyItemId)])]
+    ? [...new Set([...base.owned, ...candidate.owned.map(migrateLegacyItemId)])].filter((id) => Boolean(itemById(id)))
     : base.owned;
   const candidateOutfit = candidate.outfit || {};
   merged.outfit = normalizeOutfit(candidateOutfit, base.outfit);
@@ -133,7 +133,7 @@ export function normalizeState(candidate = {}) {
   merged.metNpcs = Array.isArray(candidate.metNpcs) ? [...new Set(candidate.metNpcs)] : [];
   merged.learnedWords = Array.isArray(candidate.learnedWords) ? [...new Set(candidate.learnedWords)] : [];
   merged.badges = Array.isArray(candidate.badges) ? [...new Set(candidate.badges)] : [];
-  merged.bundleUnlocks = normalizeBundleUnlocks(candidate.bundleUnlocks);
+  delete merged.bundleUnlocks; // #195：移除 outfitSet bundle 機制，丟棄舊存檔殘留的 bundleUnlocks。
   merged.purchaseStoreIds = normalizePurchaseStoreIds(candidate.purchaseStoreIds);
   const candidateArea = migrateLegacyAreaId(candidate.area);
   const candidateNode = migrateLegacyNodeId(candidate.playerNode);
@@ -156,24 +156,12 @@ export function normalizeState(candidate = {}) {
   return merged;
 }
 
-function normalizeBundleUnlocks(candidate = {}) {
-  if (!candidate || Array.isArray(candidate) || typeof candidate !== "object") return {};
-  return Object.fromEntries(Object.entries(candidate).flatMap(([bundleId, unlockIds]) => {
-    const migratedBundleId = migrateLegacyItemId(bundleId);
-    const bundle = itemById(migratedBundleId);
-    if (bundle?.type !== "outfitSet" || !Array.isArray(unlockIds)) return [];
-    const validUnlockIds = [...new Set(unlockIds)]
-      .map(migrateLegacyItemId)
-      .filter((itemId) => itemId !== migratedBundleId && Boolean(itemById(itemId)));
-    return validUnlockIds.length ? [[migratedBundleId, validUnlockIds]] : [];
-  }));
-}
-
 function normalizePurchaseStoreIds(candidate = {}) {
   if (!candidate || Array.isArray(candidate) || typeof candidate !== "object") return {};
   return Object.fromEntries(Object.entries(candidate).flatMap(([itemId, storeId]) => {
     const item = itemById(migrateLegacyItemId(itemId));
-    if (!item || typeof storeId !== "string" || !storeId.trim()) return [];
+    // #195：丟棄舊存檔殘留的 outfitSet bundle 來源（bundle:<id>），使該單品退回以自身 storeId 退款。
+    if (!item || typeof storeId !== "string" || !storeId.trim() || storeId.startsWith("bundle:")) return [];
     return [[item.id, storeId]];
   }));
 }

@@ -8,7 +8,6 @@ export const categories = [
   { id: "outerwear", label: "Outerwear", types: ["outer"] },
   { id: "shoes", label: "Shoes", types: ["shoes"] },
   { id: "hats", label: "Hats", types: ["headTop"] },
-  { id: "accessories", label: "Accessories", types: ["headSide", "faceEyes", "faceMask", "neck", "hand"] },
-  { id: "outfitSets", label: "Outfit Sets", types: ["outfitSet"] }
+  { id: "accessories", label: "Accessories", types: ["headSide", "faceEyes", "faceMask", "neck", "hand"] }
 ];
 //#endregion 衣櫃分類

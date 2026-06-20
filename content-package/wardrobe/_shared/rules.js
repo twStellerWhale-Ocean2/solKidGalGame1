@@ -1,13 +1,12 @@
 //#region 紙娃娃疊圖順序
 // layerOrder 是渲染順序；新增 slot 時要同步檢查 CSS z-index 與 outfit state。
 export const paperDollLayerOrder = [
-  "outerBack",
   "base",
   "hairstyle",
   "dress",
   "bottom",
   "top",
-  "outerFront",
+  "outer",
   "shoes",
   "neck",
   "hand",
