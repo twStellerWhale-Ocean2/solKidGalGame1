@@ -9,6 +9,7 @@ export const assetContentBoxByPackName = Object.freeze({
   "castle-royal-cloak-room/outer-aurora-cape": { left: 167, top: 429, right: 353, bottom: 613 },
   "castle-royal-cloak-room/outer-mint-cardigan": { left: 176, top: 402, right: 345, bottom: 563 },
   "castle-royal-cloak-room/outer-moon-cape": { left: 167, top: 429, right: 353, bottom: 613 },
+  "castle-royal-cloak-room/outer-rose-cardigan": { left: 176, top: 402, right: 345, bottom: 563 },
   "castle-royal-cloak-room/outer-starry-cape": { left: 167, top: 429, right: 353, bottom: 613 },
   "castle-royal-cloak-room/outer-yellow-cardigan": { left: 176, top: 402, right: 345, bottom: 563 },
   "castle-seamstress/bottom-lilac-skirt": { left: 176, top: 525, right: 343, bottom: 669 },
