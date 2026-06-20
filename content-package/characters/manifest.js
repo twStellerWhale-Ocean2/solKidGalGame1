@@ -1,6 +1,6 @@
 //#region 可玩紙娃娃角色
 // 角色本體集中在 content-package/characters；衣物 layer 仍共用同一個 512x768 rig。
-export const characterAssetVersion = "?v=20260619-issue163-character-theme-r2";
+export const characterAssetVersion = "?v=20260620-issue196-wardrobe-fill";
 export const defaultActiveCharacterId = "lumi";
 export const sharedPaperDollRig = Object.freeze({
   id: "shared-512x768-v1",

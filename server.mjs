@@ -141,9 +141,7 @@ async function handleDeleteItem(request, response) {
     if (!matches.length) throw new Error(`item ${itemId} 不在 manifest`);
     if (matches.length > 1) throw new Error(`item ${itemId} 不唯一`);
     await writeFile(manifestPath, lines.filter((l) => !l.includes(`id: "${itemId}"`)).join(eol));
-    for (const sub of ["layers", "thumbs"]) {
-      try { await unlink(join(packDir(pack), "assets", sub, `${asset}.webp`)); } catch { /* missing ok */ }
-    }
+    try { await unlink(join(packDir(pack), "assets", "layers", `${asset}.webp`)); } catch { /* missing ok */ }
     await spliceMapLine(join(root, "content-package/wardrobe/_shared/asset-target-overrides.js"), `${pack}/${asset}`, null);
     await spliceMapLine(join(root, "content-package/wardrobe/_shared/asset-content-box.generated.js"), `${pack}/${asset}`, null);
     json(response, 200, { ok: true });
@@ -166,22 +164,8 @@ async function registerItemManifestAndBox(b) {
   const m = src.match(/export const \w+ = \[\s*?\r?\n/);
   if (!m) throw new Error("找不到 items 陣列");
   await writeFile(manifestPath, src.replace(m[0], m[0] + line + eol));
-  let box = null;
-  try {
-    const geom = (await magick([layerFile, "-channel", "A", "-separate", "+channel", "-threshold", "6%", "-format", "%@", "info:"])).trim();
-    const mm = /^(\d+)x(\d+)\+(\d+)\+(\d+)$/.exec(geom);
-    if (mm) {
-      const w = +mm[1]; const h = +mm[2]; const x = +mm[3]; const y = +mm[4];
-      box = { left: x, top: y, right: x + w, bottom: y + h };
-      await magick([layerFile, "-crop", `${w}x${h}+${x}+${y}`, "+repage", layerFile]);
-      await spliceMapLine(
-        join(root, "content-package/wardrobe/_shared/asset-content-box.generated.js"),
-        `${b.pack}/${b.asset}`,
-        `  ${JSON.stringify(`${b.pack}/${b.asset}`)}: { left: ${box.left}, top: ${box.top}, right: ${box.right}, bottom: ${box.bottom} },`
-      );
-    }
-  } catch { /* magick optional */ }
-  return box;
+  // #196 fill 模型：素材為 512×512 長邊貼滿、非裁切；不再 trim 或記 content-box（已廢棄）。
+  return null;
 }
 
 async function handleAddItem(request, response) {
@@ -194,8 +178,8 @@ async function handleAddItem(request, response) {
   } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
 }
 
-// 上傳圖檔：解 base64 → 以 ImageMagick 轉 webp 並置於 512x768 透明畫布（fit+center）作 layer，
-// 由其裁切產生 thumb，再走 registerItemManifestAndBox 登記。
+// 上傳圖檔（#196）：解 base64 → 以 ImageMagick 去白邊→等比縮到 512（長邊貼滿）→置中於 512×512
+// 透明畫布作單一素材（兼投影與商店預覽），再走 registerItemManifestAndBox 登記。不再產分離 thumb。
 async function handleUploadItem(request, response) {
   try {
     const b = JSON.parse(await readBody(request) || "{}");
@@ -207,15 +191,13 @@ async function handleUploadItem(request, response) {
     if (buf.length > 12 * 1024 * 1024) throw new Error("圖檔過大（>12MB）");
     const dir = packDir(b.pack);
     const layerFile = join(dir, "assets", "layers", `${b.asset}.webp`);
-    const thumbFile = join(dir, "assets", "thumbs", `${b.asset}.webp`);
     let exists = false;
     try { await stat(layerFile); exists = true; } catch { /* not exists */ }
     if (exists && !b.overwrite) throw new Error(`assets/layers/${b.asset}.webp 已存在（勾選覆寫才會取代）`);
     const tmp = join(dir, "assets", "layers", `.upload-${Date.now()}.tmp`);
     await writeFile(tmp, buf);
     try {
-      await magick([tmp, "-background", "none", "-resize", "512x768", "-gravity", "center", "-extent", "512x768", "-strip", layerFile]);
-      await magick([layerFile, "-trim", "+repage", "-resize", "256x256", "-strip", thumbFile]);
+      await magick([tmp, "-trim", "+repage", "-resize", "512x512", "-background", "none", "-gravity", "center", "-extent", "512x512", layerFile]);
     } finally {
       try { await unlink(tmp); } catch { /* ignore */ }
     }

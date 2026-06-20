@@ -1,17 +1,17 @@
 import { wardrobePackLayer } from "./paper-doll-assets.js";
 import { wardrobeLayerBoundsForType } from "./rules.js";
-import { assetContentBoxByPackName } from "./asset-content-box.generated.js";
 import { assetTargetOverrides } from "./asset-target-overrides.js";
 
 //#region 資源包工具
-// 讓各 pack 只寫商品資料，不重複寫 layer / thumbnail 路徑規則。
+// 讓各 pack 只寫商品資料，不重複寫 layer 路徑規則。
 export function createWardrobePackTools(packId) {
-  // #176：素材去空白邊後為緊貼裁切 bitmap，以 per-item targetBox 等比 fit 回 512x768 對應位置。
-  // 解析優先序：人工校準覆寫 → 裁切原始內容框（identity） → 類別 safeBox（新素材預設投影區）。
+  // #196：素材為 512×512 長邊貼滿透明單品，以 per-item targetBox 投影到 512×768 doll 對應位置。
+  // targetBox 解析優先序：維護者人工校準覆寫（asset-target-overrides）→ 類別 safeBox（預設投影區）。
+  // （#176 裁切原始內容框 fallback 於 fill 模型下已不適用——素材非裁切，故移除。）
   const layer = (slot, name, type = slot) => {
     const base = wardrobeLayerBoundsForType(type);
     const key = `${packId}/${name}`;
-    const targetBox = assetTargetOverrides[key] || assetContentBoxByPackName[key] || base.safeBox || null;
+    const targetBox = assetTargetOverrides[key] || base.safeBox || null;
     return {
       slot,
       type,

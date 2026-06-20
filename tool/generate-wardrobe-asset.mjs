@@ -41,11 +41,12 @@ function composePrompt(itemDesc) {
   const h = art.houseStyle, p = style.packStyle;
   return [
     `${h.look}.`,
+    h.worn || "",
     `Linework: ${h.linework}. Shading: ${h.shading}.`,
     `Collection style: ${p.reference}; palette ${p.palette.join(", ")}; motifs ${p.motifs.join(", ")}; ${p.linework}; mood ${p.mood}.`,
     `The item to draw: ${itemDesc}.`,
     art.exclusions
-  ].join(" ");
+  ].filter(Boolean).join(" ");
 }
 
 async function genOne(asset, itemDesc) {
@@ -74,13 +75,15 @@ async function genOne(asset, itemDesc) {
   const gen1024 = join(TMP, `${asset}.1024.png`);
   writeFileSync(gen1024, Buffer.from(b64, "base64"));
 
-  // 512×512 fill：去透明邊→等比縮到 512（長邊貼滿）→置中於 512×512 透明畫布。
+  // 512×512 fill：以 alpha 門檻(25%)裁切去淡 halo→等比縮到 512（長邊貼滿）→置中於 512×512 透明畫布。
   const outDir = apply ? join(WARDROBE, packId, "assets", "layers") : join(PREVIEW, packId);
   mkdirSync(outDir, { recursive: true });
   const out = join(outDir, `${asset}.webp`);
+  const geom = execFileSync("magick", [gen1024, "-channel", "A", "-separate", "+channel", "-threshold", "25%", "-format", "%@", "info:"], { encoding: "utf8" }).trim();
+  const crop = /^\d+x\d+\+\d+\+\d+$/.test(geom) ? ["-crop", geom, "+repage"] : ["-trim", "+repage"];
   let q = 82;
   do {
-    magick([gen1024, "-trim", "+repage", "-resize", "512x512", "-background", "none", "-gravity", "center", "-extent", "512x512", "-quality", String(q), out]);
+    magick([gen1024, ...crop, "-resize", "512x512", "-background", "none", "-gravity", "center", "-extent", "512x512", "-quality", String(q), out]);
     var bytes = execFileSync("magick", ["identify", "-format", "%B", out], { encoding: "utf8" }).trim();
     q -= 8;
   } while (Number(bytes) > art.output.maxKB * 1024 && q >= 50);

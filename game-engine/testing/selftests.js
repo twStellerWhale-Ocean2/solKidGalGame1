@@ -1901,10 +1901,9 @@ async function collectAssetSizeBudgetAudit(api, errors = []) {
   });
   // 世界地圖
   if (api.worldMap?.mapImage) push("worldMap", api.worldMap.mapImage);
-  // 衣物縮圖與 layer
+  // 衣物單品（#196 單一素材：image 即 layers[0].src，故只推 layer）
   (api.shopItems || []).forEach((item) => {
-    push("wardrobeThumb", item.image);
-    (item.layers || []).forEach((layer) => push("wardrobeLayer", layer.src));
+    (item.layers || []).forEach((layer) => push("wardrobe", layer.src));
   });
   // UI 介面圖（CSS 背景、非 registry，明列以免漏網）
   ["content-base/ui/diary-book.webp", "content-base/ui/settings-book.webp"].forEach((src) => push("ui", src));
@@ -2228,33 +2227,23 @@ async function collectCharacterScaleAudit(api, errors, warnings = []) {
       const metrics = await imageMetrics(layer.src);
       const expectedBounds = api.wardrobeLayerBoundsForType?.(layer.type || item.type);
       const targetBox = layer.bounds?.targetBox || null;
+      // #196 fill 模型：wardrobe 單品為 512×512 透明素材、內容長邊貼滿（短邊置中留透明），
+      // 經 per-item targetBox 投影到 512×768 doll；單一素材兼投影層與商店預覽。
+      if (metrics.width !== 512 || metrics.height !== 512) {
+        errors.push(`${item.id}/${layer.slot} wardrobe asset is ${metrics.width}x${metrics.height}, expected 512x512`);
+      } else if (!metrics.alphaBBox) {
+        errors.push(`${item.id}/${layer.slot} wardrobe asset has no alpha content`);
+      } else {
+        const longSpan = Math.max(metrics.alphaBBox.width, metrics.alphaBBox.height);
+        if (longSpan < 512 * 0.9) {
+          errors.push(`${item.id}/${layer.slot} wardrobe asset not long-edge-filled (alpha long span ${longSpan}px < 90% of 512)`);
+        }
+      }
       if (targetBox) {
-        // #176 緊貼裁切模型：素材為去空白邊 bitmap，經 per-item targetBox 等比 fit 回畫布。
-        if (metrics.width > contract.canvasWidth || metrics.height > contract.canvasHeight) {
-          errors.push(`${layer.slot || "wardrobe"} layer ${layer.src} is ${metrics.width}x${metrics.height}, larger than canvas ${contract.canvasWidth}x${contract.canvasHeight}`);
-        }
-        if (metrics.alphaBBox) {
-          const b = metrics.alphaBBox;
-          if (b.left > 2 || b.top > 2 || b.right < metrics.width - 2 || b.bottom < metrics.height - 2) {
-            errors.push(`${item.id}/${layer.slot} bitmap not tightly trimmed (alpha ${JSON.stringify(b)} in ${metrics.width}x${metrics.height})`);
-          }
-        }
-        // 手動 per-item 校準可超出類別 safeBox（safeBox 退為軟性指引）；落在畫布外才算錯，
-        // 僅超出 safeBox 則告警（提醒檢查是否誤拖，如明顯偏離中心）。
         const onCanvas = targetBox.left >= -2 && targetBox.top >= -2
           && targetBox.right <= contract.canvasWidth + 2 && targetBox.bottom <= contract.canvasHeight + 2;
         if (!onCanvas) {
           errors.push(`${item.id}/${layer.slot} targetBox ${JSON.stringify(targetBox)} is outside the ${contract.canvasWidth}x${contract.canvasHeight} canvas`);
-        } else if (expectedBounds?.safeBox && !boxContainsAlpha(expectedBounds.safeBox, targetBox)) {
-          warnings.push(`${item.id}/${layer.slot} targetBox ${JSON.stringify(targetBox)} extends beyond ${item.type} safeBox (manual tune — verify placement)`);
-        }
-      } else {
-        // 舊滿版模型：素材為 512x768、alpha 落在類別 safeBox 內。
-        if (metrics.width !== contract.canvasWidth || metrics.height !== contract.canvasHeight) {
-          errors.push(`${layer.slot || "wardrobe"} layer ${layer.src} is ${metrics.width}x${metrics.height}, expected ${contract.canvasWidth}x${contract.canvasHeight}`);
-        }
-        if (metrics.alphaBBox && expectedBounds?.safeBox && !boxContainsAlpha(expectedBounds.safeBox, metrics.alphaBBox)) {
-          errors.push(`${item.id}/${layer.slot} alpha box ${JSON.stringify(metrics.alphaBBox)} is outside ${item.type} safeBox ${JSON.stringify(expectedBounds.safeBox)}`);
         }
       }
       wardrobeLayers.push({
