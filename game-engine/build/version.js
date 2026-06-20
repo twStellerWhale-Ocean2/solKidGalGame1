@@ -6,7 +6,9 @@
 export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
-  { version: "0.51.1", buildDateTime: "2026-06-21", summaryZh: "衣物改以資源包為單位：各地區收斂為單一服飾店、整包販售多類別衣物（含髮型），商店可用類別分頁瀏覽；既有存檔已購衣物以 id 相容保留" },
+  { version: "0.52.1", buildDateTime: "2026-06-21", summaryZh: "衣物改以資源包為單位：各地區收斂為單一服飾店、整包販售多類別衣物（含髮型），商店可用類別分頁瀏覽；既有存檔已購衣物以 id 相容保留" },
+  { version: "0.52.0", buildDateTime: "2026-06-21", summaryZh: "打工改為實際賺到 coins 後才在本遊玩週期下架；答對但沒拿到 coins（用了中文協助或第三次以上）不下架、本週期仍可再作答賺錢" },
+  { version: "0.51.1", buildDateTime: "2026-06-20", summaryZh: "公主與場景人物 ADV 立繪改用簡潔深灰立體投影，去除詭異光暈與糊化腳底陰影" },
   { version: "2026.06.19-character-theme-defaults", buildDateTime: "2026-06-19", summaryZh: "Yumi 深藍髮、Mary 深綠髮與新帳號隨機初始主題" },
   { version: "2026.06.16-speech-quality", buildDateTime: "2026-06-16", summaryZh: "Web Speech API 語音品質改善：80% 語速、voice fallback、佇列與診斷紀錄" },
   { version: "2026.06.16-rest-profile-flow", buildDateTime: "2026-06-16", summaryZh: "兒童休息預設 15 分鐘，公主識別色、大頭照與切換入口一致化" },
@@ -25,7 +27,7 @@ export const versionHistory = [
 ];
 
 export const buildInfo = {
-  version: "0.51.1",
+  version: "0.52.1",
   buildDate: "2026-06-21",
   buildDateTime: "2026-06-21",
   issues: ["#210"]

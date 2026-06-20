@@ -644,6 +644,8 @@ function runChatSelfTest(api) {
 // issue #177（spec#11 反洗 coins）：驗證「每場景打工每遊玩週期限答對一次」——打工答對後該場景打工於本週期
 // 下架（firstLayerActionKeys 不再含 "practice"、isJobDone 真）；聊天答對不計入、不下架打工（D6）；跨週期
 // （休息後續玩）重置可再作答（D4）；舊存檔（無 jobsDone／雜質）正規化為安全字串陣列（D5）。以 castle kingHall 跑。
+// issue #205：下架條件由「答對」改為「實得 coins（>0）」——打工答對但 0 coins（none 階：答錯 2 次後答對）
+// 不下架、本週期仍可再作答（步驟 3b）；full／half（coins>0）一如既往下架（步驟 2）。
 function runJobCycleSelfTest(api) {
   const params = new URLSearchParams(location.search);
   if (params.get("selftest") !== "job-cycle") return;
@@ -660,6 +662,18 @@ function runJobCycleSelfTest(api) {
     const btn = [...api.elements.choiceList.querySelectorAll("button")].find((b) => b.dataset.choice === lesson.answer);
     if (!btn) throw new Error("correct choice button not found");
     api.answerLesson(btn, lesson.answer);
+  };
+  // issue #205：答錯 2 次後答對 → helpRewardTier 落 none 階、coins=0（模擬「答對但沒賺到錢」）。
+  const answerZeroCoin = () => {
+    const lesson = api.getActiveLesson();
+    if (!lesson) throw new Error("no active lesson after open");
+    const btns = [...api.elements.choiceList.querySelectorAll("button")];
+    const wrong = btns.filter((b) => b.dataset.choice && b.dataset.choice !== lesson.answer);
+    if (wrong.length < 2) throw new Error(`need ≥2 distractors for none-tier, got ${wrong.length}`);
+    api.answerLesson(wrong[0], wrong[0].dataset.choice); // 答錯 #1
+    api.answerLesson(wrong[1], wrong[1].dataset.choice); // 答錯 #2 → advWrongAttempts=2 → none 階
+    const correct = btns.find((b) => b.dataset.choice === lesson.answer);
+    api.answerLesson(correct, lesson.answer);             // 答對但 coins=0
   };
   const openChat = (place) => api.openQuestAdv(api.hotspotById(place), { bankKey: "chatLesson", mode: "chat" });
   const openJob = (place) => api.openQuestAdv(api.hotspotById(place));
@@ -706,6 +720,15 @@ function runJobCycleSelfTest(api) {
     if (jobsDone().length !== 0) errors.push(`new cycle jobsDone=${JSON.stringify(jobsDone())}, expected []`);
     if (clock.isJobDone("kingHall")) errors.push("new cycle: isJobDone(kingHall) true, expected reset");
     if (!keys("kingHall").includes("practice")) errors.push("new cycle: practice not restored after reset");
+
+    // 3b) issue #205：打工答對但 0 coins（none 階：答錯 2 次後答對）→ 不下架、本週期仍可再作答。
+    const coinsBeforeZero = api.state.coins;
+    openJob("kingHall");
+    answerZeroCoin();
+    if (api.state.coins !== coinsBeforeZero) errors.push(`zero-coin job: coins=${api.state.coins}, expected unchanged ${coinsBeforeZero}`);
+    if (clock.isJobDone("kingHall")) errors.push("zero-coin job: isJobDone(kingHall) true (0 coins must not 下架)");
+    if (jobsDone().includes("kingHall")) errors.push("zero-coin job: kingHall in jobsDone (0 coins must not count)");
+    if (!keys("kingHall").includes("practice")) errors.push("zero-coin job: practice missing (0 coins must keep job available)");
 
     // 4) 正規化舊存檔（無 jobsDone／雜質）→ 安全空陣列、僅留字串 id（D5）。
     const n1 = clock.normalizeLimit({ cycle: { answered: 2, correct: 1 } });

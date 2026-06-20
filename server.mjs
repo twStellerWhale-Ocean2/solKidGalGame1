@@ -253,6 +253,134 @@ async function handleRegenerateWardrobe(request, response) {
   } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
 }
 
+// ===== issue #218：單品 metadata（名稱／價錢／描述詞）讀寫（dev only）=====
+// 取該單品 manifest 行的 name/cost，加上 style.json 的描述詞；任一缺值以空值回，不報錯。
+async function handleGetItemMeta(request, response) {
+  try {
+    const { pack, asset, itemId } = JSON.parse(await readBody(request) || "{}");
+    safeName(pack, "pack"); safeName(asset, "asset"); safeName(itemId, "itemId");
+    const manifestSrc = await readFile(join(packDir(pack), "manifest.js"), "utf8");
+    const line = manifestSrc.split(/\r?\n/).find((l) => l.includes(`id: "${itemId}"`)) || "";
+    const name = (line.match(/name:\s*"((?:[^"\\]|\\.)*)"/)?.[1] || "").replace(/\\"/g, '"');
+    const cost = Number(line.match(/cost:\s*(-?\d+(?:\.\d+)?)/)?.[1] ?? 0);
+    let desc = "";
+    try {
+      const style = JSON.parse(await readFile(join(packDir(pack), "style.json"), "utf8"));
+      const v = style.items?.[asset];
+      desc = typeof v === "string" ? v : (v?.desc || "");
+    } catch { /* 缺 style.json：描述詞留空 */ }
+    json(response, 200, { ok: true, name, cost, desc });
+  } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
+}
+
+// 就地改 manifest 該單品行的 name/cost，並（若有 style.json）寫回描述詞。
+async function handleSaveItemMeta(request, response) {
+  try {
+    const { pack, asset, itemId, name, cost, desc } = JSON.parse(await readBody(request) || "{}");
+    safeName(pack, "pack"); safeName(asset, "asset"); safeName(itemId, "itemId");
+    if (typeof name !== "string" || !name.trim()) throw new Error("name required");
+    const costNum = Number.isFinite(Number(cost)) ? Number(cost) : 0;
+    const manifestPath = join(packDir(pack), "manifest.js");
+    const src = await readFile(manifestPath, "utf8");
+    const eol = src.includes("\r\n") ? "\r\n" : "\n";
+    const lines = src.split(/\r?\n/);
+    const idx = lines.findIndex((l) => l.includes(`id: "${itemId}"`));
+    if (idx === -1) throw new Error(`item ${itemId} 不在 manifest`);
+    const safeNameValue = name.trim().replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+    lines[idx] = lines[idx]
+      .replace(/name:\s*"(?:[^"\\]|\\.)*"/, `name: "${safeNameValue}"`)
+      .replace(/cost:\s*-?\d+(?:\.\d+)?/, `cost: ${costNum}`);
+    await writeFile(manifestPath, lines.join(eol));
+    if (typeof desc === "string") {
+      const stylePath = join(packDir(pack), "style.json");
+      try {
+        const styleSrc = await readFile(stylePath, "utf8");
+        const seol = styleSrc.includes("\r\n") ? "\r\n" : "\n";
+        const style = JSON.parse(styleSrc);
+        if (!style.items) style.items = {};
+        const cur = style.items[asset];
+        style.items[asset] = (cur && typeof cur === "object") ? { ...cur, desc } : desc;
+        await writeFile(stylePath, (JSON.stringify(style, null, 2) + "\n").replace(/\n/g, seol));
+      } catch { /* 缺 style.json：只存 name/cost */ }
+    }
+    json(response, 200, { ok: true });
+  } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
+}
+
+// ===== issue #218：地圖節點座標儲存＋上傳換圖（dev only）=====
+const MAP_POSITION_FILES = new Set([
+  "content-package/areas/world.js",
+  "content-package/areas/castle/manifest.js",
+  "content-package/areas/urban/manifest.js",
+  "content-package/areas/rural/manifest.js",
+  "content-package/areas/wild/manifest.js"
+]);
+
+// 就地把 `id: "<id>"` 之後的第一個 x:／y: 數值換掉（world destinations 與 area nodes 皆 id 在前）。
+function setMapXY(src, id, x, y) {
+  const idx = src.indexOf(`id: "${id}"`);
+  if (idx === -1) return { src, changed: false };
+  let changed = false;
+  const after = src.slice(idx)
+    .replace(/x:\s*-?[\d.]+/, () => { changed = true; return `x: ${x}`; })
+    .replace(/y:\s*-?[\d.]+/, () => { changed = true; return `y: ${y}`; });
+  return { src: src.slice(0, idx) + after, changed };
+}
+
+async function handleSaveMapPositions(request, response) {
+  try {
+    const { file, positions } = JSON.parse(await readBody(request) || "{}");
+    if (!MAP_POSITION_FILES.has(file)) throw new Error("file 不在白名單");
+    if (!Array.isArray(positions) || !positions.length) throw new Error("positions required");
+    const filePath = join(root, file);
+    const original = await readFile(filePath, "utf8");
+    const eol = original.includes("\r\n") ? "\r\n" : "\n";
+    let working = original.replace(/\r\n/g, "\n");
+    let updated = 0;
+    for (const p of positions) {
+      safeName(String(p.id), "id");
+      const x = Number(p.x); const y = Number(p.y);
+      if (!Number.isFinite(x) || !Number.isFinite(y) || x < 0 || x > 100 || y < 0 || y > 100) throw new Error(`bad x/y for ${p.id}`);
+      const res = setMapXY(working, p.id, x, y);
+      if (res.changed) { working = res.src; updated += 1; }
+    }
+    if (!updated) throw new Error("no positions matched");
+    await writeFile(filePath, working.replace(/\n/g, eol));
+    json(response, 200, { ok: true, updated });
+  } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
+}
+
+// 各地圖檔路徑與目標尺寸（cover-fit 解析度）。
+const MAP_UPLOAD_TARGETS = {
+  world: { file: "content-base/world/assets/world-map.webp", w: 1024, h: 1536 },
+  castle: { file: "content-package/areas/castle/assets/map-1536.webp", w: 1536, h: 1536 },
+  urban: { file: "content-package/areas/urban/assets/map-1536.webp", w: 1536, h: 1536 },
+  rural: { file: "content-package/areas/rural/assets/map-1536.webp", w: 1536, h: 1536 },
+  wild: { file: "content-package/areas/wild/assets/map-1536.webp", w: 1536, h: 1536 }
+};
+
+async function handleUploadMap(request, response) {
+  try {
+    const { target, imageData } = JSON.parse(await readBody(request) || "{}");
+    const t = MAP_UPLOAD_TARGETS[target];
+    if (!t) throw new Error("target 不在白名單");
+    const m = /^data:image\/[a-zA-Z.+-]+;base64,(.+)$/.exec(String(imageData || ""));
+    if (!m) throw new Error("缺少有效圖檔");
+    const buf = Buffer.from(m[1], "base64");
+    if (buf.length > 16 * 1024 * 1024) throw new Error("圖檔過大（>16MB）");
+    const outFile = join(root, t.file);
+    const tmp = join(dirname(outFile), `.upload-map-${Date.now()}.tmp`);
+    await writeFile(tmp, buf);
+    try {
+      const dim = `${t.w}x${t.h}`;
+      await magick([tmp, "-resize", `${dim}^`, "-gravity", "center", "-extent", dim, outFile]);
+    } finally {
+      try { await unlink(tmp); } catch { /* ignore */ }
+    }
+    json(response, 200, { ok: true, file: t.file, size: { width: t.w, height: t.h } });
+  } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
+}
+
 const WARDROBE_ROUTES = {
   "/tool/open-folder": handleOpenFolder,
   "/tool/delete-item": handleDeleteItem,
@@ -260,7 +388,11 @@ const WARDROBE_ROUTES = {
   "/tool/upload-item": handleUploadItem,
   "/tool/get-wardrobe-desc": handleGetWardrobeDesc,
   "/tool/save-wardrobe-desc": handleSaveWardrobeDesc,
-  "/tool/regenerate-wardrobe": handleRegenerateWardrobe
+  "/tool/regenerate-wardrobe": handleRegenerateWardrobe,
+  "/tool/get-item-meta": handleGetItemMeta,
+  "/tool/save-item-meta": handleSaveItemMeta,
+  "/tool/save-map-positions": handleSaveMapPositions,
+  "/tool/upload-map": handleUploadMap
 };
 
 createServer(async (request, response) => {
