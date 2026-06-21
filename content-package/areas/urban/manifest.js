@@ -35,17 +35,17 @@ export const urbanArea = Object.freeze({
   vocabularyProfile: urbanVocabularyProfile,
   // nodes 控制地圖上的路網與圖示座標；x / y 是相對地圖寬高的百分比。
   nodes: {
-    castleRoom: { id: "castleRoom", label: "Castle Stairway", x: 47, y: 7, links: ["garden", "schoolClassroom", "library", "temple", "administration", "market"] },
-    garden: { id: "garden", label: "Castle Garden", x: 20, y: 42, links: ["castleRoom", "market", "library", "temple"] },
-    schoolClassroom: { id: "schoolClassroom", label: "School Classroom", x: 26, y: 18, links: ["castleRoom", "library", "market"] },
-    library: { id: "library", label: "Library", x: 17, y: 30, links: ["schoolClassroom", "castleRoom", "garden"] },
-    temple: { id: "temple", label: "Temple", x: 60, y: 47, links: ["castleRoom", "garden", "administration", "boutique"] },
-    administration: { id: "administration", label: "Administration Building", x: 40, y: 15, links: ["castleRoom", "temple", "boutique"] },
-    market: { id: "market", label: "Market Square", x: 46, y: 33, links: ["garden", "schoolClassroom", "harbor", "port"] },
-    boutique: { id: "boutique", label: "Dress Boutique", x: 60, y: 17, links: ["administration", "temple"] },
-    harbor: { id: "harbor", label: "Fish Shop", x: 36, y: 76, links: ["market", "port"] },
-    port: { id: "port", label: "Harbor Port", x: 22, y: 88, links: ["market", "harbor", "lighthouse"] },
-    lighthouse: { id: "lighthouse", label: "Lighthouse", x: 88, y: 80, links: ["port"] }
+    castleRoom: { id: "castleRoom", label: "Castle Stairway", x: 50.2, y: 13.7, links: ["garden", "schoolClassroom", "library", "temple", "administration", "market"] },
+    garden: { id: "garden", label: "Castle Garden", x: 49.5, y: 30.6, links: ["castleRoom", "market", "library", "temple"] },
+    schoolClassroom: { id: "schoolClassroom", label: "School Classroom", x: 35.7, y: 15.5, links: ["castleRoom", "library", "market"] },
+    library: { id: "library", label: "Library", x: 25.1, y: 24.2, links: ["schoolClassroom", "castleRoom", "garden"] },
+    temple: { id: "temple", label: "Temple", x: 64.4, y: 15.2, links: ["castleRoom", "garden", "administration", "boutique"] },
+    administration: { id: "administration", label: "Administration Building", x: 76, y: 22.2, links: ["castleRoom", "temple", "boutique"] },
+    market: { id: "market", label: "Market Square", x: 51.5, y: 46.7, links: ["garden", "schoolClassroom", "harbor", "port"] },
+    boutique: { id: "boutique", label: "Dress Boutique", x: 69.1, y: 46.3, links: ["administration", "temple"] },
+    harbor: { id: "harbor", label: "Fish Shop", x: 30.1, y: 45.1, links: ["market", "port"] },
+    port: { id: "port", label: "Harbor Port", x: 38.3, y: 74.4, links: ["market", "harbor", "lighthouse"] },
+    lighthouse: { id: "lighthouse", label: "Lighthouse", x: 75.8, y: 78.4, links: ["port"] }
   },
   // locations 控制地圖圖示進入後的場景、NPC、商店與提示文字。
   locations: [
