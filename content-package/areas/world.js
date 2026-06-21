@@ -1,8 +1,8 @@
 export const worldMap = Object.freeze({
   id: "world",
   label: "Kingdom World Map",
-  mapImage: "content-base/world/assets/world-map.webp?v=20260606-issue66-map-contract-r1",
-  imageSize: { width: 1024, height: 1536 },
+  mapImage: "content-base/world/assets/world-map.webp?v=20260621-world-map-1536-square-r1",
+  imageSize: { width: 1536, height: 1536 },
   destinations: [
     {
       id: "castle",

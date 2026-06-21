@@ -353,7 +353,7 @@ async function handleSaveMapPositions(request, response) {
 
 // 各地圖檔路徑與目標尺寸（cover-fit 解析度）。
 const MAP_UPLOAD_TARGETS = {
-  world: { file: "content-base/world/assets/world-map.webp", w: 1024, h: 1536 },
+  world: { file: "content-base/world/assets/world-map.webp", w: 1536, h: 1536 },
   castle: { file: "content-package/areas/castle/assets/map-1536.webp", w: 1536, h: 1536 },
   urban: { file: "content-package/areas/urban/assets/map-1536.webp", w: 1536, h: 1536 },
   rural: { file: "content-package/areas/rural/assets/map-1536.webp", w: 1536, h: 1536 },

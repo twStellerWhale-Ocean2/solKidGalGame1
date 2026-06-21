@@ -58,7 +58,7 @@ Lumi ADV stageScale = 1.20
 ## C. 場景與素材通則
 
 * 正式 runtime 素材統一使用 WebP；地圖、ADV 背景、NPC、角色、衣物 layer（兼商店預覽）都須為正式 bitmap 美術。
-* World Map：`content-base/world/assets/world-map.webp`，實際像素與 manifest 須為 `1024x1536`。
+* World Map：`content-base/world/assets/world-map.webp`，實際像素與 manifest 須為 `1536x1536`。
 * Area Map：每個 enabled area 用 `content-package/areas/<area>/assets/map-1536.webp`，實際像素與 manifest 須為 `1536x1536`。
 * Scene background：每個 runtime ADV 場景背景須為單張 `1024x1024` WebP，由 sceneArt renderer 統一載入；場景 CSS 不得硬編碼背景 URL 或建立 fallback 背景圖。
 * 場景背景整張圖皆須為正式繪製內容；不得以上下模糊、延展、frosted cover、失焦補版或 renderer 特例補足尺寸。合理景深、霧氣、光暈可保留，但不得替代原本應可辨識的場景區域。

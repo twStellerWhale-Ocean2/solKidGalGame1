@@ -2076,7 +2076,7 @@ async function collectMapContractAudit(api, errors) {
       label: api.worldMap?.label || "World Map",
       mapImage: api.worldMap?.mapImage,
       declared: api.worldMap?.imageSize,
-      expected: { width: 1024, height: 1536 }
+      expected: { width: 1536, height: 1536 }
     },
     ...Object.values(api.areaRegistry)
       .filter((area) => area.enabled && area.mapImage)
