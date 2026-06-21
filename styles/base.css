@@ -11,6 +11,10 @@
   --line: rgba(120, 78, 82, 0.18);
   --shadow: 0 14px 34px rgba(109, 66, 82, 0.18);
   --radius: 8px;
+  /* issue #226：固定比例畫面（地圖／城堡／ADV 場景）視口 letterbox 留白之共用模糊鋪底常數（單一事實，各畫面共用、不逐畫面硬寫）。 */
+  --stage-backdrop-blur: 16px;
+  --stage-backdrop-scale: 1.08;
+  --stage-backdrop-saturate: 0.9;
   font-family: "Segoe UI", Arial, sans-serif;
 }
 

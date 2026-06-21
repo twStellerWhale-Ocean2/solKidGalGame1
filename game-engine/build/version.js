@@ -6,6 +6,7 @@
 export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
+  { version: "0.53.0", buildDateTime: "2026-06-21", summaryZh: "桌機寬螢幕下，地圖與場景等固定比例畫面左右（或上下）留白改以該畫面背景的模糊放大版鋪底，消除空白邊、維持沉浸；畫面內容本身仍完整清楚、不被模糊" },
   { version: "0.52.1", buildDateTime: "2026-06-21", summaryZh: "衣物改以資源包為單位：各地區收斂為單一服飾店、整包販售多類別衣物（含髮型），商店可用類別分頁瀏覽；既有存檔已購衣物以 id 相容保留" },
   { version: "0.52.0", buildDateTime: "2026-06-21", summaryZh: "打工改為實際賺到 coins 後才在本遊玩週期下架；答對但沒拿到 coins（用了中文協助或第三次以上）不下架、本週期仍可再作答賺錢" },
   { version: "0.51.1", buildDateTime: "2026-06-20", summaryZh: "公主與場景人物 ADV 立繪改用簡潔深灰立體投影，去除詭異光暈與糊化腳底陰影" },
@@ -27,8 +28,8 @@ export const versionHistory = [
 ];
 
 export const buildInfo = {
-  version: "0.52.1",
+  version: "0.53.0",
   buildDate: "2026-06-21",
   buildDateTime: "2026-06-21",
-  issues: ["#210"]
+  issues: ["#226"]
 };

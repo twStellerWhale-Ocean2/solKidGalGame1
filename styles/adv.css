@@ -12,10 +12,30 @@
 .adv-backdrop {
   position: absolute;
   inset: 0;
+  overflow: hidden;
+}
+
+/* issue #226：ADV 場景面板外之視口留白以該場景背景之模糊放大版鋪底（同一 --stage-backdrop-* 常數），
+   ::before 為模糊放大背景、::after 為深色讀字 tint；兩者皆在 .adv-scene 內容面板之下，內容區不被模糊。
+   無 sceneArt 之場景 fallback 為原深色 backdrop。 */
+.adv-backdrop::before,
+.adv-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.adv-backdrop::before {
+  background: var(--adv-backdrop-image, none) center / cover no-repeat;
+  filter: blur(var(--stage-backdrop-blur)) saturate(var(--stage-backdrop-saturate));
+  transform: scale(var(--stage-backdrop-scale));
+}
+
+.adv-backdrop::after {
   background:
-    radial-gradient(circle at 58% 50%, rgba(255, 250, 246, 0.06), rgba(54, 35, 45, 0.34) 74%),
-    rgba(54, 35, 45, 0.22);
-  backdrop-filter: blur(1px);
+    radial-gradient(circle at 58% 50%, rgba(255, 250, 246, 0.05), rgba(54, 35, 45, 0.42) 74%),
+    rgba(54, 35, 45, 0.3);
 }
 
 .adv-scene {
