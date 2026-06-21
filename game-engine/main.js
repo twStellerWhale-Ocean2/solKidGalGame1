@@ -735,9 +735,9 @@ function buildCharacterCards() {
     card.setAttribute("aria-checked", String(character.id === pendingCharacterId));
     const portrait = document.createElement("span");
     portrait.className = "character-portrait";
-    // 選角卡頭胸照直接引用該公主之預設組態（defaultOutfit）渲染，與確認選角後（state.outfit ← defaultOutfit）
-    // 的側欄／帳號卡 bust 保證一致；候選公主尚無 per-account 存檔，defaultOutfit 即其即時組態之初始值。
-    renderBustInto(portrait, character.id, character.defaultOutfit, character.id === pendingCharacterId ? pendingProfileColor : character.defaultProfileColor, character.id === pendingCharacterId ? pendingBackgroundPattern : "none");
+    // 單一頭胸來源：選角卡與側欄／帳號卡 bust 一律以公主身上「即時穿搭」（state.outfit）渲染，
+    // 不再另引用 defaultOutfit——杜絕第二套外觀來源，換髮型／衣物時所有頭胸照同步反映、永不分歧。
+    renderBustInto(portrait, character.id, state.outfit, character.id === pendingCharacterId ? pendingProfileColor : character.defaultProfileColor, character.id === pendingCharacterId ? pendingBackgroundPattern : "none");
     portrait.setAttribute("aria-hidden", "true");
     const label = document.createElement("span");
     label.textContent = character.label;

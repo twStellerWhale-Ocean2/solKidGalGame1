@@ -6,6 +6,7 @@
 export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
+  { version: "0.52.5", buildDateTime: "2026-06-21", summaryZh: "頭胸照統一為單一即時來源：選角卡與側欄／帳號卡 bust 一律以公主身上即時穿搭（state.outfit）渲染，不再有 defaultOutfit 第二套外觀來源——修正選角卡仍光頭、與側欄造型分歧的問題，換髮型／衣物時所有頭胸照同步反映" },
   { version: "0.52.4", buildDateTime: "2026-06-21", summaryZh: "公主選單選角卡頭胸照改為直接引用該公主預設組態（defaultOutfit）渲染，不再餵入寫死的空 outfit：與確認選角後側欄／帳號卡 bust 採同一資料來源，預設髮型／衣物在選角預覽即與實際遊玩造型一致，消除潛在不一致" },
   { version: "0.52.3", buildDateTime: "2026-06-21", summaryZh: "移除所有立繪／地圖角色腳底的橢圓接地圓盤（舊 .avatar-shadow）：該扁橢圓既被讀為「腳步圓盤」、又在施了深灰投影的合成 stage 內被再模糊成糊化光暈；全站一致改由角色本體的簡潔深灰立體投影接地，不再保留任何圓盤元件或開關，徹底落地 #207 去圓盤去光暈意圖" },
   { version: "0.52.2", buildDateTime: "2026-06-21", summaryZh: "公主底圖拆為共用 body（含永久肌膚安全底著）＋ per-character head（含預設髮、髮色識別）分層立繪：衣物疊於底著之上、髮型須完全覆蓋 head 預設髮，更換衣物或髮型時舊的不殘留（消除昔日 baked-in 底圖不可移除之雙重疊圖）" },
@@ -30,7 +31,7 @@ export const versionHistory = [
 ];
 
 export const buildInfo = {
-  version: "0.52.4",
+  version: "0.52.5",
   buildDate: "2026-06-21",
   buildDateTime: "2026-06-21",
   issues: []

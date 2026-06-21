@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.52.5 — 2026-06-21
+- fix: 頭胸照統一為單一即時來源：選角卡與側欄／帳號卡 bust 一律以公主身上即時穿搭（state.outfit）渲染，不再有 defaultOutfit 第二套外觀來源——修正選角卡仍光頭、與側欄造型分歧的問題，換髮型／衣物時所有頭胸照同步反映
+
 ## 0.52.4 — 2026-06-21
 - fix: 公主選單選角卡頭胸照改為直接引用該公主預設組態（defaultOutfit）渲染，不再餵入寫死的空 outfit：與確認選角後側欄／帳號卡 bust 採同一資料來源，預設髮型／衣物在選角預覽即與實際遊玩造型一致，消除潛在不一致
 
