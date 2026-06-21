@@ -3285,6 +3285,32 @@ body {
   line-height: 1.1;
 }
 
+.adv-scene[data-mode="shop"] .item-panel-tryon {
+  width: 100%;
+  min-height: 32px;
+  padding: 6px 4px;
+  border: 2px solid rgba(216, 103, 140, 0.55);
+  border-radius: 8px;
+  background: rgba(255, 250, 246, 0.92);
+  color: var(--rose-dark);
+  font-weight: 900;
+  font-size: 0.74rem;
+  line-height: 1.05;
+  cursor: pointer;
+}
+
+.adv-scene[data-mode="shop"] .item-panel-tryon.active {
+  color: #fff;
+  background: linear-gradient(180deg, #6fb98f, #3f8c63);
+  border-color: rgba(63, 140, 99, 0.9);
+}
+
+.adv-scene[data-mode="shop"] .item-panel-tryon:focus-visible,
+.adv-scene[data-mode="shop"] .item-panel-tryon.adv-focus {
+  outline: 3px solid rgba(255, 214, 80, 0.95);
+  outline-offset: 2px;
+}
+
 .adv-scene[data-mode="shop"] .item-panel-action {
   width: 100%;
   height: auto;
