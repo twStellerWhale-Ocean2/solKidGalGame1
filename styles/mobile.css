@@ -3230,15 +3230,20 @@ body {
   left: calc(24% - (var(--adv-character-stage-height) * var(--adv-character-stage-aspect) / 2));
 }
 
-/* 選購面板：右側、上到下滿高，與左側 2m 角色等高 */
+/* 選購面板：右側、高度為場景的 4/5（上下各留 10%）、垂直置中 */
 #advScene[data-mode="shop"] .adv-box {
   left: auto;
   right: clamp(10px, 2.5%, 22px);
-  top: clamp(10px, 2.5%, 22px);
-  bottom: clamp(10px, 2.5%, 22px);
+  top: 10%;
+  bottom: 10%;
   width: min(56%, 480px);
   height: auto;
   max-height: none;
+}
+
+/* 移除購物表單上方的歡迎詞（連同其播放鈕） */
+#advScene[data-mode="shop"] .dialog-title {
+  display: none;
 }
 
 /* 面板內：商品分「多欄貨架」——每類一欄、欄內直向堆疊，整體可水平拖拉瀏覽各類別。
