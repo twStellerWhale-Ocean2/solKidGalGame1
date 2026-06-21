@@ -14,7 +14,7 @@ export const assetStandards = {
   characterBase: { mode: "exact", width: 512, height: 768, maxKB: 350, label: "角色/NPC base（固定畫布）" },
   scene: { mode: "exact", width: 1024, height: 1024, maxKB: 500, label: "ADV 場景背景（固定畫布）" },
   areaMap: { mode: "exact", width: 1536, height: 1536, maxKB: 600, label: "地區地圖（固定畫布）" },
-  worldMap: { mode: "exact", width: 1024, height: 1536, maxKB: 600, label: "世界地圖（固定畫布）" },
+  worldMap: { mode: "exact", width: 1536, height: 1536, maxKB: 600, label: "世界地圖（固定畫布）" },
   wardrobe: { mode: "fill", width: 512, height: 512, maxKB: 120, label: "衣物單品（單一素材兼投影與商店預覽，512×512 長邊貼滿）" },
   mapLayer: { mode: "bound", width: 512, height: 512, maxKB: 80, label: "地圖裝飾層（map-layers，定位疊圖，緊貼裁切）" },
   ui: { mode: "exact", width: 1280, height: 720, maxKB: 120, label: "UI 介面圖（固定畫布）" }

@@ -2,6 +2,7 @@
 // layerOrder 是渲染順序；新增 slot 時要同步檢查 CSS z-index 與 outfit state。
 export const paperDollLayerOrder = [
   "base",
+  "head",
   "hairstyle",
   "dress",
   "bottom",

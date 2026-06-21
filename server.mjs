@@ -3,6 +3,7 @@ import { readFile, writeFile, stat, unlink } from "node:fs/promises";
 import { dirname, extname, join, normalize, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn, execFile } from "node:child_process";
+import { outfitSlots } from "./content-package/wardrobe/_shared/rules.js";
 
 const root = dirname(fileURLToPath(import.meta.url));
 const rootPrefix = root.endsWith(sep) ? root : `${root}${sep}`;
@@ -352,7 +353,7 @@ async function handleSaveMapPositions(request, response) {
 
 // 各地圖檔路徑與目標尺寸（cover-fit 解析度）。
 const MAP_UPLOAD_TARGETS = {
-  world: { file: "content-base/world/assets/world-map.webp", w: 1024, h: 1536 },
+  world: { file: "content-base/world/assets/world-map.webp", w: 1536, h: 1536 },
   castle: { file: "content-package/areas/castle/assets/map-1536.webp", w: 1536, h: 1536 },
   urban: { file: "content-package/areas/urban/assets/map-1536.webp", w: 1536, h: 1536 },
   rural: { file: "content-package/areas/rural/assets/map-1536.webp", w: 1536, h: 1536 },
@@ -381,7 +382,48 @@ async function handleUploadMap(request, response) {
   } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
 }
 
+// ===== 公主預設（coins／owned／outfit）寫回（dev only，僅綁 127.0.0.1）=====
+// 白名單僅 default-state.js；就地替換 coins 數值、owned 陣列、outfit 區塊，其餘欄位（playLimit…）保持不動。
+const DEFAULTS_FILE = "game-engine/state/default-state.js";
+const isItemId = (v) => v === "none" || (typeof v === "string" && /^[a-zA-Z0-9_-]+$/.test(v));
+
+async function handleSaveDefaults(request, response) {
+  try {
+    const body = JSON.parse(await readBody(request) || "{}");
+    const coins = Number(body.coins);
+    if (!Number.isFinite(coins) || coins < 0) throw new Error("coins 需為非負數");
+    const owned = Array.isArray(body.owned) ? body.owned : [];
+    if (!owned.every((id) => typeof id === "string" && /^[a-zA-Z0-9_-]+$/.test(id))) throw new Error("owned 含非法 id");
+    const outfitIn = (body.outfit && typeof body.outfit === "object") ? body.outfit : {};
+    for (const [slot, val] of Object.entries(outfitIn)) {
+      if (!outfitSlots.includes(slot)) throw new Error(`未知 slot ${slot}`);
+      if (!isItemId(val)) throw new Error(`slot ${slot} 值非法`);
+    }
+    const filePath = join(root, DEFAULTS_FILE);
+    const original = await readFile(filePath, "utf8");
+    const eol = original.includes("\r\n") ? "\r\n" : "\n";
+    const ownedLiteral = `owned: [${[...new Set(owned)].map((id) => JSON.stringify(id)).join(", ")}]`;
+    const outfitLines = outfitSlots
+      .map((slot) => {
+        const v = isItemId(outfitIn[slot]) && outfitIn[slot] ? outfitIn[slot] : "none";
+        return `    ${slot}: ${JSON.stringify(v)}`;
+      })
+      .join(`,${eol}`);
+    const outfitBlock = `outfit: {${eol}${outfitLines}${eol}  }`;
+    let updated = original;
+    if (!/\n\s*coins:\s*-?\d+/.test(updated)) throw new Error("找不到 coins");
+    updated = updated.replace(/(\n\s*coins:\s*)-?\d+/, `$1${Math.floor(coins)}`);
+    if (!/owned:\s*\[[^\]]*\]/.test(updated)) throw new Error("找不到 owned");
+    updated = updated.replace(/owned:\s*\[[^\]]*\]/, ownedLiteral);
+    if (!/outfit:\s*\{[^}]*\}/.test(updated)) throw new Error("找不到 outfit");
+    updated = updated.replace(/outfit:\s*\{[^}]*\}/, outfitBlock);
+    await writeFile(filePath, updated);
+    json(response, 200, { ok: true, written: DEFAULTS_FILE });
+  } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
+}
+
 const WARDROBE_ROUTES = {
+  "/tool/save-defaults": handleSaveDefaults,
   "/tool/open-folder": handleOpenFolder,
   "/tool/delete-item": handleDeleteItem,
   "/tool/add-item": handleAddItem,

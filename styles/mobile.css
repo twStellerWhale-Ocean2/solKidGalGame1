@@ -3168,11 +3168,11 @@ body {
 }
 
 @media (max-width: 820px) {
-  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .compact-shop .item-card.item-panel-card {
+  .adv-scene:is([data-mode="wardrobe"], [data-mode="refund"]) .compact-shop .item-card.item-panel-card {
     grid-template-columns: 44px minmax(0, 1fr) !important;
   }
 
-  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .compact-shop .item-card.item-panel-card .item-preview {
+  .adv-scene:is([data-mode="wardrobe"], [data-mode="refund"]) .compact-shop .item-card.item-panel-card .item-preview {
     width: 44px !important;
     height: 44px !important;
     min-width: 0 !important;
@@ -3180,11 +3180,11 @@ body {
 }
 
 @media (max-width: 480px) {
-  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .compact-shop .item-card.item-panel-card {
+  .adv-scene:is([data-mode="wardrobe"], [data-mode="refund"]) .compact-shop .item-card.item-panel-card {
     grid-template-columns: 40px minmax(0, 1fr) !important;
   }
 
-  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .compact-shop .item-card.item-panel-card .item-preview {
+  .adv-scene:is([data-mode="wardrobe"], [data-mode="refund"]) .compact-shop .item-card.item-panel-card .item-preview {
     width: 40px !important;
     height: 40px !important;
   }
@@ -3204,6 +3204,236 @@ body {
   .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .shop-area.show {
     min-height: 0;
   }
+}
+
+/* 商店「左立繪・右選購」版面（issue：選購表單佔右側半屏、與 2m 角色等高）。
+   仍是場景對話子表單（沿用 #shopArea / item-panel DOM 與 renderItemDetailPanel），僅 data-mode="shop"
+   把整個場景改成左右兩欄、單列滿高：左欄＝試穿娃娃（與右欄等高）、右欄＝選購面板。
+   wardrobe / refund 維持原本上下版面，不受影響。放在所有 shop 規則之後靠來源順序覆寫、無需 !important。 */
+.shop-selection {
+  display: none;
+}
+
+/* 沿用 issue #70 視覺小說的「滿版角色＋絕對定位浮層」模型，不改 display:block。
+   以 #advScene 提高權重，穩定覆蓋其後 :is() 規則：①隱藏 NPC、②角色固定左半、
+   ③對話框由底部橫條改成右側滿高面板。面板背景轉回較不透明（角色已不在面板後方，改求易讀）。 */
+#advScene[data-mode="shop"] {
+  --adv-dialog-bg: rgba(47, 38, 52, 0.82);
+}
+
+#advScene[data-mode="shop"] .adv-npc {
+  display: none;
+}
+
+/* 試穿娃娃置於左半中央，完整露在面板左側、不再被遮 */
+#advScene[data-mode="shop"] .adv-princess {
+  left: calc(24% - (var(--adv-character-stage-height) * var(--adv-character-stage-aspect) / 2));
+}
+
+/* 選購面板：右側、高度為場景的 4/5、靠下對齊（底部留小邊距、上方留白） */
+#advScene[data-mode="shop"] .adv-box {
+  left: auto;
+  right: clamp(10px, 2.5%, 22px);
+  top: auto;
+  bottom: clamp(10px, 2.5%, 22px);
+  width: min(56%, 480px);
+  height: 80%;
+  max-height: none;
+}
+
+/* 移除購物表單上方的歡迎詞（連同其播放鈕） */
+#advScene[data-mode="shop"] .dialog-title {
+  display: none;
+}
+
+/* 面板內：商品分「多欄貨架」——每類一欄、欄內直向堆疊，整體可水平拖拉瀏覽各類別。
+   類別標題已在每欄上方，故移除上方類別分頁與下方摘要文字（商品方塊本身已含名稱與價格）。 */
+.adv-scene[data-mode="shop"] #advShopTabs {
+  display: none;
+}
+
+.adv-scene[data-mode="shop"] .shop-area.show {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 0;
+}
+
+/* 貨架：水平捲動的類別欄容器 */
+.adv-scene[data-mode="shop"] .item-panel-list {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 10px;
+  min-height: 0;
+  max-height: 100%;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 2px 6px;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 每一類別＝一欄 */
+.adv-scene[data-mode="shop"] .shop-shelf-col {
+  flex: 0 0 auto;
+  width: clamp(148px, 72%, 188px);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  scroll-snap-align: start;
+}
+
+.adv-scene[data-mode="shop"] .shop-shelf-head {
+  flex: 0 0 auto;
+  margin-bottom: 6px;
+  padding: 5px 8px;
+  text-align: center;
+  color: var(--adv-dialog-text);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 225, 240, 0.28);
+  border-radius: 8px;
+  font-weight: 1000;
+  font-size: 0.8rem;
+  line-height: 1.1;
+}
+
+/* 欄內商品：直向、可上下捲動 */
+.adv-scene[data-mode="shop"] .shop-shelf-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--item-panel-gap);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
+
+.adv-scene[data-mode="shop"] .item-panel-empty {
+  min-height: 0;
+}
+
+/* 每個商品＝一個帶邊框的方塊（單品邊框）；圖示＋名稱＋價格在上，試穿與 BUY 在框內下方。
+   邊框統一由 row 承載，內層卡片透明無框，避免各單品（尤其第一個與 outerwear）邊框錯位。 */
+.adv-scene[data-mode="shop"] .item-panel-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 6px;
+  height: auto;
+  min-height: 0;
+  /* 欄是 flex column 且可垂直捲動：商品方塊不可被 flex 壓縮，否則多件時（如 outerwear）會被擠扁、Try on/BUY 殘留鬼影。維持自然高度，超出由 .shop-shelf-body 捲動。 */
+  flex: 0 0 auto;
+  padding: 7px;
+  border: 2px solid rgba(241, 154, 193, 0.55);
+  border-radius: var(--radius);
+  background: rgba(70, 52, 76, 0.88);
+}
+
+/* 試穿中（已選）整個方塊高亮 */
+.adv-scene[data-mode="shop"] .item-panel-row:has(.item-card.selected) {
+  border-color: var(--adv-dialog-accent-strong, #ffd3e7);
+  box-shadow: 0 0 0 3px rgba(241, 154, 193, 0.28);
+}
+
+.adv-scene[data-mode="shop"] .item-panel-card {
+  grid-column: 1 / 3;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  gap: 2px 8px;
+  align-items: center;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: left;
+}
+
+/* 焦點/已選不位移、不再各自加邊框；商店方框不可聚焦（Try on / BUY 才是控制項） */
+.adv-scene[data-mode="shop"] .item-panel-card:hover,
+.adv-scene[data-mode="shop"] .item-panel-card:focus,
+.adv-scene[data-mode="shop"] .item-panel-card.adv-focus,
+.adv-scene[data-mode="shop"] .item-panel-card.selected {
+  transform: none;
+  border: 0;
+  box-shadow: none;
+  outline: none;
+}
+
+.adv-scene[data-mode="shop"] .item-panel-card .item-preview {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  align-self: center;
+  width: 46px;
+  height: 46px;
+  min-height: 0;
+}
+
+.adv-scene[data-mode="shop"] .item-panel-card strong {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
+  display: block;
+  font-size: 0.8rem;
+  line-height: 1.08;
+}
+
+.adv-scene[data-mode="shop"] .item-panel-card .item-state {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: start;
+  font-size: 0.7rem;
+  line-height: 1.05;
+}
+
+.adv-scene[data-mode="shop"] .item-panel-tryon {
+  grid-column: 1;
+  grid-row: 2;
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 4px;
+  border: 2px solid rgba(216, 103, 140, 0.55);
+  border-radius: 8px;
+  background: rgba(255, 250, 246, 0.92);
+  color: var(--rose-dark);
+  font-weight: 900;
+  font-size: 0.74rem;
+  line-height: 1.05;
+  cursor: pointer;
+}
+
+.adv-scene[data-mode="shop"] .item-panel-tryon.active {
+  color: #fff;
+  background: linear-gradient(180deg, #6fb98f, #3f8c63);
+  border-color: rgba(63, 140, 99, 0.9);
+}
+
+.adv-scene[data-mode="shop"] .item-panel-tryon:focus-visible,
+.adv-scene[data-mode="shop"] .item-panel-tryon.adv-focus {
+  outline: 3px solid rgba(255, 214, 80, 0.95);
+  outline-offset: 2px;
+}
+
+.adv-scene[data-mode="shop"] .item-panel-action {
+  grid-column: 2;
+  grid-row: 2;
+  width: 100%;
+  height: auto;
+  min-height: 34px;
+  padding: 6px 4px;
+}
+
+/* 下方摘要文字移除：商品方塊已含名稱與價格 */
+.adv-scene[data-mode="shop"] #advShopSelection {
+  display: none;
 }
 
 @media (max-width: 820px) {

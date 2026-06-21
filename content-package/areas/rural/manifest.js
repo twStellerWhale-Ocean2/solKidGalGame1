@@ -35,15 +35,15 @@ export const ruralArea = Object.freeze({
   vocabularyProfile: ruralVocabularyProfile,
   // nodes 控制地圖上的路網與圖示座標；x / y 是相對地圖寬高的百分比。
   nodes: {
-    ruralEntrance: { id: "ruralEntrance", label: "World Road", x: 7, y: 78, links: ["pasture", "farm"] },
-    mine: { id: "mine", label: "Mine", x: 64, y: 17, links: ["loggingCamp", "fishingShore", "ruralEntrance"] },
-    loggingCamp: { id: "loggingCamp", label: "Logging Camp", x: 45, y: 28, links: ["mine", "fishingShore", "mill"] },
-    fishingShore: { id: "fishingShore", label: "Fishing Shore", x: 84, y: 76, links: ["loggingCamp", "farm", "mine"] },
-    pasture: { id: "pasture", label: "Pasture", x: 56, y: 34, links: ["ruralEntrance", "farm", "mill", "workwearStall"] },
-    farm: { id: "farm", label: "Farm", x: 64, y: 58, links: ["pasture", "mill", "villageHome", "fishingShore", "workwearStall"] },
+    ruralEntrance: { id: "ruralEntrance", label: "World Road", x: 7.1, y: 63.3, links: ["pasture", "farm"] },
+    mine: { id: "mine", label: "Mine", x: 64.9, y: 32.4, links: ["loggingCamp", "fishingShore", "ruralEntrance"] },
+    loggingCamp: { id: "loggingCamp", label: "Logging Camp", x: 34.4, y: 37, links: ["mine", "fishingShore", "mill"] },
+    fishingShore: { id: "fishingShore", label: "Fishing Shore", x: 76.7, y: 87.4, links: ["loggingCamp", "farm", "mine"] },
+    pasture: { id: "pasture", label: "Pasture", x: 63.7, y: 45.1, links: ["ruralEntrance", "farm", "mill", "workwearStall"] },
+    farm: { id: "farm", label: "Farm", x: 70.2, y: 65.2, links: ["pasture", "mill", "villageHome", "fishingShore", "workwearStall"] },
     mill: { id: "mill", label: "Mill", x: 33, y: 61, links: ["farm", "pasture", "loggingCamp", "villageHome", "workwearStall"] },
-    workwearStall: { id: "workwearStall", label: "Workwear Stall", x: 42, y: 46, links: ["pasture", "farm", "mill"] },
-    villageHome: { id: "villageHome", label: "Village Home", x: 15, y: 86, links: ["farm", "mill"] }
+    workwearStall: { id: "workwearStall", label: "Workwear Stall", x: 33.1, y: 69.9, links: ["pasture", "farm", "mill"] },
+    villageHome: { id: "villageHome", label: "Village Home", x: 53.8, y: 79.2, links: ["farm", "mill"] }
   },
   // locations 控制地圖圖示進入後的場景、NPC、商店與提示文字。
   locations: [
@@ -54,7 +54,7 @@ export const ruralArea = Object.freeze({
     { id: "pasture", area: "rural", node: "pasture", label: "Pasture", icon: "🐄", npc: "Farmer Theo", scene: "scene-rural-pasture", npcImage: npcImage("farmer-theo"), hint: "The pasture has sheep, cows, and hay." },
     { id: "farm", area: "rural", node: "farm", label: "Farm", icon: "🥕", npc: "Auntie Pom", scene: "scene-rural-farm", npcImage: npcImage("auntie-pom"), hint: "The farm fields grow vegetables and wheat." },
     { id: "mill", area: "rural", node: "mill", label: "Mill", icon: "🌬", npc: "Miller Bell", scene: "scene-rural-mill", npcImage: npcImage("miller-bell"), hint: "The windmill turns grain into flour." },
-    { id: "workwearStall", area: "rural", node: "workwearStall", label: "Workwear Stall", icon: "👚", npc: "Workwear Keeper", scene: "scene-rural-workwear-stall", npcImage: npcImage("workwear-stall-keeper"), shopCategories: ["tops", "bottoms", "shoes", "hats"], defaultCategory: "tops", hint: "The Workwear Stall now stocks the whole country wardrobe — tops, bottoms, boots and tiaras." },
+    { id: "workwearStall", area: "rural", node: "workwearStall", label: "Workwear Stall", icon: "👚", npc: "Workwear Keeper", scene: "scene-rural-workwear-stall", npcImage: npcImage("workwear-stall-keeper"), shopCategories: ["hats", "tops", "bottoms", "shoes"], defaultCategory: "tops", hint: "The Workwear Stall now stocks the whole country wardrobe — tops, bottoms, boots and tiaras." },
     { id: "villageHome", area: "rural", node: "villageHome", label: "Village Home", icon: "🏡", npc: "Grandma Fina", scene: "scene-rural-home", npcImage: npcImage("grandma-fina"), hint: "The village home has a warm porch and garden." }
   ],
   // actors 是地圖上的動態環境效果，不是可點擊地點。
