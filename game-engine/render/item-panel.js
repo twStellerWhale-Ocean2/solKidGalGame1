@@ -86,6 +86,8 @@ function createItemPanelRow({ action, categoryLabel, item, mode, onAction, onPre
   ].filter(Boolean).join(" ");
   preview.dataset.itemId = item.id;
   preview.setAttribute("aria-label", `${item.name} ${action.status}`);
+  // 有專屬試穿/購買鈕的模式（商店），方框本身不需可聚焦，移出 Tab 順序。
+  if (onTryOn) preview.tabIndex = -1;
   preview.innerHTML = `
     <span class="item-preview item-art item-image" style="${previewStyle}">
       <span aria-hidden="true">${item.icon || "✦"}</span>

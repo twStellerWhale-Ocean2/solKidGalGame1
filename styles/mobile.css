@@ -3355,7 +3355,7 @@ body {
   text-align: left;
 }
 
-/* 焦點/已選不位移、不再各自加邊框（避免第一個方塊看起來邊框錯位）；以內描邊提示焦點 */
+/* 焦點/已選不位移、不再各自加邊框；商店方框不可聚焦（Try on / BUY 才是控制項） */
 .adv-scene[data-mode="shop"] .item-panel-card:hover,
 .adv-scene[data-mode="shop"] .item-panel-card:focus,
 .adv-scene[data-mode="shop"] .item-panel-card.adv-focus,
@@ -3363,12 +3363,7 @@ body {
   transform: none;
   border: 0;
   box-shadow: none;
-}
-
-.adv-scene[data-mode="shop"] .item-panel-card:focus-visible,
-.adv-scene[data-mode="shop"] .item-panel-card.adv-focus {
-  outline: 3px solid rgba(255, 214, 80, 0.95);
-  outline-offset: -2px;
+  outline: none;
 }
 
 .adv-scene[data-mode="shop"] .item-panel-card .item-preview {
