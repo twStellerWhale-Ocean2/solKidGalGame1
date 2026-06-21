@@ -41,13 +41,6 @@
     drop-shadow(4px 9px 6px rgba(45, 45, 52, 0.4));
 }
 
-/* issue #207 收尾：ADV 公主立繪不再額外鋪 .avatar-shadow 橢圓接地盤——
-   該半透明深紫扁橢圓本身即被讀為「腳步圓盤」，且位於施了深灰投影的 .paper-doll-stage 內、
-   被三層 drop-shadow 再模糊複製成糊化光暈。接地改全由上方簡潔深灰立體投影承擔（同 .bust-doll 之既有處置）。 */
-.adv-doll .avatar-shadow {
-  display: none;
-}
-
 .avatar-shadow,
 .paper-doll-layer {
   position: absolute;
@@ -56,13 +49,25 @@
   pointer-events: none;
 }
 
+/* issue #207 收尾：接地橢圓盤改為「預設不渲染、需要者 opt-in」。
+   過去 paper-doll.js 對每個 surface 無條件吐出 .avatar-shadow，再逐 surface 以 display:none 關掉
+   （render-then-opt-out）——預設長圓盤是錯的：立繪（adv／bust）不要、只有地圖／地區 token 需要它接地，
+   且該扁橢圓在施了深灰投影的 .paper-doll-stage 內會被三層 drop-shadow 再模糊成「腳步圓盤＋糊化光暈」。
+   反轉預設後，立繪接地全交由 .paper-doll-stage 的簡潔深灰立體投影；新增 surface 預設即乾淨、不需再記得補關。 */
 .avatar-shadow {
+  display: none;
   bottom: 0;
   width: 52%;
   height: 5%;
   z-index: 0;
   border-radius: 50%;
   background: rgba(80, 56, 70, 0.2);
+}
+
+/* opt-in：地圖世界／城堡／地區 token 仍以橢圓影接地（spec#12 地圖 token 分級不變）。 */
+.map-doll .avatar-shadow,
+.area-doll .avatar-shadow {
+  display: block;
 }
 
 .paper-doll-layer {
@@ -118,10 +123,6 @@
     drop-shadow(0 0 1px rgba(64, 43, 53, 0.42))
     drop-shadow(0 4px 6px rgba(58, 37, 46, 0.16))
     drop-shadow(0 8px 12px rgba(58, 37, 46, 0.12));
-}
-
-.bust-doll .avatar-shadow {
-  display: none;
 }
 
 /* issue #194：頭胸照與全身著裝統一產生方式。
