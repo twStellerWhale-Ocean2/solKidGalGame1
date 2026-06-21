@@ -3768,28 +3768,6 @@ body {
   border-color: rgba(255, 211, 231, 0.22);
 }
 
-/* issue #244：公主房單一「換裝」入口鈕——深粉紅實心填色，覆蓋場景視覺小說暗色選單鈕主題（含 focus/hover 態），
-   使其在暗色對話選單中明確辨識為換裝入口；specificity 高於上方 .adv-scene .choice-button.adv-focus 焦點主題。 */
-.adv-scene .choice-button.change-outfit-choice,
-.adv-scene .choice-button.change-outfit-choice:focus,
-.adv-scene .choice-button.change-outfit-choice.adv-focus {
-  color: #fff;
-  background: linear-gradient(145deg, #e85a98, #c81e63);
-  border-color: #ad1457;
-  box-shadow: 0 8px 18px rgba(160, 20, 80, 0.32);
-}
-
-.adv-scene .choice-button.change-outfit-choice:focus,
-.adv-scene .choice-button.change-outfit-choice.adv-focus {
-  box-shadow:
-    0 0 0 4px rgba(241, 154, 193, 0.34),
-    0 10px 18px rgba(160, 20, 80, 0.36);
-}
-
-.adv-scene .choice-button.change-outfit-choice:hover {
-  background: linear-gradient(145deg, #ef6ea6, #d81b60);
-}
-
 .adv-scene .choice-button.correct {
   color: #ecfff4;
   background: rgba(45, 114, 89, 0.9);
@@ -3924,6 +3902,20 @@ body {
     linear-gradient(180deg, rgba(241, 154, 193, 0.22), rgba(0, 0, 0, 0.02)),
     rgba(70, 52, 76, 0.9);
   border-color: var(--adv-dialog-accent-strong);
+}
+
+/* issue #244：公主房衣櫃（closet 模式）之「穿上／脫下」動作鈕為深粉紅實心填色，與商店購買鈕之暗色玻璃家族區辨；
+   入口鈕（場景選單）不上色、沿用一般場景樣式。置於上方動作鈕通則之後、以同等 specificity 靠 source order 取勝。 */
+.adv-scene[data-mode="wardrobe"] .item-panel-action {
+  color: #fff;
+  background: linear-gradient(180deg, #e85a98, #c81e63);
+  border-color: #ad1457;
+}
+
+.adv-scene[data-mode="wardrobe"] .item-panel-action:focus-visible,
+.adv-scene[data-mode="wardrobe"] .item-panel-action.adv-focus {
+  background: linear-gradient(180deg, #ef6ea6, #d81b60);
+  border-color: #ad1457;
 }
 
 /* D4：第三層商品縮圖白底改為 20% 半透明白，使其後試穿透出（取代不透明奶油底 #fffaf0）。 */

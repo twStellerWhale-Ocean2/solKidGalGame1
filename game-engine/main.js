@@ -2092,9 +2092,7 @@ function renderFirstLayerSceneActions(hotspot) {
   firstLayerActionsFor(hotspot, { hasLessons: hasLessonsForPlace(hotspot?.id), hasChat: hasChatForPlace(hotspot?.id), jobDoneThisCycle: isJobDone(state, hotspot?.id) }).forEach((action) => {
     addAdvOption(sceneActionLabel(action), () => handleFirstLayerSceneAction(action, hotspot), {
       leave: action.handlerKey === "leave",
-      navigation: action.navigation && action.handlerKey !== "leave",
-      // issue #244：公主房單一「換裝」入口套深粉紅變體，與其他場景選單鈕區辨。
-      variant: action.handlerKey === "wardrobe" ? "change-outfit-choice" : undefined
+      navigation: action.navigation && action.handlerKey !== "leave"
     });
   });
 }
@@ -2362,56 +2360,16 @@ function openWardrobeDetail(category = "dresses") {
   shopCategory = category;
   clearTryOnPreview({ renderDoll: false });
   elements.advScene.dataset.mode = "wardrobe";
-  setAdvLine(`Choose ${categoryLabel(category).toLowerCase()} for ${princessName()}.`);
-  elements.advPrompt.textContent = "Tap to preview, then wear or take off.";
+  setAdvLine(`Pick what ${princessName()} will wear today.`);
+  elements.advPrompt.textContent = "Tap to wear; tap again to take off.";
   elements.shopArea.classList.remove("refund-detail");
   elements.shopArea.classList.add("show", "wardrobe-detail");
   renderWardrobeDetail();
 }
 
-function wardrobeEmptyText(category = shopCategory) {
-  const messages = {
-    accessories: "Buy accessories at the Accessory Atelier or Fairy Atelier first.",
-    bottoms: "Buy bottoms at the Tailor Studio, Castle Seamstress, or Workwear Stall first.",
-    dresses: "Buy dresses at the Dress Boutique or Fairy Atelier first.",
-    hair: "Buy hairstyles at the Hair Salon first.",
-    hats: "Buy hats at the Accessory Atelier, Royal Cloak Room, or Field Cobbler first.",
-    outerwear: "Buy outerwear at the Royal Cloak Room or Dwarf Cottage first.",
-    shoes: "Buy shoes at the Shoe Shop first.",
-    tops: "Buy tops at the Tailor Studio, Castle Seamstress, or Workwear Stall first."
-  };
-  return messages[category] || `Buy ${categoryLabel(category).toLowerCase()} in the urban first.`;
-}
-
+// issue #244：公主房衣櫃改沿用商店同一多欄貨架面板（closet 模式），不再另維護單類別分頁版型。
 function renderWardrobeDetail(preserveFocus = false) {
-  const allCategories = categories.map((category) => category.id);
-  if (!allCategories.includes(shopCategory)) shopCategory = "dresses";
-  const categoryItems = shopItems.filter((item) => itemMatchesCategory(item, shopCategory) && state.owned.includes(item.id));
-  if (shopPreviewItemId && !categoryItems.some((item) => item.id === shopPreviewItemId)) clearTryOnPreview({ renderDoll: false });
-  const previewItem = categoryItems.find((item) => item.id === shopPreviewItemId) || null;
-  renderCategoryTabs(elements.advShopTabs, shopCategory, (nextCategory) => {
-    shopCategory = nextCategory;
-    clearTryOnPreview({ renderDoll: false });
-    elements.advFeedback.textContent = "";
-    renderWardrobeDetail();
-  }, false, allCategories);
-  renderActiveTryOnDoll();
-  const backButton = renderItemDetailPanel({
-    actionForItem: wardrobePanelAction,
-    categoryLabel,
-    emptyText: wardrobeEmptyText(shopCategory),
-    items: categoryItems,
-    listElement: elements.advShopGrid,
-    mode: "wardrobe",
-    onAction: toggleWardrobeEquip,
-    onBack: backToRoomScene,
-    onPreview: previewWardrobeItem,
-    previewStyleForItem: itemPreviewStyle,
-    selectedItemId: shopPreviewItemId
-  });
-  renderItemPanelCommands(backButton);
-  const focusIndex = preserveFocus ? Math.max(0, categoryItems.findIndex((item) => item.id === shopPreviewItemId)) : 0;
-  scheduleAdvFocus(focusIndex);
+  renderAdvShop(preserveFocus, { closet: true });
 }
 
 function previewWardrobeItem(item) {
@@ -2473,6 +2431,15 @@ function unownedShopItemsFor(hotspot = activeShopHotspot, category = shopCategor
   ));
 }
 
+// issue #244：公主房衣櫃 = 玩家已擁有之衣物（跨店、依類別分欄），供 renderAdvShop closet 模式列欄。
+function ownedWardrobeItemsFor(category) {
+  return shopItems.filter((item) => itemMatchesCategory(item, category) && state.owned.includes(item.id));
+}
+
+function ownedWardrobeCategories() {
+  return categories.map((category) => category.id).filter((id) => ownedWardrobeItemsFor(id).length);
+}
+
 function refundableItemsFor(hotspot = activeShopHotspot) {
   return shopItems.filter((item) => (
     item.storeId === hotspot?.id &&
@@ -2500,54 +2467,45 @@ function shopGreeting(hotspot) {
   return sceneConfigFor(hotspot).shopGreeting || "Welcome, Princess. Pick a lovely item.";
 }
 
-function renderAdvShop(preserveFocus = false) {
-  const stockedCategories = availableShopCategories();
-  if (!stockedCategories.includes(shopCategory)) shopCategory = stockedCategories[0] || allowedShopCategories()[0] || "dresses";
+// issue #244：公主房衣櫃與商店逛店共用同一套多欄貨架面板（單一機制、非兩套）。
+// closet=true（公主房衣櫃）：列出已擁有衣物、動作鈕為 wear-only 穿脫切換（深粉紅）、無試穿與購買、Back 回房間；
+// closet=false（商店逛店）：列未擁有商品、試穿＋購買、Back 回店家。僅以參數區分。
+function renderAdvShop(preserveFocus = false, { closet = false } = {}) {
+  const stockedCategories = closet ? ownedWardrobeCategories() : availableShopCategories();
+  if (!closet && !stockedCategories.includes(shopCategory)) {
+    shopCategory = stockedCategories[0] || allowedShopCategories()[0] || "dresses";
+  }
   elements.advShopTabs.innerHTML = ""; // 多欄貨架已含類別標題，不再需要上方類別分頁。
+  const panel = {
+    actionForItem: closet ? wardrobePanelAction : shopPanelAction,
+    categoryLabel,
+    emptyText: closet ? "Buy treasures in town first, then dress up here." : `You found all ${activeShopHotspot?.label || "shop"} treasures!`,
+    isSelected: closet ? isItemEquipped : shopItemTriedOn,
+    items: [],
+    listElement: elements.advShopGrid,
+    mode: closet ? "wardrobe" : "shop",
+    onAction: closet ? toggleWardrobeEquip : buyItemInAdv,
+    onBack: closet ? backToRoomScene : backToStoreScene,
+    onPreview: closet ? previewWardrobeItem : toggleShopTryOn,
+    onTryOn: closet ? undefined : toggleShopTryOn, // 衣櫃無試穿鈕（wear-only）
+    previewStyleForItem: itemPreviewStyle,
+    tryOnForItem: closet ? undefined : shopTryOnState
+  };
   if (!stockedCategories.length) {
     clearTryOnPreview({ renderDoll: false });
-    renderShopSoldOut();
-    const backButton = renderItemDetailPanel({
-      actionForItem: shopPanelAction,
-      categoryLabel,
-      emptyText: `You found all ${activeShopHotspot?.label || "shop"} treasures!`,
-      isSelected: shopItemTriedOn,
-      items: [],
-      listElement: elements.advShopGrid,
-      mode: "shop",
-      onAction: buyItemInAdv,
-      onBack: backToStoreScene,
-      onPreview: toggleShopTryOn,
-      onTryOn: toggleShopTryOn,
-      previewStyleForItem: itemPreviewStyle,
-      tryOnForItem: shopTryOnState
-    });
+    if (!closet) renderShopSoldOut();
+    const backButton = renderItemDetailPanel({ ...panel, items: [] });
     renderItemPanelCommands(backButton);
     scheduleAdvFocus(0);
     return;
   }
   renderActiveTryOnDoll();
-  // 每個有庫存的類別一欄，欄內列出該類未擁有的商品。
+  // 每個類別一欄：衣櫃列已擁有、商店列未擁有。
   const columns = stockedCategories.map((category) => ({
     label: categoryLabel(category),
-    items: unownedShopItemsFor(activeShopHotspot, category)
+    items: closet ? ownedWardrobeItemsFor(category) : unownedShopItemsFor(activeShopHotspot, category)
   }));
-  const backButton = renderItemDetailPanel({
-    actionForItem: shopPanelAction,
-    categoryLabel,
-    columns,
-    emptyText: `You found all ${activeShopHotspot?.label || "shop"} treasures!`,
-    isSelected: shopItemTriedOn,
-    items: [],
-    listElement: elements.advShopGrid,
-    mode: "shop",
-    onAction: buyItemInAdv,
-    onBack: backToStoreScene,
-    onPreview: toggleShopTryOn,
-    onTryOn: toggleShopTryOn,
-    previewStyleForItem: itemPreviewStyle,
-    tryOnForItem: shopTryOnState
-  });
+  const backButton = renderItemDetailPanel({ ...panel, columns });
   renderItemPanelCommands(backButton);
   scheduleAdvFocus(preserveFocus ? advFocusIndex : 0);
 }
