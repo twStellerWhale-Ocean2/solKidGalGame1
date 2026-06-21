@@ -2593,8 +2593,7 @@ function runVisualQa(api) {
     api.render();
     api.openShopDetail(hotspot);
     if (item && api.allowedShopCategories(hotspot).some((category) => api.itemMatchesCategory(item, category)) && !api.state.owned.includes(item.id)) {
-      api.shopPreviewItemId = item.id;
-      api.renderAdvShop(true);
+      api.tryOnShopItem(item);
     }
     return;
   }
@@ -2630,8 +2629,7 @@ function runVisualQa(api) {
     api.openShopDetail(hotspot);
     const item = requestedItem || api.shopItems.find((candidate) => api.allowedShopCategories(hotspot).some((category) => api.itemMatchesCategory(candidate, category)) && !api.state.owned.includes(candidate.id));
     if (item) {
-      api.shopPreviewItemId = item.id;
-      api.renderAdvShop(true);
+      api.tryOnShopItem(item);
       api.buyItemInAdv(item);
     }
     return;
@@ -2651,8 +2649,7 @@ function runVisualQa(api) {
     const item = requestedItem || api.shopItems.find((candidate) => api.allowedShopCategories(hotspot).some((category) => api.itemMatchesCategory(candidate, category)) && !api.state.owned.includes(candidate.id));
     if (item) {
       api.state.coins = Math.max(api.state.coins, item.cost);
-      api.shopPreviewItemId = item.id;
-      api.renderAdvShop(true);
+      api.tryOnShopItem(item);
       api.buyItemInAdv(item);
     }
     return;

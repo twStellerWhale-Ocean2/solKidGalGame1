@@ -173,6 +173,8 @@ let npcExpression = "normal";
 let advFocusIndex = 0;
 let advFocusTimer = 0;
 let shopPreviewItemId = "";
+// 商店多件同時試穿：累加試穿中的商品 id（沿用同一個試穿娃娃，依各自部位疊穿）。
+let shopTryOnIds = [];
 const mapZoomLimits = { min: 1, max: 2.2, mobileBaseScale: 1.06 };
 const areaMapIds = ["castle", "urban", "rural", "wild", "world"];
 let mapGesture = null;
@@ -1094,7 +1096,25 @@ function activeTryOnItem() {
   return item && item.type !== "room" ? item : null;
 }
 
+function shopTryOnItems() {
+  return shopTryOnIds.map((id) => itemById(id)).filter((item) => item && item.type !== "room");
+}
+
+function tryOnOutfitForItems(items) {
+  const previewOutfit = { ...state.outfit };
+  items.forEach((item) => {
+    if (isWearableItem(item)) equipOutfitItem(item, previewOutfit);
+  });
+  return previewOutfit;
+}
+
 function renderActiveTryOnDoll() {
+  // 商店：以累加的試穿清單疊穿多件；其餘模式（衣櫥／退款）維持單件預覽。
+  if (advMode === "shop") {
+    const items = shopTryOnItems();
+    renderAdvDoll(items.length ? tryOnOutfitForItems(items) : state.outfit, items.length > 0);
+    return;
+  }
   const item = activeTryOnItem();
   if (!item) {
     renderAdvDoll(state.outfit, false);
@@ -1994,6 +2014,7 @@ function openAdvBase(hotspot, mode) {
   activeLesson = null;
   activeShopHotspot = null;
   clearTryOnPreview({ renderDoll: false });
+  shopTryOnIds = [];
   advFocusIndex = 0;
   setExpressions("normal", "normal");
   elements.advScene.dataset.mode = mode;
@@ -2469,55 +2490,96 @@ function renderAdvShop(preserveFocus = false) {
     clearTryOnPreview({ renderDoll: false });
     renderCategoryTabs(elements.advShopTabs, shopCategory, () => {}, false, []);
     renderShopSoldOut();
+    renderShopTryOnSummary();
     const backButton = renderItemDetailPanel({
       actionForItem: shopPanelAction,
       categoryLabel,
       emptyText: `You found all ${activeShopHotspot?.label || "shop"} treasures!`,
+      isSelected: shopItemTriedOn,
       items: [],
       listElement: elements.advShopGrid,
       mode: "shop",
       onAction: buyItemInAdv,
       onBack: backToStoreScene,
-      onPreview: previewShopItem,
+      onPreview: toggleShopTryOn,
+      onTryOn: toggleShopTryOn,
       previewStyleForItem: itemPreviewStyle,
-      selectedItemId: shopPreviewItemId
+      tryOnForItem: shopTryOnState
     });
     renderItemPanelCommands(backButton);
     scheduleAdvFocus(0);
     return;
   }
-  if (shopPreviewItemId && !categoryItems.some((item) => item.id === shopPreviewItemId)) clearTryOnPreview({ renderDoll: false });
-  const previewItem = categoryItems.find((item) => item.id === shopPreviewItemId) || null;
   renderCategoryTabs(elements.advShopTabs, shopCategory, (category) => {
     shopCategory = category;
-    clearTryOnPreview({ renderDoll: false });
+    // 切換類別不清空試穿清單，讓玩家能跨類別（洋裝＋帽子＋鞋）疊穿整套。
     elements.advFeedback.textContent = "";
     renderAdvShop();
   }, false, stockedCategories);
   renderActiveTryOnDoll();
+  renderShopTryOnSummary();
   const backButton = renderItemDetailPanel({
     actionForItem: shopPanelAction,
     categoryLabel,
     emptyText: `You found all ${activeShopHotspot?.label || "shop"} treasures!`,
+    isSelected: shopItemTriedOn,
     items: categoryItems,
     listElement: elements.advShopGrid,
     mode: "shop",
     onAction: buyItemInAdv,
     onBack: backToStoreScene,
-    onPreview: previewShopItem,
+    onPreview: toggleShopTryOn,
+    onTryOn: toggleShopTryOn,
     previewStyleForItem: itemPreviewStyle,
-    selectedItemId: shopPreviewItemId
+    tryOnForItem: shopTryOnState
   });
   renderItemPanelCommands(backButton);
   const focusIndex = preserveFocus ? Math.max(0, categoryItems.findIndex((item) => item.id === shopPreviewItemId)) : 0;
   scheduleAdvFocus(focusIndex);
 }
 
-function previewShopItem(item) {
-  if (!item) return;
-  shopPreviewItemId = item.id;
-  elements.advFeedback.textContent = tryOnFeedbackText(item, "shop");
+function shopItemTriedOn(item) {
+  return shopTryOnIds.includes(item.id);
+}
+
+function shopTryOnState(item) {
+  if (!isWearableItem(item)) return null; // 房間擺設不能穿在身上，不給試穿鈕。
+  const active = shopTryOnIds.includes(item.id);
+  return {
+    active,
+    label: active ? "✓ On" : "Try on",
+    ariaLabel: active ? `Stop trying on ${item.name}` : `Try on ${item.name}`
+  };
+}
+
+function toggleShopTryOn(item) {
+  if (!item || !isWearableItem(item)) return;
+  shopPreviewItemId = item.id; // 記住最後操作的單品，供鍵盤「b」購買。
+  const idx = shopTryOnIds.indexOf(item.id);
+  if (idx >= 0) {
+    shopTryOnIds.splice(idx, 1);
+  } else {
+    // 維持試穿清單同部位互斥，與 equipOutfitItem 的穿戴規則一致（同 type、洋裝↔上下身）。
+    shopTryOnIds = shopTryOnIds.filter((id) => {
+      const other = itemById(id);
+      if (!other) return false;
+      if (other.type === item.type) return false;
+      if (item.type === "dress" && (other.type === "top" || other.type === "bottom")) return false;
+      if ((item.type === "top" || item.type === "bottom") && other.type === "dress") return false;
+      return true;
+    });
+    shopTryOnIds.push(item.id);
+  }
+  elements.advFeedback.textContent = "";
   renderAdvShop(true);
+}
+
+function renderShopTryOnSummary() {
+  if (!elements.advShopSelection) return;
+  const items = shopTryOnItems();
+  elements.advShopSelection.textContent = items.length
+    ? `Trying on: ${items.map((item) => item.name).join(", ")}`
+    : `Tap “Try on” to dress up ${princessName()}.`;
 }
 
 function shopPanelAction(item) {
@@ -2613,6 +2675,8 @@ function buyItemInAdv(item) {
   persist();
   render();
   shopPreviewItemId = "";
+  // 已買下＝實際穿上，從試穿清單移除（其餘試穿維持）。
+  shopTryOnIds = shopTryOnIds.filter((id) => id !== item.id);
   renderAdvShop(true);
 }
 
@@ -3857,6 +3921,7 @@ installTestingHooks({
   },
   get shopPreviewItemId() { return shopPreviewItemId; },
   set shopPreviewItemId(nextItemId) { shopPreviewItemId = nextItemId; },
+  tryOnShopItem: (item) => toggleShopTryOn(typeof item === "string" ? itemById(item) : item),
   get shopCategory() { return shopCategory; },
   set shopCategory(nextCategory) { shopCategory = nextCategory; },
   $$,

@@ -17,7 +17,7 @@ export function createAdvControls({ elements, getFocusIndex, getMode, setFocusIn
     if (!elements.advModal.classList.contains("show")) return [];
     const mode = getMode();
     const selectors = mode === "shop" || mode === "wardrobe"
-      ? ["#advShopGrid .item-card:not(:disabled), #advShopGrid .item-panel-action:not(:disabled)", "#advActionFooter .choice-button:not(:disabled)"]
+      ? ["#advShopGrid .item-card:not(:disabled), #advShopGrid .item-panel-tryon:not(:disabled), #advShopGrid .item-panel-action:not(:disabled)", "#advActionFooter .choice-button:not(:disabled)"]
       : mode === "refund"
         ? ["#advShopGrid .item-card:not(:disabled), #advShopGrid .item-panel-action:not(:disabled)", "#advActionFooter .choice-button:not(:disabled)"]
       : ["#choiceList .choice-button:not(:disabled)", "#advShopGrid .item-card:not(:disabled)", "#advActionFooter .choice-button:not(:disabled)"];
@@ -39,6 +39,9 @@ export function createAdvControls({ elements, getFocusIndex, getMode, setFocusIn
       const buttonRect = button.getBoundingClientRect();
       if (buttonRect.top < gridRect.top) shopGrid.scrollTop -= gridRect.top - buttonRect.top;
       if (buttonRect.bottom > gridRect.bottom) shopGrid.scrollTop += buttonRect.bottom - gridRect.bottom;
+      // 商店櫥窗為水平捲動，焦點移動時一併把方塊帶進可視範圍。
+      if (buttonRect.left < gridRect.left) shopGrid.scrollLeft -= gridRect.left - buttonRect.left;
+      if (buttonRect.right > gridRect.right) shopGrid.scrollLeft += buttonRect.right - gridRect.right;
       return;
     }
     if (button.closest("#advActionFooter")) return;

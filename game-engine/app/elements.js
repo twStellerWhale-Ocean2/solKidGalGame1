@@ -84,6 +84,7 @@ export function createElements() {
     shopArea: $("#shopArea"),
     advShopTabs: $("#advShopTabs"),
     advShopGrid: $("#advShopGrid"),
+    advShopSelection: $("#advShopSelection"),
     advActionFooter: $("#advActionFooter"),
     advFeedback: $("#advFeedback"),
     speakPromptButton: $("#speakPromptButton"),
