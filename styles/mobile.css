@@ -311,20 +311,24 @@ body {
 }
 
 .map-stage::before,
-.map-stage::after {
+.map-stage::after,
+.castle-stage::before {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-.map-stage::before {
+/* issue #226：地圖／城堡固定比例畫面之視口 letterbox 留白共用模糊鋪底（同一機制與 --stage-backdrop-* 常數）；
+   置於 stage > img（z-index 1）之下、不攔截 hotspot／marker，桌機寬視口露出留白時填滿，內容區本身不被模糊。 */
+.map-stage::before,
+.castle-stage::before {
   content: "";
   z-index: 0;
   background:
     linear-gradient(rgba(255, 250, 246, 0.24), rgba(196, 229, 236, 0.22)),
     var(--map-backdrop-image, url("../content-package/areas/urban/assets/map-1536.webp?v=20260606-issue66-map-contract-r1")) center / cover no-repeat;
-  filter: blur(12px) saturate(0.9);
-  transform: scale(1.04);
+  filter: blur(var(--stage-backdrop-blur)) saturate(var(--stage-backdrop-saturate));
+  transform: scale(var(--stage-backdrop-scale));
   opacity: 0.56;
 }
 

@@ -1428,6 +1428,10 @@ function renderCastleMap() {
   centerAreaMapIfRequested("castle");
   const metrics = castleCoverMetrics();
   syncAreaMapStyles("castle", metrics);
+  // issue #226：城堡固定比例地圖之視口 letterbox 留白模糊鋪底來源（同地圖機制 --map-backdrop-image）。
+  if (areaRegistry.castle?.mapImage) {
+    elements.castleStage.style.setProperty("--map-backdrop-image", `url("${cssAssetUrl(areaRegistry.castle.mapImage)}")`);
+  }
   elements.castleMarkerLayer.innerHTML = "";
   castleHotspots.forEach((hotspot) => {
     const node = castleMapNodes[hotspot.node];
@@ -2027,6 +2031,11 @@ function openAdvBase(hotspot, mode) {
   elements.advScene.className = `adv-scene ${scene.scene || ""}`;
   elements.advScene.style.setProperty("--lumi-stage-scale", String(activePaperDollCharacter().stageScale || characterScaleContract.lumiStageScale));
   applyAdvSceneArt(elements.advScene, scene.sceneArt, { assetUrl: domAssetUrl });
+  // issue #226：ADV 場景面板外之視口留白以該場景背景之模糊放大版鋪底（無 sceneArt 時 fallback 深色 backdrop）。
+  elements.advModal.style.setProperty(
+    "--adv-backdrop-image",
+    scene.sceneArt?.src ? `url("${cssAssetUrl(scene.sceneArt.src)}")` : ""
+  );
   // issue#150：場景角落標示——左上公主名、右上地點＋場景角色名。
   // 場景角色即公主本人（如公主房）或無對話對象時，次行留空（CSS :empty 隱藏），避免與左上公主名重複。
   elements.advTitle.textContent = hotspot.label;
