@@ -3326,6 +3326,8 @@ body {
   gap: 6px;
   height: auto;
   min-height: 0;
+  /* 欄是 flex column 且可垂直捲動：商品方塊不可被 flex 壓縮，否則多件時（如 outerwear）會被擠扁、Try on/BUY 殘留鬼影。維持自然高度，超出由 .shop-shelf-body 捲動。 */
+  flex: 0 0 auto;
   padding: 7px;
   border: 2px solid rgba(241, 154, 193, 0.55);
   border-radius: var(--radius);
