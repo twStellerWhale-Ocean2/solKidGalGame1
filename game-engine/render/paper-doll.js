@@ -8,7 +8,6 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
     // 沿用完全相同的對位幾何（不再逐 layer 重縮放 background 而讓衣物脫離身體）。
     return `
       <div class="paper-doll-stage">
-        <div class="avatar-shadow"></div>
         ${layers.map((layer) => `
           <span
             class="paper-doll-layer paper-doll-layer-${cssName(layer.slot)} paper-doll-layer-type-${cssName(layer.type || layer.slot)}"
