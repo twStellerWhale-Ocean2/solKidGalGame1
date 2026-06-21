@@ -4,6 +4,7 @@ import { dirname, extname, join, normalize, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn, execFile } from "node:child_process";
 import { outfitSlots } from "./content-package/wardrobe/_shared/rules.js";
+import { SCENE_AREA_KEYS, SCENE_DIALOG_KINDS, bankConstName, rewardVarFor, serializeBank, validateBank } from "./tool/scene-bank-io.mjs";
 
 const root = dirname(fileURLToPath(import.meta.url));
 const rootPrefix = root.endsWith(sep) ? root : `${root}${sep}`;
@@ -422,8 +423,55 @@ async function handleSaveDefaults(request, response) {
   } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
 }
 
+// ===== issue #245：場景對話題庫編修＋AI 生成（dev only，僅綁 127.0.0.1）=====
+// 白名單僅四地區 manifest；就地替換 `const <area>LessonBank/ChatLessonBank = Object.freeze({…});`
+// 區塊，reward 維持變數參照、保留原檔 EOL、不動其他欄位。序列化／驗證委派 tool/scene-bank-io.mjs。
+async function handleSaveSceneDialog(request, response) {
+  try {
+    const { area, kind, bank } = JSON.parse(await readBody(request) || "{}");
+    if (!SCENE_AREA_KEYS.includes(area)) throw new Error("area 不在白名單");
+    if (!SCENE_DIALOG_KINDS.includes(kind)) throw new Error("kind 非法（job／chat）");
+    validateBank(kind, bank); // 結構守門：題數／選項數／answer∈choices／中英等長
+    const constName = bankConstName(area, kind);
+    const block = serializeBank(constName, bank, rewardVarFor(kind));
+    const file = `content-package/areas/${area}/manifest.js`;
+    const filePath = join(root, file);
+    const original = await readFile(filePath, "utf8");
+    const eol = original.includes("\r\n") ? "\r\n" : "\n"; // 保留原檔 EOL，避免 autocrlf 標記整檔已變更
+    const re = new RegExp(`const ${constName} = Object\\.freeze\\(\\{[\\s\\S]*?\\n\\}\\);`);
+    if (!re.test(original)) throw new Error(`找不到 ${constName} 區塊`);
+    const updated = original.replace(re, () => block).replace(/\r\n/g, "\n").replace(/\n/g, eol);
+    await writeFile(filePath, updated);
+    json(response, 200, { ok: true, written: file, constName, places: Object.keys(bank).length });
+  } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
+}
+
+// 依前端組好的提示詞向 AI 生成對話：金鑰存在則呼叫 Anthropic Messages API 回傳原始文字（前端再解析驗證）；
+// 無金鑰則明確降級 needKey:true，前端改顯示提示詞供複製到外部模型、貼回解析（不中斷、不外洩金鑰）。
+async function handleGenerateSceneDialog(request, response) {
+  try {
+    const { prompt } = JSON.parse(await readBody(request) || "{}");
+    if (typeof prompt !== "string" || !prompt.trim()) throw new Error("prompt required");
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) { json(response, 200, { ok: false, needKey: true }); return; }
+    const model = process.env.SCENE_GEN_MODEL || "claude-haiku-4-5";
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({ model, max_tokens: 2000, messages: [{ role: "user", content: prompt }] })
+    });
+    if (!r.ok) throw new Error(`AI API ${r.status}: ${(await r.text()).slice(0, 200)}`);
+    const data = await r.json();
+    const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
+    if (!text) throw new Error("AI 回應為空");
+    json(response, 200, { ok: true, text, model });
+  } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
+}
+
 const WARDROBE_ROUTES = {
   "/tool/save-defaults": handleSaveDefaults,
+  "/tool/save-scene-dialog": handleSaveSceneDialog,
+  "/tool/generate-scene-dialog": handleGenerateSceneDialog,
   "/tool/open-folder": handleOpenFolder,
   "/tool/delete-item": handleDeleteItem,
   "/tool/add-item": handleAddItem,

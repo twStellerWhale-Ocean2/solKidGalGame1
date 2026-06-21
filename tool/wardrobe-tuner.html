@@ -13,6 +13,7 @@
     <button type="button" class="app-tab active" data-tab="wardrobe">👗 衣物設定</button>
     <button type="button" class="app-tab" data-tab="defaults">👑 公主預設</button>
     <button type="button" class="app-tab" data-tab="map">🗺 地圖設定</button>
+    <button type="button" class="app-tab" data-tab="scene">🎭 場景設定</button>
   </nav>
 
   <!-- ===== 衣物設定 ===== -->
@@ -206,9 +207,59 @@
     </main>
   </section>
 
+  <!-- ===== 場景設定（issue #245）===== -->
+  <section id="panel-scene" class="editor-panel" data-panel="scene" hidden>
+    <div class="map-subtabs" id="sceneSubtabs" aria-label="選擇地區"></div>
+    <main class="map-shell">
+      <aside class="map-list-pane">
+        <header class="tool-header">
+          <h1 id="sceneTitle">場景設定</h1>
+          <div id="sceneSummary" class="summary-line"></div>
+        </header>
+        <section id="sceneList" class="map-node-list" aria-label="場景清單"></section>
+      </aside>
+
+      <section class="scene-stage-pane">
+        <div id="sceneMetaCard" class="scene-meta-card">（未選場景）</div>
+        <div id="sceneDialogEditor" class="scene-dialog-editor"></div>
+      </section>
+
+      <aside class="map-control-pane">
+        <div id="sceneSelectedInfo" class="selected-info">（未選場景）</div>
+
+        <section class="control-section">
+          <h2>AI 生成對話</h2>
+          <label class="scene-gen-kind">題型
+            <select id="sceneGenKind">
+              <option value="job">打工任務（3 選項）</option>
+              <option value="chat">生活聊天（2 選項）</option>
+            </select>
+          </label>
+          <label>提示詞補充（選填）<textarea id="sceneGenHint" rows="2" placeholder="例如：以整理書房為主題"></textarea></label>
+          <button id="sceneGenBtn" type="button" class="apply-button">✨ 依提示詞生成</button>
+          <div id="sceneGenStatus" class="apply-status"></div>
+          <div id="sceneGenFallback" class="scene-gen-fallback" hidden>
+            <p class="control-help">未設定 <code>ANTHROPIC_API_KEY</code>：複製下方提示詞到外部 AI，再把回應 JSON 貼回下框，按「解析貼回」。</p>
+            <textarea id="sceneGenPrompt" rows="4" readonly aria-label="生成提示詞"></textarea>
+            <button id="sceneGenCopyBtn" type="button">📋 複製提示詞</button>
+            <textarea id="sceneGenPaste" rows="4" placeholder="貼上 AI 回應的 JSON…" aria-label="貼回 AI 回應"></textarea>
+            <button id="sceneGenParseBtn" type="button">解析貼回</button>
+          </div>
+        </section>
+
+        <section class="control-section apply-section">
+          <button id="sceneSave" type="button" class="apply-button">✓ 儲存對話到檔案</button>
+          <div id="sceneSaveStatus" class="apply-status"></div>
+          <p class="control-help">就地寫回該區 <code>manifest.js</code> 的 <code>LessonBank</code>／<code>ChatLessonBank</code>；需 dev server（<code>node server.mjs</code>）。重新整理遊戲即可看到。</p>
+        </section>
+      </aside>
+    </main>
+  </section>
+
   <script type="module" src="./wardrobe-tuner.js"></script>
   <script type="module" src="./defaults-tuner.js"></script>
   <script type="module" src="./map-tuner.js"></script>
+  <script type="module" src="./scene-tuner.js"></script>
   <script type="module" src="./editor-tabs.js"></script>
 </body>
 </html>

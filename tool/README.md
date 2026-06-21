@@ -130,3 +130,37 @@ each area — **Castle / Urban / Rural / Wild** (`<area>Area.nodes` in that area
 
 Like the wardrobe apply/manage actions, map save/upload require the dev server
 (`node server.mjs`) and never run on the public GitHub Pages site.
+
+## 場景設定 (Scene tab, issue #245)
+
+The **場景設定** function tab views each scene's config and edits its dialogue.
+Area sub-tabs (**Castle / Urban / Rural / Wild**) pick the area; the left list
+shows that area's scenes (badges mark which have **打工** job-task and **聊天**
+life-chat dialogue).
+
+- **Scene meta (view-only)** — the centre card shows the scene **name** (`label`),
+  **character** (`npc`), **background** art (`sceneArt`) and hint. These stay
+  read-only here (their source of truth is the map tab / character / scene-art
+  assets); this tab's editable target is the dialogue.
+- **Edit dialogue** — each question shows the NPC's first-person line (English +
+  Chinese) and the princess's responses; click the **正解** radio to mark the
+  correct answer (kept in `choices` automatically). Job tasks have 3 choices,
+  life chat 2 (spec#11).
+- **✨ 依提示詞生成 (AI generate)** — builds a prompt from the area's English level,
+  the scene's subject and the spec#1/#11 constraints (first-person NPC line,
+  princess-reply choices, natural spoken English, same-scene distractors, no meta
+  "English word" framing, Chinese translations). If the dev server has
+  `ANTHROPIC_API_KEY` set it calls the Anthropic API and fills the editor;
+  otherwise it **degrades**: it shows the prompt to copy into any external model,
+  and a box to paste the JSON back (📋 copy / 解析貼回 parse). Either way the result
+  is schema-validated and shown for review — it is **not** written until you save.
+- **✓ 儲存對話到檔案** writes the whole area's dialogue back via
+  `POST /tool/save-scene-dialog`. It only rewrites the
+  `const <area>LessonBank/ChatLessonBank = Object.freeze({…})` blocks in that
+  area's `manifest.js` (whitelisted to the four areas), keeps `reward` as a
+  variable reference, and preserves line endings. Reload the game to see it.
+
+The pure serialize/validate/prompt helpers live in `scene-bank-io.mjs` and are
+covered by `node tool/scene-bank-io.test.mjs` (round-trip against every area's
+real banks). Like the other tabs, this tab requires the dev server
+(`node server.mjs`) and never runs on the public GitHub Pages site.
