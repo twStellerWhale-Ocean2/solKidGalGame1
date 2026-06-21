@@ -2469,6 +2469,7 @@ function renderAdvShop(preserveFocus = false) {
     clearTryOnPreview({ renderDoll: false });
     renderCategoryTabs(elements.advShopTabs, shopCategory, () => {}, false, []);
     renderShopSoldOut();
+    renderShopSelectionName(null);
     const backButton = renderItemDetailPanel({
       actionForItem: shopPanelAction,
       categoryLabel,
@@ -2495,6 +2496,7 @@ function renderAdvShop(preserveFocus = false) {
     renderAdvShop();
   }, false, stockedCategories);
   renderActiveTryOnDoll();
+  renderShopSelectionName(previewItem);
   const backButton = renderItemDetailPanel({
     actionForItem: shopPanelAction,
     categoryLabel,
@@ -2516,8 +2518,14 @@ function renderAdvShop(preserveFocus = false) {
 function previewShopItem(item) {
   if (!item) return;
   shopPreviewItemId = item.id;
-  elements.advFeedback.textContent = tryOnFeedbackText(item, "shop");
+  // 櫥窗版：點選方塊只在底部亮出商品名稱，不再把整串試穿說明塞回上方對話列。
+  elements.advFeedback.textContent = "";
   renderAdvShop(true);
+}
+
+function renderShopSelectionName(previewItem) {
+  if (!elements.advShopSelection) return;
+  elements.advShopSelection.textContent = previewItem ? previewItem.name : "Tap a treasure to see its name.";
 }
 
 function shopPanelAction(item) {
