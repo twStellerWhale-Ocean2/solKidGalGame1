@@ -8,5 +8,9 @@
 // 變形）係為舊裁切素材所校準、已不適用，故清空——所有 wardrobe 單品改以類別 safeBox 為預設投影框
 // （見 rules.js wardrobeLayerBoundsByType），由維護者依需要以 tuner 逐件重新校準後寫回本檔。
 export const assetTargetOverrides = Object.freeze({
-  "castle/hairstyle-twin-braid": { left: 158, top: 283, right: 353, bottom: 471 }
+  "castle/bottom-sky-shorts": { left: 195, top: 484, right: 309, bottom: 572, corners: { nw: [-4, -2], ne: [16, -5], sw: [12, -4], se: [-1, -2] } },
+  "castle/hairstyle-twin-braid": { left: 158, top: 283, right: 353, bottom: 471 },
+  "castle/hairstyle-twin-braid-auburn": { left: 152, top: 287, right: 360, bottom: 506, corners: { nw: [17, -4], ne: [-14, -1], sw: [-21, -22], se: [23, -6] } },
+  "castle/outer-starry-cape": { left: 142, top: 395, right: 368, bottom: 579, corners: { nw: [0, 0], ne: [0, 0], sw: [15, -44], se: [-12, -52] } },
+  "castle/top-aqua-sailor": { left: 192, top: 387, right: 317, bottom: 514 }
 });
