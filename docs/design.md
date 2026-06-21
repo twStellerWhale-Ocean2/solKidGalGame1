@@ -274,7 +274,7 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
     * paramCardBackgroundAlpha=`0.45`
     * paramInitialThemeRandomization=`profileColor,backgroundPattern`
     * paramDefaultVoiceProfile=`default`
-    * paramAssetStandards=`per-class {pixelSize, maxKB, mode}：固定畫布 exact——characterBody/characterHead/NPC base 512×768·350、scene 1024×1024·500、areaMap 1536×1536·600、worldMap 1024×1536·600、ui 1280×720·120；緊貼裁切容於畫布 bound（素材去白邊後寬高≤畫布，#176 以 targetBox 等比 fit）——mapLayer（地圖裝飾層）≤512×512·80；長邊貼滿固定畫布 fill（畫布像素等於標準值、內容等比縮放使長邊貼滿至少一對對邊、短邊置中留透明、不變形）——wardrobe（衣物單品，單一素材兼 layer 與商店預覽）512×512·≈200（USR-gated 待實測；取代並移除分離 wardrobeThumb／wardrobeLayer 雙類）`（資產 lint 之尺寸與檔重 SSOT；初始檔重門檻，code 可依實測 USR-gated 微調）
+    * paramAssetStandards=`per-class {pixelSize, maxKB, mode}：固定畫布 exact——characterBody/characterHead/NPC base 512×768·350、scene 1024×1024·500、areaMap 1536×1536·600、worldMap 1536×1536·600、ui 1280×720·120；緊貼裁切容於畫布 bound（素材去白邊後寬高≤畫布，#176 以 targetBox 等比 fit）——mapLayer（地圖裝飾層）≤512×512·80；長邊貼滿固定畫布 fill（畫布像素等於標準值、內容等比縮放使長邊貼滿至少一對對邊、短邊置中留透明、不變形）——wardrobe（衣物單品，單一素材兼 layer 與商店預覽）512×512·≈200（USR-gated 待實測；取代並移除分離 wardrobeThumb／wardrobeLayer 雙類）`（資產 lint 之尺寸與檔重 SSOT；初始檔重門檻，code 可依實測 USR-gated 微調）
   * [etyCfg自訂modScene組態]
     * paramChineseAudioLang=`zh-TW`
     * paramRewardSecondTryRatio=`0.5`
