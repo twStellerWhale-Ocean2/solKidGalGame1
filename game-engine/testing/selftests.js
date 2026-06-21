@@ -818,6 +818,50 @@ function runSceneNavSelfTest(api) {
     // 僅第一層場景選單之 Leave 才關閉冒險視窗回地圖。
     click(footerBtn("Leave"), "Leave");
     if (api.getAdvMode() !== "closed") errors.push(`Leave from first layer mode = ${api.getAdvMode()}, expected closed`);
+
+    // issue #244：公主房第一層應為單一「換裝」入口（深粉紅）＋ Leave，無昔日逐分類專用表單；
+    // 衣櫃與商店共用同一面板（mode 區分）、為 wear-only 穿脫切換、無試穿鈕。
+    api.openRoomScene(api.hotspotById("princessRoom"));
+    if (api.getAdvMode() !== "scene") errors.push(`room first layer mode = ${api.getAdvMode()}, expected scene`);
+    const changeOutfitBtn = choiceBtn("Change Outfit");
+    if (!changeOutfitBtn) errors.push("room first layer missing single 'Change Outfit' entry");
+    if (changeOutfitBtn && !changeOutfitBtn.classList.contains("change-outfit-choice")) errors.push("Change Outfit entry missing deep-pink class (change-outfit-choice)");
+    if (!footerBtn("Leave")) errors.push("room first layer missing Leave button");
+    ["Hair", "Tops", "Bottoms", "Dresses", "Outerwear", "Shoes", "Hats", "Accessories"].forEach((cat) => {
+      if (choiceBtn(cat)) errors.push(`room first layer still shows legacy category button "${cat}" (ROOM_ACTIONS not consolidated)`);
+    });
+    click(changeOutfitBtn, "Change Outfit");
+    if (api.getAdvMode() !== "wardrobe") errors.push(`after Change Outfit mode = ${api.getAdvMode()}, expected wardrobe`);
+    if (api.elements.advShopGrid.querySelector(".item-panel-tryon")) errors.push("wardrobe panel renders a try-on button (should be wear-only)");
+
+    // wear-only 穿脫切換：以預設帳號擁有但未穿戴之 pinkSlippers（鞋、無安全底著）驗 Wear → Take Off。
+    const toggleItem = api.itemById("pinkSlippers");
+    if (toggleItem && api.state.owned.includes(toggleItem.id)) {
+      if (api.state.outfit[toggleItem.type] === toggleItem.id) api.toggleEquip(toggleItem); // 確保起始為未穿戴
+      api.openWardrobeDetail(api.categoryForType(toggleItem.type)?.id || "shoes");
+      const actionFor = (id) => api.elements.advShopGrid
+        .querySelector(`.item-card[data-item-id="${id}"]`)?.closest(".item-panel-row")?.querySelector(".item-panel-action");
+      let actionBtn = actionFor(toggleItem.id);
+      if (!actionBtn) {
+        errors.push("wardrobe action button not found for pinkSlippers");
+      } else {
+        if (!/wear/i.test(actionBtn.textContent)) errors.push(`unequipped wardrobe label = "${actionBtn.textContent.trim()}", expected Wear`);
+        actionBtn.click(); // 穿上
+        if (api.state.outfit[toggleItem.type] !== toggleItem.id) errors.push("after Wear, pinkSlippers not equipped");
+        actionBtn = actionFor(toggleItem.id);
+        if (actionBtn && !/take off/i.test(actionBtn.textContent)) errors.push(`equipped wardrobe label = "${actionBtn?.textContent.trim()}", expected Take Off`);
+        actionBtn?.click(); // 脫下
+        if (api.state.outfit[toggleItem.type] === toggleItem.id) errors.push("after Take Off, pinkSlippers still equipped (toggle failed)");
+      }
+    } else {
+      errors.push("test data: default account does not own pinkSlippers (cannot verify wear/take-off toggle)");
+    }
+
+    // 衣櫃返回回到第一層場景選單，再以 Leave 關閉。
+    click(footerBtn("Back"), "Back(wardrobe)");
+    if (api.getAdvMode() !== "scene") errors.push(`Back from wardrobe mode = ${api.getAdvMode()}, expected scene`);
+    click(footerBtn("Leave"), "Leave(room)");
+    if (api.getAdvMode() !== "closed") errors.push(`Leave from room mode = ${api.getAdvMode()}, expected closed`);
   } catch (error) {
     errors.push(error.message);
   } finally {

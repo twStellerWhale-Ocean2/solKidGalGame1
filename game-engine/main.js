@@ -2092,7 +2092,9 @@ function renderFirstLayerSceneActions(hotspot) {
   firstLayerActionsFor(hotspot, { hasLessons: hasLessonsForPlace(hotspot?.id), hasChat: hasChatForPlace(hotspot?.id), jobDoneThisCycle: isJobDone(state, hotspot?.id) }).forEach((action) => {
     addAdvOption(sceneActionLabel(action), () => handleFirstLayerSceneAction(action, hotspot), {
       leave: action.handlerKey === "leave",
-      navigation: action.navigation && action.handlerKey !== "leave"
+      navigation: action.navigation && action.handlerKey !== "leave",
+      // issue #244：公主房單一「換裝」入口套深粉紅變體，與其他場景選單鈕區辨。
+      variant: action.handlerKey === "wardrobe" ? "change-outfit-choice" : undefined
     });
   });
 }
@@ -2361,7 +2363,7 @@ function openWardrobeDetail(category = "dresses") {
   clearTryOnPreview({ renderDoll: false });
   elements.advScene.dataset.mode = "wardrobe";
   setAdvLine(`Choose ${categoryLabel(category).toLowerCase()} for ${princessName()}.`);
-  elements.advPrompt.textContent = "Tap to preview, then equip.";
+  elements.advPrompt.textContent = "Tap to preview, then wear or take off.";
   elements.shopArea.classList.remove("refund-detail");
   elements.shopArea.classList.add("show", "wardrobe-detail");
   renderWardrobeDetail();
@@ -2401,7 +2403,7 @@ function renderWardrobeDetail(preserveFocus = false) {
     items: categoryItems,
     listElement: elements.advShopGrid,
     mode: "wardrobe",
-    onAction: equipWardrobePreview,
+    onAction: toggleWardrobeEquip,
     onBack: backToRoomScene,
     onPreview: previewWardrobeItem,
     previewStyleForItem: itemPreviewStyle,
@@ -2419,28 +2421,35 @@ function previewWardrobeItem(item) {
   renderWardrobeDetail(true);
 }
 
+// issue #244：公主房衣櫃為 wear-only 穿脫切換——已穿戴顯示「Take Off」可再脫下，未穿戴顯示「Wear」；
+// 房間擺設（type==="room"）維持單向放置（放置後鎖定）。
 function wardrobeActionLabel(item) {
   if (!item) return "Pick a treasure";
   if (item.type === "room") return state.outfit.room === item.id ? "Placed" : "Place";
-  return isItemEquipped(item) ? "Wearing" : "Equip";
+  return isItemEquipped(item) ? "Take Off" : "Wear";
 }
 
 function wardrobePanelAction(item) {
   const equipped = isItemEquipped(item);
   const label = wardrobeActionLabel(item);
+  const isRoom = item?.type === "room";
   return {
     label,
-    status: equipped ? label : "Owned",
-    ariaLabel: equipped ? `${item.name} ${label}` : `${label} ${item.name}`,
-    disabled: equipped
+    status: isRoom ? label : (equipped ? "Wearing" : "Owned"),
+    ariaLabel: `${label} ${item.name}`,
+    // 衣物可穿可脫，不再 disable；僅房間擺設放置後鎖定。
+    disabled: isRoom && equipped
   };
 }
 
-function equipWardrobePreview(item) {
+function toggleWardrobeEquip(item) {
   if (!item) return;
   if (item.type === "room") {
     state.outfit.room = item.id;
     elements.advFeedback.textContent = `${item.name} is placed in ${princessName()}'s room.`;
+  } else if (isItemEquipped(item)) {
+    unequipOutfitItem(item);
+    elements.advFeedback.textContent = `${item.name} taken off.`;
   } else {
     equipOutfitItem(item);
     elements.advFeedback.textContent = `${item.name} equipped.`;

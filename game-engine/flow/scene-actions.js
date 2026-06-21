@@ -7,15 +7,10 @@ export const SCENE_ACTION_TYPES = Object.freeze({
   WARDROBE: "wardrobe"
 });
 
+// issue #244：公主房第一層收斂為單一「換裝」入口（取代昔日攤平之逐分類專用表單），
+// 開啟後沿用與商店逛店同一套右側衣櫃 item-panel（mode=wardrobe），面板內以類別分頁切換。
 const ROOM_ACTIONS = Object.freeze([
-  wardrobeAction("Hair", "hair", "💇"),
-  wardrobeAction("Tops", "tops", "👚"),
-  wardrobeAction("Bottoms", "bottoms", "🩳"),
-  wardrobeAction("Dresses", "dresses", "👗"),
-  wardrobeAction("Outerwear", "outerwear", "🧥"),
-  wardrobeAction("Shoes", "shoes", "👞"),
-  wardrobeAction("Hats", "hats", "👑"),
-  wardrobeAction("Accessories", "accessories", "🎀"),
+  changeOutfitAction(),
   leaveAction()
 ]);
 
@@ -59,12 +54,11 @@ export function sceneActionLabel(action) {
   return [action.icon, action.label].filter(Boolean).join(" ");
 }
 
-function wardrobeAction(label, category, icon) {
+function changeOutfitAction() {
   return {
-    category,
     handlerKey: "wardrobe",
-    icon,
-    label,
+    icon: "👗",
+    label: "Change Outfit",
     type: SCENE_ACTION_TYPES.WARDROBE
   };
 }
