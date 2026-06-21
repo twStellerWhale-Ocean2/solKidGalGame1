@@ -35,21 +35,21 @@ export const wildArea = Object.freeze({
   vocabularyProfile: wildVocabularyProfile,
   // nodes 控制地圖上的路網與圖示座標；x / y 是相對地圖寬高的百分比。
   nodes: {
-    wildEntrance: { id: "wildEntrance", label: "World Path", x: 14, y: 90, links: ["treeSpiritGrove", "wizardHut", "threePigsCottage"] },
-    elfGlade: { id: "elfGlade", label: "Elf Glade", x: 22, y: 40, links: ["fairyAtelier", "halflingVillage"] },
+    wildEntrance: { id: "wildEntrance", label: "World Path", x: 32.6, y: 87.1, links: ["treeSpiritGrove", "wizardHut", "threePigsCottage"] },
+    elfGlade: { id: "elfGlade", label: "Elf Glade", x: 54.2, y: 48.4, links: ["fairyAtelier", "halflingVillage"] },
     fairyAtelier: { id: "fairyAtelier", label: "Fairy Atelier", x: 38, y: 52, links: ["elfGlade", "halflingVillage", "wizardHut"] },
     stoneGolemPass: { id: "stoneGolemPass", label: "Stone Golem Pass", x: 52, y: 32, links: ["wizardHut", "elfGlade"] },
-    halflingVillage: { id: "halflingVillage", label: "Halfling Village", x: 45, y: 80, links: ["elfGlade", "fairyAtelier", "redHoodPath", "threePigsCottage"] },
-    wizardHut: { id: "wizardHut", label: "Wizard Hut", x: 75, y: 40, links: ["stoneGolemPass", "treeSpiritGrove", "threePigsCottage", "fairyAtelier"] },
+    halflingVillage: { id: "halflingVillage", label: "Halfling Village", x: 87.2, y: 54.6, links: ["elfGlade", "fairyAtelier", "redHoodPath", "threePigsCottage"] },
+    wizardHut: { id: "wizardHut", label: "Wizard Hut", x: 17.9, y: 37.7, links: ["stoneGolemPass", "treeSpiritGrove", "threePigsCottage", "fairyAtelier"] },
     redHoodPath: { id: "redHoodPath", label: "Red Riding Hood Path", x: 12, y: 60, links: ["halflingVillage", "threePigsCottage"] },
-    threePigsCottage: { id: "threePigsCottage", label: "Three Pigs Cottage", x: 66, y: 82, links: ["redHoodPath", "halflingVillage", "wizardHut", "treeSpiritGrove", "wildEntrance"] },
-    treeSpiritGrove: { id: "treeSpiritGrove", label: "Tree Spirit Grove", x: 80, y: 62, links: ["wizardHut", "threePigsCottage", "wildEntrance"] }
+    threePigsCottage: { id: "threePigsCottage", label: "Three Pigs Cottage", x: 57.6, y: 65.5, links: ["redHoodPath", "halflingVillage", "wizardHut", "treeSpiritGrove", "wildEntrance"] },
+    treeSpiritGrove: { id: "treeSpiritGrove", label: "Tree Spirit Grove", x: 33.7, y: 65.8, links: ["wizardHut", "threePigsCottage", "wildEntrance"] }
   },
   // locations 控制地圖圖示進入後的場景、NPC、商店與提示文字。
   locations: [
     { id: "wildExit", area: "wild", node: "wildEntrance", label: "World Path", icon: "↩", npcClass: "npc-none", npc: "Wild Sign", kind: "gate", markerStyle: "portal", portalId: "entrance", hint: "The path returns to the kingdom world map." },
     { id: "elfGlade", area: "wild", node: "elfGlade", label: "Elf Glade", icon: "🧝", npc: "Elia", scene: "scene-wild-elf-glade", npcImage: npcImage("elia"), hint: "The elf glade glows with tiny flowers." },
-    { id: "fairyAtelier", area: "wild", node: "fairyAtelier", label: "Fairy Atelier", icon: "👗", npc: "Faye", scene: "scene-wild-fairy-atelier", npcImage: npcImage("fairy-atelier"), shopCategories: ["dresses", "accessories", "outerwear", "shoes"], defaultCategory: "dresses", hint: "Faye now tailors the whole wild wardrobe — dresses, accessories, helper cloaks and boots." },
+    { id: "fairyAtelier", area: "wild", node: "fairyAtelier", label: "Fairy Atelier", icon: "👗", npc: "Faye", scene: "scene-wild-fairy-atelier", npcImage: npcImage("fairy-atelier"), shopCategories: ["dresses", "outerwear", "shoes", "accessories"], defaultCategory: "dresses", hint: "Faye now tailors the whole wild wardrobe — dresses, accessories, helper cloaks and boots." },
     { id: "stoneGolemPass", area: "wild", node: "stoneGolemPass", label: "Stone Golem Pass", icon: "🪨", npc: "Goro", scene: "scene-wild-golem-pass", npcImage: npcImage("goro"), hint: "A friendly stone golem watches the mountain pass." },
     { id: "halflingVillage", area: "wild", node: "halflingVillage", label: "Halfling Village", icon: "🏘", npc: "Penny", scene: "scene-wild-halfling-village", npcImage: npcImage("penny"), hint: "Small round doors peek from the hill." },
     { id: "wizardHut", area: "wild", node: "wizardHut", label: "Wizard Hut", icon: "🪄", npc: "Wiz Beryl", scene: "scene-wild-wizard-hut", npcImage: npcImage("wiz-beryl"), hint: "A purple roof curls above jars and herbs." },

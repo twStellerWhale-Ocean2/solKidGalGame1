@@ -1,6 +1,9 @@
 //#region 可玩紙娃娃角色
 // 角色本體集中在 content-package/characters；衣物 layer 仍共用同一個 512x768 rig。
-export const characterAssetVersion = "?v=20260620-issue196-wardrobe-fill";
+// issue #214：立繪拆為「共用 body（neck-down＋永久肌膚安全底著）＋ per-character head（臉＋預設髮＝識別）」
+// 分層合成——四位公主共用同一張 body.webp，各自一張 assets/head.webp；衣物與髮型 wardrobe layer 疊於其上，
+// 髮型 layer 須完全覆蓋 head 預設髮，使換衣／換髮舊層不殘留（消除昔日 baked-in base 不可移除之雙重疊圖）。
+export const characterAssetVersion = "?v=20260621-issue214-body-head";
 export const defaultActiveCharacterId = "lumi";
 export const sharedPaperDollRig = Object.freeze({
   id: "shared-512x768-v1",
@@ -14,6 +17,9 @@ export const sharedPaperDollRig = Object.freeze({
 export const characterAsset = (characterId, name) => (
   `content-package/characters/${characterId}/assets/${name}.webp${characterAssetVersion}`
 );
+
+// issue #214：四位可玩公主共用同一張 neck-down body（含永久肌膚安全底著），不分角色。
+export const sharedBodyLayer = `content-package/characters/body.webp${characterAssetVersion}`;
 
 // issue #131：識別色色盤由 16 高飽和色改為 8 種低飽和粉彩色（spec#6）。
 // 8 色橫跨色相環、彼此可辨識（spec#8 多帳號辨識）。玩家亦可用調色器自訂任一色（見 normalizeProfileColor）。
@@ -39,7 +45,8 @@ export const characterRegistry = Object.freeze({
     id: "lumi",
     label: "Princess Lumi",
     defaultName: "Lumi",
-    baseLayer: characterAsset("lumi", "base"),
+    baseLayer: sharedBodyLayer,
+    headLayer: characterAsset("lumi", "head"),
     defaultProfileColor: "#fda4af",
     defaultOutfit: Object.freeze({ hairstyle: "none", dress: "none" }),
     naturalHeightCm: 125,
@@ -50,7 +57,8 @@ export const characterRegistry = Object.freeze({
     id: "yumi",
     label: "Princess Yumi",
     defaultName: "Yumi",
-    baseLayer: characterAsset("yumi", "base"),
+    baseLayer: sharedBodyLayer,
+    headLayer: characterAsset("yumi", "head"),
     defaultProfileColor: "#93c5fd",
     defaultOutfit: Object.freeze({ hairstyle: "none", dress: "none" }),
     naturalHeightCm: 125,
@@ -61,7 +69,8 @@ export const characterRegistry = Object.freeze({
     id: "sol",
     label: "Princess Mary",
     defaultName: "Mary",
-    baseLayer: characterAsset("sol", "base"),
+    baseLayer: sharedBodyLayer,
+    headLayer: characterAsset("sol", "head"),
     defaultProfileColor: "#fcd34d",
     defaultOutfit: Object.freeze({ hairstyle: "none", dress: "none" }),
     naturalHeightCm: 125,
@@ -72,7 +81,8 @@ export const characterRegistry = Object.freeze({
     id: "rosa",
     label: "Princess Rosa",
     defaultName: "Rosa",
-    baseLayer: characterAsset("rosa", "base"),
+    baseLayer: sharedBodyLayer,
+    headLayer: characterAsset("rosa", "head"),
     defaultProfileColor: "#86efac",
     defaultOutfit: Object.freeze({ hairstyle: "none", dress: "none" }),
     naturalHeightCm: 125,

@@ -19,9 +19,8 @@ const itemMap = new Map(shopItems.map((item) => [item.id, item]));
 // 素材包（content pack）清單與篩選集（預設全選；模組層級，避免 state 初始化前的 TDZ）。
 const allPacks = [...new Set(shopItems.map(packOfItem).filter(Boolean))].sort();
 let selectedPacks = new Set(allPacks);
-// 類型（UI category）多選篩選集（預設全選）。
-const allCats = categories.map((c) => c.id);
-let selectedCats = new Set(allCats);
+// 左欄單品搜尋字串（依名稱／id 即時過濾，與素材包多選＋衣櫃並用）。
+let searchText = "";
 // 第一層：類別投影框（= 該類 safeBox）。第二層：各單品 targetBox（覆寫→裁切原始框→safeBox）。
 const workingSafeBox = Object.fromEntries(
   Object.entries(wardrobeLayerBoundsByType).map(([type, b]) => [type, b.safeBox ? { ...b.safeBox } : fullCanvas()])
@@ -37,11 +36,7 @@ const state = {
 };
 
 const dom = {
-  summaryLine: q("#summaryLine"), itemList: q("#itemList"),
-  packFilterToggle: q("#packFilterToggle"), packFilterMenu: q("#packFilterMenu"),
-  packAll: q("#packAll"), packNone: q("#packNone"), packCheckboxes: q("#packCheckboxes"),
-  catFilterToggle: q("#catFilterToggle"), catFilterMenu: q("#catFilterMenu"),
-  catAll: q("#catAll"), catNone: q("#catNone"), catCheckboxes: q("#catCheckboxes"),
+  summaryLine: q("#summaryLine"), closets: q("#closets"), packButtons: q("#packButtons"),
   previewLabel: q("#previewLabel"), previewDoll: q("#previewDoll"), previewStage: q(".preview-stage"),
   typeOverlay: q("#typeOverlay"), itemOverlay: q("#itemOverlay"), selectedInfo: q("#selectedInfo"),
   modeTabs: q("#modeTabs"), modeHelp: q("#modeHelp"),
@@ -49,7 +44,8 @@ const dom = {
   addItemToggle: q("#addItemToggle"), addItemForm: q("#addItemForm"),
   addPack: q("#addPack"), addType: q("#addType"), addId: q("#addId"),
   addName: q("#addName"), addAsset: q("#addAsset"), addCost: q("#addCost"),
-  addFile: q("#addFile"), addOverwrite: q("#addOverwrite"), addStatus: q("#addStatus")
+  addFile: q("#addFile"), addOverwrite: q("#addOverwrite"), addStatus: q("#addStatus"),
+  itemSearch: q("#itemSearch")
 };
 
 const paperDollRenderer = createPaperDollRenderer({
@@ -62,37 +58,21 @@ const paperDollRenderer = createPaperDollRenderer({
 });
 
 bindEvents();
-renderPackFilter();
-renderCategoryFilter();
+renderPackButtons();
 populateAddSelects();
 equipSelectedItem();
 renderAll();
 
 function bindEvents() {
-  dom.packFilterToggle.addEventListener("click", () => { dom.packFilterMenu.hidden = !dom.packFilterMenu.hidden; });
-  dom.packAll.addEventListener("click", () => { selectedPacks = new Set(allPacks); afterPackChange(); });
-  dom.packNone.addEventListener("click", () => { selectedPacks = new Set(); afterPackChange(); });
-  dom.packCheckboxes.addEventListener("change", (e) => {
-    const pack = e.target?.value;
-    if (!pack) return;
-    if (e.target.checked) selectedPacks.add(pack); else selectedPacks.delete(pack);
-    afterPackChange();
-  });
-  dom.catFilterToggle.addEventListener("click", () => { dom.catFilterMenu.hidden = !dom.catFilterMenu.hidden; });
-  dom.catAll.addEventListener("click", () => { selectedCats = new Set(allCats); afterCatChange(); });
-  dom.catNone.addEventListener("click", () => { selectedCats = new Set(); afterCatChange(); });
-  dom.catCheckboxes.addEventListener("change", (e) => {
-    const cat = e.target?.value;
-    if (!cat) return;
-    if (e.target.checked) selectedCats.add(cat); else selectedCats.delete(cat);
-    afterCatChange();
-  });
-  document.addEventListener("click", (e) => {
-    document.querySelectorAll(".pack-filter").forEach((dd) => { if (!dd.contains(e.target)) { const m = dd.querySelector(".pack-menu"); if (m) m.hidden = true; } });
-  });
+  setupClosetDragScroll();
   dom.modeTabs.addEventListener("click", (e) => {
     const mode = e.target.closest("button")?.dataset.mode;
     if (mode) { state.editMode = mode; renderAll(); }
+  });
+  dom.itemSearch?.addEventListener("input", () => {
+    searchText = dom.itemSearch.value.trim().toLowerCase();
+    ensureValidSelection();
+    renderAll();
   });
   dom.addItemToggle.addEventListener("click", () => { dom.addItemForm.hidden = !dom.addItemForm.hidden; });
   dom.addItemForm.addEventListener("submit", submitAddItem);
@@ -160,7 +140,7 @@ function setupColumnResize() {
 
 function renderAll() {
   renderSummary();
-  renderItemList();
+  renderClosets();
   renderModeTabs();
   renderSelectedInfo();
   renderPreview();
@@ -176,51 +156,89 @@ function renderModeTabs() {
 }
 
 function renderSummary() {
-  dom.summaryLine.textContent = `${itemsShown().length}/${shopItems.length} items · 素材包＋類型多選篩選 · 拖綠框（角＝自由變形）· 滾輪縮放 · canvas ${CANVAS.W}×${CANVAS.H}`;
+  dom.summaryLine.textContent = `${itemsShown().length}/${shopItems.length} items · 素材包多選＋衣櫃依類型（可水平拖動）· 拖綠框（角＝自由變形）· 滾輪縮放 · canvas ${CANVAS.W}×${CANVAS.H}`;
 }
 
-function renderCategoryFilter() {
-  dom.catCheckboxes.innerHTML = "";
+// 類型衣櫃：每個 UI category 一個衣櫃，依 selectedPacks 過濾後水平並列（空衣櫃略過）。
+function renderClosets() {
+  dom.closets.innerHTML = "";
+  const shown = itemsShown();
   categories.forEach((category) => {
-    const count = shopItems.filter((i) => catOfItem(i) === category.id).length;
-    const label = document.createElement("label");
-    label.className = "pack-check";
-    label.innerHTML = `<input type="checkbox" value="${escapeHtml(category.id)}"${selectedCats.has(category.id) ? " checked" : ""}><span>${escapeHtml(category.label)}</span><em>${count}</em>`;
-    dom.catCheckboxes.append(label);
+    const items = shown.filter((item) => catOfItem(item) === category.id);
+    if (!items.length) return;
+    const closet = document.createElement("section");
+    closet.className = "closet";
+    const head = document.createElement("div");
+    head.className = "closet-head";
+    head.innerHTML = `<strong>${escapeHtml(category.label)}</strong><em>${items.length}</em>`;
+    const body = document.createElement("div");
+    body.className = "closet-items";
+    items.forEach((item) => body.append(buildItemRow(item)));
+    closet.append(head, body);
+    dom.closets.append(closet);
   });
-  const n = selectedCats.size;
-  const summary = n === allCats.length ? "全部" : n === 0 ? "無" : n === 1 ? (categories.find((c) => c.id === [...selectedCats][0])?.label || "1") : `${n} 類`;
-  dom.catFilterToggle.textContent = `類型：${summary} ▾`;
+  if (!dom.closets.children.length) {
+    dom.closets.innerHTML = `<div class="closet-empty">沒有符合篩選的單品<br>（試著多選幾個素材包）。</div>`;
+  }
 }
 
-function afterCatChange() {
-  ensureValidSelection();
-  renderCategoryFilter();
-  renderAll();
+function buildItemRow(item) {
+  const row = document.createElement("div");
+  row.className = `item-row${item.id === state.selectedItemId ? " active" : ""}`;
+  row.innerHTML = `
+    <button type="button" class="item-main">
+      <img src="${assetUrl(item.image)}" alt="">
+      <span class="item-name"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.type)} / ${escapeHtml(item.id)}</span></span>
+      <span class="item-price">${priceText(item)}</span>
+    </button>
+    <button type="button" class="item-act" data-act="meta" title="編輯 metadata（名稱／價錢／描述詞）">📝</button>
+    <button type="button" class="item-act" data-act="regen" title="以目前描述詞重生此單品">♻</button>
+    <button type="button" class="item-act" data-act="open" title="開啟素材資料夾">📁</button>
+    <button type="button" class="item-act" data-act="del" title="刪除此單品">🗑</button>`;
+  row.querySelector(".item-main").addEventListener("click", () => { state.selectedItemId = item.id; equipSelectedItem(); renderAll(); });
+  row.querySelector('[data-act="meta"]').addEventListener("click", () => editItemMeta(item));
+  row.querySelector('[data-act="regen"]').addEventListener("click", () => regenItem(item));
+  row.querySelector('[data-act="open"]').addEventListener("click", () => openItemFolder(item));
+  row.querySelector('[data-act="del"]').addEventListener("click", () => deleteItem(item));
+  return row;
 }
 
-function renderItemList() {
-  dom.itemList.innerHTML = "";
-  itemsShown().forEach((item) => {
-    const row = document.createElement("div");
-    row.className = `item-row${item.id === state.selectedItemId ? " active" : ""}`;
-    row.innerHTML = `
-      <button type="button" class="item-main">
-        <img src="${assetUrl(item.image)}" alt="">
-        <span class="item-name"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.type)} / ${escapeHtml(item.id)}</span></span>
-        <span class="item-price">${priceText(item)}</span>
-      </button>
-      <button type="button" class="item-act" data-act="meta" title="編輯 metadata（名稱／價錢／描述詞）">📝</button>
-      <button type="button" class="item-act" data-act="regen" title="以目前描述詞重生此單品">♻</button>
-      <button type="button" class="item-act" data-act="open" title="開啟素材資料夾">📁</button>
-      <button type="button" class="item-act" data-act="del" title="刪除此單品">🗑</button>`;
-    row.querySelector(".item-main").addEventListener("click", () => { state.selectedItemId = item.id; equipSelectedItem(); renderAll(); });
-    row.querySelector('[data-act="meta"]').addEventListener("click", () => editItemMeta(item));
-    row.querySelector('[data-act="regen"]').addEventListener("click", () => regenItem(item));
-    row.querySelector('[data-act="open"]').addEventListener("click", () => openItemFolder(item));
-    row.querySelector('[data-act="del"]').addEventListener("click", () => deleteItem(item));
-    dom.itemList.append(row);
+// 衣櫃列水平拖曳捲動：在空白或卡片上按住左右拖即可移動到其他衣櫃；越過門檻才算拖曳，
+// 並在拖曳後抑制該次 click，避免誤觸選取單品。容器持久存在（只換 innerHTML），故只綁一次。
+function setupClosetDragScroll() {
+  const el = dom.closets;
+  if (!el) return;
+  let down = null;
+  let moved = false;
+  let suppressClick = false;
+  el.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;
+    down = { x: e.clientX, scroll: el.scrollLeft, id: e.pointerId };
+    moved = false;
   });
+  el.addEventListener("pointermove", (e) => {
+    if (!down) return;
+    const dx = e.clientX - down.x;
+    if (!moved && Math.abs(dx) > 6) {
+      moved = true;
+      el.classList.add("dragging");
+      try { el.setPointerCapture(down.id); } catch { /* noop */ }
+    }
+    if (moved) { el.scrollLeft = down.scroll - dx; e.preventDefault(); }
+  });
+  const end = () => {
+    if (!down) return;
+    try { el.releasePointerCapture(down.id); } catch { /* noop */ }
+    el.classList.remove("dragging");
+    suppressClick = moved;
+    down = null;
+    moved = false;
+  };
+  el.addEventListener("pointerup", end);
+  el.addEventListener("pointercancel", end);
+  el.addEventListener("click", (e) => {
+    if (suppressClick) { e.stopPropagation(); e.preventDefault(); suppressClick = false; }
+  }, true);
 }
 
 function assetOfItem(item) { const m = /assets\/(?:layers|thumbs)\/([^/]+)\.webp/.exec(item?.image || item?.layers?.[0]?.src || ""); return m ? m[1] : ""; }
@@ -348,23 +366,33 @@ async function postJson(url, body) {
 }
 function setStatus(el, text, kind) { el.textContent = text; el.className = `apply-status${kind ? ` apply-status-${kind}` : ""}`; }
 
-function renderPackFilter() {
-  dom.packCheckboxes.innerHTML = "";
+// 素材包水平多選按鈕：點按切換包含/排除（.active＝包含）；首顆「全部」一鍵全選/全不選。
+function renderPackButtons() {
+  dom.packButtons.innerHTML = "";
+  const allOn = selectedPacks.size === allPacks.length;
+  const allBtn = document.createElement("button");
+  allBtn.type = "button";
+  allBtn.className = `pack-btn pack-btn-all${allOn ? " active" : ""}`;
+  allBtn.textContent = "全部";
+  allBtn.addEventListener("click", () => { selectedPacks = new Set(allOn ? [] : allPacks); afterPackChange(); });
+  dom.packButtons.append(allBtn);
   allPacks.forEach((pack) => {
     const count = shopItems.filter((i) => packOfItem(i) === pack).length;
-    const label = document.createElement("label");
-    label.className = "pack-check";
-    label.innerHTML = `<input type="checkbox" value="${escapeHtml(pack)}"${selectedPacks.has(pack) ? " checked" : ""}><span>${escapeHtml(pack)}</span><em>${count}</em>`;
-    dom.packCheckboxes.append(label);
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = `pack-btn${selectedPacks.has(pack) ? " active" : ""}`;
+    btn.innerHTML = `${escapeHtml(pack)}<em>${count}</em>`;
+    btn.addEventListener("click", () => {
+      if (selectedPacks.has(pack)) selectedPacks.delete(pack); else selectedPacks.add(pack);
+      afterPackChange();
+    });
+    dom.packButtons.append(btn);
   });
-  const n = selectedPacks.size;
-  const summary = n === allPacks.length ? "全部" : n === 0 ? "無" : n === 1 ? [...selectedPacks][0] : `${n} 包`;
-  dom.packFilterToggle.textContent = `素材包：${summary} ▾`;
 }
 
 function afterPackChange() {
   ensureValidSelection();
-  renderPackFilter();
+  renderPackButtons();
   renderAll();
 }
 
@@ -591,7 +619,13 @@ function hasRenderOffset(b) { return (b.left || 0) !== 0 || (b.top || 0) !== 0 |
 function r3(v) { return Math.round(v * 1000) / 1000; }
 function packOfItem(item) { const m = /wardrobe\/([^/]+)\/assets\//.exec(item?.image || ""); return m ? m[1] : ""; }
 function catOfItem(item) { const c = categories.find((cat) => cat.types.includes(item.type)); return c ? c.id : ""; }
-function itemsShown() { return shopItems.filter((item) => selectedCats.has(catOfItem(item)) && selectedPacks.has(packOfItem(item))); }
+function itemsShown() {
+  return shopItems.filter((item) => selectedPacks.has(packOfItem(item)) && matchesSearch(item));
+}
+function matchesSearch(item) {
+  if (!searchText) return true;
+  return `${item.name} ${item.id}`.toLowerCase().includes(searchText);
+}
 function firstShownItem() { const items = itemsShown(); return items.find((item) => item.storeId !== "starter") || items[0]; }
 function assetUrl(src) { if (!src) return ""; return src.startsWith("content-package/") || src.startsWith("content-base/") ? `../${src}` : src; }
 function priceText(item) { return Number.isFinite(item.cost) && item.cost > 0 ? `${item.cost} coins` : "Free"; }

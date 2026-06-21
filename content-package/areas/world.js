@@ -1,8 +1,8 @@
 export const worldMap = Object.freeze({
   id: "world",
   label: "Kingdom World Map",
-  mapImage: "content-base/world/assets/world-map.webp?v=20260606-issue66-map-contract-r1",
-  imageSize: { width: 1024, height: 1536 },
+  mapImage: "content-base/world/assets/world-map.webp?v=20260621-world-map-1536-square-r1",
+  imageSize: { width: 1536, height: 1536 },
   destinations: [
     {
       id: "castle",
@@ -21,8 +21,8 @@ export const worldMap = Object.freeze({
       area: "urban",
       entryNode: "castleRoom",
       icon: "🏘",
-      x: 50,
-      y: 52,
+      x: 47,
+      y: 53.9,
       enabled: true,
       hint: "Visit the walled town, harbor, shops, school, and garden."
     },
@@ -32,8 +32,8 @@ export const worldMap = Object.freeze({
       area: "rural",
       entryNode: "ruralEntrance",
       icon: "🌾",
-      x: 78,
-      y: 48,
+      x: 68.4,
+      y: 39.4,
       enabled: true,
       hint: "Go to the farms, mill, forest work paths, fishing shore, and mine."
     },
@@ -43,8 +43,8 @@ export const worldMap = Object.freeze({
       area: "wild",
       entryNode: "wildEntrance",
       icon: "🌲",
-      x: 24,
-      y: 43,
+      x: 30.2,
+      y: 38.6,
       enabled: true,
       hint: "Enter the mountain forest, river paths, and fairy tale woods."
     },
@@ -54,8 +54,8 @@ export const worldMap = Object.freeze({
       area: "ocean",
       entryNode: "",
       icon: "⚓",
-      x: 49,
-      y: 78,
+      x: 38.9,
+      y: 72.6,
       enabled: false,
       hint: "Ocean travel is planned for a later content package."
     }
