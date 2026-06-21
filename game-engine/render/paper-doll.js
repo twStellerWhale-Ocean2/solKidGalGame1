@@ -46,6 +46,11 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
   function activePaperDollLayers(outfitState = {}, character = getCharacter?.()) {
     const layersBySlot = new Map(layerOrder.map((slot) => [slot, []]));
     layersBySlot.get("base").push({ slot: "base", type: "base", src: character?.baseLayer || baseLayer });
+    // issue #214：base＝共用 neck-down body，其上疊 per-character head（臉＋預設髮）。
+    // head 為角色識別層、置於 base 與 hairstyle 之間，使髮型 wardrobe layer 可完全覆蓋預設髮。
+    if (character?.headLayer) {
+      layersBySlot.get("head")?.push({ slot: "head", type: "head", src: character.headLayer });
+    }
     const slots = [
       "hairstyle",
       outfitState.dress && outfitState.dress !== "none" ? "dress" : "bottom",

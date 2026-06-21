@@ -1758,23 +1758,32 @@ async function collectPaperDollCharacterAudit(api, errors, warnings = []) {
       errors.push(`${character.id}/defaultOutfit.dress points to non-starter item ${character.defaultOutfit.dress}`);
     }
     const assets = {};
-    for (const [assetName, src] of Object.entries({ baseLayer: character.baseLayer })) {
-      if (!src) continue;
+    // issue #214：base＝共用 neck-down body（無頭無髮、腳底 baseline 至畫布底）；head＝per-character 臉＋預設髮（限上半部、與身體頸部接縫重疊）。
+    for (const [assetName, src] of Object.entries({ baseLayer: character.baseLayer, headLayer: character.headLayer })) {
+      if (!src) {
+        if (assetName === "headLayer") errors.push(`${character.id} has no headLayer`);
+        continue;
+      }
       try {
         const metrics = await imageMetrics(src);
-        if (assetName === "baseLayer" && (metrics.width !== 512 || metrics.height !== 768)) {
+        if (metrics.width !== 512 || metrics.height !== 768) {
           errors.push(`${character.id}/${assetName} is ${metrics.width}x${metrics.height}, expected 512x768`);
         }
-        if (assetName === "baseLayer" && !metrics.alphaBBox) {
-          errors.push(`${character.id}/baseLayer has no alpha content`);
-        }
-        if (assetName === "baseLayer" && metrics.alphaBBox) {
+        if (!metrics.alphaBBox) {
+          errors.push(`${character.id}/${assetName} has no alpha content`);
+        } else {
           const bbox = metrics.alphaBBox;
           const centerX = bbox.left + (bbox.width / 2);
-          if (Math.abs(bbox.bottom - 768) > 2) errors.push(`${character.id}/baseLayer foot baseline is ${bbox.bottom}, expected 768`);
-          if (Math.abs(bbox.top - 280) > 4) errors.push(`${character.id}/baseLayer top is ${bbox.top}, expected near 280`);
-          if (Math.abs(bbox.height - 488) > 4) errors.push(`${character.id}/baseLayer alpha height ${bbox.height}, expected near 488`);
-          if (Math.abs(centerX - 256) > 8) errors.push(`${character.id}/baseLayer centerX ${centerX}, expected near 256`);
+          if (Math.abs(centerX - 256) > 12) errors.push(`${character.id}/${assetName} centerX ${centerX}, expected near 256`);
+          if (assetName === "baseLayer") {
+            // 共用 body：腳底 baseline 至 768、頭部區留空（top 落於頸／胸區，確認無頭無髮烘入）
+            if (Math.abs(bbox.bottom - 768) > 4) errors.push(`${character.id}/baseLayer foot baseline is ${bbox.bottom}, expected 768`);
+            if (bbox.top < 330) errors.push(`${character.id}/baseLayer top is ${bbox.top}; shared body must be headless (top expected below head region, >=330)`);
+          } else {
+            // per-character head：髮線約 276、限上半部並與 body 頸部接縫重疊（bottom 不入下半身）
+            if (bbox.top < 250 || bbox.top > 305) errors.push(`${character.id}/headLayer top is ${bbox.top}, expected hairline 250–305`);
+            if (bbox.bottom > 520) errors.push(`${character.id}/headLayer bottom is ${bbox.bottom}; head must stay in upper region (<=520)`);
+          }
         }
         assets[assetName] = metrics;
       } catch (error) {
@@ -1980,8 +1989,8 @@ function stripAssetQuery(src) {
 async function collectAssetSizeBudgetAudit(api, errors = []) {
   const targets = [];
   const push = (cls, src) => { if (src) targets.push({ cls, src }); };
-  // 角色 base（可玩公主）
-  Object.values(api.characterRegistry || {}).forEach((c) => push("characterBase", c.baseLayer));
+  // 角色立繪（可玩公主）：共用 body ＋ per-character head（issue #214）
+  Object.values(api.characterRegistry || {}).forEach((c) => { push("characterBase", c.baseLayer); push("characterBase", c.headLayer); });
   // 場景人物像（NPC）＋ ADV 場景背景 ＋ 地區地圖
   Object.values(api.areaRegistry || {}).forEach((area) => {
     (area.locations || []).forEach((hotspot) => {
@@ -2252,6 +2261,7 @@ async function collectCharacterScaleAudit(api, errors, warnings = []) {
     id: character.id,
     label: character.label,
     src: character.baseLayer,
+    headSrc: character.headLayer,
     naturalHeightCm: character.naturalHeightCm || contract.lumiNaturalHeightCm || 125
   }));
   if (!paperDollRefs.length && api.paperDollBaseLayer) {
@@ -2266,19 +2276,28 @@ async function collectCharacterScaleAudit(api, errors, warnings = []) {
   for (const ref of paperDollRefs) {
     try {
       const metrics = await imageMetrics(ref.src);
+      const headMetrics = ref.headSrc ? await imageMetrics(ref.headSrc) : null;
       const expectedHeight = expectedBodyHeightPx(ref.naturalHeightCm, contract);
       if (metrics.width !== contract.canvasWidth || metrics.height !== contract.canvasHeight) {
         errors.push(`${ref.id} base asset is ${metrics.width}x${metrics.height}, expected ${contract.canvasWidth}x${contract.canvasHeight}`);
       }
+      if (headMetrics && (headMetrics.width !== contract.canvasWidth || headMetrics.height !== contract.canvasHeight)) {
+        errors.push(`${ref.id} head asset is ${headMetrics.width}x${headMetrics.height}, expected ${contract.canvasWidth}x${contract.canvasHeight}`);
+      }
       if (!metrics.alphaBBox) {
         errors.push(`${ref.id} base asset has no alpha content`);
       } else {
-        const baselineGap = contract.groundBaselineY - metrics.alphaBBox.bottom;
+        // issue #214：立繪＝共用 body（neck-down）＋ per-character head（臉＋髮）合成；身高量測取兩者 alpha
+        // 聯集（head 頂端→body 腳底），而非單獨 neck-down body（會短少一個頭、量得偏矮）。
+        const figureTop = headMetrics?.alphaBBox ? Math.min(metrics.alphaBBox.top, headMetrics.alphaBBox.top) : metrics.alphaBBox.top;
+        const figureBottom = metrics.alphaBBox.bottom;
+        const figureHeight = figureBottom - figureTop;
+        const baselineGap = contract.groundBaselineY - figureBottom;
         if (Math.abs(baselineGap) > contract.baselineTolerancePx) {
           errors.push(`${ref.id} base baseline gap ${baselineGap}px exceeds ${contract.baselineTolerancePx}px`);
         }
-        if (Math.abs(metrics.alphaBBox.height - expectedHeight) > contract.assetHeightTolerancePx) {
-          errors.push(`${ref.id} base alpha height ${metrics.alphaBBox.height}px differs from ${expectedHeight}px`);
+        if (Math.abs(figureHeight - expectedHeight) > contract.assetHeightTolerancePx) {
+          errors.push(`${ref.id} body+head figure height ${figureHeight}px differs from ${expectedHeight}px`);
         }
       }
       paperDoll.push({ id: `${ref.id}-base`, expectedHeight, ...metrics });

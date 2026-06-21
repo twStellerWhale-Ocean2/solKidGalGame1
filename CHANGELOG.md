@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.52.2 — 2026-06-21
+- refactor (#214): 公主底圖拆為共用 body（含永久肌膚安全底著）＋ per-character head（含預設髮、髮色識別）分層立繪：衣物疊於底著之上、髮型須完全覆蓋 head 預設髮，更換衣物或髮型時舊的不殘留（消除昔日 baked-in 底圖不可移除之雙重疊圖）
+
 ## 0.52.1 — 2026-06-21
 - refactor (#210): 衣物改以資源包為單位：各地區收斂為單一服飾店、整包販售多類別衣物（含髮型），商店可用類別分頁瀏覽；既有存檔已購衣物以 id 相容保留
 

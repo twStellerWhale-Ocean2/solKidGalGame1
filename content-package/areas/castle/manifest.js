@@ -36,14 +36,14 @@ export const castleArea = Object.freeze({
   vocabularyProfile: castleVocabularyProfile,
   // nodes 控制地圖上的路網與圖示座標；x / y 是相對地圖寬高的百分比。
   nodes: {
-    princessRoom: { id: "princessRoom", label: "Princess Room", x: 50, y: 48, links: ["kingHall", "queenStudy", "castleKitchen", "knightsRoom", "maidsRoom", "castleSeamstress", "castleGate"] },
-    kingHall: { id: "kingHall", label: "King's Hall", x: 50, y: 24, links: ["princessRoom", "queenStudy", "knightsRoom"] },
-    queenStudy: { id: "queenStudy", label: "Queen's Study", x: 34, y: 33, links: ["princessRoom", "kingHall", "maidsRoom", "castleSeamstress"] },
-    castleKitchen: { id: "castleKitchen", label: "Kitchen", x: 65, y: 56, links: ["princessRoom", "maidsRoom"] },
-    knightsRoom: { id: "knightsRoom", label: "Knights' Room", x: 60, y: 78, links: ["kingHall", "princessRoom"] },
-    maidsRoom: { id: "maidsRoom", label: "Maid's Room", x: 36, y: 58, links: ["queenStudy", "castleKitchen", "princessRoom", "castleSeamstress"] },
-    castleSeamstress: { id: "castleSeamstress", label: "Castle Seamstress", x: 38, y: 70, links: ["princessRoom", "queenStudy", "maidsRoom"] },
-    castleGate: { id: "castleGate", label: "Castle Gate", x: 37, y: 86, links: ["princessRoom"] }
+    princessRoom: { id: "princessRoom", label: "Princess Room", x: 49.2, y: 42.4, links: ["kingHall", "queenStudy", "castleKitchen", "knightsRoom", "maidsRoom", "castleSeamstress", "castleGate"] },
+    kingHall: { id: "kingHall", label: "King's Hall", x: 58.1, y: 29.5, links: ["princessRoom", "queenStudy", "knightsRoom"] },
+    queenStudy: { id: "queenStudy", label: "Queen's Study", x: 48.3, y: 28.9, links: ["princessRoom", "kingHall", "maidsRoom", "castleSeamstress"] },
+    castleKitchen: { id: "castleKitchen", label: "Kitchen", x: 75.3, y: 64.6, links: ["princessRoom", "maidsRoom"] },
+    knightsRoom: { id: "knightsRoom", label: "Knights' Room", x: 50.3, y: 71.5, links: ["kingHall", "princessRoom"] },
+    maidsRoom: { id: "maidsRoom", label: "Maid's Room", x: 33.7, y: 44.5, links: ["queenStudy", "castleKitchen", "princessRoom", "castleSeamstress"] },
+    castleSeamstress: { id: "castleSeamstress", label: "Castle Seamstress", x: 29.1, y: 64, links: ["princessRoom", "queenStudy", "maidsRoom"] },
+    castleGate: { id: "castleGate", label: "Castle Gate", x: 39, y: 95.3, links: ["princessRoom"] }
   },
   // locations 控制地圖圖示進入後的場景、NPC、商店與提示文字。
   locations: [
