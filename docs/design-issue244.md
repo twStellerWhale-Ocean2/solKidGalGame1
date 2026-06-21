@@ -40,3 +40,12 @@
 * **不衝擊現有功能**：item-panel 既具 `shop`／`wardrobe` 雙模式，本案僅改公主房第一層進入與衣櫃動作鈕，不動商店渲染路徑；intTest#51 步驟 5 回歸驗證商店試穿、購買、退款不受影響。
 * **不積技術債（單一機制）**：以面板既有 `mode` 承接、移除 `ROOM_ACTIONS` 攤平專用表單與「只穿不脫」殘缺，消除兩套進入動線之重工；新增衣物分類沿用同一面板與類別組態、不需另建公主房入口（呼應 spec#7）。
 * **測試補強**：本案非 Bug 而為機制簡併；以 intTest#51 與 selftests 固化「單一換裝入口、wear-only 穿脫切換、Leave 一致、商店逛店不受影響」之不變式，杜絕日後再以公主房特例分支補洞。
+
+## 6. 修正紀錄（v0.53.2，承 USR 回饋）
+
+> 上方 D3／D6 與 §4 為 plan 初版方向，於 v0.53.1（PR #247）實作時**判斷錯誤**，經 USR 指正後於 v0.53.2（fix）更正。本節為現行正解，與 design.md sysCase#3.4／intTest#51 一致；上文方向段保留為歷程，不再為現行依據。
+
+* **錯誤 1（機制）**：v0.53.1 公主房沿用的是 repo **舊版**單類別分頁衣櫃 `renderWardrobeDetail`，而商店現行已革新為**多欄貨架** `renderAdvShop`；兩者實為兩套不同機制，等於保留了議題要消除的重工。**更正**：刪除舊單類別分頁版型，`renderWardrobeDetail` 改為薄包裝呼叫 `renderAdvShop(preserveFocus, { closet: true })`；`renderAdvShop` 以 `closet` 參數同時服務商店（未擁有／試穿購買）與公主房衣櫃（已擁有／wear-only 穿脫），**真正單一機制、單一函式**。新增 `ownedWardrobeItemsFor`／`ownedWardrobeCategories`；移除死碼 `wardrobeEmptyText`。
+* **錯誤 2（深粉紅位置）**：v0.53.1 把深粉紅誤上在**場景選單的「換裝」入口鈕**。**更正**：入口鈕移除特別顏色、沿用一般場景選單樣式（還原 `adv-controls.js` variant、移除 `.change-outfit-choice` 入口色）；深粉紅改上在**衣櫃內每件衣物的「穿上／脫下」動作鈕**（`styles/mobile.css` `.adv-scene[data-mode="wardrobe"] .item-panel-action`，border `#ad1457`），與商店購買鈕之暗色玻璃家族區辨。
+* **實際影響檔案**：[game-engine/main.js]（`renderAdvShop` closet 化、`renderWardrobeDetail` 薄包裝、owned 助手、移除 `wardrobeEmptyText`、入口 variant 移除）、[game-engine/flow/scene-actions.js]（單一換裝入口，沿用）、[game-engine/flow/adv-controls.js]（還原 variant）、[styles/mobile.css]（深粉紅移至穿脫動作鈕、移除入口色）、[game-engine/testing/selftests.js]（scene-nav 改驗多欄貨架＋穿脫鈕深粉紅＋入口非深粉紅）、[docs/design.md]（sysCase#3.4／intTest#51 更正）、[README.md]、[VERSION]（0.53.1→0.53.2 fix）、[docs/test-summary.pdf]。
+* **回歸驗證**：scene-nav（含更正斷言）PASS、monkey(300) PASS、save-load PASS；以 LuminaraTest 開商店確認仍為 5 欄貨架、試穿鈕在、購買鈕非深粉紅（closet 變更不波及商店）。

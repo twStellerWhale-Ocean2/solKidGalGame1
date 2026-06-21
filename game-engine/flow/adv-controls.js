@@ -2,7 +2,7 @@ export function createAdvControls({ elements, getFocusIndex, getMode, setFocusIn
   function addOption(label, onClick, options = {}) {
     const button = document.createElement("button");
     const isNavigation = options.leave || options.navigation;
-    button.className = `choice-button${isNavigation ? " leave-choice" : ""}${options.variant ? ` ${options.variant}` : ""}`;
+    button.className = `choice-button${isNavigation ? " leave-choice" : ""}`;
     button.type = "button";
     button.textContent = options.number ? `${options.number}. ${label}` : label;
     button.setAttribute("aria-label", label);
