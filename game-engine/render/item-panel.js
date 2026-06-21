@@ -2,6 +2,7 @@ export function renderItemDetailPanel({
   actionForItem,
   backLabel = "↩ Back",
   categoryLabel,
+  columns,
   emptyText,
   isSelected,
   items,
@@ -17,28 +18,54 @@ export function renderItemDetailPanel({
 }) {
   listElement.innerHTML = "";
   listElement.classList.add("item-panel-list");
+  listElement.classList.toggle("item-panel-columns", Boolean(columns));
   listElement.dataset.panelMode = mode;
 
-  if (!items.length) {
+  const rowFor = (item) => createItemPanelRow({
+    action: actionForItem(item),
+    categoryLabel,
+    item,
+    mode,
+    onAction,
+    onPreview,
+    onTryOn,
+    previewStyle: previewStyleForItem(item),
+    selected: isSelected ? isSelected(item) : item.id === selectedItemId,
+    tryOn: tryOnForItem ? tryOnForItem(item) : null
+  });
+
+  if (columns) {
+    // 多欄貨架：每個類別一欄，欄內商品直向堆疊，整體可水平捲動瀏覽各類別。
+    columns.forEach((column) => {
+      const col = document.createElement("div");
+      col.className = `shop-shelf-col ${mode}-shelf-col`;
+
+      const head = document.createElement("div");
+      head.className = "shop-shelf-head";
+      head.textContent = column.label;
+      col.appendChild(head);
+
+      const body = document.createElement("div");
+      body.className = "shop-shelf-body";
+      if (!column.items.length) {
+        const empty = document.createElement("div");
+        empty.className = "item-panel-empty shop-shelf-empty";
+        empty.textContent = column.emptyText || emptyText;
+        body.appendChild(empty);
+      } else {
+        column.items.forEach((item) => body.appendChild(rowFor(item)));
+      }
+
+      col.appendChild(body);
+      listElement.appendChild(col);
+    });
+  } else if (!items.length) {
     const empty = document.createElement("div");
     empty.className = "item-panel-empty";
     empty.textContent = emptyText;
     listElement.appendChild(empty);
   } else {
-    items.forEach((item) => {
-      listElement.appendChild(createItemPanelRow({
-        action: actionForItem(item),
-        categoryLabel,
-        item,
-        mode,
-        onAction,
-        onPreview,
-        onTryOn,
-        previewStyle: previewStyleForItem(item),
-        selected: isSelected ? isSelected(item) : item.id === selectedItemId,
-        tryOn: tryOnForItem ? tryOnForItem(item) : null
-      }));
-    });
+    items.forEach((item) => listElement.appendChild(rowFor(item)));
   }
 
   return createItemPanelBackButton(backLabel, onBack);

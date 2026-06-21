@@ -2482,15 +2482,12 @@ function shopGreeting(hotspot) {
 }
 
 function renderAdvShop(preserveFocus = false) {
-  const allowed = allowedShopCategories();
   const stockedCategories = availableShopCategories();
-  if (!stockedCategories.includes(shopCategory)) shopCategory = stockedCategories[0] || allowed[0] || "dresses";
-  const categoryItems = unownedShopItemsFor(activeShopHotspot, shopCategory);
+  if (!stockedCategories.includes(shopCategory)) shopCategory = stockedCategories[0] || allowedShopCategories()[0] || "dresses";
+  elements.advShopTabs.innerHTML = ""; // 多欄貨架已含類別標題，不再需要上方類別分頁。
   if (!stockedCategories.length) {
     clearTryOnPreview({ renderDoll: false });
-    renderCategoryTabs(elements.advShopTabs, shopCategory, () => {}, false, []);
     renderShopSoldOut();
-    renderShopTryOnSummary();
     const backButton = renderItemDetailPanel({
       actionForItem: shopPanelAction,
       categoryLabel,
@@ -2510,20 +2507,19 @@ function renderAdvShop(preserveFocus = false) {
     scheduleAdvFocus(0);
     return;
   }
-  renderCategoryTabs(elements.advShopTabs, shopCategory, (category) => {
-    shopCategory = category;
-    // 切換類別不清空試穿清單，讓玩家能跨類別（洋裝＋帽子＋鞋）疊穿整套。
-    elements.advFeedback.textContent = "";
-    renderAdvShop();
-  }, false, stockedCategories);
   renderActiveTryOnDoll();
-  renderShopTryOnSummary();
+  // 每個有庫存的類別一欄，欄內列出該類未擁有的商品。
+  const columns = stockedCategories.map((category) => ({
+    label: categoryLabel(category),
+    items: unownedShopItemsFor(activeShopHotspot, category)
+  }));
   const backButton = renderItemDetailPanel({
     actionForItem: shopPanelAction,
     categoryLabel,
+    columns,
     emptyText: `You found all ${activeShopHotspot?.label || "shop"} treasures!`,
     isSelected: shopItemTriedOn,
-    items: categoryItems,
+    items: [],
     listElement: elements.advShopGrid,
     mode: "shop",
     onAction: buyItemInAdv,
@@ -2534,8 +2530,7 @@ function renderAdvShop(preserveFocus = false) {
     tryOnForItem: shopTryOnState
   });
   renderItemPanelCommands(backButton);
-  const focusIndex = preserveFocus ? Math.max(0, categoryItems.findIndex((item) => item.id === shopPreviewItemId)) : 0;
-  scheduleAdvFocus(focusIndex);
+  scheduleAdvFocus(preserveFocus ? advFocusIndex : 0);
 }
 
 function shopItemTriedOn(item) {
@@ -2572,14 +2567,6 @@ function toggleShopTryOn(item) {
   }
   elements.advFeedback.textContent = "";
   renderAdvShop(true);
-}
-
-function renderShopTryOnSummary() {
-  if (!elements.advShopSelection) return;
-  const items = shopTryOnItems();
-  elements.advShopSelection.textContent = items.length
-    ? `Trying on: ${items.map((item) => item.name).join(", ")}`
-    : `Tap “Try on” to dress up ${princessName()}.`;
 }
 
 function shopPanelAction(item) {
