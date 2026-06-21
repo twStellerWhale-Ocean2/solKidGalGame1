@@ -41,42 +41,17 @@
     drop-shadow(4px 9px 6px rgba(45, 45, 52, 0.4));
 }
 
-.avatar-shadow,
+/* issue #207 收尾：接地橢圓盤（舊 .avatar-shadow）整個移除——不再有「腳步圓盤」這種元件，
+   也不留任何 opt-in／opt-out 開關。所有 surface 一致：立繪接地由 .paper-doll-stage 的簡潔深灰
+   立體投影承擔；地圖／地區 token 由其自身 stage 投影（含白描邊）接地。需要時再加，無須維護收關。 */
 .paper-doll-layer {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
   pointer-events: none;
-}
-
-/* issue #207 收尾：接地橢圓盤改為「預設不渲染、需要者 opt-in」。
-   過去 paper-doll.js 對每個 surface 無條件吐出 .avatar-shadow，再逐 surface 以 display:none 關掉
-   （render-then-opt-out）——預設長圓盤是錯的：立繪（adv／bust）不要、只有地圖／地區 token 需要它接地，
-   且該扁橢圓在施了深灰投影的 .paper-doll-stage 內會被三層 drop-shadow 再模糊成「腳步圓盤＋糊化光暈」。
-   反轉預設後，立繪接地全交由 .paper-doll-stage 的簡潔深灰立體投影；新增 surface 預設即乾淨、不需再記得補關。 */
-.avatar-shadow {
-  display: none;
-  bottom: 0;
-  width: 52%;
-  height: 5%;
-  z-index: 0;
-  border-radius: 50%;
-  background: rgba(80, 56, 70, 0.2);
-}
-
-/* opt-in：地圖世界／城堡／地區 token 仍以橢圓影接地（spec#12 地圖 token 分級不變）。 */
-.map-doll .avatar-shadow,
-.area-doll .avatar-shadow {
-  display: block;
-}
-
-.paper-doll-layer {
   inset:
     var(--layer-top, 0)
     var(--layer-right, 0)
     var(--layer-bottom, 0)
     var(--layer-left, 0);
-  transform: none;
   background-image: var(--layer-img);
   background-position: center bottom;
   background-repeat: no-repeat;
