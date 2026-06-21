@@ -6,6 +6,7 @@
 export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
+  { version: "0.53.1", buildDateTime: "2026-06-22", summaryZh: "公主房改用單一「換裝」按鈕（深粉紅）打開右側衣櫃，和商店同一套面板；衣櫃只穿不買——按一下穿上、按鈕字變「脫下」再按即脫下，移除原本攤開的逐分類換裝表單以簡併機制、減少技術債" },
   { version: "0.53.0", buildDateTime: "2026-06-21", summaryZh: "桌機寬螢幕下，地圖與場景等固定比例畫面左右（或上下）留白改以該畫面背景的模糊放大版鋪底，消除空白邊、維持沉浸；畫面內容本身仍完整清楚、不被模糊" },
   { version: "0.52.5", buildDateTime: "2026-06-21", summaryZh: "頭胸照統一為單一即時來源：選角卡與側欄／帳號卡 bust 一律以公主身上即時穿搭（state.outfit）渲染，不再有 defaultOutfit 第二套外觀來源——修正選角卡仍光頭、與側欄造型分歧的問題，換髮型／衣物時所有頭胸照同步反映" },
   { version: "0.52.4", buildDateTime: "2026-06-21", summaryZh: "公主選單選角卡頭胸照改為直接引用該公主預設組態（defaultOutfit）渲染，不再餵入寫死的空 outfit：與確認選角後側欄／帳號卡 bust 採同一資料來源，預設髮型／衣物在選角預覽即與實際遊玩造型一致，消除潛在不一致" },
@@ -32,8 +33,8 @@ export const versionHistory = [
 ];
 
 export const buildInfo = {
-  version: "0.53.0",
-  buildDate: "2026-06-21",
-  buildDateTime: "2026-06-21",
-  issues: ["#226"]
+  version: "0.53.1",
+  buildDate: "2026-06-22",
+  buildDateTime: "2026-06-22",
+  issues: ["#244"]
 };
