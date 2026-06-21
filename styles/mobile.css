@@ -3241,31 +3241,71 @@ body {
   max-height: none;
 }
 
-/* 面板內：類別在上、商品直式清單（上下捲動）在中、試穿摘要在下 */
+/* 面板內：商品分「多欄貨架」——每類一欄、欄內直向堆疊，整體可水平拖拉瀏覽各類別。
+   類別標題已在每欄上方，故移除上方類別分頁與下方摘要文字（商品方塊本身已含名稱與價格）。 */
+.adv-scene[data-mode="shop"] #advShopTabs {
+  display: none;
+}
+
 .adv-scene[data-mode="shop"] .shop-area.show {
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 8px;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 0;
 }
 
-.adv-scene[data-mode="shop"] #advShopTabs {
-  grid-column: 1;
-  grid-row: 1;
-}
-
+/* 貨架：水平捲動的類別欄容器 */
 .adv-scene[data-mode="shop"] .item-panel-list {
   grid-column: 1;
-  grid-row: 2;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-auto-rows: max-content;
-  gap: var(--item-panel-gap);
-  align-content: start;
+  grid-row: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 10px;
   min-height: 0;
   max-height: 100%;
-  overflow-x: hidden;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 2px 6px;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 每一類別＝一欄 */
+.adv-scene[data-mode="shop"] .shop-shelf-col {
+  flex: 0 0 auto;
+  width: clamp(148px, 72%, 188px);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  scroll-snap-align: start;
+}
+
+.adv-scene[data-mode="shop"] .shop-shelf-head {
+  flex: 0 0 auto;
+  margin-bottom: 6px;
+  padding: 5px 8px;
+  text-align: center;
+  color: var(--adv-dialog-text);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 225, 240, 0.28);
+  border-radius: 8px;
+  font-weight: 1000;
+  font-size: 0.8rem;
+  line-height: 1.1;
+}
+
+/* 欄內商品：直向、可上下捲動 */
+.adv-scene[data-mode="shop"] .shop-shelf-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--item-panel-gap);
   overflow-y: auto;
-  padding: 2px 4px 2px 0;
+  overflow-x: hidden;
+  padding-right: 4px;
 }
 
 .adv-scene[data-mode="shop"] .item-panel-empty {
@@ -3359,24 +3399,8 @@ body {
   padding: 6px 4px;
 }
 
+/* 下方摘要文字移除：商品方塊已含名稱與價格 */
 .adv-scene[data-mode="shop"] #advShopSelection {
-  grid-column: 1;
-  grid-row: 3;
-  display: block;
-  margin: 0;
-  padding: 6px 8px;
-  text-align: center;
-  color: var(--rose-dark);
-  background: rgba(255, 250, 246, 0.82);
-  border: 2px solid rgba(216, 103, 140, 0.22);
-  border-radius: 10px;
-  font-weight: 900;
-  font-size: 0.82rem;
-  line-height: 1.15;
-  overflow-wrap: anywhere;
-}
-
-.adv-scene[data-mode="shop"] #advShopSelection:empty {
   display: none;
 }
 
