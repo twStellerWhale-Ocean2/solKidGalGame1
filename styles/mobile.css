@@ -3317,14 +3317,25 @@ body {
   min-height: 0;
 }
 
-/* 每個商品：上排圖示＋名稱＋價格，下排「試穿」與 BUY 各半 */
+/* 每個商品＝一個帶邊框的方塊（單品邊框）；圖示＋名稱＋價格在上，試穿與 BUY 在框內下方。
+   邊框統一由 row 承載，內層卡片透明無框，避免各單品（尤其第一個與 outerwear）邊框錯位。 */
 .adv-scene[data-mode="shop"] .item-panel-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto auto;
-  gap: 5px 6px;
+  gap: 6px;
   height: auto;
   min-height: 0;
+  padding: 7px;
+  border: 2px solid rgba(241, 154, 193, 0.55);
+  border-radius: var(--radius);
+  background: rgba(70, 52, 76, 0.88);
+}
+
+/* 試穿中（已選）整個方塊高亮 */
+.adv-scene[data-mode="shop"] .item-panel-row:has(.item-card.selected) {
+  border-color: var(--adv-dialog-accent-strong, #ffd3e7);
+  box-shadow: 0 0 0 3px rgba(241, 154, 193, 0.28);
 }
 
 .adv-scene[data-mode="shop"] .item-panel-card {
@@ -3337,8 +3348,22 @@ body {
   align-items: center;
   height: auto;
   min-height: 0;
-  padding: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
   text-align: left;
+}
+
+/* 焦點/已選不位移、不再各自加邊框；商店方框不可聚焦（Try on / BUY 才是控制項） */
+.adv-scene[data-mode="shop"] .item-panel-card:hover,
+.adv-scene[data-mode="shop"] .item-panel-card:focus,
+.adv-scene[data-mode="shop"] .item-panel-card.adv-focus,
+.adv-scene[data-mode="shop"] .item-panel-card.selected {
+  transform: none;
+  border: 0;
+  box-shadow: none;
+  outline: none;
 }
 
 .adv-scene[data-mode="shop"] .item-panel-card .item-preview {

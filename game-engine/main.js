@@ -2566,7 +2566,27 @@ function toggleShopTryOn(item) {
     shopTryOnIds.push(item.id);
   }
   elements.advFeedback.textContent = "";
-  renderAdvShop(true);
+  // 只更新試穿娃娃與各方塊狀態（就地更新、不重建貨架），保留水平拖曳位置與焦點。
+  renderActiveTryOnDoll();
+  updateShopTileStates();
+}
+
+function updateShopTileStates() {
+  if (!elements.advShopGrid) return;
+  elements.advShopGrid.querySelectorAll(".item-panel-row").forEach((row) => {
+    const card = row.querySelector(".item-panel-card");
+    const id = card?.dataset.itemId;
+    if (!id) return;
+    const active = shopTryOnIds.includes(id);
+    card.classList.toggle("selected", active);
+    const button = row.querySelector(".item-panel-tryon");
+    if (!button) return;
+    const item = itemById(id);
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+    button.textContent = active ? "✓ On" : "Try on";
+    if (item) button.setAttribute("aria-label", active ? `Stop trying on ${item.name}` : `Try on ${item.name}`);
+  });
 }
 
 function shopPanelAction(item) {

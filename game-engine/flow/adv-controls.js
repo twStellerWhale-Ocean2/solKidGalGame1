@@ -16,8 +16,10 @@ export function createAdvControls({ elements, getFocusIndex, getMode, setFocusIn
   function focusableButtons() {
     if (!elements.advModal.classList.contains("show")) return [];
     const mode = getMode();
-    const selectors = mode === "shop" || mode === "wardrobe"
-      ? ["#advShopGrid .item-card:not(:disabled), #advShopGrid .item-panel-tryon:not(:disabled), #advShopGrid .item-panel-action:not(:disabled)", "#advActionFooter .choice-button:not(:disabled)"]
+    const selectors = mode === "shop"
+      ? ["#advShopGrid .item-panel-tryon:not(:disabled), #advShopGrid .item-panel-action:not(:disabled)", "#advActionFooter .choice-button:not(:disabled)"]
+      : mode === "wardrobe"
+        ? ["#advShopGrid .item-card:not(:disabled), #advShopGrid .item-panel-action:not(:disabled)", "#advActionFooter .choice-button:not(:disabled)"]
       : mode === "refund"
         ? ["#advShopGrid .item-card:not(:disabled), #advShopGrid .item-panel-action:not(:disabled)", "#advActionFooter .choice-button:not(:disabled)"]
       : ["#choiceList .choice-button:not(:disabled)", "#advShopGrid .item-card:not(:disabled)", "#advActionFooter .choice-button:not(:disabled)"];
