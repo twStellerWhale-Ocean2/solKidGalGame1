@@ -35,23 +35,21 @@ export const wildArea = Object.freeze({
   vocabularyProfile: wildVocabularyProfile,
   // nodes 控制地圖上的路網與圖示座標；x / y 是相對地圖寬高的百分比。
   nodes: {
-    wildEntrance: { id: "wildEntrance", label: "World Path", x: 14, y: 90, links: ["treeSpiritGrove", "wizardHut", "threePigsCottage"] },
-    elfGlade: { id: "elfGlade", label: "Elf Glade", x: 22, y: 40, links: ["dwarfCottage", "fairyAtelier", "halflingVillage"] },
+    wildEntrance: { id: "wildEntrance", label: "World Path", x: 32.6, y: 87.1, links: ["treeSpiritGrove", "wizardHut", "threePigsCottage"] },
+    elfGlade: { id: "elfGlade", label: "Elf Glade", x: 54.2, y: 48.4, links: ["fairyAtelier", "halflingVillage"] },
     fairyAtelier: { id: "fairyAtelier", label: "Fairy Atelier", x: 38, y: 52, links: ["elfGlade", "halflingVillage", "wizardHut"] },
-    dwarfCottage: { id: "dwarfCottage", label: "Dwarf Cottage", x: 25, y: 72, links: ["elfGlade", "stoneGolemPass", "halflingVillage"] },
-    stoneGolemPass: { id: "stoneGolemPass", label: "Stone Golem Pass", x: 52, y: 32, links: ["dwarfCottage", "wizardHut", "elfGlade"] },
-    halflingVillage: { id: "halflingVillage", label: "Halfling Village", x: 45, y: 80, links: ["elfGlade", "dwarfCottage", "fairyAtelier", "redHoodPath", "threePigsCottage"] },
-    wizardHut: { id: "wizardHut", label: "Wizard Hut", x: 75, y: 40, links: ["stoneGolemPass", "treeSpiritGrove", "threePigsCottage", "fairyAtelier"] },
+    stoneGolemPass: { id: "stoneGolemPass", label: "Stone Golem Pass", x: 52, y: 32, links: ["wizardHut", "elfGlade"] },
+    halflingVillage: { id: "halflingVillage", label: "Halfling Village", x: 87.2, y: 54.6, links: ["elfGlade", "fairyAtelier", "redHoodPath", "threePigsCottage"] },
+    wizardHut: { id: "wizardHut", label: "Wizard Hut", x: 17.9, y: 37.7, links: ["stoneGolemPass", "treeSpiritGrove", "threePigsCottage", "fairyAtelier"] },
     redHoodPath: { id: "redHoodPath", label: "Red Riding Hood Path", x: 12, y: 60, links: ["halflingVillage", "threePigsCottage"] },
-    threePigsCottage: { id: "threePigsCottage", label: "Three Pigs Cottage", x: 66, y: 82, links: ["redHoodPath", "halflingVillage", "wizardHut", "treeSpiritGrove", "wildEntrance"] },
-    treeSpiritGrove: { id: "treeSpiritGrove", label: "Tree Spirit Grove", x: 80, y: 62, links: ["wizardHut", "threePigsCottage", "wildEntrance"] }
+    threePigsCottage: { id: "threePigsCottage", label: "Three Pigs Cottage", x: 57.6, y: 65.5, links: ["redHoodPath", "halflingVillage", "wizardHut", "treeSpiritGrove", "wildEntrance"] },
+    treeSpiritGrove: { id: "treeSpiritGrove", label: "Tree Spirit Grove", x: 33.7, y: 65.8, links: ["wizardHut", "threePigsCottage", "wildEntrance"] }
   },
   // locations 控制地圖圖示進入後的場景、NPC、商店與提示文字。
   locations: [
     { id: "wildExit", area: "wild", node: "wildEntrance", label: "World Path", icon: "↩", npcClass: "npc-none", npc: "Wild Sign", kind: "gate", markerStyle: "portal", portalId: "entrance", hint: "The path returns to the kingdom world map." },
     { id: "elfGlade", area: "wild", node: "elfGlade", label: "Elf Glade", icon: "🧝", npc: "Elia", scene: "scene-wild-elf-glade", npcImage: npcImage("elia"), hint: "The elf glade glows with tiny flowers." },
-    { id: "fairyAtelier", area: "wild", node: "fairyAtelier", label: "Fairy Atelier", icon: "👗", npc: "Faye", scene: "scene-wild-fairy-atelier", npcImage: npcImage("fairy-atelier"), shopCategories: ["dresses", "accessories"], defaultCategory: "dresses", hint: "Faye sells fairy dresses and accessories in the glade." },
-    { id: "dwarfCottage", area: "wild", node: "dwarfCottage", label: "Dwarf Cottage", icon: "🛖", npc: "Pip", scene: "scene-wild-dwarf-cottage", npcImage: npcImage("pip"), shopCategories: ["outerwear", "shoes"], defaultCategory: "outerwear", hint: "Pip keeps handmade wild outerwear and shoes in a warm cottage." },
+    { id: "fairyAtelier", area: "wild", node: "fairyAtelier", label: "Fairy Atelier", icon: "👗", npc: "Faye", scene: "scene-wild-fairy-atelier", npcImage: npcImage("fairy-atelier"), shopCategories: ["dresses", "accessories", "outerwear", "shoes"], defaultCategory: "dresses", hint: "Faye now tailors the whole wild wardrobe — dresses, accessories, helper cloaks and boots." },
     { id: "stoneGolemPass", area: "wild", node: "stoneGolemPass", label: "Stone Golem Pass", icon: "🪨", npc: "Goro", scene: "scene-wild-golem-pass", npcImage: npcImage("goro"), hint: "A friendly stone golem watches the mountain pass." },
     { id: "halflingVillage", area: "wild", node: "halflingVillage", label: "Halfling Village", icon: "🏘", npc: "Penny", scene: "scene-wild-halfling-village", npcImage: npcImage("penny"), hint: "Small round doors peek from the hill." },
     { id: "wizardHut", area: "wild", node: "wizardHut", label: "Wizard Hut", icon: "🪄", npc: "Wiz Beryl", scene: "scene-wild-wizard-hut", npcImage: npcImage("wiz-beryl"), hint: "A purple roof curls above jars and herbs." },
@@ -77,14 +75,6 @@ const wildLessonBank = Object.freeze({
       { questionType: "sentence-choice", prompt: "I have watered all the flowers, but I still cannot see the bell. Where should we look next?", promptZh: "我已經澆完所有花，但還是沒看到鈴鐺。我們接下來該找哪裡？", answer: "Of course! Since the flowers are done, let's search under the leaves next.", choices: ["Of course! Since the flowers are done, let's search under the leaves next.","Of course! Let's water all the flowers again.","Of course! Let's stop looking for the bell."], choicesZh: ["當然！花都澆完了，我們接下來找葉子底下吧。","當然！我們把所有花再澆一次。","當然！我們別找鈴鐺了。"], reward: jobReward },
       { questionType: "sentence-choice", prompt: "The flower which glows the brightest may hide the bell. Please tell me where to look.", promptZh: "發光最亮的那朵花可能藏著鈴鐺。請告訴我該往哪裡找。", answer: "Sure! The flower which glows is hiding the bell.", choices: ["Sure! The flower who glows is hiding the bell.","Sure! The flower which glows is hiding the bell.","Sure! The flower glowed will hiding the bell."], choicesZh: ["好的！那朵人會發光的花藏著鈴鐺。","好的！那朵會發光的花藏著鈴鐺。","好的！那朵發光花將正在藏鈴鐺。"], reward: jobReward },
       { questionType: "sentence-choice", prompt: "If we ring the bell, the elves will hear us. Please help me say the plan.", promptZh: "如果我們搖鈴，精靈們就會聽到我們。請幫我說出這個計畫。", answer: "Certainly! If we ring the bell, the elves will come.", choices: ["Certainly! If we rang the bell, the elves hear us yesterday.","Certainly! If we ring the bell, the elves heard us.","Certainly! If we ring the bell, the elves will come."], choicesZh: ["當然！如果我們昨天搖鈴，精靈聽到我們。","當然！如果我們搖鈴，精靈聽過我們。","當然！如果我們搖鈴，精靈們就會來。"], reward: jobReward }
-    ]
-  },
-  dwarfCottage: {
-    title: "Help at the Dwarf Cottage",
-    questions: [
-      { questionType: "sentence-choice", prompt: "I have looked near the door, but I have not found the wheel. Please tell me what you found.", promptZh: "我已經找過門邊，但還沒找到輪子。請告訴我你找到什麼。", answer: "Of course! I have found the missing wheel.", choices: ["Of course! I have found the missing wheel.","Of course! I has found the missing wheel.","Of course! I was find the missing wheel."], choicesZh: ["當然！我已經找到不見的輪子了。","當然！我已經找到不見的輪子。","當然！我過去正在找到不見的輪子。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "The hammer that I made is on the bench. Please tell me which tool we need.", promptZh: "我做的槌子在長椅上。請告訴我我們需要哪個工具。", answer: "Sure! The hammer that Pip made is on the bench.", choices: ["Sure! The hammer who Pip made is on the bench.","Sure! The hammer that Pip made is on the bench.","Sure! The hammer was on the bench yesterday."], choicesZh: ["好的！皮普做的人槌子在長椅上。","好的！皮普做的槌子在長椅上。","好的！槌子昨天在長椅上。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "The cart is stuck with a broken wheel. What is our best plan?", promptZh: "推車的輪子壞了卡住了。我們最好的計畫是什麼？", answer: "Certainly! If we fix the wheel first, the cart will move again.", choices: ["Certainly! If we fix the wheel first, the cart will move again.","Certainly! If we paint the cart, the wheel will fix itself.","Certainly! If we leave the cart, the wheel will grow back."], choicesZh: ["當然！如果我們先修好輪子，推車就會再動起來。","當然！如果我們把推車漆一漆，輪子就會自己修好。","當然！如果我們把推車丟著，輪子就會自己長回來。"], reward: jobReward }
     ]
   },
   stoneGolemPass: {
@@ -198,13 +188,6 @@ const wildChatLessonBank = Object.freeze({
       { questionType: "sentence-choice", prompt: "The dress that sparkles is my favourite today.", promptZh: "這件會閃亮的洋裝是我今天最喜歡的。", answer: "Wow, the dress that sparkles is so lovely!", choices: ["The dress who sparkles is a hammer.","Wow, the dress that sparkles is so lovely!"], choicesZh: ["會閃亮的人洋裝是一把槌子。","哇，會閃亮的洋裝好美！"], reward: chatReward }
     ]
   },
-  dwarfCottage: {
-    title: "Chat at the Dwarf Cottage",
-    questions: [
-      { questionType: "sentence-choice", prompt: "It is good to see you again, Princess.", promptZh: "很高興又見到你，公主。", answer: "It is so good to see you too, Pip!", choices: ["It is so good to see you too, Pip!","Sorry, I cannot see you for long today."], choicesZh: ["我也好高興又見到你，皮普！","抱歉，我今天不能陪你太久。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "The coat that I made is warm.", promptZh: "我做的這件外套很暖和。", answer: "Wow, the coat that you made is so warm!", choices: ["The coat who made me is warm.","Wow, the coat that you made is so warm!"], choicesZh: ["做我的人外套很暖。","哇，你做的外套好暖和！"], reward: chatReward }
-    ]
-  }
 });
 //#endregion 生活聊天題庫
 
@@ -214,8 +197,7 @@ const wildChatLessonBank = Object.freeze({
 export const wildSceneConfigs = mergeLessons(mergeLessons({
   wildExit: { ...wildPathArt, scene: "scene-wild-path", npcClass: "npc-none", npc: "Wild Sign", travelAction: "World Map", travelLine: "Princess, this wild path returns to the kingdom world map.", travelLineZh: "公主，這條野地小路會回到王國世界地圖。" },
   elfGlade: { ...wildSceneArt("elf-glade"), scene: "scene-wild-elf-glade", npc: "Elia", npcImage: npcImage("elia"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Hello, Princess. I have been listening to the glowing flowers.", travelLineZh: "你好，公主。我一直在聽發光花的聲音。" },
-  fairyAtelier: { ...wildShopArt("fairy-atelier"), scene: "scene-wild-fairy-atelier", npc: "Faye", npcImage: npcImage("fairy-atelier"), npcNaturalHeightCm: 150, travelAction: "Shop", travelLine: "Welcome, Princess. I have made dresses that sparkle softly.", travelLineZh: "歡迎，公主。我做了會柔柔發亮的洋裝。", shopGreeting: "Pick a fairy dress or a bright accessory, Princess.", shopGreetingZh: "公主，選一件仙子洋裝或一個亮亮的配件吧。" },
-  dwarfCottage: { ...wildSceneArt("dwarf-cottage"), scene: "scene-wild-dwarf-cottage", npc: "Pip", npcImage: npcImage("pip"), npcNaturalHeightCm: 125, travelAction: "Shop", travelLine: "Hello, Princess. I have made warm coats and sturdy shoes.", travelLineZh: "你好，公主。我做了暖和的外套和耐走的鞋。", shopGreeting: "Choose outerwear or shoes for the wild road, Princess.", shopGreetingZh: "公主，為野地道路選外套或鞋子吧。" },
+  fairyAtelier: { ...wildShopArt("fairy-atelier"), scene: "scene-wild-fairy-atelier", npc: "Faye", npcImage: npcImage("fairy-atelier"), npcNaturalHeightCm: 150, travelAction: "Shop", travelLine: "Welcome, Princess. The whole wild wardrobe is ready.", travelLineZh: "歡迎，公主。整套野地服飾都準備好了。", shopGreeting: "Pick a fairy dress, accessory, cloak or boots, Princess.", shopGreetingZh: "公主，選一件仙子洋裝、配件、披風或靴子吧。" },
   stoneGolemPass: { ...wildSceneArt("golem-pass"), scene: "scene-wild-golem-pass", npc: "Goro", npcImage: npcImage("goro"), npcNaturalHeightCm: 200, travelAction: "Visit", travelLine: "Hello, Princess. I have guarded this old pass for many years.", travelLineZh: "你好，公主。我守護這條古老山路很多年了。" },
   halflingVillage: { ...wildSceneArt("halfling-village"), scene: "scene-wild-halfling-village", npc: "Penny", npcImage: npcImage("penny"), npcNaturalHeightCm: 100, travelAction: "Visit", travelLine: "Hi, Princess. I have been waiting by my round green door.", travelLineZh: "嗨，公主。我一直在我的綠色圓門旁等你。" },
   wizardHut: { ...wildSceneArt("wizard-hut"), scene: "scene-wild-wizard-hut", npc: "Wiz Beryl", npcImage: npcImage("wiz-beryl"), npcNaturalHeightCm: 170, travelAction: "Visit", travelLine: "Good evening, Princess. I have been sorting herb jars under the purple roof.", travelLineZh: "晚安，公主。我一直在紫色屋頂下整理藥草罐。" },

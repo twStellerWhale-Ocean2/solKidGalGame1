@@ -41,30 +41,17 @@
     drop-shadow(4px 9px 6px rgba(45, 45, 52, 0.4));
 }
 
-.avatar-shadow,
+/* issue #207 收尾：接地橢圓盤（舊 .avatar-shadow）整個移除——不再有「腳步圓盤」這種元件，
+   也不留任何 opt-in／opt-out 開關。所有 surface 一致：立繪接地由 .paper-doll-stage 的簡潔深灰
+   立體投影承擔；地圖／地區 token 由其自身 stage 投影（含白描邊）接地。需要時再加，無須維護收關。 */
 .paper-doll-layer {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
   pointer-events: none;
-}
-
-.avatar-shadow {
-  bottom: 0;
-  width: 52%;
-  height: 5%;
-  z-index: 0;
-  border-radius: 50%;
-  background: rgba(80, 56, 70, 0.2);
-}
-
-.paper-doll-layer {
   inset:
     var(--layer-top, 0)
     var(--layer-right, 0)
     var(--layer-bottom, 0)
     var(--layer-left, 0);
-  transform: none;
   background-image: var(--layer-img);
   background-position: center bottom;
   background-repeat: no-repeat;
@@ -74,6 +61,8 @@
 }
 
 .paper-doll-layer-base { z-index: 2; }
+/* issue #214：head（臉＋預設髮）疊在共用 body 之上、髮型之下；與 base 同層級，靠合成順序（base 先、head 後）使 head 蓋住 body 頸部。 */
+.paper-doll-layer-head { z-index: 2; }
 .paper-doll-layer-hairstyle { z-index: 3; }
 .paper-doll-layer-dress,
 .paper-doll-layer-bottom,
@@ -109,10 +98,6 @@
     drop-shadow(0 0 1px rgba(64, 43, 53, 0.42))
     drop-shadow(0 4px 6px rgba(58, 37, 46, 0.16))
     drop-shadow(0 8px 12px rgba(58, 37, 46, 0.12));
-}
-
-.bust-doll .avatar-shadow {
-  display: none;
 }
 
 /* issue #194：頭胸照與全身著裝統一產生方式。

@@ -50,7 +50,9 @@ import {
   voiceProfileForCharacterId,
   composeVoiceProfile,
   resolveVoiceProfile,
-  DEFAULT_VOICE_PROFILE
+  DEFAULT_VOICE_PROFILE,
+  pickVoiceByGender,
+  recommendedVoiceNamesForGender
 } from "./data/game-data.js";
 import { createAdvControls } from "./flow/adv-controls.js";
 import { firstLayerActionsFor, sceneActionLabel, isShopHotspot } from "./flow/scene-actions.js";
@@ -171,6 +173,8 @@ let npcExpression = "normal";
 let advFocusIndex = 0;
 let advFocusTimer = 0;
 let shopPreviewItemId = "";
+// 商店多件同時試穿：累加試穿中的商品 id（沿用同一個試穿娃娃，依各自部位疊穿）。
+let shopTryOnIds = [];
 const mapZoomLimits = { min: 1, max: 2.2, mobileBaseScale: 1.06 };
 const areaMapIds = ["castle", "urban", "rural", "wild", "world"];
 let mapGesture = null;
@@ -1092,7 +1096,25 @@ function activeTryOnItem() {
   return item && item.type !== "room" ? item : null;
 }
 
+function shopTryOnItems() {
+  return shopTryOnIds.map((id) => itemById(id)).filter((item) => item && item.type !== "room");
+}
+
+function tryOnOutfitForItems(items) {
+  const previewOutfit = { ...state.outfit };
+  items.forEach((item) => {
+    if (isWearableItem(item)) equipOutfitItem(item, previewOutfit);
+  });
+  return previewOutfit;
+}
+
 function renderActiveTryOnDoll() {
+  // 商店：以累加的試穿清單疊穿多件；其餘模式（衣櫥／退款）維持單件預覽。
+  if (advMode === "shop") {
+    const items = shopTryOnItems();
+    renderAdvDoll(items.length ? tryOnOutfitForItems(items) : state.outfit, items.length > 0);
+    return;
+  }
   const item = activeTryOnItem();
   if (!item) {
     renderAdvDoll(state.outfit, false);
@@ -1992,6 +2014,7 @@ function openAdvBase(hotspot, mode) {
   activeLesson = null;
   activeShopHotspot = null;
   clearTryOnPreview({ renderDoll: false });
+  shopTryOnIds = [];
   advFocusIndex = 0;
   setExpressions("normal", "normal");
   elements.advScene.dataset.mode = mode;
@@ -2459,63 +2482,111 @@ function shopGreeting(hotspot) {
 }
 
 function renderAdvShop(preserveFocus = false) {
-  const allowed = allowedShopCategories();
   const stockedCategories = availableShopCategories();
-  if (!stockedCategories.includes(shopCategory)) shopCategory = stockedCategories[0] || allowed[0] || "dresses";
-  const categoryItems = unownedShopItemsFor(activeShopHotspot, shopCategory);
+  if (!stockedCategories.includes(shopCategory)) shopCategory = stockedCategories[0] || allowedShopCategories()[0] || "dresses";
+  elements.advShopTabs.innerHTML = ""; // 多欄貨架已含類別標題，不再需要上方類別分頁。
   if (!stockedCategories.length) {
     clearTryOnPreview({ renderDoll: false });
-    renderCategoryTabs(elements.advShopTabs, shopCategory, () => {}, false, []);
     renderShopSoldOut();
     const backButton = renderItemDetailPanel({
       actionForItem: shopPanelAction,
       categoryLabel,
       emptyText: `You found all ${activeShopHotspot?.label || "shop"} treasures!`,
+      isSelected: shopItemTriedOn,
       items: [],
       listElement: elements.advShopGrid,
       mode: "shop",
       onAction: buyItemInAdv,
       onBack: backToStoreScene,
-      onPreview: previewShopItem,
+      onPreview: toggleShopTryOn,
+      onTryOn: toggleShopTryOn,
       previewStyleForItem: itemPreviewStyle,
-      selectedItemId: shopPreviewItemId
+      tryOnForItem: shopTryOnState
     });
     renderItemPanelCommands(backButton);
     scheduleAdvFocus(0);
     return;
   }
-  if (shopPreviewItemId && !categoryItems.some((item) => item.id === shopPreviewItemId)) clearTryOnPreview({ renderDoll: false });
-  const previewItem = categoryItems.find((item) => item.id === shopPreviewItemId) || null;
-  renderCategoryTabs(elements.advShopTabs, shopCategory, (category) => {
-    shopCategory = category;
-    clearTryOnPreview({ renderDoll: false });
-    elements.advFeedback.textContent = "";
-    renderAdvShop();
-  }, false, stockedCategories);
   renderActiveTryOnDoll();
+  // 每個有庫存的類別一欄，欄內列出該類未擁有的商品。
+  const columns = stockedCategories.map((category) => ({
+    label: categoryLabel(category),
+    items: unownedShopItemsFor(activeShopHotspot, category)
+  }));
   const backButton = renderItemDetailPanel({
     actionForItem: shopPanelAction,
     categoryLabel,
+    columns,
     emptyText: `You found all ${activeShopHotspot?.label || "shop"} treasures!`,
-    items: categoryItems,
+    isSelected: shopItemTriedOn,
+    items: [],
     listElement: elements.advShopGrid,
     mode: "shop",
     onAction: buyItemInAdv,
     onBack: backToStoreScene,
-    onPreview: previewShopItem,
+    onPreview: toggleShopTryOn,
+    onTryOn: toggleShopTryOn,
     previewStyleForItem: itemPreviewStyle,
-    selectedItemId: shopPreviewItemId
+    tryOnForItem: shopTryOnState
   });
   renderItemPanelCommands(backButton);
-  const focusIndex = preserveFocus ? Math.max(0, categoryItems.findIndex((item) => item.id === shopPreviewItemId)) : 0;
-  scheduleAdvFocus(focusIndex);
+  scheduleAdvFocus(preserveFocus ? advFocusIndex : 0);
 }
 
-function previewShopItem(item) {
-  if (!item) return;
-  shopPreviewItemId = item.id;
-  elements.advFeedback.textContent = tryOnFeedbackText(item, "shop");
-  renderAdvShop(true);
+function shopItemTriedOn(item) {
+  return shopTryOnIds.includes(item.id);
+}
+
+function shopTryOnState(item) {
+  if (!isWearableItem(item)) return null; // 房間擺設不能穿在身上，不給試穿鈕。
+  const active = shopTryOnIds.includes(item.id);
+  return {
+    active,
+    label: active ? "✓ On" : "Try on",
+    ariaLabel: active ? `Stop trying on ${item.name}` : `Try on ${item.name}`
+  };
+}
+
+function toggleShopTryOn(item) {
+  if (!item || !isWearableItem(item)) return;
+  shopPreviewItemId = item.id; // 記住最後操作的單品，供鍵盤「b」購買。
+  const idx = shopTryOnIds.indexOf(item.id);
+  if (idx >= 0) {
+    shopTryOnIds.splice(idx, 1);
+  } else {
+    // 維持試穿清單同部位互斥，與 equipOutfitItem 的穿戴規則一致（同 type、洋裝↔上下身）。
+    shopTryOnIds = shopTryOnIds.filter((id) => {
+      const other = itemById(id);
+      if (!other) return false;
+      if (other.type === item.type) return false;
+      if (item.type === "dress" && (other.type === "top" || other.type === "bottom")) return false;
+      if ((item.type === "top" || item.type === "bottom") && other.type === "dress") return false;
+      return true;
+    });
+    shopTryOnIds.push(item.id);
+  }
+  elements.advFeedback.textContent = "";
+  // 只更新試穿娃娃與各方塊狀態（就地更新、不重建貨架），保留水平拖曳位置與焦點。
+  renderActiveTryOnDoll();
+  updateShopTileStates();
+}
+
+function updateShopTileStates() {
+  if (!elements.advShopGrid) return;
+  elements.advShopGrid.querySelectorAll(".item-panel-row").forEach((row) => {
+    const card = row.querySelector(".item-panel-card");
+    const id = card?.dataset.itemId;
+    if (!id) return;
+    const active = shopTryOnIds.includes(id);
+    card.classList.toggle("selected", active);
+    const button = row.querySelector(".item-panel-tryon");
+    if (!button) return;
+    const item = itemById(id);
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+    button.textContent = active ? "✓ On" : "Try on";
+    if (item) button.setAttribute("aria-label", active ? `Stop trying on ${item.name}` : `Try on ${item.name}`);
+  });
 }
 
 function shopPanelAction(item) {
@@ -2611,6 +2682,8 @@ function buyItemInAdv(item) {
   persist();
   render();
   shopPreviewItemId = "";
+  // 已買下＝實際穿上，從試穿清單移除（其餘試穿維持）。
+  shopTryOnIds = shopTryOnIds.filter((id) => id !== item.id);
   renderAdvShop(true);
 }
 
@@ -2919,9 +2992,15 @@ function renderSettings() {
 // 解決 getVoices() 初次回空、稍後 voiceschanged 才載入時設定清單卡在空狀態的問題。
 function renderVoiceSettingsPanel() {
   speechManager.init();
+  const voices = speechManager.listVoices();
+  // issue #209：每桶附上「裝置上實際存在」的同性別推薦語音清單，供設定 UI 置頂顯示（Auto 之外可改選）。
+  const buckets = usedVoiceBuckets().map((bucket) => ({
+    ...bucket,
+    recommended: recommendedVoiceNamesForGender(bucket.gender, voices)
+  }));
   renderVoiceSettings(elements, {
-    buckets: usedVoiceBuckets(),
-    voices: speechManager.listVoices(),
+    buckets,
+    voices,
     assignments: speechManager.getVoiceAssignments(),
     onAssign: (gender, personality, voiceName) => speechManager.setVoiceAssignment(gender, personality, voiceName)
   });
@@ -3060,7 +3139,6 @@ function createSpeechManager() {
     const lang = profile.lang || "en-US";
     const target = normalizeLang(lang);
     const primary = primaryLang(lang);
-    const hint = String(profile.voiceHint || "").toLowerCase();
     if (!available.length) {
       return { voice: null, fallbackReason: "voices-empty", voiceLoadState };
     }
@@ -3078,10 +3156,11 @@ function createSpeechManager() {
     const langMatches = available.filter((voice) => normalizeLang(voice.lang) === target);
     const primaryMatches = available.filter((voice) => primaryLang(voice.lang) === primary);
     const defaultVoice = available.find((voice) => voice.default) || available[0] || null;
-    const hintMatch = hint
-      ? [...langMatches, ...primaryMatches].find((voice) => String(voice.name || "").toLowerCase().includes(hint))
-      : null;
-    if (hintMatch) return { voice: hintMatch, fallbackReason: missTag, voiceLoadState };
+    // issue #209：使用者未指定時，依角色性別自動挑「裝置上存在的同性別具名 voice」（語言優先：先 en-US 再泛 en）。
+    // 取代舊有以 voiceHint 字串比對 voice 名稱之失效邏輯（瀏覽器 voice 名稱鮮少含 "female"／"male"，幾乎恆落空）。
+    const genderVoice = pickVoiceByGender(profile.gender, langMatches)
+      || pickVoiceByGender(profile.gender, primaryMatches);
+    if (genderVoice) return { voice: genderVoice, fallbackReason: missTag || "gender-default", voiceLoadState };
     if (langMatches[0]) return { voice: langMatches[0], fallbackReason: missTag, voiceLoadState };
     if (primaryMatches[0]) return { voice: primaryMatches[0], fallbackReason: missTag || `fallback-${primary}`, voiceLoadState };
     return { voice: defaultVoice, fallbackReason: missTag || "language-unavailable", voiceLoadState };
@@ -3849,6 +3928,7 @@ installTestingHooks({
   },
   get shopPreviewItemId() { return shopPreviewItemId; },
   set shopPreviewItemId(nextItemId) { shopPreviewItemId = nextItemId; },
+  tryOnShopItem: (item) => toggleShopTryOn(typeof item === "string" ? itemById(item) : item),
   get shopCategory() { return shopCategory; },
   set shopCategory(nextCategory) { shopCategory = nextCategory; },
   $$,

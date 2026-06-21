@@ -30,8 +30,9 @@ const workingItemBox = {}; // key `<pack>/<name>` → { left, top, right, bottom
 const baseOutfit = Object.fromEntries(Object.keys(wardrobeLayerBoundsByType).map((type) => [type, "none"]));
 const state = {
   selectedItemId: firstShownItem()?.id || "",
-  editMode: "item", // "type"（① 類型框/safeBox）或 "item"（② 單品框/targetBox）
+  editMode: "item", // "none"（不顯示框）／"type"（① 類型框/safeBox）／"item"（② 單品框/targetBox）
   zoom: 1,
+  pan: { x: 0, y: 0 }, // 預覽舞台平移量（px，畫面座標）
   outfit: { ...baseOutfit }
 };
 
@@ -100,12 +101,40 @@ function bindEvents() {
   setupDrag(dom.itemOverlay);
   setupColumnResize();
   window.addEventListener("resize", () => paperDollRenderer.applyLayerTransforms(dom.previewDoll));
-  // 中央試穿畫面：滑鼠滾輪縮放（以 stage transform scale；drag 用 getBoundingClientRect 故不受影響）。
+  // 切回衣物分頁時（panel 由 hidden→顯示）重算 layer transforms，避免隱藏期間量到 0 尺寸。
+  window.addEventListener("editor-tab-change", (e) => {
+    if (e.detail?.tab === "wardrobe") paperDollRenderer.applyLayerTransforms(dom.previewDoll);
+  });
+  // 中央試穿畫面：滑鼠滾輪縮放（以 stage transform；drag 用 getBoundingClientRect 故不受影響）。
   dom.previewStage?.addEventListener("wheel", (e) => {
     e.preventDefault();
     state.zoom = clampN(state.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1), 0.4, 4);
-    dom.previewStage.style.transform = `scale(${Math.round(state.zoom * 1000) / 1000})`;
+    applyStageTransform();
   }, { passive: false });
+  setupStagePan();
+}
+
+// 預覽舞台平移：在空白處（非框控制點）按住拖曳即平移；框的拖拉仍由 overlay 自行處理。
+function setupStagePan() {
+  if (!dom.previewStage) return;
+  let active = null;
+  dom.previewStage.addEventListener("pointerdown", (e) => {
+    if (e.target.closest(".box-overlay")) return; // 在框/控制點上 → 讓 overlay 處理，不平移
+    active = { sx: e.clientX, sy: e.clientY, px: state.pan.x, py: state.pan.y };
+    dom.previewStage.classList.add("panning");
+    try { dom.previewStage.setPointerCapture(e.pointerId); } catch { /* noop */ }
+  });
+  dom.previewStage.addEventListener("pointermove", (e) => {
+    if (!active) return;
+    state.pan = { x: active.px + (e.clientX - active.sx), y: active.py + (e.clientY - active.sy) };
+    applyStageTransform();
+  });
+  const end = () => { active = null; dom.previewStage.classList.remove("panning"); };
+  dom.previewStage.addEventListener("pointerup", end);
+  dom.previewStage.addEventListener("pointercancel", end);
+}
+function applyStageTransform() {
+  dom.previewStage.style.transform = `translate(${Math.round(state.pan.x)}px, ${Math.round(state.pan.y)}px) scale(${Math.round(state.zoom * 1000) / 1000})`;
 }
 
 // 左右欄皆可拖曳調寬：左分隔條改 --left-w（=clientX）、右分隔條改 --right-w（=innerWidth-clientX）。
@@ -141,7 +170,9 @@ function renderModeTabs() {
   [...dom.modeTabs.querySelectorAll("button")].forEach((b) => b.classList.toggle("active", b.dataset.mode === state.editMode));
   dom.modeHelp.textContent = state.editMode === "type"
     ? "編輯此類投影範圍（藍框＝safeBox），套用同類；單品框須落在其內。"
-    : "編輯這一件投影框（綠框）：邊中點縮放、中央移動；四角各自拖拉自由變形（任意四邊形）。";
+    : state.editMode === "item"
+      ? "編輯這一件投影框（綠框）：邊中點縮放、中央移動；四角各自拖拉自由變形（任意四邊形）。"
+      : "已隱藏所有框，方便檢視衣物本身；選①或②回到編輯。";
 }
 
 function renderSummary() {
@@ -179,12 +210,12 @@ function renderItemList() {
         <span class="item-name"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.type)} / ${escapeHtml(item.id)}</span></span>
         <span class="item-price">${priceText(item)}</span>
       </button>
-      <button type="button" class="item-act" data-act="desc" title="編輯描述詞（itemDesc）">📝</button>
+      <button type="button" class="item-act" data-act="meta" title="編輯 metadata（名稱／價錢／描述詞）">📝</button>
       <button type="button" class="item-act" data-act="regen" title="以目前描述詞重生此單品">♻</button>
       <button type="button" class="item-act" data-act="open" title="開啟素材資料夾">📁</button>
       <button type="button" class="item-act" data-act="del" title="刪除此單品">🗑</button>`;
     row.querySelector(".item-main").addEventListener("click", () => { state.selectedItemId = item.id; equipSelectedItem(); renderAll(); });
-    row.querySelector('[data-act="desc"]').addEventListener("click", () => editItemDesc(item));
+    row.querySelector('[data-act="meta"]').addEventListener("click", () => editItemMeta(item));
     row.querySelector('[data-act="regen"]').addEventListener("click", () => regenItem(item));
     row.querySelector('[data-act="open"]').addEventListener("click", () => openItemFolder(item));
     row.querySelector('[data-act="del"]').addEventListener("click", () => deleteItem(item));
@@ -210,17 +241,59 @@ async function deleteItem(item) {
   } catch (e) { window.alert(`刪除失敗：${e.message}`); }
 }
 
-// issue #196：編輯該單品三層描述詞之 itemDesc（寫回該包 style.json），供 ♻ 重生使用。
-async function editItemDesc(item) {
+// issue #218：把舊「描述詞」按鈕改成可設定 metadata 的編輯器（名稱／價錢／描述詞）。
+// 讀取失敗（缺 style.json／asset）不再中止，改以空值起始；儲存就地改 manifest 名稱／價錢與 style.json 描述詞。
+async function editItemMeta(item) {
+  let meta = { name: item.name || "", cost: Number.isFinite(item.cost) ? item.cost : 0, desc: "" };
   try {
-    const cur = await postJson("/tool/get-wardrobe-desc", { pack: packOfItem(item), asset: assetOfItem(item) });
-    if (!cur.ok) { window.alert(`讀取描述詞失敗：${cur.error}`); return; }
-    const next = window.prompt(`「${item.name}」描述詞（itemDesc，存回 style.json，按 ♻ 重生套用）：`, cur.desc || "");
-    if (next == null || next.trim() === (cur.desc || "")) return;
-    const d = await postJson("/tool/save-wardrobe-desc", { pack: packOfItem(item), asset: assetOfItem(item), desc: next.trim() });
+    const cur = await postJson("/tool/get-item-meta", { pack: packOfItem(item), asset: assetOfItem(item), itemId: item.id });
+    if (cur.ok) meta = { name: cur.name ?? meta.name, cost: cur.cost ?? meta.cost, desc: cur.desc ?? "" };
+  } catch { /* 讀取失敗：用 manifest 既有 name/cost、描述詞留空 */ }
+  const next = await openMetaDialog(item, meta);
+  if (!next) return;
+  try {
+    const d = await postJson("/tool/save-item-meta", {
+      pack: packOfItem(item), asset: assetOfItem(item), itemId: item.id,
+      name: next.name, cost: next.cost, desc: next.desc
+    });
     if (!d.ok) { window.alert(`儲存失敗：${d.error}`); return; }
-    window.alert("已儲存描述詞，按 ♻ 重生即以新描述生成。");
-  } catch (e) { window.alert(`描述詞失敗：${e.message}`); }
+    window.location.reload();
+  } catch (e) { window.alert(`儲存 metadata 失敗：${e.message}`); }
+}
+
+// 輕量 metadata 對話框：回傳 { name, cost, desc } 或 null（取消）。
+function openMetaDialog(item, meta) {
+  return new Promise((resolve) => {
+    const back = document.createElement("div");
+    back.className = "meta-modal-back";
+    back.innerHTML = `
+      <div class="meta-modal" role="dialog" aria-modal="true">
+        <h3>編輯 metadata</h3>
+        <p class="control-help"><code>${escapeHtml(packOfItem(item))}/${escapeHtml(assetOfItem(item))}</code> · id <code>${escapeHtml(item.id)}</code></p>
+        <label>名稱<input class="meta-name" type="text"></label>
+        <label>價錢 (coins)<input class="meta-cost" type="number" min="0"></label>
+        <label>描述詞 (itemDesc)<textarea class="meta-desc" rows="4"></textarea></label>
+        <p class="control-help">名稱／價錢寫回該包 <code>manifest.js</code>；描述詞寫回 <code>style.json</code>（按 ♻ 重生套用）。儲存後會重新整理。</p>
+        <div class="meta-actions">
+          <button type="button" class="meta-cancel">取消</button>
+          <button type="button" class="meta-save add-submit">儲存</button>
+        </div>
+      </div>`;
+    document.body.append(back);
+    const nameEl = back.querySelector(".meta-name");
+    const costEl = back.querySelector(".meta-cost");
+    const descEl = back.querySelector(".meta-desc");
+    nameEl.value = meta.name; costEl.value = meta.cost; descEl.value = meta.desc;
+    nameEl.focus();
+    const close = (val) => { back.remove(); resolve(val); };
+    back.querySelector(".meta-cancel").addEventListener("click", () => close(null));
+    back.addEventListener("click", (e) => { if (e.target === back) close(null); });
+    back.querySelector(".meta-save").addEventListener("click", () => {
+      const name = nameEl.value.trim();
+      if (!name) { window.alert("名稱不可為空"); return; }
+      close({ name, cost: Number(costEl.value) || 0, desc: descEl.value.trim() });
+    });
+  });
 }
 
 // issue #196：以目前三層描述詞呼叫影像模型重生此單品並覆蓋素材（dev only）。
@@ -320,8 +393,9 @@ function renderPreview() {
   paperDollRenderer.applyLayerTransforms(dom.previewDoll);
   const type = selectedType();
   const key = selectedKey();
-  setOverlay(dom.typeOverlay, type ? workingSafeBox[type] : null, type ? `① ${type}` : "", state.editMode === "type");
-  setOverlay(dom.itemOverlay, key ? itemBoxFor(key) : null, key ? `② ${escapeHtml(item?.name || "item")}` : "", state.editMode === "item");
+  // 一次只顯示與目前 editMode 對應的框；none 兩框皆隱藏（#218）。
+  setOverlay(dom.typeOverlay, state.editMode === "type" && type ? workingSafeBox[type] : null, type ? `① ${type}` : "", state.editMode === "type");
+  setOverlay(dom.itemOverlay, state.editMode === "item" && key ? itemBoxFor(key) : null, key ? `② ${escapeHtml(item?.name || "item")}` : "", state.editMode === "item");
 }
 
 function setOverlay(el, box, label, active) {

@@ -36,14 +36,37 @@ export function renderVoiceSettings(elements, { buckets = [], voices = [], assig
     select.className = "voice-assign-select";
     const auto = document.createElement("option");
     auto.value = "";
-    auto.textContent = bucket.isGenderDefault ? "Auto (by language)" : "Inherit gender";
+    // issue #209：Auto 已改為「依性別自動挑同性別語音」；性格桶未指定時繼承該性別預設。
+    auto.textContent = bucket.isGenderDefault ? "Auto (by gender & language)" : "Inherit gender default";
     select.appendChild(auto);
-    for (const voice of voices) {
+    // 名稱多已含語言/地區（如「… - English (United States)」）；僅在名稱未帶括號時補語言碼，避免冗餘與截斷。
+    const makeOption = (voice) => {
       const option = document.createElement("option");
       option.value = voice.name;
-      // 名稱多已含語言/地區（如「… - English (United States)」）；僅在名稱未帶括號時補語言碼，避免冗餘與截斷。
       option.textContent = voice.lang && !/\(/.test(voice.name) ? `${voice.name} (${voice.lang})` : voice.name;
-      select.appendChild(option);
+      return option;
+    };
+    // issue #209：把「裝置上實際存在」的同性別推薦語音置頂為 Recommended 群組（因應 Win11／Android 語音名稱混亂），
+    // 其餘語音歸 Other voices；使用者仍可任選覆蓋。無推薦時退回單一平鋪清單。
+    const recommended = Array.isArray(bucket.recommended) ? bucket.recommended : [];
+    const recSet = new Set(recommended);
+    if (recommended.length) {
+      const recGroup = document.createElement("optgroup");
+      recGroup.label = "Recommended";
+      for (const name of recommended) {
+        const voice = voices.find((v) => v.name === name);
+        if (voice) recGroup.appendChild(makeOption(voice));
+      }
+      select.appendChild(recGroup);
+      const rest = voices.filter((v) => !recSet.has(v.name));
+      if (rest.length) {
+        const restGroup = document.createElement("optgroup");
+        restGroup.label = "Other voices";
+        for (const voice of rest) restGroup.appendChild(makeOption(voice));
+        select.appendChild(restGroup);
+      }
+    } else {
+      for (const voice of voices) select.appendChild(makeOption(voice));
     }
     select.value = assignments[key] || "";
     select.addEventListener("change", () => {

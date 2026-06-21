@@ -1,0 +1,44 @@
+{
+  "_comment": "issue #210 區級資源包（castle）：一店一包、多類別共用同一城堡 packStyle；既有素材沿用不重生（#196 itemDesc 全數保留，由原 castle-seamstress／castle-royal-cloak-room 合併）。",
+  "packStyle": {
+    "name": "城堡服飾 Castle Outfitter",
+    "reference": "sweet castle tailoring and gentle fairytale royal wear — soft tops, skirts, regal cloaks and tiaras",
+    "palette": [
+      "coral",
+      "rose",
+      "aqua",
+      "sky blue",
+      "lilac",
+      "gold",
+      "ivory white",
+      "jewel blue",
+      "mint"
+    ],
+    "motifs": [
+      "sailor collars",
+      "ribbons",
+      "small buttons",
+      "stars and moons",
+      "pearls",
+      "gold trim"
+    ],
+    "linework": "fine and delicate",
+    "mood": "sweet, regal, elegant, gentle"
+  },
+  "items": {
+    "top-coral-blouse": "a coral castle blouse with a soft rounded collar",
+    "top-rose-sailor": "a rose-pink sailor top with a sailor collar",
+    "top-aqua-sailor": "an aqua sailor top with a sailor collar",
+    "bottom-sky-shorts": "a pair of sky-blue castle shorts",
+    "bottom-lilac-skirt": "a lilac castle skirt",
+    "outer-yellow-cardigan": "a little soft buttoned yellow knit cardigan",
+    "outer-starry-cape": "a closed royal cloak fastened at the neck and falling straight down the front, fully covering and showing only the smooth outer front surface — no front opening, no gap, no inside or lining visible, scattered with small golden stars",
+    "outer-mint-cardigan": "a soft mint-green royal knit cardigan with white collar and buttons",
+    "outer-rose-cardigan": "a soft rose-pink royal knit cardigan with white collar and buttons",
+    "outer-moon-cape": "a closed royal cloak fastened at the neck and falling straight down the front, fully covering and showing only the smooth outer front surface — no front opening, no gap, no inside or lining visible, decorated with a crescent moon and small stars",
+    "outer-aurora-cape": "a closed royal cloak fastened at the neck and falling straight down the front, fully covering and showing only the smooth outer front surface — no front opening, no gap, no inside or lining visible, with a soft aurora gradient sheen",
+    "headtop-pearl-tiara": "a delicate royal tiara set with small pearls",
+    "headtop-starry-tiara": "a royal tiara topped with little star-shaped gems",
+    "headtop-ruby-tiara": "a royal tiara set with a single red ruby gem"
+  }
+}

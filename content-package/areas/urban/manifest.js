@@ -35,21 +35,17 @@ export const urbanArea = Object.freeze({
   vocabularyProfile: urbanVocabularyProfile,
   // nodes 控制地圖上的路網與圖示座標；x / y 是相對地圖寬高的百分比。
   nodes: {
-    castleRoom: { id: "castleRoom", label: "Castle Stairway", x: 47, y: 7, links: ["garden", "schoolClassroom", "library", "temple", "administration", "market"] },
-    garden: { id: "garden", label: "Castle Garden", x: 20, y: 42, links: ["castleRoom", "market", "library", "temple"] },
-    schoolClassroom: { id: "schoolClassroom", label: "School Classroom", x: 26, y: 18, links: ["castleRoom", "library", "market"] },
-    library: { id: "library", label: "Library", x: 17, y: 30, links: ["schoolClassroom", "castleRoom", "garden"] },
-    temple: { id: "temple", label: "Temple", x: 60, y: 47, links: ["castleRoom", "garden", "administration", "boutique", "hairSalon"] },
-    administration: { id: "administration", label: "Administration Building", x: 40, y: 15, links: ["castleRoom", "temple", "boutique", "tailorStudio"] },
-    market: { id: "market", label: "Market Square", x: 46, y: 33, links: ["garden", "schoolClassroom", "tailorStudio", "shoeShop", "harbor", "port"] },
-    boutique: { id: "boutique", label: "Dress Boutique", x: 60, y: 17, links: ["tailorStudio", "shoeShop", "accessoryShop", "administration", "temple", "hairSalon"] },
-    hairSalon: { id: "hairSalon", label: "Hair Salon", x: 73, y: 41, links: ["boutique", "accessoryShop", "temple"] },
-    tailorStudio: { id: "tailorStudio", label: "Tailor Studio", x: 45, y: 49, links: ["market", "boutique", "shoeShop", "administration"] },
-    shoeShop: { id: "shoeShop", label: "Shoe Shop", x: 30, y: 48, links: ["market", "harbor", "boutique", "tailorStudio"] },
-    accessoryShop: { id: "accessoryShop", label: "Accessory Atelier", x: 72, y: 27, links: ["boutique", "hairSalon"] },
-    harbor: { id: "harbor", label: "Fish Shop", x: 36, y: 76, links: ["market", "shoeShop", "port"] },
-    port: { id: "port", label: "Harbor Port", x: 22, y: 88, links: ["market", "harbor", "lighthouse"] },
-    lighthouse: { id: "lighthouse", label: "Lighthouse", x: 88, y: 80, links: ["port"] }
+    castleRoom: { id: "castleRoom", label: "Castle Stairway", x: 50.2, y: 13.7, links: ["garden", "schoolClassroom", "library", "temple", "administration", "market"] },
+    garden: { id: "garden", label: "Castle Garden", x: 49.5, y: 30.6, links: ["castleRoom", "market", "library", "temple"] },
+    schoolClassroom: { id: "schoolClassroom", label: "School Classroom", x: 35.7, y: 15.5, links: ["castleRoom", "library", "market"] },
+    library: { id: "library", label: "Library", x: 25.1, y: 24.2, links: ["schoolClassroom", "castleRoom", "garden"] },
+    temple: { id: "temple", label: "Temple", x: 64.4, y: 15.2, links: ["castleRoom", "garden", "administration", "boutique"] },
+    administration: { id: "administration", label: "Administration Building", x: 76, y: 22.2, links: ["castleRoom", "temple", "boutique"] },
+    market: { id: "market", label: "Market Square", x: 51.5, y: 46.7, links: ["garden", "schoolClassroom", "harbor", "port"] },
+    boutique: { id: "boutique", label: "Dress Boutique", x: 69.1, y: 46.3, links: ["administration", "temple"] },
+    harbor: { id: "harbor", label: "Fish Shop", x: 30.1, y: 45.1, links: ["market", "port"] },
+    port: { id: "port", label: "Harbor Port", x: 38.3, y: 74.4, links: ["market", "harbor", "lighthouse"] },
+    lighthouse: { id: "lighthouse", label: "Lighthouse", x: 75.8, y: 78.4, links: ["port"] }
   },
   // locations 控制地圖圖示進入後的場景、NPC、商店與提示文字。
   locations: [
@@ -62,11 +58,7 @@ export const urbanArea = Object.freeze({
     { id: "market", area: "urban", node: "market", label: "Market Square", icon: "🥖", npc: "Auntie Pom", scene: "scene-market", npcImage: npcImage("auntie-pom-market"), hint: "The market has warm bread, fruit, and kind food words." },
     { id: "harbor", area: "urban", node: "harbor", label: "Fish Shop", icon: "🐟", npc: "Nami", scene: "scene-harbor", npcImage: npcImage("nami"), hint: "The fish shop has fresh fish for dinner." },
     { id: "port", area: "urban", node: "port", label: "Harbor Port", icon: "⚓", npc: "Dock Guide", scene: "scene-port", npcImage: npcImage("dock-guide"), hint: "The docks are ready for boats and sea trips." },
-    { id: "boutique", area: "urban", node: "boutique", label: "Dress Boutique", icon: "👗", npc: "Rena", scene: "scene-urban-dress-boutique", npcImage: npcImage("rena"), shopCategories: ["dresses"], defaultCategory: "dresses", hint: "Rena's boutique focuses on dresses." },
-    { id: "hairSalon", area: "urban", node: "hairSalon", label: "Hair Salon", icon: "💇", npc: "Stylist Lina", scene: "scene-urban-hair-salon", npcImage: npcImage("stylist-lina"), shopCategories: ["hair"], defaultCategory: "hair", hint: "Stylist Lina keeps soft story hairstyles ready for Lumi." },
-    { id: "tailorStudio", area: "urban", node: "tailorStudio", label: "Tailor Studio", icon: "👚", npc: "Tailor Tess", scene: "scene-urban-tailor-studio", npcImage: npcImage("tailor-tess"), shopCategories: ["tops", "bottoms"], defaultCategory: "tops", hint: "Tailor Tess sells tops and bottoms only." },
-    { id: "shoeShop", area: "urban", node: "shoeShop", label: "Shoe Shop", icon: "👞", npc: "Mina", scene: "scene-shoes", npcImage: npcImage("mina"), shopCategories: ["shoes"], defaultCategory: "shoes", hint: "Mina shows shoes for long walks." },
-    { id: "accessoryShop", area: "urban", node: "accessoryShop", label: "Accessory Atelier", icon: "👑", npc: "Lili", scene: "scene-urban-accessory-atelier", npcImage: npcImage("lili"), shopCategories: ["hats", "accessories"], defaultCategory: "hats", hint: "Lili sells hats and accessories only." },
+    { id: "boutique", area: "urban", node: "boutique", label: "Dress Boutique", icon: "👗", npc: "Rena", scene: "scene-urban-dress-boutique", npcImage: npcImage("rena"), shopCategories: ["dresses", "tops", "bottoms", "hair", "shoes", "hats", "accessories"], defaultCategory: "dresses", hint: "Rena's boutique now carries every urban outfit — dresses, tops, bottoms, hairstyles, shoes, hats and accessories." },
     { id: "lighthouse", area: "urban", node: "lighthouse", label: "Lighthouse", icon: "🗼", npc: "Captain Sol", scene: "scene-lighthouse", npcImage: npcImage("captain-sol"), hint: "The lighthouse watches the sea before ships sail." }
   ],
   // actors 是地圖上的動態環境效果，不是可點擊地點。
@@ -153,38 +145,6 @@ const urbanLessonBank = Object.freeze({
       { questionType: "sentence-choice", prompt: "A girl likes the blue dress. Please help her kindly.", promptZh: "一個女孩喜歡藍色洋裝。請親切地幫她。", answer: "Of course! You can try it on.", choices: ["Of course! The blue dress is a fish.","Of course! Please run in the shop.","Of course! You can try it on."], choicesZh: ["當然！藍色洋裝是一條魚。","當然！請在店裡跑。","當然！你可以試穿看看。"], reward: jobReward }
     ]
   },
-  hairSalon: {
-    title: "Help at the Hair Salon",
-    questions: [
-      { questionType: "sentence-choice", prompt: "I need a brush for a child's soft hair. Which one should I pass you?", promptZh: "我需要一把適合小孩柔軟頭髮的梳子。我該遞給你哪一把？", answer: "Sure, here is the soft baby brush.", choices: ["Sure, here is the soft baby brush.","Sure, here is the hard metal brush.","Sure, here is the wet paint brush."], choicesZh: ["好的，這是柔軟的嬰兒梳。","好的，這是堅硬的金屬梳。","好的，這是沾濕的油漆刷。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "There are two brushes on the table and three brushes in the cup. Please help me count them.", promptZh: "桌上有兩把梳子，杯子裡有三把梳子。請幫我數一共有幾把。", answer: "OK, let me count! There are five brushes.", choices: ["OK, let me count! There are three brushes.","OK, let me count! There are five brushes.","OK, let me count! There are two brushes."], choicesZh: ["好，我來數數！有三把梳子。","好，我來數數！有五把梳子。","好，我來數數！有兩把梳子。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "Our next guest arrives soon and the mirror table is messy. What should we do first?", promptZh: "下一位客人快到了，鏡台還很亂。我們該先做什麼？", answer: "Of course, let's clear the table first.", choices: ["Of course, let's clear the table first.","Of course, let's make it even messier.","Of course, let's take a long nap."], choicesZh: ["當然，我們先把桌面清乾淨。","當然，我們把它弄得更亂。","當然，我們先睡個大覺。"], reward: jobReward }
-    ]
-  },
-  tailorStudio: {
-    title: "Help at the Tailor Studio",
-    questions: [
-      { questionType: "sentence-choice", prompt: "This shirt is finished. Where should I put it for the customer?", promptZh: "這件襯衫做好了。我該放在哪裡給客人？", answer: "OK, let's fold it neatly on the shelf.", choices: ["OK, let's fold it neatly on the shelf.","OK, let's throw it on the dirty floor.","OK, let's drop it in the water bucket."], choicesZh: ["好的，我們把它整齊地疊在架子上。","好的，我們把它丟在髒地板上。","好的，我們把它丟進水桶裡。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "There are five shirts here and four shirts there. Please help me count them.", promptZh: "這裡有五件襯衫，那裡有四件襯衫。請幫我數一共有幾件。", answer: "OK, let me count! There are nine shirts.", choices: ["OK, let me count! There are five shirts.","OK, let me count! There are nine shirts.","OK, let me count! There are four shirts."], choicesZh: ["好，我來數數！有五件襯衫。","好，我來數數！有九件襯衫。","好，我來數數！有四件襯衫。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "I am sewing a small button. Please tell the customer kindly.", promptZh: "我正在縫一顆小鈕扣。請親切地告訴客人。", answer: "Sure! Tess is sewing a button.", choices: ["Sure! Tess is washing fish.","Sure! Tess is reading a boat.","Sure! Tess is sewing a button."], choicesZh: ["好的！泰絲正在洗魚。","好的！泰絲正在讀船。","好的！泰絲正在縫鈕扣。"], reward: jobReward }
-    ]
-  },
-  shoeShop: {
-    title: "Help at the Shoe Shop",
-    questions: [
-      { questionType: "sentence-choice", prompt: "These shoes come in pairs, but one shoe has no partner. What should I do?", promptZh: "這些鞋都是成雙的，但有一隻鞋沒有同伴。我該怎麼辦？", answer: "Sure, let's find the matching shoe.", choices: ["Sure, let's find the matching shoe.","Sure, let's sell just one single shoe.","Sure, let's cut the shoe in half."], choicesZh: ["好啊，我們把另一隻成對的鞋找出來。","好啊，我們就賣一隻鞋吧。","好啊，我們把鞋子剪成兩半。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "These red shoes are for a customer to pick up later. Where should I leave them?", promptZh: "這雙紅鞋是要給客人晚點來拿的。我該放在哪裡？", answer: "OK, let's set them neatly by the door.", choices: ["OK, let's set them neatly by the door.","OK, let's bury them in the garden.","OK, let's hang them from the lamp."], choicesZh: ["好的，我們把它們整齊地放在門邊。","好的，我們把它們埋進花園裡。","好的，我們把它們掛在燈上。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "A boy needs bigger shoes. Please help him kindly.", promptZh: "一個男孩需要更大的鞋。請親切地幫他。", answer: "Of course! Try these bigger shoes.", choices: ["Of course! Try these smaller hats.","Of course! Run with the shoes.","Of course! Try these bigger shoes."], choicesZh: ["當然！試試這些更小的帽子。","當然！穿著鞋跑。","當然！試試這雙更大的鞋。"], reward: jobReward }
-    ]
-  },
-  accessoryShop: {
-    title: "Help at the Accessory Atelier",
-    questions: [
-      { questionType: "sentence-choice", prompt: "These ribbons are all mixed up. How should I sort them?", promptZh: "這些緞帶全混在一起了。我該怎麼分類？", answer: "OK, let's group them by their colour.", choices: ["OK, let's group them by their colour.","OK, let's tangle them into one big knot.","OK, let's throw them all in the bin."], choicesZh: ["好的，我們依顏色把它們分類。","好的，我們把它們纏成一個大結。","好的，我們把它們全丟進垃圾桶。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "There is one crown here and two crowns there. Please help me count them.", promptZh: "這裡有一個皇冠，那裡有兩個皇冠。請幫我數一共有幾個。", answer: "OK, let me count! There are three crowns.", choices: ["OK, let me count! There are two crowns.","OK, let me count! There are three crowns.","OK, let me count! There is one crown."], choicesZh: ["好，我來數數！有兩個皇冠。","好，我來數數！有三個皇冠。","好，我來數數！有一個皇冠。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "A girl wants a blue ribbon. Please ask her kindly.", promptZh: "一個女孩想要藍緞帶。請親切地問她。", answer: "Sure! Which colour do you want?", choices: ["Sure! How many fish do you want?","Sure! Please put the crown under the dock.","Sure! Which colour do you want?"], choicesZh: ["好的！你想要幾條魚？","好的！請把皇冠放在碼頭下面。","好的！你想要哪一種顏色？"], reward: jobReward }
-    ]
-  },
   lighthouse: {
     title: "Help at the Lighthouse",
     questions: [
@@ -263,34 +223,6 @@ const urbanChatLessonBank = Object.freeze({
       { questionType: "sentence-choice", prompt: "Thank you for visiting my shop.", promptZh: "謝謝你來我的店。", answer: "Wow, your shop is so pretty!", choices: ["Sorry, your shop is a bit messy.","Wow, your shop is so pretty!"], choicesZh: ["抱歉，你的店有點亂。","哇，你的店好漂亮！"], reward: chatReward }
     ]
   },
-  hairSalon: {
-    title: "Chat at the Hair Salon",
-    questions: [
-      { questionType: "sentence-choice", prompt: "Do you like your new hair?", promptZh: "你喜歡你的新髮型嗎？", answer: "I love my new hair!", choices: ["I love my new hair!","Hmm, I do not like my new hair."], choicesZh: ["我超愛我的新髮型！","嗯，我不太喜歡我的新髮型。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "It is nice to see you today.", promptZh: "今天很高興見到你。", answer: "Nice to see you too, Lina!", choices: ["Sorry, I cannot stay to see you today.","Nice to see you too, Lina!"], choicesZh: ["抱歉，我今天不能留下來見你。","我也很高興見到你，莉娜！"], reward: chatReward }
-    ]
-  },
-  tailorStudio: {
-    title: "Chat at the Tailor Studio",
-    questions: [
-      { questionType: "sentence-choice", prompt: "Do you like this blue top?", promptZh: "你喜歡這件藍色上衣嗎？", answer: "I really like this blue top!", choices: ["I really like this blue top!","Sorry, I do not like this blue top."], choicesZh: ["我很喜歡這件藍色上衣！","抱歉，我不喜歡這件藍上衣。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "My shop is tidy today.", promptZh: "我的店今天很整齊。", answer: "Yes, your shop is so tidy!", choices: ["Hmm, your shop looks messy today.","Yes, your shop is so tidy!"], choicesZh: ["嗯，你的店今天看起來有點亂。","對啊，你的店好整齊！"], reward: chatReward }
-    ]
-  },
-  shoeShop: {
-    title: "Chat at the Shoe Shop",
-    questions: [
-      { questionType: "sentence-choice", prompt: "Do you like these red shoes?", promptZh: "你喜歡這雙紅鞋嗎？", answer: "I love these red shoes!", choices: ["I love these red shoes!","Sorry, I do not like these red shoes."], choicesZh: ["我超愛這雙紅鞋！","抱歉，我不喜歡這雙紅鞋。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Do the shoes fit well?", promptZh: "鞋子合腳嗎？", answer: "Yes, they fit really well!", choices: ["No, these shoes are too small for me.","Yes, they fit really well!"], choicesZh: ["不，這雙鞋對我來說太小了。","對啊，很合腳！"], reward: chatReward }
-    ]
-  },
-  accessoryShop: {
-    title: "Chat at the Accessory Atelier",
-    questions: [
-      { questionType: "sentence-choice", prompt: "Do you like this red ribbon?", promptZh: "你喜歡這條紅緞帶嗎？", answer: "I love this red ribbon!", choices: ["I love this red ribbon!","Sorry, I do not like this red ribbon."], choicesZh: ["我好愛這條紅緞帶！","抱歉，我不喜歡這條紅緞帶。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "These hats are pretty today.", promptZh: "這些帽子今天很漂亮。", answer: "Wow, your hats are so pretty!", choices: ["Hmm, these hats are not pretty.","Wow, your hats are so pretty!"], choicesZh: ["嗯，這些帽子不怎麼漂亮。","哇，你的帽子真漂亮！"], reward: chatReward }
-    ]
-  },
   lighthouse: {
     title: "Chat at the Lighthouse",
     questions: [
@@ -314,11 +246,7 @@ export const urbanSceneConfigs = mergeLessons(mergeLessons({
   market: { ...singleSceneArt("market"), scene: "scene-market", npc: "Auntie Pom", npcImage: npcImage("auntie-pom-market"), npcNaturalHeightCm: 155, travelAction: "Visit", travelLine: "Hello, Princess. Warm bread is ready.", travelLineZh: "你好，公主。溫熱的麵包準備好了。" },
   harbor: { ...singleSceneArt("harbor"), scene: "scene-harbor", npc: "Nami", npcImage: npcImage("nami"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Hi, Princess. The fresh fish are ready today.", travelLineZh: "嗨，公主。今天的新鮮魚準備好了。" },
   port: { ...singleSceneArt("harbor"), scene: "scene-port", npc: "Dock Guide", npcImage: npcImage("dock-guide"), npcNaturalHeightCm: 175, travelAction: "Visit", travelLine: "Hello, Princess. Welcome to the harbor.", travelLineZh: "你好，公主。歡迎來到港口。" },
-  boutique: { ...urbanShopArt("dress-boutique"), scene: "scene-urban-dress-boutique", npc: "Rena", npcImage: npcImage("rena"), npcNaturalHeightCm: 165, travelAction: "Shop", travelLine: "Hello, Princess. The dresses are ready today.", travelLineZh: "你好，公主。今天的洋裝準備好了。", shopGreeting: "Pick a dress or an outfit set, Princess.", shopGreetingZh: "公主，選一件洋裝或一套服裝吧。" },
-  hairSalon: { ...urbanShopArt("hair-salon"), scene: "scene-urban-hair-salon", npc: "Stylist Lina", npcImage: npcImage("stylist-lina"), npcNaturalHeightCm: 162, travelAction: "Shop", travelLine: "Hi, Princess. Welcome to the hair salon.", travelLineZh: "嗨，公主。歡迎來到髮廊。", shopGreeting: "Sit by the mirror, Princess.", shopGreetingZh: "公主，請坐到鏡子旁邊。" },
-  tailorStudio: { ...urbanShopArt("tailor-studio"), scene: "scene-urban-tailor-studio", npc: "Tailor Tess", npcImage: npcImage("tailor-tess"), npcNaturalHeightCm: 160, travelAction: "Shop", travelLine: "Good morning, Princess. The shirts are folded.", travelLineZh: "早安，公主。襯衫已經摺好了。", shopGreeting: "Pick a top or bottoms, Princess.", shopGreetingZh: "公主，選一件上衣或下身服飾吧。" },
-  shoeShop: { ...singleSceneArt("shoes", { tone: "shop" }), scene: "scene-shoes", npc: "Mina", npcImage: npcImage("mina"), npcNaturalHeightCm: 158, travelAction: "Shop", travelLine: "Hello, Princess. Try shoes for the road.", travelLineZh: "你好，公主。試試適合走路的鞋吧。", shopGreeting: "These shoes are ready for your next trip.", shopGreetingZh: "這些鞋準備好陪你去下一趟旅程。" },
-  accessoryShop: { ...urbanShopArt("accessory-atelier"), scene: "scene-urban-accessory-atelier", npc: "Lili", npcImage: npcImage("lili"), npcNaturalHeightCm: 156, travelAction: "Shop", travelLine: "Good day, Princess. Hats and ribbons are ready.", travelLineZh: "日安，公主。帽子和緞帶準備好了。", shopGreeting: "Pick a hat or accessory, Princess.", shopGreetingZh: "公主，選一頂帽子或一個配件吧。" },
+  boutique: { ...urbanShopArt("dress-boutique"), scene: "scene-urban-dress-boutique", npc: "Rena", npcImage: npcImage("rena"), npcNaturalHeightCm: 165, travelAction: "Shop", travelLine: "Hello, Princess. Every outfit is ready today.", travelLineZh: "你好，公主。今天每一件服飾都準備好了。", shopGreeting: "Pick anything you like, Princess — dresses, tops, hair and more.", shopGreetingZh: "公主，喜歡什麼都可以挑——洋裝、上衣、髮型通通有。" },
   lighthouse: { ...singleSceneArt("lighthouse"), scene: "scene-lighthouse", npc: "Captain Sol", npcImage: npcImage("captain-sol"), npcNaturalHeightCm: 178, travelAction: "Visit", travelLine: "Hello, Princess. Welcome to the lighthouse.", travelLineZh: "你好，公主。歡迎來到燈塔。" }
 }, urbanLessonBank, { area: "urban", vocabProfile: urbanVocabularyProfile.id }),
   urbanChatLessonBank, { area: "urban", vocabProfile: urbanVocabularyProfile.id }, "chatLesson");

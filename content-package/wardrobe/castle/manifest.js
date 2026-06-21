@@ -1,0 +1,26 @@
+import { createWardrobePackTools } from "../_shared/item-helpers.js";
+
+const { wearable } = createWardrobePackTools("castle");
+
+//#region Castle 衣物資源包（issue #210：一區一店一包）
+// 城堡區單一服飾店 storeId="castleSeamstress"（Castle Seamstress）之資源包，含多類別衣物：
+// 上衣／下身／外套／頭飾（由原 castle-seamstress／castle-royal-cloak-room 兩包合併，itemId 全數保留）。
+export const castleItems = [
+  // 上衣／下身（原 castle-seamstress）
+  wearable({ id: "coralBlouse", storeId: "castleSeamstress", type: "top", name: "Coral castle blouse", cost: 90, icon: "Top", asset: "top-coral-blouse" }),
+  wearable({ id: "roseSailorTop", storeId: "castleSeamstress", type: "top", name: "Rose sailor top", cost: 110, icon: "Top", asset: "top-rose-sailor" }),
+  wearable({ id: "aquaSailorTop", storeId: "castleSeamstress", type: "top", name: "Aqua sailor top", cost: 130, icon: "Top", asset: "top-aqua-sailor" }),
+  wearable({ id: "skyShorts", storeId: "castleSeamstress", type: "bottom", name: "Sky castle shorts", cost: 100, icon: "Bottom", asset: "bottom-sky-shorts" }),
+  wearable({ id: "lilacSkirt", storeId: "castleSeamstress", type: "bottom", name: "Lilac castle skirt", cost: 120, icon: "Bottom", asset: "bottom-lilac-skirt" }),
+  // 外套／頭飾（原 castle-royal-cloak-room）
+  wearable({ id: "yellowCardigan", storeId: "castleSeamstress", type: "outer", name: "Little yellow cardigan", cost: 150, icon: "Outer", asset: "outer-yellow-cardigan" }),
+  wearable({ id: "starCape", storeId: "castleSeamstress", type: "outer", name: "Starry helper cape", cost: 240, icon: "Outer", asset: "outer-starry-cape" }),
+  wearable({ id: "mintCardigan", storeId: "castleSeamstress", type: "outer", name: "Mint royal cardigan", cost: 80, icon: "Outer", asset: "outer-mint-cardigan" }),
+  wearable({ id: "roseCardigan", storeId: "castleSeamstress", type: "outer", name: "Rose royal cardigan", cost: 90, icon: "Outer", asset: "outer-rose-cardigan" }),
+  wearable({ id: "moonCape", storeId: "castleSeamstress", type: "outer", name: "Moon royal cape", cost: 120, icon: "Outer", asset: "outer-moon-cape" }),
+  wearable({ id: "auroraCape", storeId: "castleSeamstress", type: "outer", name: "Aurora royal cape", cost: 140, icon: "Outer", asset: "outer-aurora-cape" }),
+  wearable({ id: "pearlTiara", storeId: "castleSeamstress", type: "headTop", name: "Pearl royal tiara", cost: 80, icon: "Hat", asset: "headtop-pearl-tiara" }),
+  wearable({ id: "starryTiara", storeId: "castleSeamstress", type: "headTop", name: "Starry royal tiara", cost: 100, icon: "Hat", asset: "headtop-starry-tiara" }),
+  wearable({ id: "rubyTiara", storeId: "castleSeamstress", type: "headTop", name: "Ruby royal tiara", cost: 120, icon: "Hat", asset: "headtop-ruby-tiara" })
+];
+//#endregion Castle 衣物資源包

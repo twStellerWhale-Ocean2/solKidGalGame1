@@ -6,6 +6,9 @@
 export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
+  { version: "0.52.3", buildDateTime: "2026-06-21", summaryZh: "移除所有立繪／地圖角色腳底的橢圓接地圓盤（舊 .avatar-shadow）：該扁橢圓既被讀為「腳步圓盤」、又在施了深灰投影的合成 stage 內被再模糊成糊化光暈；全站一致改由角色本體的簡潔深灰立體投影接地，不再保留任何圓盤元件或開關，徹底落地 #207 去圓盤去光暈意圖" },
+  { version: "0.52.2", buildDateTime: "2026-06-21", summaryZh: "公主底圖拆為共用 body（含永久肌膚安全底著）＋ per-character head（含預設髮、髮色識別）分層立繪：衣物疊於底著之上、髮型須完全覆蓋 head 預設髮，更換衣物或髮型時舊的不殘留（消除昔日 baked-in 底圖不可移除之雙重疊圖）" },
+  { version: "0.52.1", buildDateTime: "2026-06-21", summaryZh: "衣物改以資源包為單位：各地區收斂為單一服飾店、整包販售多類別衣物（含髮型），商店可用類別分頁瀏覽；既有存檔已購衣物以 id 相容保留" },
   { version: "0.52.0", buildDateTime: "2026-06-21", summaryZh: "打工改為實際賺到 coins 後才在本遊玩週期下架；答對但沒拿到 coins（用了中文協助或第三次以上）不下架、本週期仍可再作答賺錢" },
   { version: "0.51.1", buildDateTime: "2026-06-20", summaryZh: "公主與場景人物 ADV 立繪改用簡潔深灰立體投影，去除詭異光暈與糊化腳底陰影" },
   { version: "2026.06.19-character-theme-defaults", buildDateTime: "2026-06-19", summaryZh: "Yumi 深藍髮、Mary 深綠髮與新帳號隨機初始主題" },
@@ -26,8 +29,8 @@ export const versionHistory = [
 ];
 
 export const buildInfo = {
-  version: "0.52.0",
+  version: "0.52.3",
   buildDate: "2026-06-21",
   buildDateTime: "2026-06-21",
-  issues: ["#205"]
+  issues: ["#207"]
 };

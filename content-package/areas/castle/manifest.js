@@ -36,15 +36,14 @@ export const castleArea = Object.freeze({
   vocabularyProfile: castleVocabularyProfile,
   // nodes 控制地圖上的路網與圖示座標；x / y 是相對地圖寬高的百分比。
   nodes: {
-    princessRoom: { id: "princessRoom", label: "Princess Room", x: 50, y: 48, links: ["kingHall", "queenStudy", "castleKitchen", "knightsRoom", "maidsRoom", "royalCloakRoom", "castleSeamstress", "castleGate"] },
-    kingHall: { id: "kingHall", label: "King's Hall", x: 50, y: 24, links: ["princessRoom", "queenStudy", "knightsRoom", "royalCloakRoom"] },
-    queenStudy: { id: "queenStudy", label: "Queen's Study", x: 34, y: 33, links: ["princessRoom", "kingHall", "maidsRoom", "castleSeamstress"] },
-    castleKitchen: { id: "castleKitchen", label: "Kitchen", x: 65, y: 56, links: ["princessRoom", "maidsRoom", "royalCloakRoom"] },
-    knightsRoom: { id: "knightsRoom", label: "Knights' Room", x: 60, y: 78, links: ["kingHall", "princessRoom", "royalCloakRoom"] },
-    maidsRoom: { id: "maidsRoom", label: "Maid's Room", x: 36, y: 58, links: ["queenStudy", "castleKitchen", "princessRoom", "castleSeamstress"] },
-    royalCloakRoom: { id: "royalCloakRoom", label: "Royal Cloak Room", x: 68, y: 42, links: ["princessRoom", "kingHall", "knightsRoom", "castleKitchen"] },
-    castleSeamstress: { id: "castleSeamstress", label: "Castle Seamstress", x: 38, y: 70, links: ["princessRoom", "queenStudy", "maidsRoom"] },
-    castleGate: { id: "castleGate", label: "Castle Gate", x: 37, y: 86, links: ["princessRoom"] }
+    princessRoom: { id: "princessRoom", label: "Princess Room", x: 49.2, y: 42.4, links: ["kingHall", "queenStudy", "castleKitchen", "knightsRoom", "maidsRoom", "castleSeamstress", "castleGate"] },
+    kingHall: { id: "kingHall", label: "King's Hall", x: 58.1, y: 29.5, links: ["princessRoom", "queenStudy", "knightsRoom"] },
+    queenStudy: { id: "queenStudy", label: "Queen's Study", x: 48.3, y: 28.9, links: ["princessRoom", "kingHall", "maidsRoom", "castleSeamstress"] },
+    castleKitchen: { id: "castleKitchen", label: "Kitchen", x: 75.3, y: 64.6, links: ["princessRoom", "maidsRoom"] },
+    knightsRoom: { id: "knightsRoom", label: "Knights' Room", x: 50.3, y: 71.5, links: ["kingHall", "princessRoom"] },
+    maidsRoom: { id: "maidsRoom", label: "Maid's Room", x: 33.7, y: 44.5, links: ["queenStudy", "castleKitchen", "princessRoom", "castleSeamstress"] },
+    castleSeamstress: { id: "castleSeamstress", label: "Castle Seamstress", x: 29.1, y: 64, links: ["princessRoom", "queenStudy", "maidsRoom"] },
+    castleGate: { id: "castleGate", label: "Castle Gate", x: 39, y: 95.3, links: ["princessRoom"] }
   },
   // locations 控制地圖圖示進入後的場景、NPC、商店與提示文字。
   locations: [
@@ -54,8 +53,7 @@ export const castleArea = Object.freeze({
     { id: "castleKitchen", area: "castle", node: "castleKitchen", label: "Kitchen", icon: "🍲", npc: "Cook Panna", scene: "scene-castle-kitchen", npcImage: npcImage("cook-panna"), hint: "Cook Panna is making warm soup in the kitchen." },
     { id: "knightsRoom", area: "castle", node: "knightsRoom", label: "Knights' Room", icon: "🛡", npc: "Knight Theo", scene: "scene-castle-knights-room", npcImage: npcImage("knight-theo"), hint: "Knight Theo practices safe, kind words." },
     { id: "maidsRoom", area: "castle", node: "maidsRoom", label: "Maid's Room", icon: "🧺", npc: "Maid Lala", scene: "scene-castle-maids-room", npcImage: npcImage("maid-lala"), hint: "Maid Lala keeps the linens clean and tidy." },
-    { id: "royalCloakRoom", area: "castle", node: "royalCloakRoom", label: "Royal Cloak Room", icon: "🧥", npc: "Cloak Keeper", scene: "scene-castle-royal-cloak-room", npcImage: npcImage("royal-cloak-keeper"), shopCategories: ["outerwear", "hats"], defaultCategory: "outerwear", hint: "The Royal Cloak Room sells outerwear and hats for castle rewards." },
-    { id: "castleSeamstress", area: "castle", node: "castleSeamstress", label: "Castle Seamstress", icon: "👚", npc: "Seamstress Bea", scene: "scene-castle-seamstress", npcImage: npcImage("castle-seamstress"), shopCategories: ["tops", "bottoms"], defaultCategory: "tops", hint: "The Castle Seamstress sells tops and bottoms only." },
+    { id: "castleSeamstress", area: "castle", node: "castleSeamstress", label: "Castle Seamstress", icon: "👚", npc: "Seamstress Bea", scene: "scene-castle-seamstress", npcImage: npcImage("castle-seamstress"), shopCategories: ["tops", "bottoms", "outerwear", "hats"], defaultCategory: "tops", hint: "The Castle Seamstress now sews the whole castle wardrobe — tops, bottoms, cloaks and tiaras." },
     { id: "castleGate", area: "castle", node: "castleGate", label: "Castle Gate", icon: "🏰", npcClass: "npc-garden", npc: "Gate Guard", scene: "scene-castle-gate", kind: "gate", markerStyle: "portal", portalId: "castleGate", hint: "Go out to the kingdom world map." }
   ],
   defaultNode: "princessRoom",
@@ -151,13 +149,6 @@ const castleChatLessonBank = Object.freeze({
       { questionType: "sentence-choice", prompt: "This room looks nice today.", promptZh: "今天這個房間看起來很漂亮。", answer: "Yes, the room looks so nice!", choices: ["Yes, the room looks so nice!","Hmm, this room looks a bit dusty today."], choicesZh: ["對啊，房間看起來好漂亮！","嗯，這個房間今天看起來有點灰。"], reward: chatReward }
     ]
   },
-  royalCloakRoom: {
-    title: "Chat in the Royal Cloak Room",
-    questions: [
-      { questionType: "sentence-choice", prompt: "It is cold today, Princess.", promptZh: "公主，今天有點冷。", answer: "Yes, I love this warm cloak!", choices: ["Yes, I love this warm cloak!","Yes, I need a warmer cloak today."], choicesZh: ["對啊，我好喜歡這件暖披風！","對啊，我今天需要更暖的披風。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "This hat is for a long walk.", promptZh: "這頂帽子適合長路旅行。", answer: "Oh, thank you! I will try the hat.", choices: ["Oh, thank you! I will try the hat.","Thank you, but this hat is too small."], choicesZh: ["喔，謝謝！我來試試這頂帽子。","謝謝，可是這頂帽子太小了。"], reward: chatReward }
-    ]
-  },
   castleSeamstress: {
     title: "Chat with the Castle Seamstress",
     questions: [
@@ -178,8 +169,7 @@ export const castleSceneConfigs = mergeLessons(mergeLessons({
   castleKitchen: { ...castleSceneArt("castle-kitchen"), scene: "scene-castle-kitchen", npc: "Cook Panna", npcImage: npcImage("cook-panna"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Hello, Princess. The soup is warm.", travelLineZh: "你好，公主。湯是溫熱的。" },
   knightsRoom: { ...castleSceneArt("knights-room"), scene: "scene-castle-knights-room", npc: "Knight Theo", npcImage: npcImage("knight-theo"), npcNaturalHeightCm: 182, travelAction: "Visit", travelLine: "Hello, Princess. My shield is ready.", travelLineZh: "你好，公主。我的盾牌準備好了。" },
   maidsRoom: { ...castleSceneArt("maids-room"), scene: "scene-castle-maids-room", npc: "Maid Lala", npcImage: npcImage("maid-lala"), npcNaturalHeightCm: 158, travelAction: "Visit", travelLine: "Hello, Princess. The room is clean.", travelLineZh: "你好，公主。房間很乾淨。" },
-  royalCloakRoom: { ...castleShopArt("royal-cloak-room"), scene: "scene-castle-royal-cloak-room", npc: "Cloak Keeper", npcImage: npcImage("royal-cloak-keeper"), npcNaturalHeightCm: 170, travelAction: "Shop", travelLine: "Hello, Princess. My cloaks and hats are ready.", travelLineZh: "你好，公主。我的外套和帽子準備好了。", shopGreeting: "Try this warm cloak, Princess.", shopGreetingZh: "公主，試試這件暖和的披風吧。" },
-  castleSeamstress: { ...castleShopArt("castle-seamstress"), scene: "scene-castle-seamstress", npc: "Seamstress Bea", npcImage: npcImage("castle-seamstress"), npcNaturalHeightCm: 158, travelAction: "Shop", travelLine: "Good morning, Princess. Soft clothes are ready.", travelLineZh: "早安，公主。柔軟的衣服準備好了。", shopGreeting: "Pick a top or a skirt, Princess.", shopGreetingZh: "公主，選一件上衣或裙子吧。" },
+  castleSeamstress: { ...castleShopArt("castle-seamstress"), scene: "scene-castle-seamstress", npc: "Seamstress Bea", npcImage: npcImage("castle-seamstress"), npcNaturalHeightCm: 158, travelAction: "Shop", travelLine: "Good morning, Princess. The whole castle wardrobe is ready.", travelLineZh: "早安，公主。整套城堡服飾都準備好了。", shopGreeting: "Pick a top, skirt, cloak or tiara, Princess.", shopGreetingZh: "公主，選一件上衣、裙子、披風或頭飾吧。" },
   castleGate: { ...gardenArt, scene: "scene-castle-gate", npcClass: "npc-garden", npc: "Gate Guard", travelAction: "World Map", travelLine: "Princess, the gate is open. You can go to the world map.", travelLineZh: "公主，城門打開了。你可以前往世界地圖。" }
 }, castleLessonBank, { area: "castle", vocabProfile: castleVocabularyProfile.id }),
   castleChatLessonBank, { area: "castle", vocabProfile: castleVocabularyProfile.id }, "chatLesson");
