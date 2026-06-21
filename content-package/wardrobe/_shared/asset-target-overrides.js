@@ -8,4 +8,5 @@
 // 變形）係為舊裁切素材所校準、已不適用，故清空——所有 wardrobe 單品改以類別 safeBox 為預設投影框
 // （見 rules.js wardrobeLayerBoundsByType），由維護者依需要以 tuner 逐件重新校準後寫回本檔。
 export const assetTargetOverrides = Object.freeze({
+  "castle/hairstyle-twin-braid": { left: 158, top: 283, right: 353, bottom: 471 }
 });

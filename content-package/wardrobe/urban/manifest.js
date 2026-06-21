@@ -4,20 +4,10 @@ const { wearable } = createWardrobePackTools("urban");
 
 //#region Urban 衣物資源包（issue #210：一區一店一包）
 // 都會區單一服飾店 storeId="boutique"（Dress Boutique）之資源包，含多類別衣物：
-// 髮型／上衣／下身／洋裝／鞋／帽飾／配件（由原 hair-salon／tailor-studio／dress-boutique／
-// shoe-shop／accessory-atelier 五包合併，itemId 全數保留以相容既有存檔）。
+// 上衣／下身／洋裝／鞋／帽飾／配件（由原 tailor-studio／dress-boutique／
+// shoe-shop／accessory-atelier 合併，itemId 全數保留以相容既有存檔）。
+// 髮型（原 hair-salon）已於本次調整搬至 castle 包（storeId="castleSeamstress"）。
 export const urbanItems = [
-  // 髮型（原 urban-hair-salon）
-  wearable({ id: "twinBraidHair", storeId: "boutique", type: "hairstyle", name: "Twin-braid story hair", cost: 110, icon: "Hair", asset: "hairstyle-twin-braid" }),
-  wearable({ id: "blondeBobHair", storeId: "boutique", type: "hairstyle", name: "Blonde bob story hair", cost: 130, icon: "Hair", asset: "hairstyle-blonde-bob" }),
-  wearable({ id: "chestnutTwinBraidHair", storeId: "boutique", type: "hairstyle", name: "Chestnut twin-braid hair", cost: 150, icon: "Hair", asset: "hairstyle-twin-braid-chestnut" }),
-  wearable({ id: "roseTwinBraidHair", storeId: "boutique", type: "hairstyle", name: "Rose twin-braid hair", cost: 170, icon: "Hair", asset: "hairstyle-twin-braid-rose" }),
-  wearable({ id: "midnightTwinBraidHair", storeId: "boutique", type: "hairstyle", name: "Midnight twin-braid hair", cost: 190, icon: "Hair", asset: "hairstyle-twin-braid-midnight" }),
-  wearable({ id: "auburnTwinBraidHair", storeId: "boutique", type: "hairstyle", name: "Auburn twin-braid hair", cost: 210, icon: "Hair", asset: "hairstyle-twin-braid-auburn" }),
-  wearable({ id: "honeyBobHair", storeId: "boutique", type: "hairstyle", name: "Honey bob hair", cost: 150, icon: "Hair", asset: "hairstyle-blonde-bob-honey" }),
-  wearable({ id: "silverBobHair", storeId: "boutique", type: "hairstyle", name: "Silver bob hair", cost: 180, icon: "Hair", asset: "hairstyle-blonde-bob-silver" }),
-  wearable({ id: "lavenderBobHair", storeId: "boutique", type: "hairstyle", name: "Lavender bob hair", cost: 200, icon: "Hair", asset: "hairstyle-blonde-bob-lavender" }),
-  wearable({ id: "cocoaBobHair", storeId: "boutique", type: "hairstyle", name: "Cocoa bob hair", cost: 220, icon: "Hair", asset: "hairstyle-blonde-bob-cocoa" }),
   // 上衣／下身（原 urban-tailor-studio）
   wearable({ id: "skyBlouse", storeId: "boutique", type: "top", name: "Sky blue puff blouse", cost: 100, icon: "Top", asset: "top-sky-blouse" }),
   wearable({ id: "peachSailorTop", storeId: "boutique", type: "top", name: "Peach sailor top", cost: 120, icon: "Top", asset: "top-peach-sailor" }),

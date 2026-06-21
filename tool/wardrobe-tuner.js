@@ -22,6 +22,8 @@ let selectedPacks = new Set(allPacks);
 // 類型（UI category）多選篩選集（預設全選）。
 const allCats = categories.map((c) => c.id);
 let selectedCats = new Set(allCats);
+// 左欄單品搜尋字串（依名稱／id 即時過濾，與素材包＋類型多選篩選疊加）。
+let searchText = "";
 // 第一層：類別投影框（= 該類 safeBox）。第二層：各單品 targetBox（覆寫→裁切原始框→safeBox）。
 const workingSafeBox = Object.fromEntries(
   Object.entries(wardrobeLayerBoundsByType).map(([type, b]) => [type, b.safeBox ? { ...b.safeBox } : fullCanvas()])
@@ -49,7 +51,8 @@ const dom = {
   addItemToggle: q("#addItemToggle"), addItemForm: q("#addItemForm"),
   addPack: q("#addPack"), addType: q("#addType"), addId: q("#addId"),
   addName: q("#addName"), addAsset: q("#addAsset"), addCost: q("#addCost"),
-  addFile: q("#addFile"), addOverwrite: q("#addOverwrite"), addStatus: q("#addStatus")
+  addFile: q("#addFile"), addOverwrite: q("#addOverwrite"), addStatus: q("#addStatus"),
+  itemSearch: q("#itemSearch")
 };
 
 const paperDollRenderer = createPaperDollRenderer({
@@ -93,6 +96,11 @@ function bindEvents() {
   dom.modeTabs.addEventListener("click", (e) => {
     const mode = e.target.closest("button")?.dataset.mode;
     if (mode) { state.editMode = mode; renderAll(); }
+  });
+  dom.itemSearch?.addEventListener("input", () => {
+    searchText = dom.itemSearch.value.trim().toLowerCase();
+    ensureValidSelection();
+    renderAll();
   });
   dom.addItemToggle.addEventListener("click", () => { dom.addItemForm.hidden = !dom.addItemForm.hidden; });
   dom.addItemForm.addEventListener("submit", submitAddItem);
@@ -591,7 +599,13 @@ function hasRenderOffset(b) { return (b.left || 0) !== 0 || (b.top || 0) !== 0 |
 function r3(v) { return Math.round(v * 1000) / 1000; }
 function packOfItem(item) { const m = /wardrobe\/([^/]+)\/assets\//.exec(item?.image || ""); return m ? m[1] : ""; }
 function catOfItem(item) { const c = categories.find((cat) => cat.types.includes(item.type)); return c ? c.id : ""; }
-function itemsShown() { return shopItems.filter((item) => selectedCats.has(catOfItem(item)) && selectedPacks.has(packOfItem(item))); }
+function itemsShown() {
+  return shopItems.filter((item) => selectedCats.has(catOfItem(item)) && selectedPacks.has(packOfItem(item)) && matchesSearch(item));
+}
+function matchesSearch(item) {
+  if (!searchText) return true;
+  return `${item.name} ${item.id}`.toLowerCase().includes(searchText);
+}
 function firstShownItem() { const items = itemsShown(); return items.find((item) => item.storeId !== "starter") || items[0]; }
 function assetUrl(src) { if (!src) return ""; return src.startsWith("content-package/") || src.startsWith("content-base/") ? `../${src}` : src; }
 function priceText(item) { return Number.isFinite(item.cost) && item.cost > 0 ? `${item.cost} coins` : "Free"; }

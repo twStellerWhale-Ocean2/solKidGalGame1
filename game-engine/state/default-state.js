@@ -27,11 +27,11 @@ export const defaultState = {
     sessionMaxEndsAt: 0,
     cycle: { coinsAtStart: 0, answered: 0, correct: 0 }
   },
-  owned: ["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair", "starterPajama"],
+  owned: ["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair", "starterPajama", "coralBlouse", "skyShorts"],
   outfit: {
     hairstyle: "none",
-    top: "none",
-    bottom: "none",
+    top: "coralBlouse",
+    bottom: "skyShorts",
     dress: "none",
     outer: "none",
     shoes: "none",
