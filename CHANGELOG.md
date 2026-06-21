@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.52.3 — 2026-06-21
+- fix (#207): 移除 ADV 公主立繪腳底的橢圓接地圓盤（.avatar-shadow）：該扁橢圓既被讀為「腳步圓盤」、又在施了深灰投影的合成 stage 內被再模糊成糊化光暈；接地改全由簡潔深灰立體投影承擔，徹底落地 #207 去圓盤去光暈意圖
+
 ## 0.52.2 — 2026-06-21
 - refactor (#214): 公主底圖拆為共用 body（含永久肌膚安全底著）＋ per-character head（含預設髮、髮色識別）分層立繪：衣物疊於底著之上、髮型須完全覆蓋 head 預設髮，更換衣物或髮型時舊的不殘留（消除昔日 baked-in 底圖不可移除之雙重疊圖）
 

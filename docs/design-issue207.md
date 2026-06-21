@@ -38,3 +38,9 @@
 * **不外溢其他 surface**：限定調 `.adv-doll`（ADV 立繪 surface tier），不動共用預設與地圖 token／頭胸照分級，避免一次調校牽動全站角色投影。
 * **不積技術債**：就既有 surface 級 token（`--character-silhouette-filter`）收斂，不以一次性 inline filter／外掛陰影 div 硬補；若改採陰影底圖則納入 spec#7 資產標準。
 * **安全可回歸**：以 intTest#48（含試穿狀態對照）固化「常態簡潔深灰立體投影 ↔ 試穿互動光暈分離」不變式，杜絕日後 surface 投影調整再度誤洩光暈或糊化腳底陰影。
+
+## 6. 收尾補述（first-pass 後回報「仍有腳步圓盤與光暈」之根因與處置）
+
+* **遺漏的肇因主體＝`.avatar-shadow` 橢圓接地盤**：first-pass 僅收斂 `.adv-doll` 之 `--character-silhouette-filter`（drop-shadow 分級），但每個合成 doll 的 `.paper-doll-stage` 內另由 [game-engine/render/paper-doll.js] 固定鋪一個 `<div class="avatar-shadow">`（[styles/paper-doll.css] 半透明深紫扁橢圓 `rgba(80,56,70,.2)`、`border-radius:50%`、`bottom:0`）。此扁橢圓本身即被使用者讀為「腳步圓盤」；又因它位於施了深灰投影的 `.paper-doll-stage` **之內**，被那三層 drop-shadow 再各複製一份位移模糊版——即被讀為腳底「糊化光暈」。故 first-pass 之 drop-shadow 收斂無法消除此兩現象（觀感上「效果沒出來」）。
+* **處置（本案）**：對 `.adv-doll` 隱藏該橢圓（`.adv-doll .avatar-shadow { display:none }`），與 `.bust-doll` 既有處置一致；ADV 立繪接地全交由上方簡潔深灰立體投影承擔，圓盤與其糊化光暈一併消失。
+* **不變式維持**：① 僅限 `.adv-doll` surface，不動 `.map-doll`（地圖 token 仍保留其接地盤＋白描邊分級）與 `.bust-doll`；② `--character-silhouette-filter` 三層深灰投影與 selftest（`.adv-doll .paper-doll-stage` drop-shadow ≥3）不變；③ `.try-on-active` 暖黃試穿光暈語意分離不受影響。

@@ -41,6 +41,13 @@
     drop-shadow(4px 9px 6px rgba(45, 45, 52, 0.4));
 }
 
+/* issue #207 收尾：ADV 公主立繪不再額外鋪 .avatar-shadow 橢圓接地盤——
+   該半透明深紫扁橢圓本身即被讀為「腳步圓盤」，且位於施了深灰投影的 .paper-doll-stage 內、
+   被三層 drop-shadow 再模糊複製成糊化光暈。接地改全由上方簡潔深灰立體投影承擔（同 .bust-doll 之既有處置）。 */
+.adv-doll .avatar-shadow {
+  display: none;
+}
+
 .avatar-shadow,
 .paper-doll-layer {
   position: absolute;
