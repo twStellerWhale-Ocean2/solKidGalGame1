@@ -35,13 +35,13 @@ export const urbanArea = Object.freeze({
   vocabularyProfile: urbanVocabularyProfile,
   // nodes 控制地圖上的路網與圖示座標；x / y 是相對地圖寬高的百分比。
   nodes: {
-    castleRoom: { id: "castleRoom", label: "Castle Stairway", x: 50.2, y: 13.7, links: ["garden", "schoolClassroom", "library", "temple", "administration", "market"] },
+    castleRoom: { id: "castleRoom", label: "Castle Stairway", x: 50, y: 16.5, links: ["garden", "schoolClassroom", "library", "temple", "administration", "market"] },
     garden: { id: "garden", label: "Castle Garden", x: 49.5, y: 30.6, links: ["castleRoom", "market", "library", "temple"] },
-    schoolClassroom: { id: "schoolClassroom", label: "School Classroom", x: 35.7, y: 15.5, links: ["castleRoom", "library", "market"] },
-    library: { id: "library", label: "Library", x: 25.1, y: 24.2, links: ["schoolClassroom", "castleRoom", "garden"] },
-    temple: { id: "temple", label: "Temple", x: 64.4, y: 15.2, links: ["castleRoom", "garden", "administration", "boutique"] },
-    administration: { id: "administration", label: "Administration Building", x: 76, y: 22.2, links: ["castleRoom", "temple", "boutique"] },
-    market: { id: "market", label: "Market Square", x: 51.5, y: 46.7, links: ["garden", "schoolClassroom", "harbor", "port"] },
+    schoolClassroom: { id: "schoolClassroom", label: "School Classroom", x: 28.8, y: 19.9, links: ["castleRoom", "library", "market"] },
+    library: { id: "library", label: "Library", x: 18.7, y: 34.1, links: ["schoolClassroom", "castleRoom", "garden"] },
+    temple: { id: "temple", label: "Temple", x: 70.4, y: 24.3, links: ["castleRoom", "garden", "administration", "boutique"] },
+    administration: { id: "administration", label: "Administration Building", x: 85.3, y: 34.8, links: ["castleRoom", "temple", "boutique"] },
+    market: { id: "market", label: "Market Square", x: 45.5, y: 48.6, links: ["garden", "schoolClassroom", "harbor", "port"] },
     boutique: { id: "boutique", label: "Dress Boutique", x: 69.1, y: 46.3, links: ["administration", "temple"] },
     harbor: { id: "harbor", label: "Fish Shop", x: 30.1, y: 45.1, links: ["market", "port"] },
     port: { id: "port", label: "Harbor Port", x: 38.3, y: 74.4, links: ["market", "harbor", "lighthouse"] },
@@ -58,7 +58,7 @@ export const urbanArea = Object.freeze({
     { id: "market", area: "urban", node: "market", label: "Market Square", icon: "🥖", npc: "Auntie Pom", scene: "scene-market", npcImage: npcImage("auntie-pom-market"), hint: "The market has warm bread, fruit, and kind food words." },
     { id: "harbor", area: "urban", node: "harbor", label: "Fish Shop", icon: "🐟", npc: "Nami", scene: "scene-harbor", npcImage: npcImage("nami"), hint: "The fish shop has fresh fish for dinner." },
     { id: "port", area: "urban", node: "port", label: "Harbor Port", icon: "⚓", npc: "Dock Guide", scene: "scene-port", npcImage: npcImage("dock-guide"), hint: "The docks are ready for boats and sea trips." },
-    { id: "boutique", area: "urban", node: "boutique", label: "Dress Boutique", icon: "👗", npc: "Rena", scene: "scene-urban-dress-boutique", npcImage: npcImage("rena"), shopCategories: ["dresses", "tops", "bottoms", "hair", "shoes", "hats", "accessories"], defaultCategory: "dresses", hint: "Rena's boutique now carries every urban outfit — dresses, tops, bottoms, hairstyles, shoes, hats and accessories." },
+    { id: "boutique", area: "urban", node: "boutique", label: "Dress Boutique", icon: "👗", npc: "Rena", scene: "scene-urban-dress-boutique", npcImage: npcImage("rena"), shopCategories: ["hats", "tops", "bottoms", "dresses", "shoes", "accessories"], defaultCategory: "dresses", hint: "Rena's boutique now carries every urban outfit — hats, tops, bottoms, dresses, shoes and accessories." },
     { id: "lighthouse", area: "urban", node: "lighthouse", label: "Lighthouse", icon: "🗼", npc: "Captain Sol", scene: "scene-lighthouse", npcImage: npcImage("captain-sol"), hint: "The lighthouse watches the sea before ships sail." }
   ],
   // actors 是地圖上的動態環境效果，不是可點擊地點。
@@ -246,7 +246,7 @@ export const urbanSceneConfigs = mergeLessons(mergeLessons({
   market: { ...singleSceneArt("market"), scene: "scene-market", npc: "Auntie Pom", npcImage: npcImage("auntie-pom-market"), npcNaturalHeightCm: 155, travelAction: "Visit", travelLine: "Hello, Princess. Warm bread is ready.", travelLineZh: "你好，公主。溫熱的麵包準備好了。" },
   harbor: { ...singleSceneArt("harbor"), scene: "scene-harbor", npc: "Nami", npcImage: npcImage("nami"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Hi, Princess. The fresh fish are ready today.", travelLineZh: "嗨，公主。今天的新鮮魚準備好了。" },
   port: { ...singleSceneArt("harbor"), scene: "scene-port", npc: "Dock Guide", npcImage: npcImage("dock-guide"), npcNaturalHeightCm: 175, travelAction: "Visit", travelLine: "Hello, Princess. Welcome to the harbor.", travelLineZh: "你好，公主。歡迎來到港口。" },
-  boutique: { ...urbanShopArt("dress-boutique"), scene: "scene-urban-dress-boutique", npc: "Rena", npcImage: npcImage("rena"), npcNaturalHeightCm: 165, travelAction: "Shop", travelLine: "Hello, Princess. Every outfit is ready today.", travelLineZh: "你好，公主。今天每一件服飾都準備好了。", shopGreeting: "Pick anything you like, Princess — dresses, tops, hair and more.", shopGreetingZh: "公主，喜歡什麼都可以挑——洋裝、上衣、髮型通通有。" },
+  boutique: { ...urbanShopArt("dress-boutique"), scene: "scene-urban-dress-boutique", npc: "Rena", npcImage: npcImage("rena"), npcNaturalHeightCm: 165, travelAction: "Shop", travelLine: "Hello, Princess. Every outfit is ready today.", travelLineZh: "你好，公主。今天每一件服飾都準備好了。", shopGreeting: "Pick anything you like, Princess — dresses, tops, hats and more.", shopGreetingZh: "公主，喜歡什麼都可以挑——洋裝、上衣、帽飾通通有。" },
   lighthouse: { ...singleSceneArt("lighthouse"), scene: "scene-lighthouse", npc: "Captain Sol", npcImage: npcImage("captain-sol"), npcNaturalHeightCm: 178, travelAction: "Visit", travelLine: "Hello, Princess. Welcome to the lighthouse.", travelLineZh: "你好，公主。歡迎來到燈塔。" }
 }, urbanLessonBank, { area: "urban", vocabProfile: urbanVocabularyProfile.id }),
   urbanChatLessonBank, { area: "urban", vocabProfile: urbanVocabularyProfile.id }, "chatLesson");

@@ -11,6 +11,7 @@
   <!-- 上方功能頁籤（professional editor 慣例：上＝功能頁籤）。 -->
   <nav class="app-tabs" aria-label="編輯器功能">
     <button type="button" class="app-tab active" data-tab="wardrobe">👗 衣物設定</button>
+    <button type="button" class="app-tab" data-tab="defaults">👑 公主預設</button>
     <button type="button" class="app-tab" data-tab="map">🗺 地圖設定</button>
   </nav>
 
@@ -43,6 +44,10 @@
           </div>
           <div id="catCheckboxes" class="pack-checkboxes"></div>
         </div>
+      </div>
+
+      <div class="item-search">
+        <input id="itemSearch" type="search" placeholder="🔍 搜尋單品（名稱／id）" autocomplete="off" aria-label="搜尋單品">
       </div>
 
       <div class="add-item">
@@ -115,6 +120,61 @@
   </main>
   </section>
 
+  <!-- ===== 公主預設 ===== -->
+  <section id="panel-defaults" class="editor-panel" data-panel="defaults" hidden>
+  <main class="tool-shell">
+    <aside class="catalog-pane">
+      <header class="tool-header">
+        <h1>公主預設</h1>
+        <div id="defaultsSummary" class="summary-line">設定新遊戲公主的起始外觀、金錢與擁有清單。</div>
+      </header>
+
+      <section class="control-section">
+        <h2>金錢</h2>
+        <label class="defaults-coins">起始金幣 (coins)<input id="defaultsCoins" type="number" min="0" step="10"></label>
+      </section>
+
+      <section class="control-section">
+        <h2>預設穿著 (outfit)</h2>
+        <div id="defaultsOutfit" class="defaults-outfit"></div>
+        <p class="control-help">選洋裝會自動清空上衣／下身（與遊戲規則一致）。所選單品會自動加入下方「擁有清單」。</p>
+      </section>
+
+      <section class="control-section">
+        <h2>擁有清單 (owned)</h2>
+        <div class="defaults-owned-actions">
+          <button id="defaultsOwnAll" type="button">全選</button>
+          <button id="defaultsOwnNone" type="button">全不選</button>
+        </div>
+        <div id="defaultsOwned" class="defaults-owned"></div>
+      </section>
+    </aside>
+
+    <div class="col-resizer" aria-hidden="true" title="拖曳調整欄寬"></div>
+
+    <section class="preview-pane">
+      <div class="preview-stage">
+        <div class="figure-frame" aria-hidden="true"></div>
+        <div id="defaultsPreviewLabel" class="preview-label"></div>
+        <span id="defaultsDoll" class="paper-doll adv-doll tuner-doll" data-doll="defaults"></span>
+      </div>
+      <p class="stage-hint">即時預覽新遊戲公主的預設外觀（以 Lumi 的 base 為例）。</p>
+    </section>
+
+    <div class="col-resizer col-resizer-right" aria-hidden="true" title="拖曳調整欄寬"></div>
+
+    <aside class="control-pane">
+      <div id="defaultsInfo" class="selected-info"></div>
+
+      <section class="control-section apply-section">
+        <button id="defaultsApply" type="button" class="apply-button">✓ 套用到檔案 (Apply)</button>
+        <div id="defaultsStatus" class="apply-status"></div>
+        <p class="control-help">寫回 <code>game-engine/state/default-state.js</code> 的 <code>coins</code>／<code>owned</code>／<code>outfit</code>；需 dev server（<code>node server.mjs</code>）。僅影響<strong>新帳號</strong>的起始值。</p>
+      </section>
+    </aside>
+  </main>
+  </section>
+
   <!-- ===== 地圖設定 ===== -->
   <section id="panel-map" class="editor-panel" data-panel="map" hidden>
     <div class="map-subtabs" id="mapSubtabs" aria-label="選擇地圖"></div>
@@ -164,6 +224,7 @@
   </section>
 
   <script type="module" src="./wardrobe-tuner.js"></script>
+  <script type="module" src="./defaults-tuner.js"></script>
   <script type="module" src="./map-tuner.js"></script>
   <script type="module" src="./editor-tabs.js"></script>
 </body>
