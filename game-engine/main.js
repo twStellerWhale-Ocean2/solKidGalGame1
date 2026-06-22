@@ -1079,7 +1079,6 @@ function renderAdvDoll(outfitState, isTryOn = false) {
   doll.dataset.top = outfitState.top || "none";
   doll.dataset.bottom = outfitState.bottom || "none";
   doll.dataset.dress = outfitState.dress || "none";
-  doll.dataset.outer = outfitState.outer || "none";
   doll.dataset.shoes = outfitState.shoes || "none";
   doll.dataset.headTop = outfitState.headTop || "none";
   doll.dataset.headSide = outfitState.headSide || "none";
@@ -2376,49 +2375,15 @@ function renderWardrobeDetail(preserveFocus = false) {
   renderAdvShop(preserveFocus, { closet: true });
 }
 
-function previewWardrobeItem(item) {
-  if (!item) return;
-  shopPreviewItemId = item.id;
-  elements.advFeedback.textContent = tryOnFeedbackText(item, "wardrobe");
-  renderWardrobeDetail(true);
-}
-
-// issue #244：公主房衣櫃為 wear-only 穿脫切換——已穿戴顯示「Take Off」可再脫下，未穿戴顯示「Wear」；
-// 房間擺設（type==="room"）維持單向放置（放置後鎖定）。
-function wardrobeActionLabel(item) {
-  if (!item) return "Pick a treasure";
-  if (item.type === "room") return state.outfit.room === item.id ? "Placed" : "Place";
-  return isItemEquipped(item) ? "Take Off" : "Wear";
-}
-
-function wardrobePanelAction(item) {
-  const equipped = isItemEquipped(item);
-  const label = wardrobeActionLabel(item);
-  const isRoom = item?.type === "room";
+// issue #244：衣櫃單品於方塊只顯示狀態（Owned／Wearing），右側不渲染 BUY 鈕（noButton）；
+// 穿上／脫下一律由左側那顆 try-on 鈕（shopTryOnState／toggleShopTryOn 單一來源）負責，與商店同一套。
+function closetItemStatus(item) {
   return {
-    label,
-    status: isRoom ? label : (equipped ? "Wearing" : "Owned"),
-    ariaLabel: `${label} ${item.name}`,
-    // 衣物可穿可脫，不再 disable；僅房間擺設放置後鎖定。
-    disabled: isRoom && equipped
+    label: "",
+    status: isItemEquipped(item) ? "Wearing" : "Owned",
+    ariaLabel: "",
+    noButton: true
   };
-}
-
-function toggleWardrobeEquip(item) {
-  if (!item) return;
-  if (item.type === "room") {
-    state.outfit.room = item.id;
-    elements.advFeedback.textContent = `${item.name} is placed in ${princessName()}'s room.`;
-  } else if (isItemEquipped(item)) {
-    unequipOutfitItem(item);
-    elements.advFeedback.textContent = `${item.name} taken off.`;
-  } else {
-    equipOutfitItem(item);
-    elements.advFeedback.textContent = `${item.name} equipped.`;
-  }
-  persist();
-  render();
-  renderWardrobeDetail(true);
 }
 
 function allowedShopCategories(hotspot = activeShopHotspot) {
@@ -2486,20 +2451,23 @@ function renderAdvShop(preserveFocus = false, { closet = false } = {}) {
     shopCategory = stockedCategories[0] || allowedShopCategories()[0] || "dresses";
   }
   elements.advShopTabs.innerHTML = ""; // 多欄貨架已含類別標題，不再需要上方類別分頁。
+  // issue #244：商店與衣櫃為單一機制——穿脫互動一律走同一來源 shopTryOnState／toggleShopTryOn／updateShopTileStates
+  // （內部依 advMode 區分：衣櫃持久穿戴、商店暫時試穿）。穿脫鈕＝同一顆左側 try-on 鈕。差異僅：衣櫃不渲染右側 BUY
+  // 鈕（actionForItem 回 noButton 之狀態）、不需 onAction、Back 回房間。mode 一律 "shop" 使元件類別與版面完全一致。
   const panel = {
-    actionForItem: closet ? wardrobePanelAction : shopPanelAction,
+    actionForItem: closet ? closetItemStatus : shopPanelAction,
     categoryLabel,
     emptyText: closet ? "Buy treasures in town first, then dress up here." : `You found all ${activeShopHotspot?.label || "shop"} treasures!`,
-    isSelected: closet ? isItemEquipped : shopItemTriedOn,
+    isSelected: shopItemTriedOn,
     items: [],
     listElement: elements.advShopGrid,
-    mode: closet ? "wardrobe" : "shop",
-    onAction: closet ? toggleWardrobeEquip : buyItemInAdv,
+    mode: "shop",
+    onAction: closet ? undefined : buyItemInAdv,
     onBack: closet ? backToRoomScene : backToStoreScene,
-    onPreview: closet ? previewWardrobeItem : toggleShopTryOn,
-    onTryOn: closet ? undefined : toggleShopTryOn, // 衣櫃無試穿鈕（wear-only）
+    onPreview: toggleShopTryOn,
+    onTryOn: toggleShopTryOn,
     previewStyleForItem: itemPreviewStyle,
-    tryOnForItem: closet ? undefined : shopTryOnState
+    tryOnForItem: shopTryOnState
   };
   if (!stockedCategories.length) {
     clearTryOnPreview({ renderDoll: false });
@@ -2521,11 +2489,21 @@ function renderAdvShop(preserveFocus = false, { closet = false } = {}) {
 }
 
 function shopItemTriedOn(item) {
-  return shopTryOnIds.includes(item.id);
+  // issue #244：衣櫃以「是否穿戴」為選取態，商店以「是否試穿中」；共用此單一判定。
+  return advMode === "wardrobe" ? isItemEquipped(item) : shopTryOnIds.includes(item.id);
 }
 
 function shopTryOnState(item) {
-  if (!isWearableItem(item)) return null; // 房間擺設不能穿在身上，不給試穿鈕。
+  if (!isWearableItem(item)) return null; // 房間擺設不能穿在身上，不給穿脫鈕。
+  // issue #244：衣櫃＝持久穿脫（Wear／Take Off，依 isItemEquipped）；商店＝暫時試穿（Try on／✓ On）。同一顆左側鈕、同一來源。
+  if (advMode === "wardrobe") {
+    const equipped = isItemEquipped(item);
+    return {
+      active: equipped,
+      label: equipped ? "Take Off" : "Wear",
+      ariaLabel: equipped ? `Take off ${item.name}` : `Wear ${item.name}`
+    };
+  }
   const active = shopTryOnIds.includes(item.id);
   return {
     active,
@@ -2536,6 +2514,17 @@ function shopTryOnState(item) {
 
 function toggleShopTryOn(item) {
   if (!item || !isWearableItem(item)) return;
+  // issue #244：公主房衣櫃（advMode==="wardrobe"）與商店逛店共用此單一穿脫來源。
+  // 衣櫃＝已擁有衣物之持久穿脫：直接 equip/unequip 至 state.outfit 並 persist，再以同一套就地更新
+  // （renderActiveTryOnDoll＋updateShopTileStates，不重建貨架）反映，故面板不跑、與商店行為一致。
+  if (advMode === "wardrobe") {
+    if (isItemEquipped(item)) unequipOutfitItem(item); else equipOutfitItem(item);
+    persist();
+    // 與商店 try-on 同一套就地更新：只更新 ADV 娃娃與各方塊狀態，不重建貨架（面板不跑）。
+    renderActiveTryOnDoll();
+    updateShopTileStates();
+    return;
+  }
   shopPreviewItemId = item.id; // 記住最後操作的單品，供鍵盤「b」購買。
   const idx = shopTryOnIds.indexOf(item.id);
   if (idx >= 0) {
@@ -2560,19 +2549,24 @@ function toggleShopTryOn(item) {
 
 function updateShopTileStates() {
   if (!elements.advShopGrid) return;
+  // issue #244：商店試穿與衣櫃穿脫共用此就地更新——衣櫃以 isItemEquipped 為態（並更新所有方塊以反映同槽互斥），
+  // 商店以 shopTryOnIds 為態；不重建貨架，故面板不跑。
+  const closet = advMode === "wardrobe";
   elements.advShopGrid.querySelectorAll(".item-panel-row").forEach((row) => {
     const card = row.querySelector(".item-panel-card");
     const id = card?.dataset.itemId;
     if (!id) return;
-    const active = shopTryOnIds.includes(id);
+    const item = itemById(id);
+    const active = closet ? Boolean(item && isItemEquipped(item)) : shopTryOnIds.includes(id);
     card.classList.toggle("selected", active);
     const button = row.querySelector(".item-panel-tryon");
     if (!button) return;
-    const item = itemById(id);
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", active ? "true" : "false");
-    button.textContent = active ? "✓ On" : "Try on";
-    if (item) button.setAttribute("aria-label", active ? `Stop trying on ${item.name}` : `Try on ${item.name}`);
+    button.textContent = closet ? (active ? "Take Off" : "Wear") : (active ? "✓ On" : "Try on");
+    if (item) button.setAttribute("aria-label", closet
+      ? (active ? `Take off ${item.name}` : `Wear ${item.name}`)
+      : (active ? `Stop trying on ${item.name}` : `Try on ${item.name}`));
   });
 }
 

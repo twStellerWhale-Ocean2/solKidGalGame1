@@ -16,10 +16,9 @@ export function createAdvControls({ elements, getFocusIndex, getMode, setFocusIn
   function focusableButtons() {
     if (!elements.advModal.classList.contains("show")) return [];
     const mode = getMode();
-    const selectors = mode === "shop"
+    // issue #244：衣櫃（wardrobe）穿脫＝商店左側同一顆 try-on 鈕（單一來源），故焦點順序與商店相同（試穿/穿脫鈕＋動作鈕）。
+    const selectors = (mode === "shop" || mode === "wardrobe")
       ? ["#advShopGrid .item-panel-tryon:not(:disabled), #advShopGrid .item-panel-action:not(:disabled)", "#advActionFooter .choice-button:not(:disabled)"]
-      : mode === "wardrobe"
-        ? ["#advShopGrid .item-card:not(:disabled), #advShopGrid .item-panel-action:not(:disabled)", "#advActionFooter .choice-button:not(:disabled)"]
       : mode === "refund"
         ? ["#advShopGrid .item-card:not(:disabled), #advShopGrid .item-panel-action:not(:disabled)", "#advActionFooter .choice-button:not(:disabled)"]
       : ["#choiceList .choice-button:not(:disabled)", "#advShopGrid .item-card:not(:disabled)", "#advActionFooter .choice-button:not(:disabled)"];

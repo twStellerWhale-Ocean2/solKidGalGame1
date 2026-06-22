@@ -3915,17 +3915,17 @@ body {
   border-color: var(--adv-dialog-accent-strong);
 }
 
-/* issue #244：公主房衣櫃（.adv-closet；與商店共用 data-mode="shop" 多欄貨架版面）之「穿上／脫下」動作鈕為深粉紅
-   實心填色，與商店購買鈕之暗色玻璃家族區辨；入口鈕（場景選單）不上色、沿用一般場景樣式。以 .adv-scene.adv-closet
-   較高 specificity 蓋過商店動作鈕通則。 */
-.adv-scene.adv-closet .item-panel-action {
+/* issue #244：公主房衣櫃（.adv-closet）之「穿上／脫下」鈕＝商店左側那顆 try-on 鈕（同一顆、同一來源），著深粉紅
+   實心填色：未穿戴（Wear）為基礎深粉紅、已穿戴（Take Off／.active）為較亮深粉紅以標示正穿著，蓋過商店試穿鈕之
+   cream 底與 active 綠。場景選單入口鈕不上色、沿用一般場景樣式。specificity 與商店試穿鈕通則同階、靠 source order 取勝。 */
+.adv-scene.adv-closet .item-panel-tryon {
   color: #fff;
   background: linear-gradient(180deg, #e85a98, #c81e63);
   border-color: #ad1457;
 }
 
-.adv-scene.adv-closet .item-panel-action:focus-visible,
-.adv-scene.adv-closet .item-panel-action.adv-focus {
+.adv-scene.adv-closet .item-panel-tryon.active {
+  color: #fff;
   background: linear-gradient(180deg, #ef6ea6, #d81b60);
   border-color: #ad1457;
 }

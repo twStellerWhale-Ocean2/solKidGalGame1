@@ -829,7 +829,7 @@ function runSceneNavSelfTest(api) {
     if (!changeOutfitBtn) errors.push("room first layer missing single 'Change Outfit' entry");
     if (changeOutfitBtn && deepPink.test(getComputedStyle(changeOutfitBtn).borderColor)) errors.push("Change Outfit entry must NOT be deep-pink (must match other scene buttons)");
     if (!footerBtn("Leave")) errors.push("room first layer missing Leave button");
-    ["Hair", "Tops", "Bottoms", "Dresses", "Outerwear", "Shoes", "Hats", "Accessories"].forEach((cat) => {
+    ["Hair", "Tops", "Bottoms", "Dresses", "Shoes", "Hats", "Accessories"].forEach((cat) => {
       if (choiceBtn(cat)) errors.push(`room first layer still shows legacy category button "${cat}" (ROOM_ACTIONS not consolidated)`);
     });
     click(changeOutfitBtn, "Change Outfit");
@@ -837,7 +837,10 @@ function runSceneNavSelfTest(api) {
     // 與商店同一多欄貨架機制：應渲染類別欄（.shop-shelf-col），非舊單類別分頁。
     if (!api.elements.advShopGrid.querySelector(".shop-shelf-col")) errors.push("wardrobe panel is not the shared multi-column shelf (.shop-shelf-col missing — old mechanism?)");
     if (api.elements.advShopTabs.querySelector("button")) errors.push("wardrobe panel still renders legacy category tabs (should use column headers)");
-    if (api.elements.advShopGrid.querySelector(".item-panel-tryon")) errors.push("wardrobe panel renders a try-on button (should be wear-only)");
+    // issue #244：衣櫃穿脫＝商店左側同一顆 try-on 鈕（單一來源 toggleShopTryOn），故衣櫃應有 .item-panel-tryon；
+    // 且不渲染右側 BUY（.item-panel-action）——衣櫃無購買。
+    if (!api.elements.advShopGrid.querySelector(".item-panel-tryon")) errors.push("closet missing wear toggle (.item-panel-tryon — should reuse shop's try-on button as single source)");
+    if (api.elements.advShopGrid.querySelector(".item-panel-action")) errors.push("closet renders a BUY action button (.item-panel-action — closet should have no buy button)");
     // issue #244：closet 須與商店共用同一版面情境（data-mode="shop" + .adv-closet），且貨架欄為水平並排（非舊單欄垂直堆疊）。
     if (api.elements.advScene.dataset.mode !== "shop") errors.push(`closet data-mode = ${api.elements.advScene.dataset.mode}, expected shop (shared shop shelf layout)`);
     if (!api.elements.advScene.classList.contains("adv-closet")) errors.push("closet missing .adv-closet marker class");
@@ -854,22 +857,23 @@ function runSceneNavSelfTest(api) {
       errors.push(`closet has <2 columns (${closetCols.length}); cannot confirm multi-column shelf (default account should own several categories)`);
     }
 
-    // wear-only 穿脫切換：預設帳號擁有但未穿戴之 pinkSlippers（鞋、無安全底著），closet 已含全類別欄。
+    // 穿脫切換（單一來源 toggleShopTryOn、就地更新不重建貨架）：以預設帳號擁有但未穿戴之 pinkSlippers 驗 Wear → Take Off。
     const toggleItem = api.itemById("pinkSlippers");
-    const actionFor = (id) => api.elements.advShopGrid
-      .querySelector(`.item-card[data-item-id="${id}"]`)?.closest(".item-panel-row")?.querySelector(".item-panel-action");
+    const wearBtnFor = (id) => api.elements.advShopGrid
+      .querySelector(`.item-card[data-item-id="${id}"]`)?.closest(".item-panel-row")?.querySelector(".item-panel-tryon");
     if (toggleItem && api.state.owned.includes(toggleItem.id) && api.state.outfit[toggleItem.type] !== toggleItem.id) {
-      let actionBtn = actionFor(toggleItem.id);
-      if (!actionBtn) {
-        errors.push("wardrobe action button not found for pinkSlippers (closet column missing?)");
+      const wearBtn = wearBtnFor(toggleItem.id);
+      if (!wearBtn) {
+        errors.push("closet wear toggle (.item-panel-tryon) not found for pinkSlippers");
       } else {
-        if (!deepPink.test(getComputedStyle(actionBtn).borderColor)) errors.push(`wardrobe wear button not deep-pink (border=${getComputedStyle(actionBtn).borderColor})`);
-        if (!/wear/i.test(actionBtn.textContent)) errors.push(`unequipped wardrobe label = "${actionBtn.textContent.trim()}", expected Wear`);
-        actionBtn.click(); // 穿上
+        if (!deepPink.test(getComputedStyle(wearBtn).borderColor)) errors.push(`closet wear toggle not deep-pink (border=${getComputedStyle(wearBtn).borderColor})`);
+        if (!/wear/i.test(wearBtn.textContent)) errors.push(`unequipped closet wear label = "${wearBtn.textContent.trim()}", expected Wear`);
+        wearBtn.click(); // 穿上
         if (api.state.outfit[toggleItem.type] !== toggleItem.id) errors.push("after Wear, pinkSlippers not equipped");
-        actionBtn = actionFor(toggleItem.id);
-        if (actionBtn && !/take off/i.test(actionBtn.textContent)) errors.push(`equipped wardrobe label = "${actionBtn?.textContent.trim()}", expected Take Off`);
-        actionBtn?.click(); // 脫下
+        // 就地更新驗證：同一個 DOM 鈕仍掛在文件上（未被重建貨架抽換）、文字就地改為 Take Off——與商店 try-on 同一套，面板不跑。
+        if (!wearBtn.isConnected) errors.push("closet wear toggle rebuilt the shelf (button detached) — must update in place like shop, not full re-render");
+        if (!/take off/i.test(wearBtn.textContent)) errors.push(`after Wear, in-place label = "${wearBtn.textContent.trim()}", expected Take Off`);
+        wearBtn.click(); // 脫下
         if (api.state.outfit[toggleItem.type] === toggleItem.id) errors.push("after Take Off, pinkSlippers still equipped (toggle failed)");
       }
     } else {
