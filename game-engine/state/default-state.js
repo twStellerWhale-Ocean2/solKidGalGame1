@@ -6,7 +6,7 @@ export const defaultState = {
   profileColor: defaultProfileColorFor("lumi"),
   // issue #131：背景花紋（spec#6），與識別色組成公主視覺主題；"none"=無花紋。
   backgroundPattern: "none",
-  coins: 100,
+  coins: 200,
   // energy 即「每次遊玩時間預算」的顯示值（0–100%，issue #6 / spec#9）；由 play-clock 依真實時間重算，
   // 不再由答題等 effects 變動。實際倒數時間以 playLimit.sessionEndsAt／restEndsAt 時戳為準。
   energy: 100,
@@ -27,7 +27,7 @@ export const defaultState = {
     sessionMaxEndsAt: 0,
     cycle: { coinsAtStart: 0, answered: 0, correct: 0 }
   },
-  owned: ["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair", "starterPajama", "twinBraidHair", "blueDress", "pinkSlippers", "blueBoots", "pearlTiara"],
+  owned: ["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair", "starterPajama", "twinBraidHair", "blueDress", "pinkSlippers", "blueBoots", "pearlTiara", "roundGlasses", "starMask"],
   outfit: {
     hairstyle: "twinBraidHair",
     outfit: "blueDress",
