@@ -32,6 +32,7 @@ export {
   DEFAULT_VOICE_PROFILE,
   npcVoiceByName,
   playableVoiceById,
+  usedVoiceBuckets,
   VOICE_DIMENSIONS,
   voiceCatalogVersion,
   voiceNameCandidatesByGender,

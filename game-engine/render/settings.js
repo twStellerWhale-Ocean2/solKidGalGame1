@@ -14,7 +14,7 @@ function voiceBucketLabel(bucket) {
   return `${gender} · ${personality}`;
 }
 
-export function renderVoiceSettings(elements, { buckets = [], voices = [], assignments = {}, onAssign } = {}) {
+export function renderVoiceSettings(elements, { buckets = [], voices = [], assignments = {}, onAssign, onPreview } = {}) {
   const list = elements.voiceAssignList;
   if (!list) return;
   list.textContent = "";
@@ -73,6 +73,15 @@ export function renderVoiceSettings(elements, { buckets = [], voices = [], assig
       if (typeof onAssign === "function") onAssign(bucket.gender, bucket.personality, select.value);
     });
     row.append(name, select);
+    // issue #246：管理工具聲音管理頁籤提供「試聽」鈕，以該桶當前解析之 voice 唸範例句，便於維護者比對挑選。
+    if (typeof onPreview === "function") {
+      const preview = document.createElement("button");
+      preview.type = "button";
+      preview.className = "voice-assign-preview";
+      preview.textContent = "▶ 試聽";
+      preview.addEventListener("click", () => onPreview(bucket, select.value));
+      row.append(preview);
+    }
     list.appendChild(row);
   }
 }

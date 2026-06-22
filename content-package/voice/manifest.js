@@ -151,6 +151,27 @@ export function voiceProfileForNpcName(name) {
 export function voiceProfileForCharacterId(characterId) {
   return resolveVoiceProfile(playableVoiceById[characterId]);
 }
+
+// issue #134：列出實際有角色採用之語音桶——每個性別先一列「性別預設桶」(personality 空)，其下接該性別實際
+// 出現過的 (gender×personality) 桶；供管理工具聲音管理頁籤逐桶指定平台 voice（issue #246 由設定移入管理工具）。
+export function usedVoiceBuckets() {
+  const declarations = [...Object.values(playableVoiceById), ...Object.values(npcVoiceByName)];
+  const genders = [];
+  const combos = new Map();
+  for (const decl of declarations) {
+    if (!decl || !decl.gender) continue;
+    if (!genders.includes(decl.gender)) genders.push(decl.gender);
+    if (decl.personality) combos.set(`${decl.gender}:${decl.personality}`, { gender: decl.gender, personality: decl.personality });
+  }
+  const buckets = [];
+  for (const gender of genders) {
+    buckets.push({ gender, personality: "", isGenderDefault: true });
+    for (const combo of combos.values()) {
+      if (combo.gender === gender) buckets.push({ gender: combo.gender, personality: combo.personality, isGenderDefault: false });
+    }
+  }
+  return buckets;
+}
 //#endregion 角色音色宣告
 
 //#region 性別預設語音候選清單（issue #209 / 內建預設值，使用者可於設定覆蓋）

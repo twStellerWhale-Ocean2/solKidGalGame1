@@ -40,7 +40,6 @@ import {
   wardrobeLayerBoundsByType,
   wardrobeLayerBoundsForType,
   playableVoiceById,
-  npcVoiceByName,
   profileColorPalette,
   questTemplates,
   sceneConfigs,
@@ -52,7 +51,8 @@ import {
   resolveVoiceProfile,
   DEFAULT_VOICE_PROFILE,
   pickVoiceByGender,
-  recommendedVoiceNamesForGender
+  recommendedVoiceNamesForGender,
+  usedVoiceBuckets
 } from "./data/game-data.js";
 import { createAdvControls } from "./flow/adv-controls.js";
 import { firstLayerActionsFor, sceneActionLabel, isShopHotspot } from "./flow/scene-actions.js";
@@ -66,6 +66,7 @@ import { createPaperDollRenderer } from "./render/paper-doll.js";
 import { renderBuildInfo, renderAbout, renderVoiceSettings } from "./render/settings.js";
 import { applyAdvSceneArt } from "./scene/scene-art.js";
 import { saveMarkerEnd, saveMarkerStart } from "./state/storage.js";
+import { VOICE_ASSIGNMENT_KEY, createVoiceAssignmentStore } from "./state/voice-assignments.js";
 import {
   addDiary as addStateDiary,
   addUnique as addStateUnique,
@@ -160,7 +161,7 @@ const SPEECH_RATE_SCALE = 0.9;          // issue #109 design paramSpeechRateScal
 const SPEECH_QUEUE_MODE = "replace-last";
 const SPEECH_DEBOUNCE_MS = 120;
 const SPEECH_LEADING_PAD = "　　　　　　　　"; // issue #134 design paramSpeechLeadingPad：送入 utterance 前於開頭加入前置留白，延後首字、改善開頭清楚度（8 個全形空白 U+3000）
-const VOICE_ASSIGNMENT_KEY = "luminara-princess-english-voice"; // issue #134 design paramVoiceAssignmentKey：使用者語音指定（gender×personality→voice name）之全機儲存鍵
+// issue #134/#246 design paramVoiceAssignmentKey：角色語音指定之全機（device-wide）儲存鍵與讀寫邏輯移入 state/voice-assignments.js（遊戲與管理工具共用單一來源）。
 const SPEECH_DIAGNOSTICS_MAX = 80;
 let shopCategory = "outfit";
 let activeShopHotspot = null;
@@ -2950,31 +2951,14 @@ function renderSettings() {
   if (elements.restMinutesInput) elements.restMinutesInput.value = String(state.playLimit.restMinutes);
   renderBuildInfo(elements, buildInfo);
   renderAbout(elements, { copyright, versionHistory });
-  renderVoiceSettingsPanel();
 }
 
-// issue #134：以目前 voice 清單與指定重渲染設定的角色語音區；亦註冊為 voiceschanged 後的重渲染 handler，
-// 解決 getVoices() 初次回空、稍後 voiceschanged 才載入時設定清單卡在空狀態的問題。
-function renderVoiceSettingsPanel() {
-  speechManager.init();
-  const voices = speechManager.listVoices();
-  // issue #209：每桶附上「裝置上實際存在」的同性別推薦語音清單，供設定 UI 置頂顯示（Auto 之外可改選）。
-  const buckets = usedVoiceBuckets().map((bucket) => ({
-    ...bucket,
-    recommended: recommendedVoiceNamesForGender(bucket.gender, voices)
-  }));
-  renderVoiceSettings(elements, {
-    buckets,
-    voices,
-    assignments: speechManager.getVoiceAssignments(),
-    onAssign: (gender, personality, voiceName) => speechManager.setVoiceAssignment(gender, personality, voiceName)
-  });
-}
+// issue #246：角色語音指定的設定 UI 已自玩家 Settings 移至管理設定工具的「聲音管理」頁籤（tool/voice-tuner.js），
+// 沿用 render/settings.js 的 renderVoiceSettings 與本檔 speechManager 同一套指定 store；遊戲端僅保留 Voice On/Off 開關，
+// 不再於 Settings 渲染角色語音清單（公開遊玩端未指定者一律自動依性別與語言選用）。
 
 const speechDiagnostics = [];
 const speechManager = createSpeechManager();
-// issue #134：voice 清單於 voiceschanged 載入後，若設定面板已開著，立即重渲染語音選擇器（不必重開或整頁 render）。
-speechManager.onVoicesChanged(renderVoiceSettingsPanel);
 
 // issue #109：全域朗讀語速倍率——所有發聲（角色配音／公主朗讀／中文協助）最終語速＝音色 rate × SPEECH_RATE_SCALE，
 // 於發聲端套用（不改 composeVoiceProfile 合成層，保留角色相對快慢；rate 缺漏時以基準 0.86 再縮放）。
@@ -3039,33 +3023,13 @@ function createSpeechManager() {
   let lastReplayKey = "";
   // issue #156：管理器自身追蹤之發聲狀態，供離場收束判斷（headless 測試 mock speak 時瀏覽器 speaking getter 不可靠）。
   let speaking = false;
-  // issue #134：使用者語音指定（覆蓋層）。鍵為 `${gender}:${personality}`，性別預設桶為 `${gender}:`；全機（非帳號）儲存。
-  let voiceAssignments = {};
+  // issue #134/#246：角色語音指定（覆蓋層）共用儲存。鍵為 `${gender}:${personality}`，性別預設桶為 `${gender}:`；
+  // 全機（非帳號）儲存，與管理工具聲音管理頁籤共用同一 store（state/voice-assignments.js）。
+  const voiceStore = createVoiceAssignmentStore();
   // issue #134：voice 清單（getVoices 初次常為空）於 voiceschanged 載入後，通知 UI 重渲染語音設定。
   const voicesChangedHandlers = [];
-  const assignmentBucketKey = (gender, personality) => `${gender || ""}:${personality || ""}`;
-  const loadVoiceAssignments = () => {
-    try {
-      const raw = typeof localStorage !== "undefined" ? localStorage.getItem(VOICE_ASSIGNMENT_KEY) : null;
-      const parsed = raw ? JSON.parse(raw) : null;
-      voiceAssignments = parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
-    } catch {
-      voiceAssignments = {};
-    }
-    return voiceAssignments;
-  };
-  const saveVoiceAssignments = () => {
-    try {
-      if (typeof localStorage !== "undefined") localStorage.setItem(VOICE_ASSIGNMENT_KEY, JSON.stringify(voiceAssignments));
-    } catch {}
-  };
   // 解析某 (gender×personality) 桶指定的 voice name：先取該桶，缺則繼承性別預設桶。
-  const assignedVoiceName = (gender, personality) => {
-    if (!gender) return "";
-    return voiceAssignments[assignmentBucketKey(gender, personality)]
-      || voiceAssignments[assignmentBucketKey(gender, "")]
-      || "";
-  };
+  const assignedVoiceName = (gender, personality) => voiceStore.resolve(gender, personality);
 
   const hasSynth = () => typeof window !== "undefined" && "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
 
@@ -3088,7 +3052,7 @@ function createSpeechManager() {
   const init = () => {
     if (initialized) return;
     initialized = true;
-    loadVoiceAssignments();
+    voiceStore.load();
     refreshVoices();
     try {
       window.speechSynthesis?.addEventListener?.("voiceschanged", () => {
@@ -3269,18 +3233,9 @@ function createSpeechManager() {
       lang: voice.lang || "",
       default: Boolean(voice.default)
     })),
-    getVoiceAssignments: () => ({ ...voiceAssignments }),
-    setVoiceAssignment: (gender, personality, voiceName) => {
-      if (!gender) return;
-      const key = assignmentBucketKey(gender, personality);
-      if (voiceName) voiceAssignments[key] = String(voiceName);
-      else delete voiceAssignments[key];
-      saveVoiceAssignments();
-    },
-    clearVoiceAssignments: () => {
-      voiceAssignments = {};
-      saveVoiceAssignments();
-    },
+    getVoiceAssignments: () => voiceStore.getAll(),
+    setVoiceAssignment: (gender, personality, voiceName) => voiceStore.set(gender, personality, voiceName),
+    clearVoiceAssignments: () => voiceStore.clear(),
     onVoicesChanged: (handler) => { if (typeof handler === "function") voicesChangedHandlers.push(handler); }
   };
 }
@@ -3297,27 +3252,6 @@ function npcVoiceFor(hotspot) {
 }
 function playerVoiceProfile() {
   return voiceProfileForCharacterId(state.activeCharacterId);
-}
-
-// issue #134：列出實際有角色採用之語音桶——每個性別先一列「性別預設桶」(personality 空)，
-// 其下接該性別實際出現過的 (gender×personality) 桶；供設定 UI 讓使用者逐桶指定平台 voice。
-function usedVoiceBuckets() {
-  const declarations = [...Object.values(playableVoiceById), ...Object.values(npcVoiceByName)];
-  const genders = [];
-  const combos = new Map();
-  for (const decl of declarations) {
-    if (!decl || !decl.gender) continue;
-    if (!genders.includes(decl.gender)) genders.push(decl.gender);
-    if (decl.personality) combos.set(`${decl.gender}:${decl.personality}`, { gender: decl.gender, personality: decl.personality });
-  }
-  const buckets = [];
-  for (const gender of genders) {
-    buckets.push({ gender, personality: "", isGenderDefault: true });
-    for (const combo of combos.values()) {
-      if (combo.gender === gender) buckets.push({ gender: combo.gender, personality: combo.personality, isGenderDefault: false });
-    }
-  }
-  return buckets;
 }
 
 // issue #73 中文協助：撥放題目／選項語音。按中文（zh-TW）即標記本題已用中文協助，影響獎勵階梯。
@@ -4036,6 +3970,8 @@ installTestingHooks({
   setVoiceAssignment: (gender, personality, voiceName) => speechManager.setVoiceAssignment(gender, personality, voiceName),
   clearVoiceAssignments: () => speechManager.clearVoiceAssignments(),
   usedVoiceBuckets,
+  recommendedVoiceNamesForGender,
+  renderVoiceSettings,
   npcVoiceFor,
   playerVoiceProfile,
   setMapViewport: (areaId, viewport = {}) => {

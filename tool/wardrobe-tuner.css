@@ -1318,3 +1318,53 @@ button.active {
 @media (max-width: 980px) {
   .scene-stage-pane { height: auto; }
 }
+
+/* issue #246：聲音管理頁籤——角色語音指定列（沿用 render/settings.js 的 .voice-assign-* 結構，於工具自帶樣式）。 */
+.voice-assign-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.voice-assign-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(91, 62, 100, 0.16);
+  background: #fff;
+}
+
+.voice-assign-default {
+  background: #f7dce9;
+  border-color: rgba(204, 76, 135, 0.32);
+}
+
+.voice-assign-name {
+  font-weight: 800;
+  color: #7b1f4d;
+}
+
+.voice-assign-select {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid rgba(91, 62, 100, 0.24);
+  border-radius: 6px;
+  background: #fff;
+  padding: 4px 8px;
+}
+
+.voice-assign-preview {
+  align-self: flex-start;
+  min-height: 30px;
+  padding: 2px 12px;
+  font-size: 0.86rem;
+}
+
+.voice-assign-empty {
+  color: #7a6b78;
+  font-weight: 700;
+}

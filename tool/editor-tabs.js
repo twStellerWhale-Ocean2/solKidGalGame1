@@ -10,3 +10,7 @@ function activate(tab) {
 }
 
 tabs.forEach((b) => b.addEventListener("click", () => activate(b.dataset.tab)));
+
+// 支援以網址 hash 深連結開啟特定頁籤（如 wardrobe-tuner.html#voice），便於文件、分享與截圖。
+const initialTab = location.hash.slice(1);
+if (initialTab && panels.has(initialTab)) activate(initialTab);
