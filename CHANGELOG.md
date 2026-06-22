@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.54.6 — 2026-06-22
+- fix (#251): 修正換裝圖層順序：上一版改名 outfit 時漏改 CSS z-index，導致公主身體蓋住衣服；改回衣服正確疊在身體之上，並加上回歸自我測試
+
 ## 0.54.5 — 2026-06-22
 - refactor (#251): 簡化服裝類型：移除分開的上衣／下身（top／bottom），整件衣服統一為 outfit（原 dress 改名），帽子併入配件分類；衣櫃服裝分類精簡為髮型／整件 outfit／鞋／配件四類，既有存檔自動相容（移除已不存在的上衣下身、舊洋裝轉為整件）
 
