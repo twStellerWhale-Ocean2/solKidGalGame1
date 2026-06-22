@@ -1,4 +1,5 @@
 import { createKeyboardWalkController, directionForKey } from "../map/keyboard-walk.js";
+import { updateMarkerEdgeVisibility } from "../map/marker-visibility.js";
 import { assetStandards, assetSizeExemptions, classifyAssetPath } from "../../content-package/_shared/asset-standards.js";
 
 export function installTestingHooks(api) {
@@ -61,6 +62,7 @@ export function installTestingHooks(api) {
   runChineseRewardSelfTest(api);
   runCharacterVoiceSelfTest(api);
   runMapAvatarSelfTest(api);
+  runMarkerVisibilitySelfTest(api);
   runCharacterSilhouetteSelfTest(api);
   runMapWalkSelfTest(api);
   runAboutSelfTest(api);
@@ -298,6 +300,45 @@ function runMapAvatarSelfTest(api) {
   const result = document.createElement("pre");
   result.id = "mapAvatarResult";
   result.textContent = JSON.stringify({ test: "map-avatar", passed, errors });
+  document.body.prepend(result);
+}
+
+// issue #252：地圖標記邊界裁切以「marker 中心錨點是否在可視範圍內」判定，貼邊節點（如城堡入口
+// castleGate y≈95.3）在 .nearby 放大後外框戳出 stage 邊界數 px 不得被整顆裁掉而消失；同時真正
+// 移出視口（中心在界外）之 marker 仍須隱藏。以合成固定 stage 與探針 marker 機判 updateMarkerEdgeVisibility。
+function runMarkerVisibilitySelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "marker-visibility") return;
+  const errors = [];
+  const stage = document.createElement("div");
+  stage.style.cssText = "position:fixed;left:0;top:0;width:400px;height:400px;overflow:hidden;z-index:-1;";
+  document.body.appendChild(stage);
+  const makeMarker = (left, top) => {
+    const marker = document.createElement("button");
+    marker.className = "map-marker";
+    marker.style.cssText = `position:absolute;width:60px;height:60px;transform:translate(-50%,-50%);left:${left};top:${top};`;
+    stage.appendChild(marker);
+    return marker;
+  };
+  // (A) 貼邊 marker：中心在界內（top 98%＝392px），外框下緣戳出 stage 底緣（392+30=422 > 400）。
+  //     舊「整個外框」判據會誤裁；中心錨點判據（#252）須維持顯示。
+  const edge = makeMarker("50%", "98%");
+  updateMarkerEdgeVisibility(edge, stage);
+  if (edge.classList.contains("map-marker-offscreen")) errors.push("#252 貼邊 marker（中心在界內、外框戳出底緣）被誤判 offscreen");
+  // (B) 中心移出視口之 marker（top 130%＝520px > 400）：須仍被隱藏（不退化 panned-away 裁切）。
+  const off = makeMarker("50%", "130%");
+  updateMarkerEdgeVisibility(off, stage);
+  if (!off.classList.contains("map-marker-offscreen")) errors.push("中心移出視口之 marker 未被隱藏（裁切失效，panned-away 退化）");
+  if (off.getAttribute("aria-hidden") !== "true") errors.push("隱藏 marker 未設 aria-hidden（可達性處理退化）");
+  // (C) 置中 marker：顯示。
+  const center = makeMarker("50%", "50%");
+  updateMarkerEdgeVisibility(center, stage);
+  if (center.classList.contains("map-marker-offscreen")) errors.push("置中 marker 被誤判 offscreen");
+  stage.remove();
+  const passed = errors.length === 0;
+  const result = document.createElement("pre");
+  result.id = "markerVisibilityResult";
+  result.textContent = JSON.stringify({ test: "marker-visibility", passed, errors });
   document.body.prepend(result);
 }
 
