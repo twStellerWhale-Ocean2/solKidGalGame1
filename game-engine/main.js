@@ -2359,7 +2359,11 @@ function openWardrobeDetail(category = "dresses") {
   advMode = "wardrobe";
   shopCategory = category;
   clearTryOnPreview({ renderDoll: false });
-  elements.advScene.dataset.mode = "wardrobe";
+  // issue #244：公主房衣櫃與商店逛店共用同一套版面——以 data-mode="shop" 直接套用商店多欄貨架 CSS（消除舊
+  // wardrobe 單欄版型分岔），另加 .adv-closet 標記僅承載 wear-only 差異（深粉紅穿脫鈕）。advMode 維持 "wardrobe"
+  // 以走無試穿之焦點與行為（不誤觸購買）。.adv-closet 於 openAdvBase 重設 className 時自動清除、closeAdv 亦清除。
+  elements.advScene.dataset.mode = "shop";
+  elements.advScene.classList.add("adv-closet");
   setAdvLine(`Pick what ${princessName()} will wear today.`);
   elements.advPrompt.textContent = "Tap to wear; tap again to take off.";
   elements.shopArea.classList.remove("refund-detail");
@@ -2914,6 +2918,7 @@ function closeAdv() {
   elements.advModal.setAttribute("aria-hidden", "true");
   advMode = "closed";
   elements.advScene.dataset.mode = "closed";
+  elements.advScene.classList.remove("adv-closet"); // issue #244：清除衣櫃 closet 標記
   state.activeQuest = null;
   activeLesson = null;
   activeShopHotspot = null;

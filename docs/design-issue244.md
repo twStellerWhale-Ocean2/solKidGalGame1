@@ -49,3 +49,13 @@
 * **錯誤 2（深粉紅位置）**：v0.53.1 把深粉紅誤上在**場景選單的「換裝」入口鈕**。**更正**：入口鈕移除特別顏色、沿用一般場景選單樣式（還原 `adv-controls.js` variant、移除 `.change-outfit-choice` 入口色）；深粉紅改上在**衣櫃內每件衣物的「穿上／脫下」動作鈕**（`styles/mobile.css` `.adv-scene[data-mode="wardrobe"] .item-panel-action`，border `#ad1457`），與商店購買鈕之暗色玻璃家族區辨。
 * **實際影響檔案**：[game-engine/main.js]（`renderAdvShop` closet 化、`renderWardrobeDetail` 薄包裝、owned 助手、移除 `wardrobeEmptyText`、入口 variant 移除）、[game-engine/flow/scene-actions.js]（單一換裝入口，沿用）、[game-engine/flow/adv-controls.js]（還原 variant）、[styles/mobile.css]（深粉紅移至穿脫動作鈕、移除入口色）、[game-engine/testing/selftests.js]（scene-nav 改驗多欄貨架＋穿脫鈕深粉紅＋入口非深粉紅）、[docs/design.md]（sysCase#3.4／intTest#51 更正）、[README.md]、[VERSION]（0.53.1→0.53.2 fix）、[docs/test-summary.pdf]。
 * **回歸驗證**：scene-nav（含更正斷言）PASS、monkey(300) PASS、save-load PASS；以 LuminaraTest 開商店確認仍為 5 欄貨架、試穿鈕在、購買鈕非深粉紅（closet 變更不波及商店）。
+
+## 7. 修正紀錄（v0.54.2，承 USR 桌機回饋）
+
+> v0.53.1／0.54.1 雖讓衣櫃改呼叫 `renderAdvShop`（DOM 已產生多欄），但**CSS 版面仍分岔**：USR 在桌機寬度截圖發現衣櫃是**單欄垂直清單**、商店是**多欄水平貨架**，兩者外觀仍不同。本節為現行正解。
+
+* **量測根因**：`getComputedStyle(#advShopGrid)` 顯示——商店 `display:flex`（欄寬 188px、水平並排）；衣櫃 `display:grid; grid-template-columns:960px`（單欄全寬），故 6 個 `.shop-shelf-col` 全垂直堆疊成一行。關鍵規則 `.adv-scene[data-mode="shop"] .item-panel-list{display:flex}` 僅給商店；`mobile.css` 另有約 97 條 `[data-mode="wardrobe"]` 舊單欄樣式壓著衣櫃。前版只接對 DOM、未接 CSS 版面情境。
+* **更正（CSS 版面情境統一）**：`openWardrobeDetail` 改設 `advScene.dataset.mode="shop"`（直接套用商店多欄貨架版面，繞過 97 條舊 wardrobe 樣式），另加 `.adv-closet` 標記僅承載 wear-only 差異（深粉紅穿脫鈕）。`advMode`（JS）維持 `"wardrobe"` 以走無試穿之焦點與不誤觸購買。深粉紅選擇器由 `[data-mode="wardrobe"]` 改為 `.adv-scene.adv-closet`；`.adv-closet` 於 `openAdvBase` 重設 className 時自動清除、`closeAdv` 亦清除。確認無 `.wardrobe-*` 元件類別或 `data-panel-mode` CSS 反咬。
+* **強化 selftest**：scene-nav 新增「`data-mode`==shop、含 `.adv-closet`、貨架 `display:flex`、前兩欄水平並排（`col1.left>col0.left`、同列）」斷言，專抓單欄堆疊回歸。
+* **驗證**：scene-nav PASS（width 778 與 1366 桌機皆過）、save-load PASS；桌機截圖確認衣櫃為多欄水平貨架、與商店一致；商店回歸 `display:flex`、5 欄不變。版號 0.54.1→**0.54.2**（fix）。
+* **遺留技術債**：`mobile.css` 約 97 條 `[data-mode="wardrobe"]`-專屬舊樣式（舊單欄衣櫃）現已無作用（衣櫃改走 `data-mode="shop"`），可於後續另案安全清除（本次不動以免擴大風險）。

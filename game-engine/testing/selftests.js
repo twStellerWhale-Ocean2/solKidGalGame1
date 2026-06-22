@@ -838,6 +838,17 @@ function runSceneNavSelfTest(api) {
     if (!api.elements.advShopGrid.querySelector(".shop-shelf-col")) errors.push("wardrobe panel is not the shared multi-column shelf (.shop-shelf-col missing — old mechanism?)");
     if (api.elements.advShopTabs.querySelector("button")) errors.push("wardrobe panel still renders legacy category tabs (should use column headers)");
     if (api.elements.advShopGrid.querySelector(".item-panel-tryon")) errors.push("wardrobe panel renders a try-on button (should be wear-only)");
+    // issue #244：closet 須與商店共用同一版面情境（data-mode="shop" + .adv-closet），且貨架欄為水平並排（非舊單欄垂直堆疊）。
+    if (api.elements.advScene.dataset.mode !== "shop") errors.push(`closet data-mode = ${api.elements.advScene.dataset.mode}, expected shop (shared shop shelf layout)`);
+    if (!api.elements.advScene.classList.contains("adv-closet")) errors.push("closet missing .adv-closet marker class");
+    if (getComputedStyle(api.elements.advShopGrid).display !== "flex") errors.push(`closet grid display = ${getComputedStyle(api.elements.advShopGrid).display}, expected flex (horizontal shelf, not stacked single column)`);
+    const closetCols = [...api.elements.advShopGrid.querySelectorAll(".shop-shelf-col")];
+    if (closetCols.length >= 2) {
+      const a = closetCols[0].getBoundingClientRect(), b = closetCols[1].getBoundingClientRect();
+      if (!(b.left > a.left + 8 && Math.abs(b.top - a.top) < 4)) errors.push(`closet columns not laid out side-by-side (col0.left=${Math.round(a.left)},col1.left=${Math.round(b.left)},col0.top=${Math.round(a.top)},col1.top=${Math.round(b.top)} — stacked?)`);
+    } else {
+      errors.push(`closet has <2 columns (${closetCols.length}); cannot confirm multi-column shelf (default account should own several categories)`);
+    }
 
     // wear-only 穿脫切換：預設帳號擁有但未穿戴之 pinkSlippers（鞋、無安全底著），closet 已含全類別欄。
     const toggleItem = api.itemById("pinkSlippers");
