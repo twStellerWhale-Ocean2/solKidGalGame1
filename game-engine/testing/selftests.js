@@ -842,6 +842,10 @@ function runSceneNavSelfTest(api) {
     if (api.elements.advScene.dataset.mode !== "shop") errors.push(`closet data-mode = ${api.elements.advScene.dataset.mode}, expected shop (shared shop shelf layout)`);
     if (!api.elements.advScene.classList.contains("adv-closet")) errors.push("closet missing .adv-closet marker class");
     if (getComputedStyle(api.elements.advShopGrid).display !== "flex") errors.push(`closet grid display = ${getComputedStyle(api.elements.advShopGrid).display}, expected flex (horizontal shelf, not stacked single column)`);
+    // issue #244：衣櫃不得列出 starter 內建預設外觀（storeId="starter"、無單品素材）。
+    ["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair", "starterPajama"].forEach((sid) => {
+      if (api.elements.advShopGrid.querySelector(`.item-card[data-item-id="${sid}"]`)) errors.push(`closet should not list starter default item "${sid}" (no real wardrobe asset)`);
+    });
     const closetCols = [...api.elements.advShopGrid.querySelectorAll(".shop-shelf-col")];
     if (closetCols.length >= 2) {
       const a = closetCols[0].getBoundingClientRect(), b = closetCols[1].getBoundingClientRect();

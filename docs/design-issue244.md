@@ -59,3 +59,11 @@
 * **強化 selftest**：scene-nav 新增「`data-mode`==shop、含 `.adv-closet`、貨架 `display:flex`、前兩欄水平並排（`col1.left>col0.left`、同列）」斷言，專抓單欄堆疊回歸。
 * **驗證**：scene-nav PASS（width 778 與 1366 桌機皆過）、save-load PASS；桌機截圖確認衣櫃為多欄水平貨架、與商店一致；商店回歸 `display:flex`、5 欄不變。版號 0.54.1→**0.54.2**（fix）。
 * **遺留技術債**：`mobile.css` 約 97 條 `[data-mode="wardrobe"]`-專屬舊樣式（舊單欄衣櫃）現已無作用（衣櫃改走 `data-mode="shop"`），可於後續另案安全清除（本次不動以免擴大風險）。
+
+## 8. 修正紀錄（v0.54.3，承 USR 內容／預覽回饋）
+
+> USR 檢視衣櫃後再提兩點：①衣櫃列出 4 個「怪髮型」（各角色 starter 預設髮，沒有單品素材、預覽是空框）；②單品方塊預覽圖上下留空太大。
+
+* **錯誤 1（starter 內建髮入列）**：`ownedWardrobeItemsFor` 只濾 `state.owned`＋類別，未排除 starter pack（`content-package/wardrobe/starter/manifest.js`：`softBrownHair`／`yumiStarterHair`／`solStarterHair`／`rosaStarterHair`／`starterPajama`，皆 `storeId:"starter"`、`cost:0`、`layers:[]`、`image=paperDollBaseLayer` 佔位）。這些是 per-character head 已烘入之預設髮／playwear、非可收藏單品（脫下衣物時由 `normalizeVisibleOutfit` 自動回退預設，不需玩家選取）。**更正**：`ownedWardrobeItemsFor` 加 `item.storeId !== "starter"`；selftest 斷言衣櫃不含 5 個 starter id。
+* **錯誤 2（預覽圖上下留白）**：預覽框 `.item-preview` 跨整張卡高度（`grid-row:1/3`）卻被固定 `46px`＋`align-self:center` 壓住，四周（含上下）留白。**更正**：`mobile.css` 加 `.adv-scene[data-mode="shop"] .compact-shop .item-panel-card .item-preview { width:100%; aspect-ratio:1; align-self:center }`（specificity (0,5,0) 勝過各 (0,4,0) 尺寸規則與其 @media 響應式），預覽放大為**填滿欄寬之正方形**；正方框配正方素材＝商品照滿版、不裁切變形；商店卡較高時正方預覽於格內置中、不被拉成直長方再生上下黑邊。商店與衣櫃同走此規則、保持一致。
+* **驗證**：scene-nav PASS（含 starter 排除與版面斷言）、save-load PASS；實測商店與衣櫃預覽皆 72×72 正方填滿；商店仍 `display:flex`、5 欄、試穿＋購買不受影響。版號 0.54.2→**0.54.3**（fix）。

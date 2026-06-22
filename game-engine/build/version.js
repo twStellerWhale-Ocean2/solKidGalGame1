@@ -6,6 +6,7 @@
 export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
+  { version: "0.54.3", buildDateTime: "2026-06-22", summaryZh: "公主房衣櫃不再列出各角色內建的 starter 預設髮（那 4 個沒有單品素材、預覽是空框）；並把商店與衣櫃的單品預覽圖放大為填滿欄寬的正方形，去除商品照片上下留白" },
   { version: "0.54.2", buildDateTime: "2026-06-22", summaryZh: "公主房衣櫃的版面真正與商店一致：之前雖共用同一函式，但 CSS 仍把衣櫃壓成單欄垂直清單、商店是多欄並排貨架；本次讓衣櫃直接套用商店的多欄水平貨架版面，兩者外觀完全一致" },
   { version: "0.54.1", buildDateTime: "2026-06-22", summaryZh: "公主房換裝改為真正沿用商店現行的多欄貨架衣櫃面板（而非舊的單類別分頁、第二套機制）；深粉紅改到衣櫃內每件衣物的「穿上／脫下」按鈕，場景選單的「換裝」入口鈕恢復與其他場景一致、不特別上色" },
   { version: "0.53.1", buildDateTime: "2026-06-22", summaryZh: "公主房改用單一「換裝」按鈕（深粉紅）打開右側衣櫃，和商店同一套面板；衣櫃只穿不買——按一下穿上、按鈕字變「脫下」再按即脫下，移除原本攤開的逐分類換裝表單以簡併機制、減少技術債" },
@@ -35,7 +36,7 @@ export const versionHistory = [
 ];
 
 export const buildInfo = {
-  version: "0.54.2",
+  version: "0.54.3",
   buildDate: "2026-06-22",
   buildDateTime: "2026-06-22",
   issues: ["#244"]

@@ -3381,6 +3381,17 @@ body {
   min-height: 0;
 }
 
+/* issue #244：商店／衣櫃（closet 同走 data-mode="shop"）單品預覽圖放大為填滿欄寬之正方形，消除被固定 46px 小尺寸
+   所致之上下（及左右）留白；正方框配正方素材＝商品照片滿版、不裁切變形。卡片較高時（商店含試穿＋購買）正方預覽於格內置中，
+   不再被拉成直長方而產生上下黑邊。specificity (0,5,0) 高於上方各 [data-mode] (0,4,0) 尺寸規則（含 @media 響應式）。 */
+.adv-scene[data-mode="shop"] .compact-shop .item-panel-card .item-preview {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  align-self: center;
+  min-height: 0;
+}
+
 .adv-scene[data-mode="shop"] .item-panel-card strong {
   grid-column: 2;
   grid-row: 1;

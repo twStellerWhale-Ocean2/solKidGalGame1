@@ -2437,7 +2437,13 @@ function unownedShopItemsFor(hotspot = activeShopHotspot, category = shopCategor
 
 // issue #244：公主房衣櫃 = 玩家已擁有之衣物（跨店、依類別分欄），供 renderAdvShop closet 模式列欄。
 function ownedWardrobeItemsFor(category) {
-  return shopItems.filter((item) => itemMatchesCategory(item, category) && state.owned.includes(item.id));
+  // issue #244：排除 starter 內建預設外觀（storeId="starter"、layers:[]、image 為 paper-doll 底圖佔位）——
+  // 它們是 per-character head 已烘入之預設髮／playwear、非真正可收藏單品，無單品素材，不應列入衣櫃。
+  return shopItems.filter((item) => (
+    itemMatchesCategory(item, category) &&
+    state.owned.includes(item.id) &&
+    item.storeId !== "starter"
+  ));
 }
 
 function ownedWardrobeCategories() {
