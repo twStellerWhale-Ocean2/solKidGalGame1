@@ -1501,26 +1501,41 @@ function runCharacterVoiceSelfTest(api) {
           const noGender = api.selectSpeechVoice({ lang: "en-US" });
           if (noGender.fallbackReason === "user-assigned") errors.push("無性別 profile 不應套用語音指定");
 
-          // sysCase#9.5 設定 UI：設定面板逐桶渲染下拉（含性別預設列、列出可用 voice）。
-          if (api.renderSettings && api.usedVoiceBuckets && api.elements?.voiceAssignList) {
-            api.setVoiceAssignment("female", "cheerful", "");
+          // issue #246：角色語音指定 UI 已自玩家 Settings 移至管理工具「聲音管理」頁籤。
+          // (a) 回歸：遊戲 Settings 不再渲染角色語音清單（公開遊玩端僅保留 Voice On/Off 開關）。
+          if (api.renderSettings) {
             api.renderSettings();
-            const rows = api.elements.voiceAssignList.querySelectorAll(".voice-assign-row");
-            const expectedBuckets = api.usedVoiceBuckets().length;
-            if (rows.length !== expectedBuckets) errors.push(`語音設定列數(${rows.length})與桶數(${expectedBuckets})不符`);
-            const firstSelect = api.elements.voiceAssignList.querySelector(".voice-assign-select");
-            if (!firstSelect || firstSelect.querySelectorAll("option").length < 4) errors.push("語音設定下拉未列出可用 voice 選項");
-            if (!api.elements.voiceAssignList.querySelector(".voice-assign-default")) errors.push("語音設定缺性別預設列");
-
-            // getVoices() 初次回空 → 設定顯示空狀態；voiceschanged 載入後須即時重渲染出選擇器（不必重開）。
-            synth.getVoices = () => [];
+            if (document.getElementById("voiceSettings")) errors.push("遊戲 Settings 仍殘留角色語音指定區（#voiceSettings 應移除）");
+            const settingsView = document.getElementById("settingsView");
+            if (settingsView && settingsView.querySelector(".voice-assign-row")) errors.push("遊戲 Settings 仍渲染語音指定列（應移至管理工具）");
+            if (!document.getElementById("speakToggleButton")) errors.push("遊戲 Settings 應保留 Voice On/Off 開關");
+          }
+          // (b) 共用渲染（管理工具聲音管理頁籤所用同一函式 renderVoiceSettings + usedVoiceBuckets + 推薦分組）：
+          //     逐桶渲染下拉、含性別預設列、列出可用 voice、提供試聽鈕；無 voice 時顯示空狀態（單一事實來源）。
+          if (api.renderVoiceSettings && api.usedVoiceBuckets && api.recommendedVoiceNamesForGender) {
+            synth.getVoices = () => [makeVoice("Microsoft David", "en-US", true), makeVoice("Microsoft Zira", "en-US"), makeVoice("Microsoft Mark", "en-US")];
             api.refreshSpeechVoices?.();
-            api.renderSettings();
-            const wasEmpty = !!api.elements.voiceAssignList.querySelector(".voice-assign-empty");
-            synth.getVoices = () => [makeVoice("Microsoft David", "en-US", true), makeVoice("Microsoft Zira", "en-US")];
-            synth.dispatchEvent?.(new Event("voiceschanged"));
-            const rowsAfterChange = api.elements.voiceAssignList.querySelectorAll(".voice-assign-row").length;
-            if (wasEmpty && rowsAfterChange < 1) errors.push("voiceschanged 後語音設定未即時重渲染（仍卡空狀態）");
+            const voices = api.listSpeechVoices();
+            const buckets = api.usedVoiceBuckets().map((b) => ({ ...b, recommended: api.recommendedVoiceNamesForGender(b.gender, voices) }));
+            const panel = document.createElement("div");
+            let previewedBucket = null;
+            api.renderVoiceSettings({ voiceAssignList: panel }, {
+              buckets, voices, assignments: api.getVoiceAssignments(),
+              onAssign: () => {}, onPreview: (bucket) => { previewedBucket = bucket; }
+            });
+            const rows = panel.querySelectorAll(".voice-assign-row");
+            if (rows.length !== buckets.length) errors.push(`聲音管理列數(${rows.length})與桶數(${buckets.length})不符`);
+            const firstSelect = panel.querySelector(".voice-assign-select");
+            if (!firstSelect || firstSelect.querySelectorAll("option").length < 4) errors.push("聲音管理下拉未列出可用 voice 選項");
+            if (!panel.querySelector(".voice-assign-default")) errors.push("聲音管理缺性別預設列");
+            const previewBtn = panel.querySelector(".voice-assign-preview");
+            if (!previewBtn) errors.push("聲音管理缺試聽鈕（onPreview）");
+            else { previewBtn.click(); if (!previewedBucket) errors.push("聲音管理試聽鈕未觸發 onPreview"); }
+
+            // getVoices() 回空 → 顯示空狀態（提示等待瀏覽器載入）。
+            const emptyPanel = document.createElement("div");
+            api.renderVoiceSettings({ voiceAssignList: emptyPanel }, { buckets: [], voices: [], assignments: {}, onAssign: () => {} });
+            if (!emptyPanel.querySelector(".voice-assign-empty")) errors.push("聲音管理無 voice 時未顯示空狀態");
           }
           api.clearVoiceAssignments();
         }
