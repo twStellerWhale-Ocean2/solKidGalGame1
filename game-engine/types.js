@@ -80,7 +80,6 @@
  * @property {string=} top
  * @property {string=} bottom
  * @property {string=} dress
- * @property {string=} outer
  * @property {string=} shoes
  * @property {string=} headTop
  * @property {string=} headSide

@@ -3381,6 +3381,17 @@ body {
   min-height: 0;
 }
 
+/* issue #244：商店／衣櫃（closet 同走 data-mode="shop"）單品預覽圖放大為填滿欄寬之正方形，消除被固定 46px 小尺寸
+   所致之上下（及左右）留白；正方框配正方素材＝商品照片滿版、不裁切變形。卡片較高時（商店含試穿＋購買）正方預覽於格內置中，
+   不再被拉成直長方而產生上下黑邊。specificity (0,5,0) 高於上方各 [data-mode] (0,4,0) 尺寸規則（含 @media 響應式）。 */
+.adv-scene[data-mode="shop"] .compact-shop .item-panel-card .item-preview {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  align-self: center;
+  min-height: 0;
+}
+
 .adv-scene[data-mode="shop"] .item-panel-card strong {
   grid-column: 2;
   grid-row: 1;
@@ -3904,16 +3915,17 @@ body {
   border-color: var(--adv-dialog-accent-strong);
 }
 
-/* issue #244：公主房衣櫃（closet 模式）之「穿上／脫下」動作鈕為深粉紅實心填色，與商店購買鈕之暗色玻璃家族區辨；
-   入口鈕（場景選單）不上色、沿用一般場景樣式。置於上方動作鈕通則之後、以同等 specificity 靠 source order 取勝。 */
-.adv-scene[data-mode="wardrobe"] .item-panel-action {
+/* issue #244：公主房衣櫃（.adv-closet）之「穿上／脫下」鈕＝商店左側那顆 try-on 鈕（同一顆、同一來源），著深粉紅
+   實心填色：未穿戴（Wear）為基礎深粉紅、已穿戴（Take Off／.active）為較亮深粉紅以標示正穿著，蓋過商店試穿鈕之
+   cream 底與 active 綠。場景選單入口鈕不上色、沿用一般場景樣式。specificity 與商店試穿鈕通則同階、靠 source order 取勝。 */
+.adv-scene.adv-closet .item-panel-tryon {
   color: #fff;
   background: linear-gradient(180deg, #e85a98, #c81e63);
   border-color: #ad1457;
 }
 
-.adv-scene[data-mode="wardrobe"] .item-panel-action:focus-visible,
-.adv-scene[data-mode="wardrobe"] .item-panel-action.adv-focus {
+.adv-scene.adv-closet .item-panel-tryon.active {
+  color: #fff;
   background: linear-gradient(180deg, #ef6ea6, #d81b60);
   border-color: #ad1457;
 }

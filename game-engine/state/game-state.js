@@ -313,7 +313,7 @@ export function updateProgressBadges(state) {
 
 export function outfitSummary(state) {
   const labels = [];
-  ["hairstyle", "top", "bottom", "dress", "outer", "shoes", "headTop", "headSide", "faceEyes", "faceMask", "neck", "hand"].forEach((type) => {
+  ["hairstyle", "top", "bottom", "dress", "shoes", "headTop", "headSide", "faceEyes", "faceMask", "neck", "hand"].forEach((type) => {
     const item = itemById(state.outfit[type]);
     if (item) labels.push(item.name);
   });

@@ -24,13 +24,7 @@ export const castleItems = [
   wearable({ id: "aquaSailorTop", storeId: "castleSeamstress", type: "top", name: "Aqua sailor top", cost: 130, icon: "Top", asset: "top-aqua-sailor" }),
   wearable({ id: "skyShorts", storeId: "castleSeamstress", type: "bottom", name: "Sky castle shorts", cost: 100, icon: "Bottom", asset: "bottom-sky-shorts" }),
   wearable({ id: "lilacSkirt", storeId: "castleSeamstress", type: "bottom", name: "Lilac castle skirt", cost: 120, icon: "Bottom", asset: "bottom-lilac-skirt" }),
-  // 外套／頭飾（原 castle-royal-cloak-room）
-  wearable({ id: "yellowCardigan", storeId: "castleSeamstress", type: "outer", name: "Little yellow cardigan", cost: 150, icon: "Outer", asset: "outer-yellow-cardigan" }),
-  wearable({ id: "starCape", storeId: "castleSeamstress", type: "outer", name: "Starry helper cape", cost: 240, icon: "Outer", asset: "outer-starry-cape" }),
-  wearable({ id: "mintCardigan", storeId: "castleSeamstress", type: "outer", name: "Mint royal cardigan", cost: 80, icon: "Outer", asset: "outer-mint-cardigan" }),
-  wearable({ id: "roseCardigan", storeId: "castleSeamstress", type: "outer", name: "Rose royal cardigan", cost: 90, icon: "Outer", asset: "outer-rose-cardigan" }),
-  wearable({ id: "moonCape", storeId: "castleSeamstress", type: "outer", name: "Moon royal cape", cost: 120, icon: "Outer", asset: "outer-moon-cape" }),
-  wearable({ id: "auroraCape", storeId: "castleSeamstress", type: "outer", name: "Aurora royal cape", cost: 140, icon: "Outer", asset: "outer-aurora-cape" }),
+  // 頭飾（issue #244：移除 outerwear 外套類型）
   wearable({ id: "pearlTiara", storeId: "castleSeamstress", type: "headTop", name: "Pearl royal tiara", cost: 80, icon: "Hat", asset: "headtop-pearl-tiara" }),
   wearable({ id: "starryTiara", storeId: "castleSeamstress", type: "headTop", name: "Starry royal tiara", cost: 100, icon: "Hat", asset: "headtop-starry-tiara" }),
   wearable({ id: "rubyTiara", storeId: "castleSeamstress", type: "headTop", name: "Ruby royal tiara", cost: 120, icon: "Hat", asset: "headtop-ruby-tiara" })

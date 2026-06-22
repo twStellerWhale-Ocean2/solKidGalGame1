@@ -24,7 +24,7 @@ function initDefaultsTab() {
   const slotOrder = categories.flatMap((cat) => cat.types).filter((slot) => outfitSlots.includes(slot));
   const slotLabel = {
     hairstyle: "髮型 Hair", headTop: "帽飾 Hats", top: "上衣 Top", bottom: "下身 Bottom",
-    dress: "洋裝 Dress", outer: "外套 Outerwear", shoes: "鞋 Shoes", headSide: "頭側 Ribbon",
+    dress: "洋裝 Dress", shoes: "鞋 Shoes", headSide: "頭側 Ribbon",
     faceEyes: "眼鏡 Glasses", faceMask: "面飾 Mask", neck: "頸飾 Necklace", hand: "手持 Bag"
   };
 

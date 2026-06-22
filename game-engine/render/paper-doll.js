@@ -28,7 +28,6 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
       doll.dataset.top = outfit.top || "none";
       doll.dataset.bottom = outfit.bottom || "none";
       doll.dataset.dress = outfit.dress || "none";
-      doll.dataset.outer = outfit.outer || "none";
       doll.dataset.shoes = outfit.shoes || "none";
       doll.dataset.headTop = outfit.headTop || "none";
       doll.dataset.headSide = outfit.headSide || "none";
@@ -54,7 +53,6 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
       "hairstyle",
       outfitState.dress && outfitState.dress !== "none" ? "dress" : "bottom",
       outfitState.dress && outfitState.dress !== "none" ? null : "top",
-      "outer",
       "shoes",
       "headTop",
       "headSide",

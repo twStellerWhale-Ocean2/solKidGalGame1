@@ -21,11 +21,6 @@ export const assetTargetOverrides = Object.freeze({
   "castle/hairstyle-twin-braid-midnight": { left: 172, top: 282, right: 346, bottom: 553 },
   "castle/hairstyle-twin-braid-rose": { left: 180, top: 290, right: 338, bottom: 516 },
   "castle/headtop-pearl-tiara": { left: 212, top: 270, right: 300, bottom: 334 },
-  "castle/outer-aurora-cape": { left: 135, top: 395, right: 380, bottom: 518, corners: { nw: [0, 0], ne: [-4, 1], sw: [0, 0], se: [0, 0] } },
-  "castle/outer-mint-cardigan": { left: 173, top: 389, right: 342, bottom: 550 },
-  "castle/outer-moon-cape": { left: 152, top: 396, right: 364, bottom: 517 },
-  "castle/outer-starry-cape": { left: 142, top: 395, right: 368, bottom: 579, corners: { nw: [0, 0], ne: [0, 0], sw: [15, -44], se: [-12, -52] } },
-  "castle/outer-yellow-cardigan": { left: 173, top: 380, right: 342, bottom: 541 },
   "castle/top-aqua-sailor": { left: 192, top: 387, right: 317, bottom: 514 },
   "castle/top-coral-blouse": { left: 181, top: 392, right: 334, bottom: 524 },
   "rural/bottom-coral-skirt": { left: 170, top: 468, right: 337, bottom: 612 },
@@ -52,6 +47,5 @@ export const assetTargetOverrides = Object.freeze({
   "urban/top-peach-sailor": { left: 194, top: 393, right: 319, bottom: 520 },
   "urban/top-sky-blouse": { left: 188, top: 387, right: 325, bottom: 519 },
   "wild/dress-coral-festival": { left: 156, top: 394, right: 356, bottom: 614 },
-  "wild/dress-starlight-gown": { left: 148, top: 395, right: 369, bottom: 612, corners: { nw: [0, 0], ne: [-6, 1], sw: [21, 0], se: [-25, -7] } },
-  "wild/outer-autumn-cloak": { left: 152, top: 393, right: 363, bottom: 512 }
+  "wild/dress-starlight-gown": { left: 148, top: 395, right: 369, bottom: 612, corners: { nw: [0, 0], ne: [-6, 1], sw: [21, 0], se: [-25, -7] } }
 });

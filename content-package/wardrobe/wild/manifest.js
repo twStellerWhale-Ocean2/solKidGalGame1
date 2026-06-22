@@ -14,11 +14,7 @@ export const wildItems = [
   wearable({ id: "moonMask", storeId: "fairyAtelier", type: "faceMask", name: "Moon fairy mask", cost: 200, icon: "Acc", asset: "facemask-moon-mask" }),
   wearable({ id: "roseNecklace", storeId: "fairyAtelier", type: "neck", name: "Rose fairy necklace", cost: 210, icon: "Acc", asset: "neck-rose-necklace" }),
   wearable({ id: "lilacBag", storeId: "fairyAtelier", type: "hand", name: "Lilac fairy bag", cost: 220, icon: "Acc", asset: "hand-lilac-bag" }),
-  // 外套／鞋（原 wild-dwarf-cottage）
-  wearable({ id: "mossCloak", storeId: "fairyAtelier", type: "outer", name: "Moss helper cloak", cost: 220, icon: "Outer", asset: "outer-moss-cloak" }),
-  wearable({ id: "fernCloak", storeId: "fairyAtelier", type: "outer", name: "Fern helper cloak", cost: 230, icon: "Outer", asset: "outer-fern-cloak" }),
-  wearable({ id: "violetCloak", storeId: "fairyAtelier", type: "outer", name: "Violet helper cloak", cost: 240, icon: "Outer", asset: "outer-violet-cloak" }),
-  wearable({ id: "autumnCloak", storeId: "fairyAtelier", type: "outer", name: "Autumn helper cloak", cost: 250, icon: "Outer", asset: "outer-autumn-cloak" }),
+  // 鞋（issue #244：移除 outerwear 外套類型）
   wearable({ id: "cocoaBoots", storeId: "fairyAtelier", type: "shoes", name: "Cocoa dwarf boots", cost: 200, icon: "Shoes", asset: "shoes-cocoa-boots" }),
   wearable({ id: "silverBoots", storeId: "fairyAtelier", type: "shoes", name: "Silver dwarf boots", cost: 210, icon: "Shoes", asset: "shoes-silver-boots" })
 ];

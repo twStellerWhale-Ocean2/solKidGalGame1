@@ -33,7 +33,6 @@ export const defaultState = {
     top: "none",
     bottom: "none",
     dress: "blueDress",
-    outer: "none",
     shoes: "blueBoots",
     headTop: "pearlTiara",
     headSide: "none",

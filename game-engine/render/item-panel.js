@@ -85,7 +85,7 @@ function createItemPanelRow({ action, categoryLabel, item, mode, onAction, onPre
     selected ? "selected" : ""
   ].filter(Boolean).join(" ");
   preview.dataset.itemId = item.id;
-  preview.setAttribute("aria-label", `${item.name} ${action.status}`);
+  preview.setAttribute("aria-label", `${item.name} ${action?.status || ""}`.trim());
   // 有專屬試穿/購買鈕的模式（商店），方框本身不需可聚焦，移出 Tab 順序。
   if (onTryOn) preview.tabIndex = -1;
   preview.innerHTML = `
@@ -93,7 +93,7 @@ function createItemPanelRow({ action, categoryLabel, item, mode, onAction, onPre
       <span aria-hidden="true">${item.icon || "✦"}</span>
     </span>
     <strong>${item.name}</strong>
-    <span class="item-state">${action.status}</span>
+    <span class="item-state">${action?.status ?? ""}</span>
     <small class="item-category">${categoryLabel(item.type)}</small>
   `;
   preview.addEventListener("click", () => onPreview(item));
@@ -111,21 +111,24 @@ function createItemPanelRow({ action, categoryLabel, item, mode, onAction, onPre
     tryOnButton.addEventListener("click", () => onTryOn(item));
   }
 
-  const actionButton = document.createElement("button");
-  actionButton.type = "button";
-  actionButton.className = `shop-buy-button item-panel-action ${mode}-panel-action`;
-  actionButton.textContent = action.label;
-  actionButton.setAttribute("aria-label", action.ariaLabel || `${action.label} ${item.name}`);
-  actionButton.disabled = Boolean(action.disabled);
-  actionButton.addEventListener("click", () => {
-    // 有專屬試穿鈕的模式（商店），縮圖點擊＝切換試穿，故購買鈕不可再走 onPreview（否則買下時會誤切試穿）。
-    if (!onTryOn) onPreview(item);
-    onAction(item);
-  });
-
   row.append(preview);
   if (tryOnButton) row.append(tryOnButton);
-  row.append(actionButton);
+
+  // issue #244：衣櫃單品無右側 BUY 鈕（action.noButton）——穿脫由左側 try-on 鈕（單一來源）負責；其餘模式照渲染動作鈕。
+  if (action && !action.noButton) {
+    const actionButton = document.createElement("button");
+    actionButton.type = "button";
+    actionButton.className = `shop-buy-button item-panel-action ${mode}-panel-action`;
+    actionButton.textContent = action.label;
+    actionButton.setAttribute("aria-label", action.ariaLabel || `${action.label} ${item.name}`);
+    actionButton.disabled = Boolean(action.disabled);
+    actionButton.addEventListener("click", () => {
+      // 有專屬試穿鈕的模式（商店），縮圖點擊＝切換試穿，故購買鈕不可再走 onPreview（否則買下時會誤切試穿）。
+      if (!onTryOn) onPreview(item);
+      onAction(item);
+    });
+    row.append(actionButton);
+  }
   return row;
 }
 

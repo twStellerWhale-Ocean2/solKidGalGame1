@@ -67,7 +67,6 @@
 .paper-doll-layer-dress,
 .paper-doll-layer-bottom,
 .paper-doll-layer-top { z-index: 4; }
-.paper-doll-layer-outer { z-index: 5; }
 .paper-doll-layer-shoes { z-index: 6; }
 .paper-doll-layer-neck { z-index: 7; }
 .paper-doll-layer-hand { z-index: 7; }
