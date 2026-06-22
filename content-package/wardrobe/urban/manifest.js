@@ -4,29 +4,18 @@ const { wearable } = createWardrobePackTools("urban");
 
 //#region Urban 衣物資源包（issue #210：一區一店一包）
 // 都會區單一服飾店 storeId="boutique"（Dress Boutique）之資源包，含多類別衣物：
-// 上衣／下身／洋裝／鞋／帽飾／配件（由原 tailor-studio／dress-boutique／
-// shoe-shop／accessory-atelier 合併，itemId 全數保留以相容既有存檔）。
+// 整件 outfit／鞋／帽飾／配件（原含上衣／下身，issue #251 移除；洋裝 dress 改名 outfit；
+// 由原 tailor-studio／dress-boutique／shoe-shop／accessory-atelier 合併，其餘 itemId 保留以相容既有存檔）。
 // 髮型（原 hair-salon）已於本次調整搬至 castle 包（storeId="castleSeamstress"）。
 export const urbanItems = [
-  // 上衣／下身（原 urban-tailor-studio）
-  wearable({ id: "skyBlouse", storeId: "boutique", type: "top", name: "Sky blue puff blouse", cost: 100, icon: "Top", asset: "top-sky-blouse" }),
-  wearable({ id: "peachSailorTop", storeId: "boutique", type: "top", name: "Peach sailor top", cost: 120, icon: "Top", asset: "top-peach-sailor" }),
-  wearable({ id: "mintBlouse", storeId: "boutique", type: "top", name: "Mint puff blouse", cost: 130, icon: "Top", asset: "top-mint-blouse" }),
-  wearable({ id: "lilacBlouse", storeId: "boutique", type: "top", name: "Lilac puff blouse", cost: 140, icon: "Top", asset: "top-lilac-blouse" }),
-  wearable({ id: "creamBlouse", storeId: "boutique", type: "top", name: "Cream puff blouse", cost: 150, icon: "Top", asset: "top-cream-blouse" }),
-  wearable({ id: "navyShorts", storeId: "boutique", type: "bottom", name: "Navy story shorts", cost: 90, icon: "Bottom", asset: "bottom-navy-shorts" }),
-  wearable({ id: "roseSkirt", storeId: "boutique", type: "bottom", name: "Rose ribbon skirt", cost: 110, icon: "Bottom", asset: "bottom-rose-skirt" }),
-  wearable({ id: "wildShorts", storeId: "boutique", type: "bottom", name: "Wild story shorts", cost: 130, icon: "Bottom", asset: "bottom-wild-shorts" }),
-  wearable({ id: "plumShorts", storeId: "boutique", type: "bottom", name: "Plum story shorts", cost: 150, icon: "Bottom", asset: "bottom-plum-shorts" }),
-  wearable({ id: "cocoaShorts", storeId: "boutique", type: "bottom", name: "Cocoa story shorts", cost: 170, icon: "Bottom", asset: "bottom-cocoa-shorts" }),
-  // 洋裝（原 urban-dress-boutique）
-  wearable({ id: "blueDress", storeId: "boutique", type: "dress", name: "Blue harbor dress", cost: 100, icon: "Dress", asset: "dress-blue-harbor" }),
-  wearable({ id: "roseDress", storeId: "boutique", type: "dress", name: "Rose festival dress", cost: 200, icon: "Dress", asset: "dress-rose-festival" }),
-  wearable({ id: "snowDress", storeId: "boutique", type: "dress", name: "Snowflake gown", cost: 260, icon: "Dress", asset: "dress-snowflake-gown" }),
-  wearable({ id: "mintHarborDress", storeId: "boutique", type: "dress", name: "Mint harbor dress", cost: 220, icon: "Dress", asset: "dress-mint-harbor" }),
-  wearable({ id: "lilacHarborDress", storeId: "boutique", type: "dress", name: "Lilac harbor dress", cost: 240, icon: "Dress", asset: "dress-lilac-harbor" }),
-  wearable({ id: "pearlHarborDress", storeId: "boutique", type: "dress", name: "Pearl harbor dress", cost: 260, icon: "Dress", asset: "dress-pearl-harbor" }),
-  wearable({ id: "lavenderFestivalDress", storeId: "boutique", type: "dress", name: "Lavender festival dress", cost: 280, icon: "Dress", asset: "dress-lavender-festival" }),
+  // 整件 outfit（原 urban-dress-boutique 洋裝，issue #251：dress→outfit；同 issue 移除分件上衣／下身 top/bottom）
+  wearable({ id: "blueDress", storeId: "boutique", type: "outfit", name: "Blue harbor dress", cost: 100, icon: "Outfit", asset: "dress-blue-harbor" }),
+  wearable({ id: "roseDress", storeId: "boutique", type: "outfit", name: "Rose festival dress", cost: 200, icon: "Outfit", asset: "dress-rose-festival" }),
+  wearable({ id: "snowDress", storeId: "boutique", type: "outfit", name: "Snowflake gown", cost: 260, icon: "Outfit", asset: "dress-snowflake-gown" }),
+  wearable({ id: "mintHarborDress", storeId: "boutique", type: "outfit", name: "Mint harbor dress", cost: 220, icon: "Outfit", asset: "dress-mint-harbor" }),
+  wearable({ id: "lilacHarborDress", storeId: "boutique", type: "outfit", name: "Lilac harbor dress", cost: 240, icon: "Outfit", asset: "dress-lilac-harbor" }),
+  wearable({ id: "pearlHarborDress", storeId: "boutique", type: "outfit", name: "Pearl harbor dress", cost: 260, icon: "Outfit", asset: "dress-pearl-harbor" }),
+  wearable({ id: "lavenderFestivalDress", storeId: "boutique", type: "outfit", name: "Lavender festival dress", cost: 280, icon: "Outfit", asset: "dress-lavender-festival" }),
   // 鞋（原 urban-shoe-shop）
   wearable({ id: "pinkSlippers", storeId: "boutique", type: "shoes", name: "Ribbon walking shoes", cost: 90, icon: "Shoes", asset: "shoes-pink-ribbon" }),
   wearable({ id: "blueBoots", storeId: "boutique", type: "shoes", name: "Blue seaside boots", cost: 150, icon: "Shoes", asset: "shoes-blue-boots" }),

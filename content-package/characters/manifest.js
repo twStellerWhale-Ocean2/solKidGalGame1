@@ -48,7 +48,7 @@ export const characterRegistry = Object.freeze({
     baseLayer: sharedBodyLayer,
     headLayer: characterAsset("lumi", "head"),
     defaultProfileColor: "#fda4af",
-    defaultOutfit: Object.freeze({ hairstyle: "none", dress: "none" }),
+    defaultOutfit: Object.freeze({ hairstyle: "none", outfit: "none" }),
     naturalHeightCm: 125,
     stageScale: 1.2,
     rig: sharedPaperDollRig
@@ -60,7 +60,7 @@ export const characterRegistry = Object.freeze({
     baseLayer: sharedBodyLayer,
     headLayer: characterAsset("yumi", "head"),
     defaultProfileColor: "#93c5fd",
-    defaultOutfit: Object.freeze({ hairstyle: "none", dress: "none" }),
+    defaultOutfit: Object.freeze({ hairstyle: "none", outfit: "none" }),
     naturalHeightCm: 125,
     stageScale: 1.2,
     rig: sharedPaperDollRig
@@ -72,7 +72,7 @@ export const characterRegistry = Object.freeze({
     baseLayer: sharedBodyLayer,
     headLayer: characterAsset("sol", "head"),
     defaultProfileColor: "#fcd34d",
-    defaultOutfit: Object.freeze({ hairstyle: "none", dress: "none" }),
+    defaultOutfit: Object.freeze({ hairstyle: "none", outfit: "none" }),
     naturalHeightCm: 125,
     stageScale: 1.2,
     rig: sharedPaperDollRig
@@ -84,7 +84,7 @@ export const characterRegistry = Object.freeze({
     baseLayer: sharedBodyLayer,
     headLayer: characterAsset("rosa", "head"),
     defaultProfileColor: "#86efac",
-    defaultOutfit: Object.freeze({ hairstyle: "none", dress: "none" }),
+    defaultOutfit: Object.freeze({ hairstyle: "none", outfit: "none" }),
     naturalHeightCm: 125,
     stageScale: 1.2,
     rig: sharedPaperDollRig

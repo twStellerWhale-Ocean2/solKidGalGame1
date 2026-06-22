@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.54.5 — 2026-06-22
+- refactor (#251): 簡化服裝類型：移除分開的上衣／下身（top／bottom），整件衣服統一為 outfit（原 dress 改名），帽子併入配件分類；衣櫃服裝分類精簡為髮型／整件 outfit／鞋／配件四類，既有存檔自動相容（移除已不存在的上衣下身、舊洋裝轉為整件）
+
 ## 0.54.4 — 2026-06-22
 - fix (#244): 公主房穿脫衣物改為直接走商店那顆「Try on」鈕的同一套程式（單一來源）：穿脫鈕移到左側、按下就地更新不再整面重跳、且能正常穿脫；並移除 outerwear（外套）衣物類型與其商品、素材
 

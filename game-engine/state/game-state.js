@@ -47,7 +47,7 @@ const legacyItemIds = Object.freeze({
 });
 
 const bakedBaseStarterHairIds = new Set(["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair"]);
-const bakedBaseStarterDressIds = new Set(["starterPajama"]);
+const bakedBaseStarterOutfitIds = new Set(["starterPajama"]);
 
 export function loadLocalState() {
   migrateLegacyAccount(); // 一次性將舊單一存檔遷移為首個帳號，保留既有玩家進度。
@@ -171,27 +171,22 @@ function normalizeOutfit(candidateOutfit = {}, baseOutfit = defaultState.outfit)
   outfitSlots.forEach((slot) => {
     if (candidateOutfit[slot]) outfit[slot] = migrateLegacyItemId(candidateOutfit[slot]);
   });
-  const legacyDress = candidateOutfit.dress || candidateOutfit.outfit;
-  if (legacyDress) outfit.dress = migrateLegacyItemId(legacyDress);
+  // #251：分件上下身（top/bottom）退場、整件 dress 改名 outfit。舊存檔之 dress 鍵改讀為 outfit；
+  // 僅穿過 top/bottom（無 dress/outfit）之舊存檔退回預設 outfit，top/bottom 鍵不再保留。
+  const legacyOutfit = candidateOutfit.outfit || candidateOutfit.dress;
+  if (legacyOutfit) outfit.outfit = migrateLegacyItemId(legacyOutfit);
   if (candidateOutfit.shoes) outfit.shoes = migrateLegacyItemId(candidateOutfit.shoes);
   applyLegacyAccessory(outfit, candidateOutfit.accessory || candidateOutfit.hat || candidateOutfit.head);
-  if (candidateOutfit.pants && !candidateOutfit.bottom) outfit.bottom = migrateLegacyItemId(candidateOutfit.pants);
   normalizeBakedBaseStarterOutfit(outfit);
   outfitSlots.forEach((slot) => {
     if (slot !== "room" && outfit[slot] !== "none" && !itemById(outfit[slot])) outfit[slot] = baseOutfit[slot] || "none";
   });
-  if (outfit.dress !== "none") {
-    outfit.top = "none";
-    outfit.bottom = "none";
-  } else if (outfit.top === "none" && outfit.bottom === "none") {
-    outfit.dress = baseOutfit.dress;
-  }
   return outfit;
 }
 
 function normalizeBakedBaseStarterOutfit(outfit) {
   if (bakedBaseStarterHairIds.has(outfit.hairstyle)) outfit.hairstyle = "none";
-  if (bakedBaseStarterDressIds.has(outfit.dress)) outfit.dress = "none";
+  if (bakedBaseStarterOutfitIds.has(outfit.outfit)) outfit.outfit = "none";
 }
 
 function applyLegacyAccessory(outfit, itemId) {
@@ -313,7 +308,7 @@ export function updateProgressBadges(state) {
 
 export function outfitSummary(state) {
   const labels = [];
-  ["hairstyle", "top", "bottom", "dress", "shoes", "headTop", "headSide", "faceEyes", "faceMask", "neck", "hand"].forEach((type) => {
+  ["hairstyle", "outfit", "shoes", "headTop", "headSide", "faceEyes", "faceMask", "neck", "hand"].forEach((type) => {
     const item = itemById(state.outfit[type]);
     if (item) labels.push(item.name);
   });

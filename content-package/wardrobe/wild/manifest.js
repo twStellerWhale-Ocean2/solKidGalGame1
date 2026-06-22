@@ -6,10 +6,10 @@ const { wearable } = createWardrobePackTools("wild");
 // 野地單一服飾店 storeId="fairyAtelier"（Fairy Atelier）之資源包，含多類別衣物：
 // 洋裝／配件／外套／鞋（由原 wild-fairy-atelier／wild-dwarf-cottage 兩包合併，itemId 全數保留）。
 export const wildItems = [
-  // 洋裝／配件（原 wild-fairy-atelier）
-  wearable({ id: "coralFestivalDress", storeId: "fairyAtelier", type: "dress", name: "Coral fairy festival dress", cost: 250, icon: "Dress", asset: "dress-coral-festival" }),
-  wearable({ id: "starlightGown", storeId: "fairyAtelier", type: "dress", name: "Starlight fairy gown", cost: 270, icon: "Dress", asset: "dress-starlight-gown" }),
-  wearable({ id: "auroraGown", storeId: "fairyAtelier", type: "dress", name: "Aurora fairy gown", cost: 290, icon: "Dress", asset: "dress-aurora-gown" }),
+  // 整件 outfit／配件（原 wild-fairy-atelier 洋裝，issue #251：dress→outfit）
+  wearable({ id: "coralFestivalDress", storeId: "fairyAtelier", type: "outfit", name: "Coral fairy festival dress", cost: 250, icon: "Outfit", asset: "dress-coral-festival" }),
+  wearable({ id: "starlightGown", storeId: "fairyAtelier", type: "outfit", name: "Starlight fairy gown", cost: 270, icon: "Outfit", asset: "dress-starlight-gown" }),
+  wearable({ id: "auroraGown", storeId: "fairyAtelier", type: "outfit", name: "Aurora fairy gown", cost: 290, icon: "Outfit", asset: "dress-aurora-gown" }),
   wearable({ id: "silverGlasses", storeId: "fairyAtelier", type: "faceEyes", name: "Silver fairy glasses", cost: 190, icon: "Acc", asset: "faceeyes-silver-glasses" }),
   wearable({ id: "moonMask", storeId: "fairyAtelier", type: "faceMask", name: "Moon fairy mask", cost: 200, icon: "Acc", asset: "facemask-moon-mask" }),
   wearable({ id: "roseNecklace", storeId: "fairyAtelier", type: "neck", name: "Rose fairy necklace", cost: 210, icon: "Acc", asset: "neck-rose-necklace" }),

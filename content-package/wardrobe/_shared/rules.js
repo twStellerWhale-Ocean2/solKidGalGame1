@@ -4,9 +4,7 @@ export const paperDollLayerOrder = [
   "base",
   "head",
   "hairstyle",
-  "dress",
-  "bottom",
-  "top",
+  "outfit",
   "shoes",
   "neck",
   "hand",
@@ -21,9 +19,7 @@ export const paperDollLayerOrder = [
 // outfitSlots 是存檔與狀態正規化會使用的欄位清單。
 export const outfitSlots = [
   "hairstyle",
-  "top",
-  "bottom",
-  "dress",
+  "outfit",
   "shoes",
   "headTop",
   "headSide",
@@ -50,9 +46,7 @@ const layerBounds = (safeBox, renderBounds = fullCanvasBounds, targetBox = null)
 
 export const wardrobeLayerBoundsByType = Object.freeze({
   hairstyle: layerBounds({ left: 168, top: 280, right: 352, bottom: 570 }, { left: -6, top: -23, right: 6, bottom: 23 }),
-  top: layerBounds({ left: 149, top: 389, right: 369, bottom: 569 }, { left: -4, top: -9, right: 4, bottom: 9 }),
-  bottom: layerBounds({ left: 161, top: 459, right: 361, bottom: 666 }, { left: -6, top: -32, right: 6, bottom: 32 }),
-  dress: layerBounds({ left: 145, top: 405, right: 375, bottom: 730 }, { left: -5, top: -19, right: 5, bottom: 19 }),
+  outfit: layerBounds({ left: 145, top: 405, right: 375, bottom: 730 }, { left: -5, top: -19, right: 5, bottom: 19 }),
   shoes: layerBounds({ left: 201, top: 656, right: 311, bottom: 766 }, { left: -4, top: -3, right: 4, bottom: 3 }),
   headTop: layerBounds({ left: 186, top: 240, right: 326, bottom: 380 }, { left: -4, top: -14, right: 4, bottom: 14 }),
   headSide: layerBounds({ left: 255, top: 300, right: 355, bottom: 400 }, { left: -10, top: -8, right: 10, bottom: 8 }),
