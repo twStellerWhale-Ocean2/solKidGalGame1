@@ -1,6 +1,7 @@
 import { createKeyboardWalkController, directionForKey } from "../map/keyboard-walk.js";
 import { updateMarkerEdgeVisibility } from "../map/marker-visibility.js";
 import { assetStandards, assetSizeExemptions, classifyAssetPath } from "../../content-package/_shared/asset-standards.js";
+import { outfitSlots, paperDollLayerOrder, wardrobeLayerBoundsByType } from "../../content-package/wardrobe/_shared/rules.js";
 
 export function installTestingHooks(api) {
   window.LuminaraTest = {
@@ -1830,7 +1831,7 @@ async function collectPaperDollCharacterAudit(api, errors, warnings = []) {
     errors.push("default active character is missing");
   }
   const starterItems = (api.shopItems || []).filter((item) => item.storeId === "starter");
-  const starterLayerItems = starterItems.filter((item) => item.type === "hairstyle" || item.type === "dress");
+  const starterLayerItems = starterItems.filter((item) => item.type === "hairstyle" || item.type === "outfit");
   starterLayerItems.forEach((item) => {
     if (!Array.isArray(item.layers)) {
       errors.push(`starter item ${item.id} layers is not an array`);
@@ -1851,9 +1852,37 @@ async function collectPaperDollCharacterAudit(api, errors, warnings = []) {
       errors.push(`rosa activeCharacterId normalizes to ${rosa.activeCharacterId}`);
     }
     const bakedDefault = api.normalizeState({ outfit: { hairstyle: "softBrownHair", dress: "starterPajama" } });
-    if (bakedDefault.outfit.hairstyle !== "none" || bakedDefault.outfit.dress !== "none") {
+    if (bakedDefault.outfit.hairstyle !== "none" || bakedDefault.outfit.outfit !== "none") {
       errors.push("starter baked-base outfit did not normalize to no overlay");
     }
+  }
+  // issue #251 / intTest#52：服裝類型精簡（hair/outfit/shoes/accessories）與既有存檔遷移。
+  const categoryIds251 = (api.categories || []).map((category) => category.id);
+  if (categoryIds251.join(",") !== "hair,outfit,shoes,accessories") {
+    errors.push(`wardrobe categories ${JSON.stringify(categoryIds251)} != expected [hair,outfit,shoes,accessories] (issue #251)`);
+  }
+  const accessories251 = (api.categories || []).find((category) => category.id === "accessories");
+  if (!accessories251?.types?.includes("headTop")) {
+    errors.push("accessories category should include headTop type (hats merged into accessories, issue #251)");
+  }
+  const legacyTypeItems251 = (api.shopItems || []).filter((item) => ["top", "bottom", "dress"].includes(item.type));
+  if (legacyTypeItems251.length) {
+    errors.push(`removed clothing types still present in content: ${legacyTypeItems251.map((item) => `${item.id}:${item.type}`).join(", ")} (issue #251)`);
+  }
+  ["top", "bottom", "dress"].forEach((legacy) => {
+    if (outfitSlots.includes(legacy)) errors.push(`outfitSlots still contains legacy slot "${legacy}" (issue #251)`);
+    if (paperDollLayerOrder.includes(legacy)) errors.push(`paperDollLayerOrder still contains legacy layer "${legacy}" (issue #251)`);
+    if (wardrobeLayerBoundsByType[legacy]) errors.push(`wardrobeLayerBoundsByType still has legacy bounds "${legacy}" (issue #251)`);
+  });
+  if (!outfitSlots.includes("outfit")) errors.push("outfitSlots missing 'outfit' slot (issue #251)");
+  if (!wardrobeLayerBoundsByType.outfit) errors.push("wardrobeLayerBoundsByType missing 'outfit' bounds (issue #251)");
+  if (api.normalizeState) {
+    const legacyDressSave = api.normalizeState({ outfit: { dress: "blueDress", top: "coralBlouse", bottom: "skyShorts" } });
+    if (legacyDressSave.outfit.outfit !== "blueDress") errors.push(`legacy dress did not migrate to outfit slot (got ${legacyDressSave.outfit.outfit}, issue #251)`);
+    if ("top" in legacyDressSave.outfit || "bottom" in legacyDressSave.outfit) errors.push("legacy top/bottom slots not dropped on load (issue #251)");
+    if ("dress" in legacyDressSave.outfit) errors.push("legacy dress slot not renamed on load (issue #251)");
+    const legacyPiecesSave = api.normalizeState({ outfit: { hairstyle: "twinBraidHair", top: "coralBlouse", bottom: "skyShorts" } });
+    if (!legacyPiecesSave.outfit.outfit || legacyPiecesSave.outfit.outfit === "none") errors.push("save with only legacy top/bottom did not fall back to a default outfit (issue #251)");
   }
   for (const character of Object.values(registry)) {
     if (!character.id) errors.push("character without id");
@@ -1862,8 +1891,8 @@ async function collectPaperDollCharacterAudit(api, errors, warnings = []) {
     if (character.defaultOutfit?.hairstyle && character.defaultOutfit.hairstyle !== "none" && !starterIds.has(character.defaultOutfit.hairstyle)) {
       errors.push(`${character.id}/defaultOutfit.hairstyle points to non-starter item ${character.defaultOutfit.hairstyle}`);
     }
-    if (character.defaultOutfit?.dress && character.defaultOutfit.dress !== "none" && !starterIds.has(character.defaultOutfit.dress)) {
-      errors.push(`${character.id}/defaultOutfit.dress points to non-starter item ${character.defaultOutfit.dress}`);
+    if (character.defaultOutfit?.outfit && character.defaultOutfit.outfit !== "none" && !starterIds.has(character.defaultOutfit.outfit)) {
+      errors.push(`${character.id}/defaultOutfit.outfit points to non-starter item ${character.defaultOutfit.outfit}`);
     }
     const assets = {};
     // issue #214：base＝共用 neck-down body（無頭無髮、腳底 baseline 至畫布底）；head＝per-character 臉＋預設髮（限上半部、與身體頸部接縫重疊）。
@@ -2638,7 +2667,7 @@ function runVisualQa(api) {
 
   if (surface === "wardrobe-detail") {
     const requestedItem = api.itemById(params.get("item"));
-    const category = params.get("category") || api.categoryForType(requestedItem?.type)?.id || "dresses";
+    const category = params.get("category") || api.categoryForType(requestedItem?.type)?.id || "outfit";
     api.render();
     api.openRoomScene(api.hotspotById("princessRoom"));
     api.openWardrobeDetail(category);

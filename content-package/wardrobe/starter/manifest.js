@@ -46,10 +46,10 @@ export const starterItems = [
   {
     id: "starterPajama",
     storeId: "starter",
-    type: "dress",
+    type: "outfit",
     name: "Starter rose play outfit",
     cost: 0,
-    icon: "Dress",
+    icon: "Outfit",
     image: paperDollBaseLayer,
     layers: []
   }

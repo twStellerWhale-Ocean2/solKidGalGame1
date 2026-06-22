@@ -51,8 +51,7 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
     }
     const slots = [
       "hairstyle",
-      outfitState.dress && outfitState.dress !== "none" ? "dress" : "bottom",
-      outfitState.dress && outfitState.dress !== "none" ? null : "top",
+      "outfit",
       "shoes",
       "headTop",
       "headSide",

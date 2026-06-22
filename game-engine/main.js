@@ -162,12 +162,12 @@ const SPEECH_DEBOUNCE_MS = 120;
 const SPEECH_LEADING_PAD = "　　　　　　　　"; // issue #134 design paramSpeechLeadingPad：送入 utterance 前於開頭加入前置留白，延後首字、改善開頭清楚度（8 個全形空白 U+3000）
 const VOICE_ASSIGNMENT_KEY = "luminara-princess-english-voice"; // issue #134 design paramVoiceAssignmentKey：使用者語音指定（gender×personality→voice name）之全機儲存鍵
 const SPEECH_DIAGNOSTICS_MAX = 80;
-let shopCategory = "dresses";
+let shopCategory = "outfit";
 let activeShopHotspot = null;
 // issue #164：本次場景造訪已播歡迎詞之 hotspot id。同一造訪內返回第一層場景選單不重播歡迎詞，
 // 離場（closeAdv／openArea 場景切換）清空，使下次造訪重新播放一次。為暫態、不持久化存檔。
 let sceneVisitWelcomeId = "";
-let wardrobeCategory = "dresses";
+let wardrobeCategory = "outfit";
 let princessExpression = "normal";
 let npcExpression = "normal";
 let advFocusIndex = 0;
@@ -833,8 +833,8 @@ function applyCharacterStarterOutfit(character) {
   if (isStarterWardrobeItem(state.outfit.hairstyle, "hairstyle") && starterOutfit.hairstyle) {
     state.outfit.hairstyle = starterOutfit.hairstyle;
   }
-  if (isStarterWardrobeItem(state.outfit.dress, "dress") && starterOutfit.dress) {
-    state.outfit.dress = starterOutfit.dress;
+  if (isStarterWardrobeItem(state.outfit.outfit, "outfit") && starterOutfit.outfit) {
+    state.outfit.outfit = starterOutfit.outfit;
   }
 }
 
@@ -1076,9 +1076,7 @@ function renderAdvDoll(outfitState, isTryOn = false) {
   if (!doll) return;
   doll.innerHTML = avatarMarkup("adv", outfitState);
   doll.dataset.hairstyle = outfitState.hairstyle || "none";
-  doll.dataset.top = outfitState.top || "none";
-  doll.dataset.bottom = outfitState.bottom || "none";
-  doll.dataset.dress = outfitState.dress || "none";
+  doll.dataset.outfit = outfitState.outfit || "none";
   doll.dataset.shoes = outfitState.shoes || "none";
   doll.dataset.headTop = outfitState.headTop || "none";
   doll.dataset.headSide = outfitState.headSide || "none";
@@ -1267,13 +1265,6 @@ function equipOutfitItem(item, outfit = state.outfit) {
     outfit.room = item.id;
     return outfit;
   }
-  if (item.type === "dress") {
-    outfit.top = "none";
-    outfit.bottom = "none";
-  }
-  if (item.type === "top" || item.type === "bottom") {
-    outfit.dress = "none";
-  }
   outfit[item.type] = item.id;
   return normalizeVisibleOutfit(outfit);
 }
@@ -1286,14 +1277,8 @@ function unequipOutfitItem(item, outfit = state.outfit) {
 
 function normalizeVisibleOutfit(outfit = state.outfit) {
   if (!outfit.hairstyle || outfit.hairstyle === "none") outfit.hairstyle = "softBrownHair";
-  if (outfit.dress && outfit.dress !== "none") {
-    outfit.top = "none";
-    outfit.bottom = "none";
-    return outfit;
-  }
-  if ((!outfit.top || outfit.top === "none") && (!outfit.bottom || outfit.bottom === "none")) {
-    outfit.dress = "starterPajama";
-  }
+  // #251：身上恆有整件 outfit（無分件上下身）；空 outfit 退回 starter 整件，避免下半身裸露。
+  if (!outfit.outfit || outfit.outfit === "none") outfit.outfit = "starterPajama";
   return outfit;
 }
 
@@ -2324,7 +2309,7 @@ function openShopDetail(hotspot) {
   openAdvBase(hotspot, "shop");
   activeShopHotspot = hotspot;
   addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
-  const firstCategory = hotspot.defaultCategory || hotspot.shopCategories?.[0] || "dresses";
+  const firstCategory = hotspot.defaultCategory || hotspot.shopCategories?.[0] || "outfit";
   const stockedCategories = availableShopCategories(hotspot);
   shopCategory = stockedCategories.includes(shopCategory) ? shopCategory : stockedCategories[0] || firstCategory;
   clearTryOnPreview({ renderDoll: false });
@@ -2352,7 +2337,7 @@ function openRefundDetail(hotspot) {
   speak(elements.advLine.textContent, npcVoiceFor(hotspot), { source: "npc-refund" });
 }
 
-function openWardrobeDetail(category = "dresses") {
+function openWardrobeDetail(category = "outfit") {
   const hotspot = hotspotById("princessRoom");
   activeShopHotspot = hotspot;
   advMode = "wardrobe";
@@ -2448,7 +2433,7 @@ function shopGreeting(hotspot) {
 function renderAdvShop(preserveFocus = false, { closet = false } = {}) {
   const stockedCategories = closet ? ownedWardrobeCategories() : availableShopCategories();
   if (!closet && !stockedCategories.includes(shopCategory)) {
-    shopCategory = stockedCategories[0] || allowedShopCategories()[0] || "dresses";
+    shopCategory = stockedCategories[0] || allowedShopCategories()[0] || "outfit";
   }
   elements.advShopTabs.innerHTML = ""; // 多欄貨架已含類別標題，不再需要上方類別分頁。
   // issue #244：商店與衣櫃為單一機制——穿脫互動一律走同一來源 shopTryOnState／toggleShopTryOn／updateShopTileStates
@@ -2535,8 +2520,6 @@ function toggleShopTryOn(item) {
       const other = itemById(id);
       if (!other) return false;
       if (other.type === item.type) return false;
-      if (item.type === "dress" && (other.type === "top" || other.type === "bottom")) return false;
-      if ((item.type === "top" || item.type === "bottom") && other.type === "dress") return false;
       return true;
     });
     shopTryOnIds.push(item.id);

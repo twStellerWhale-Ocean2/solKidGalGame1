@@ -4,7 +4,7 @@ const { wearable } = createWardrobePackTools("castle");
 
 //#region Castle 衣物資源包（issue #210：一區一店一包）
 // 城堡區單一服飾店 storeId="castleSeamstress"（Castle Seamstress）之資源包，含多類別衣物：
-// 髮型／上衣／下身／外套／頭飾（由原 castle-seamstress／castle-royal-cloak-room 合併，itemId 全數保留）。
+// 髮型／頭飾（原含上衣／下身／外套，分別於 #251／#244 移除；其餘 itemId 保留以相容存檔）。
 // 髮型（原 urban hair-salon）於本次調整自 urban 包搬入，itemId 不變以相容既有存檔。
 export const castleItems = [
   // 髮型（自 urban 搬入）
@@ -18,13 +18,7 @@ export const castleItems = [
   wearable({ id: "silverBobHair", storeId: "castleSeamstress", type: "hairstyle", name: "Silver bob hair", cost: 180, icon: "Hair", asset: "hairstyle-blonde-bob-silver" }),
   wearable({ id: "lavenderBobHair", storeId: "castleSeamstress", type: "hairstyle", name: "Lavender bob hair", cost: 200, icon: "Hair", asset: "hairstyle-blonde-bob-lavender" }),
   wearable({ id: "cocoaBobHair", storeId: "castleSeamstress", type: "hairstyle", name: "Cocoa bob hair", cost: 220, icon: "Hair", asset: "hairstyle-blonde-bob-cocoa" }),
-  // 上衣／下身（原 castle-seamstress）
-  wearable({ id: "coralBlouse", storeId: "castleSeamstress", type: "top", name: "Coral castle blouse", cost: 90, icon: "Top", asset: "top-coral-blouse" }),
-  wearable({ id: "roseSailorTop", storeId: "castleSeamstress", type: "top", name: "Rose sailor top", cost: 110, icon: "Top", asset: "top-rose-sailor" }),
-  wearable({ id: "aquaSailorTop", storeId: "castleSeamstress", type: "top", name: "Aqua sailor top", cost: 130, icon: "Top", asset: "top-aqua-sailor" }),
-  wearable({ id: "skyShorts", storeId: "castleSeamstress", type: "bottom", name: "Sky castle shorts", cost: 100, icon: "Bottom", asset: "bottom-sky-shorts" }),
-  wearable({ id: "lilacSkirt", storeId: "castleSeamstress", type: "bottom", name: "Lilac castle skirt", cost: 120, icon: "Bottom", asset: "bottom-lilac-skirt" }),
-  // 頭飾（issue #244：移除 outerwear 外套類型）
+  // 頭飾（issue #244：移除 outerwear 外套類型；issue #251：移除分件 tops/bottoms 上衣下身類型）
   wearable({ id: "pearlTiara", storeId: "castleSeamstress", type: "headTop", name: "Pearl royal tiara", cost: 80, icon: "Hat", asset: "headtop-pearl-tiara" }),
   wearable({ id: "starryTiara", storeId: "castleSeamstress", type: "headTop", name: "Starry royal tiara", cost: 100, icon: "Hat", asset: "headtop-starry-tiara" }),
   wearable({ id: "rubyTiara", storeId: "castleSeamstress", type: "headTop", name: "Ruby royal tiara", cost: 120, icon: "Hat", asset: "headtop-ruby-tiara" })

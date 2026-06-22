@@ -77,9 +77,7 @@
  * @typedef {object} OutfitState
  * @property {string=} room
  * @property {string=} hairstyle
- * @property {string=} top
- * @property {string=} bottom
- * @property {string=} dress
+ * @property {string=} outfit
  * @property {string=} shoes
  * @property {string=} headTop
  * @property {string=} headSide

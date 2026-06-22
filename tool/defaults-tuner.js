@@ -20,11 +20,11 @@ function initDefaultsTab() {
   const itemMap = new Map(shopItems.map((item) => [item.id, item]));
   // 有實際 overlay layer 的單品才放進 outfit 下拉（starter 單品 layers 為空、穿了等於沒穿，排除以免誤會）。
   const wearableItems = shopItems.filter((item) => Array.isArray(item.layers) && item.layers.length > 0);
-  // outfit slot 顯示順序＝類別顯示順序攤平（hair→hats→tops→…→accessories 各 slot）。
+  // outfit slot 顯示順序＝類別顯示順序攤平（hair→outfit→shoes→accessories 各 slot；#251 移除 tops/bottoms、dress→outfit）。
   const slotOrder = categories.flatMap((cat) => cat.types).filter((slot) => outfitSlots.includes(slot));
   const slotLabel = {
-    hairstyle: "髮型 Hair", headTop: "帽飾 Hats", top: "上衣 Top", bottom: "下身 Bottom",
-    dress: "洋裝 Dress", shoes: "鞋 Shoes", headSide: "頭側 Ribbon",
+    hairstyle: "髮型 Hair", outfit: "整件 Outfit",
+    shoes: "鞋 Shoes", headTop: "帽飾 Hats", headSide: "頭側 Ribbon",
     faceEyes: "眼鏡 Glasses", faceMask: "面飾 Mask", neck: "頸飾 Necklace", hand: "手持 Bag"
   };
 
@@ -83,9 +83,6 @@ function initDefaultsTab() {
 
   function onSlotChange(slot, value) {
     state.outfit[slot] = value;
-    // 洋裝與上衣/下身互斥（比照 game-state.js normalizeOutfit）。
-    if (slot === "dress" && value !== "none") { state.outfit.top = "none"; state.outfit.bottom = "none"; }
-    if ((slot === "top" || slot === "bottom") && value !== "none") { state.outfit.dress = "none"; }
     if (value !== "none") state.owned.add(value); // 裝備中的單品自動視為已擁有
     renderOutfitSelects();
     renderOwned();
