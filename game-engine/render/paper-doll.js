@@ -25,9 +25,7 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
       doll.innerHTML = avatarMarkup(doll.dataset.doll || "side", outfit, character);
       doll.dataset.characterId = character?.id || "";
       doll.dataset.hairstyle = outfit.hairstyle || "none";
-      doll.dataset.top = outfit.top || "none";
-      doll.dataset.bottom = outfit.bottom || "none";
-      doll.dataset.dress = outfit.dress || "none";
+      doll.dataset.outfit = outfit.outfit || "none";
       doll.dataset.shoes = outfit.shoes || "none";
       doll.dataset.headTop = outfit.headTop || "none";
       doll.dataset.headSide = outfit.headSide || "none";

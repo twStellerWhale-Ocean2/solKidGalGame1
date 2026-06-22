@@ -6,6 +6,7 @@
 export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
+  { version: "0.54.6", buildDateTime: "2026-06-22", summaryZh: "修正換裝圖層順序：上一版改名 outfit 時漏改 CSS z-index，導致公主身體蓋住衣服；改回衣服正確疊在身體之上，並加上回歸自我測試" },
   { version: "0.54.5", buildDateTime: "2026-06-22", summaryZh: "簡化服裝類型：移除分開的上衣／下身（top／bottom），整件衣服統一為 outfit（原 dress 改名），帽子併入配件分類；衣櫃服裝分類精簡為髮型／整件 outfit／鞋／配件四類，既有存檔自動相容（移除已不存在的上衣下身、舊洋裝轉為整件）" },
   { version: "0.54.4", buildDateTime: "2026-06-22", summaryZh: "公主房穿脫衣物改為直接走商店那顆「Try on」鈕的同一套程式（單一來源）：穿脫鈕移到左側、按下就地更新不再整面重跳、且能正常穿脫；並移除 outerwear（外套）衣物類型與其商品、素材" },
   { version: "0.54.3", buildDateTime: "2026-06-22", summaryZh: "公主房衣櫃不再列出各角色內建的 starter 預設髮（那 4 個沒有單品素材、預覽是空框）；並把商店與衣櫃的單品預覽圖放大為填滿欄寬的正方形，去除商品照片上下留白" },
@@ -38,7 +39,7 @@ export const versionHistory = [
 ];
 
 export const buildInfo = {
-  version: "0.54.5",
+  version: "0.54.6",
   buildDate: "2026-06-22",
   buildDateTime: "2026-06-22",
   issues: ["#251"]

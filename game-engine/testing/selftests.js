@@ -369,6 +369,20 @@ function runCharacterSilhouetteSelfTest(api) {
   expectLayerUnshadowed("ADV 公主", ".adv-doll");
   expectDropShadow("ADV NPC", filterOf(".adv-npc"), 3);
 
+  // issue #251：整件 outfit 圖層 z-index 須高於 base/head（衣服疊在身體之上、不被身體蓋住）。
+  // 防範 paper-doll.css 之 slot-keyed z-index 與 rules.js 圖層改名脫鉤（dress→outfit）之回歸。
+  const zIndexOf = (selector) => {
+    const el = document.querySelector(selector);
+    return el ? getComputedStyle(el).zIndex : null;
+  };
+  const baseZ = Number(zIndexOf(".adv-doll .paper-doll-layer-base"));
+  const outfitZRaw = zIndexOf(".adv-doll .paper-doll-layer-outfit");
+  if (outfitZRaw === null) {
+    errors.push("ADV 公主缺少 .paper-doll-layer-outfit（預設應穿戴整件 outfit，issue #251）");
+  } else if (!(Number(outfitZRaw) > baseZ)) {
+    errors.push(`outfit 圖層 z-index（${outfitZRaw}）未高於 base（${baseZ}）——衣服會被身體蓋住（issue #251 z-index 回歸）`);
+  }
+
   const doll = document.querySelector(".adv-doll");
   doll?.classList.add("try-on-active");
   expectDropShadow("試穿狀態光暈", filterOf(".adv-doll.try-on-active"), 2);

@@ -64,9 +64,8 @@
 /* issue #214：head（臉＋預設髮）疊在共用 body 之上、髮型之下；與 base 同層級，靠合成順序（base 先、head 後）使 head 蓋住 body 頸部。 */
 .paper-doll-layer-head { z-index: 2; }
 .paper-doll-layer-hairstyle { z-index: 3; }
-.paper-doll-layer-dress,
-.paper-doll-layer-bottom,
-.paper-doll-layer-top { z-index: 4; }
+/* issue #251：整件 outfit（原 dress；分件 top/bottom 已移除）疊於 base/head/hairstyle 之上。 */
+.paper-doll-layer-outfit { z-index: 4; }
 .paper-doll-layer-shoes { z-index: 6; }
 .paper-doll-layer-neck { z-index: 7; }
 .paper-doll-layer-hand { z-index: 7; }
