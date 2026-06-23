@@ -40,8 +40,8 @@ export const versionHistory = [
 ];
 
 export const buildInfo = {
-  version: "0.55.0",
-  buildDate: "2026-06-22",
-  buildDateTime: "2026-06-22",
-  issues: ["#246"]
+  version: "0.55.1",
+  buildDate: "2026-06-23",
+  buildDateTime: "2026-06-23",
+  issues: ["#260"]
 };

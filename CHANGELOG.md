@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.55.1 — 2026-06-23 _(internal)_
+- refactor (#260): 管理設定工具導覽改依 content-package 資料包分組（公主／衣物／地圖與場景／聲音 兩層導覽，舊深連結相容），並改為管理網站版面（左側 Navigation Drawer ＋ Top App Bar ＋ Main Content）、全面板套用 MD3 視覺規範 token（粉彩種子、system/light/dark）；屬本機 dev 維護者工具、不影響公開遊戲
+
 ## 0.55.0 — 2026-06-22
 - feat (#246): 角色語音指定（依性別×性格挑選瀏覽器語音）從遊戲設定移到維護者用的管理設定工具新分頁「聲音管理」（本機 dev 環境才出現，可逐桶試聽）；公開遊戲設定不再提供語音挑選、改為一律自動依性別與語言選用，設定頁僅保留 Voice 開關
 
