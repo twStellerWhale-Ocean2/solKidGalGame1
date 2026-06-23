@@ -786,6 +786,40 @@ button.active {
   border-color: transparent;
 }
 
+/* issue #260：兩層導覽——頂層資料包群組 ＋ 包內子分頁（地圖與場景）。視覺收斂於後續切片。 */
+.app-groups,
+.app-subtabs {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.app-subtabs {
+  margin-left: auto;
+  align-items: center;
+}
+
+.app-subtab {
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.app-subtab:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.app-subtab.active {
+  background: #f8f2f5;
+  color: #7b1f4d;
+  border-color: transparent;
+}
+
 .editor-panel[hidden] {
   display: none;
 }

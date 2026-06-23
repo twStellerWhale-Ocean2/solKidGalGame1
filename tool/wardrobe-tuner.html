@@ -8,13 +8,11 @@
   <link rel="stylesheet" href="./wardrobe-tuner.css">
 </head>
 <body>
-  <!-- 上方功能頁籤（professional editor 慣例：上＝功能頁籤）。 -->
+  <!-- 上方導覽（issue #260 / spec#13）：頂層＝content-package 資料包；「地圖與場景」含包內子分頁。
+       按鈕由 editor-tabs.js 依資料包模型建立，hash 深連結沿用 panel 名（舊連結相容）。 -->
   <nav class="app-tabs" aria-label="編輯器功能">
-    <button type="button" class="app-tab active" data-tab="wardrobe">👗 衣物設定</button>
-    <button type="button" class="app-tab" data-tab="defaults">👑 公主預設</button>
-    <button type="button" class="app-tab" data-tab="map">🗺 地圖設定</button>
-    <button type="button" class="app-tab" data-tab="scene">🎭 場景設定</button>
-    <button type="button" class="app-tab" data-tab="voice">🔊 聲音管理</button>
+    <div class="app-groups" id="appGroups" role="tablist" aria-label="內容資料包"></div>
+    <div class="app-subtabs" id="appSubtabs" aria-label="包內子頁" hidden></div>
   </nav>
 
   <!-- ===== 衣物設定 ===== -->
