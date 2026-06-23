@@ -28,7 +28,7 @@ description: 靜態類技術選型 Profile —— HTML + JS + CSS（無框架）
 * **平行靜態資源包（一律附加）**：同一網站包除掛入 static-serve chart 外，**一律額外輸出一份裸靜態檔可攜物**（平行交付物，見 [2tech-devSet-release/RELEASE.md] §3），供 GitHub Pages／CDN 等第三方靜態託管；是否實際推上第三方由 design.md 指定，但輸出該包不以此為條件。
 * **主題 tokens（Material Design 3）**：品牌種子色與字體屬設計決策（記於 `docs/design-visual/`，含參考稿），經 Material Theme Builder 由種子生成 token、**生成一次、commit 為定本後唯讀引用、不重生**（避免色彩漂移）。頁面/build 以 CSS 變數（如 `--md-sys-color-primary`）套用；衍生值由工具/AI 產生，不手工逐一刻。token 定本歸 `contract-local` 或前端 `theme/`。
 * **元件通則**：引用**通用 hmiIntf 契約**之跨 repo UX 通則，以 MD3 為基座，不自訂重造。
-* **視覺規範**：涉及說明網站時依 hmiIntf 視覺規範之說明網站規範實作。
+* **視覺規範**：涉及說明網站時依 hmiIntf 視覺規範之說明網站規範實作；涉及管理網站／Dashboard／CRUD（如維護者管理設定工具）時依其管理網站規範實作。
 
 # IV. 備註紀錄
 

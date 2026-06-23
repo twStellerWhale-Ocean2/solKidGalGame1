@@ -38,8 +38,11 @@ foreach ($dir in @($commonDir, $localDir)) {
         Add-Violation "${dirName}/ 缺少 README.md（分類說明與格式對照表）"
     }
     Get-ChildItem -LiteralPath $dir -Directory | ForEach-Object {
-        if ($allowedCategories -notcontains $_.Name) {
-            Add-Violation "${dirName}/$($_.Name)/ 不在契約分類白名單（$($allowedCategories -join '/')）"
+        $sub = $_
+        # 接受「分類名」或「以分類前綴開頭」之資料夾型契約（folder 即一份契約，如 hmiIntf通用視覺規範/）
+        $matched = $allowedCategories | Where-Object { $sub.Name -clike ($_ + '*') }
+        if (-not $matched) {
+            Add-Violation "${dirName}/$($sub.Name)/ 不在契約分類白名單（$($allowedCategories -join '/')）"
         }
     }
 }
