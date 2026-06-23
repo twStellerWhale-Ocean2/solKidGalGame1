@@ -5,15 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Luminara Editor</title>
   <link rel="stylesheet" href="../styles/paper-doll.css">
+  <link rel="stylesheet" href="./theme-md3.css">
   <link rel="stylesheet" href="./wardrobe-tuner.css">
 </head>
 <body>
-  <!-- 上方導覽（issue #260 / spec#13）：頂層＝content-package 資料包；「地圖與場景」含包內子分頁。
-       按鈕由 editor-tabs.js 依資料包模型建立，hash 深連結沿用 panel 名（舊連結相容）。 -->
-  <nav class="app-tabs" aria-label="編輯器功能">
-    <div class="app-groups" id="appGroups" role="tablist" aria-label="內容資料包"></div>
-    <div class="app-subtabs" id="appSubtabs" aria-label="包內子頁" hidden></div>
-  </nav>
+  <!-- 管理網站版面（issue #260 / spec#13；依 [hmiIntf通用視覺規範] 管理網站規範）：
+       Top App Bar ＋ 左側 Navigation Drawer ＋ Main Content。導覽由 editor-tabs.js 依內容資料包模型建立；
+       hash 深連結沿用 panel 名（舊 #wardrobe/#defaults/#map/#scene/#voice 相容）。 -->
+  <div class="admin-shell" id="adminShell">
+    <aside class="admin-drawer" aria-label="導覽">
+      <div class="drawer-logo">🪄 Luminara<span class="drawer-logo-sub">管理設定工具</span></div>
+      <nav class="drawer-nav" id="appGroups" aria-label="內容資料包"></nav>
+      <nav class="drawer-subnav" id="appSubtabs" aria-label="包內子頁" hidden></nav>
+      <div class="drawer-spacer"></div>
+      <div class="drawer-user">👤 維護者 · dev</div>
+    </aside>
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <button type="button" class="topbar-menu" id="appMenuBtn" aria-label="收合／展開導覽">☰</button>
+        <div class="topbar-titles">
+          <div class="topbar-crumb" id="appBreadcrumb"></div>
+          <h1 class="topbar-title" id="appTitle"></h1>
+        </div>
+      </header>
+      <div class="admin-content">
 
   <!-- ===== 衣物設定 ===== -->
   <section id="panel-wardrobe" class="editor-panel" data-panel="wardrobe">
@@ -284,6 +299,9 @@
       </aside>
     </main>
   </section>
+      </div><!-- /.admin-content -->
+    </div><!-- /.admin-main -->
+  </div><!-- /.admin-shell -->
 
   <script type="module" src="./wardrobe-tuner.js"></script>
   <script type="module" src="./defaults-tuner.js"></script>

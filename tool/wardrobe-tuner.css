@@ -1,7 +1,7 @@
 :root {
-  color: #332637;
-  background: #f8f2f5;
-  font-family: "Segoe UI", system-ui, sans-serif;
+  color: var(--md-sys-color-on-background, #332637);
+  background: var(--md-sys-color-background, #f8f2f5);
+  font-family: var(--md-font-sans, "Segoe UI", system-ui, sans-serif);
 }
 
 * {
@@ -747,77 +747,201 @@ button.active {
   font-weight: 600;
 }
 
-/* ===== issue #218：上方功能頁籤＋多分頁編輯器外框 ===== */
+/* ===== issue #260：管理網站版面（Top App Bar ＋ 左側 Navigation Drawer ＋ Main Content）=====
+   依 [hmiIntf通用視覺規範] 管理網站規範 ＋ MD3 token（theme-md3.css）。 */
 :root {
-  --tabbar-h: 48px;
+  --tabbar-h: var(--admin-topbar-h, 64px); /* 沿用既有 panel 高度計算鍵；現＝Top App Bar 高 */
 }
 
-.app-tabs {
-  position: sticky;
-  top: 0;
-  z-index: 40;
+.admin-shell {
+  display: grid;
+  grid-template-columns: var(--admin-drawer-w, 280px) 1fr;
+  height: 100vh;
+  background: var(--md-sys-color-background, #fdfbff);
+  color: var(--md-sys-color-on-background, #1b1b1f);
+}
+
+.admin-shell.collapsed {
+  grid-template-columns: var(--admin-drawer-collapsed-w, 80px) 1fr;
+}
+
+/* ── 左側 Navigation Drawer ── */
+.admin-drawer {
   display: flex;
-  gap: 6px;
-  height: var(--tabbar-h);
-  padding: 6px 10px;
-  background: #2f2230;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  flex-direction: column;
+  gap: var(--md-sp-1, 4px);
+  height: 100vh;
+  padding: var(--md-sp-3, 12px) var(--md-sp-2, 8px);
+  background: var(--md-sys-color-surface-container-low, #f7f2fa);
+  border-right: 1px solid var(--md-sys-color-outline-variant, #c9c5d0);
+  overflow: hidden;
 }
 
-.app-tab {
+.drawer-logo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--md-sp-2, 8px) var(--md-sp-3, 12px) var(--md-sp-4, 16px);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface, #1b1b1f);
+  white-space: nowrap;
+}
+
+.drawer-logo-sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface-variant, #47464f);
+}
+
+.drawer-nav,
+.drawer-subnav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sp-1, 4px);
+}
+
+.drawer-subnav {
+  margin: var(--md-sp-1, 4px) 0 0 var(--md-sp-4, 16px);
+  padding-left: var(--md-sp-2, 8px);
+  border-left: 1px solid var(--md-sys-color-outline-variant, #c9c5d0);
+}
+
+/* Drawer 導覽項（MD3 nav item：full-pill、active＝secondary-container） */
+.nav-item,
+.nav-subitem {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sp-3, 12px);
   min-height: 0;
-  padding: 0 18px;
+  height: 48px;
+  padding: 0 var(--md-sp-4, 16px);
   border: 1px solid transparent;
-  border-radius: 8px 8px 0 0;
+  border-radius: var(--md-radius-lg, 16px);
   background: transparent;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--md-sys-color-on-surface-variant, #47464f);
   font-size: 14px;
   font-weight: 600;
+  text-align: left;
 }
 
-.app-tab:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-}
-
-.app-tab.active {
-  background: #f8f2f5;
-  color: #7b1f4d;
-  border-color: transparent;
-}
-
-/* issue #260：兩層導覽——頂層資料包群組 ＋ 包內子分頁（地圖與場景）。視覺收斂於後續切片。 */
-.app-groups,
-.app-subtabs {
-  display: flex;
-  gap: 6px;
-  align-items: stretch;
-}
-
-.app-subtabs {
-  margin-left: auto;
-  align-items: center;
-}
-
-.app-subtab {
-  padding: 0 12px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.78);
+.nav-subitem {
+  height: 40px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
-.app-subtab:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+.nav-ico {
+  flex: none;
+  width: 24px;
+  text-align: center;
 }
 
-.app-subtab.active {
-  background: #f8f2f5;
-  color: #7b1f4d;
+.nav-txt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-item:hover,
+.nav-subitem:hover {
+  background: var(--md-sys-color-surface-container-high, #ebe6ee);
+  color: var(--md-sys-color-on-surface, #1b1b1f);
+}
+
+.nav-item.active,
+.nav-subitem.active {
+  background: var(--md-sys-color-secondary-container, #dae2ff);
+  color: var(--md-sys-color-on-secondary-container, #001b3f);
   border-color: transparent;
+}
+
+.drawer-spacer {
+  flex: 1;
+}
+
+.drawer-user {
+  padding: var(--md-sp-3, 12px);
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant, #47464f);
+  border-top: 1px solid var(--md-sys-color-outline-variant, #c9c5d0);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 收合（80dp）：只留 logo emoji 與主導覽 icon，隱藏文字與子導覽 */
+.admin-shell.collapsed .drawer-logo-sub,
+.admin-shell.collapsed .drawer-user,
+.admin-shell.collapsed .nav-txt,
+.admin-shell.collapsed .drawer-subnav {
+  display: none;
+}
+
+.admin-shell.collapsed .nav-item {
+  justify-content: center;
+  padding: 0;
+}
+
+/* ── Main（Top App Bar ＋ Content）── */
+.admin-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100vh;
+}
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sp-3, 12px);
+  height: var(--admin-topbar-h, 64px);
+  padding: 0 var(--md-sp-4, 16px);
+  background: var(--md-sys-color-surface, #fdfbff);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant, #c9c5d0);
+}
+
+.topbar-menu {
+  min-height: 0;
+  width: 40px;
+  height: 40px;
+  border: 1px solid transparent;
+  border-radius: var(--md-radius-md, 12px);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant, #47464f);
+  font-size: 18px;
+}
+
+.topbar-menu:hover {
+  background: var(--md-sys-color-surface-container-high, #ebe6ee);
+  color: var(--md-sys-color-on-surface, #1b1b1f);
+}
+
+.topbar-titles {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.topbar-crumb {
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant, #47464f);
+}
+
+.topbar-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface, #1b1b1f);
+}
+
+.admin-content {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  background: var(--md-sys-color-background, #fdfbff);
 }
 
 .editor-panel[hidden] {
