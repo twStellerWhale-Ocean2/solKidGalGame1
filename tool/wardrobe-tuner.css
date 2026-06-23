@@ -1349,7 +1349,7 @@ button.active {
   align-items: start;
   padding: 14px;
   background: var(--md-sys-color-surface);
-  border: 1px solid rgba(91, 62, 100, 0.14);
+  border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: 10px;
 }
 
@@ -1358,7 +1358,7 @@ button.active {
   height: 120px;
   object-fit: cover;
   border-radius: 8px;
-  background: #f8f2f5;
+  background: var(--md-sys-color-surface-variant);
 }
 
 .scene-meta-fields {
@@ -1386,12 +1386,12 @@ button.active {
 
 .scene-bank {
   background: var(--md-sys-color-surface);
-  border: 1px solid rgba(91, 62, 100, 0.14);
+  border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: 10px;
   padding: 12px 14px;
 }
 
-.scene-bank-chat { background: #fbf7ff; }
+.scene-bank-chat { background: var(--md-sys-color-surface-container-low); }
 
 .scene-bank h3 {
   margin: 0 0 8px;
@@ -1426,7 +1426,7 @@ button.active {
   margin-bottom: 4px;
 }
 
-.scene-in.zh { background: #fcfbfd; }
+.scene-in.zh { background: var(--md-sys-color-surface-container-low); }
 
 .scene-choice {
   display: grid;
@@ -1498,7 +1498,7 @@ button.active {
 
 .voice-assign-default {
   background: var(--md-sys-color-secondary-container);
-  border-color: rgba(204, 76, 135, 0.32);
+  border-color: var(--md-sys-color-outline-variant);
 }
 
 .voice-assign-name {
@@ -1509,7 +1509,7 @@ button.active {
 .voice-assign-select {
   width: 100%;
   min-height: 36px;
-  border: 1px solid rgba(91, 62, 100, 0.24);
+  border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: 6px;
   background: var(--md-sys-color-surface);
   padding: 4px 8px;
@@ -1523,6 +1523,28 @@ button.active {
 }
 
 .voice-assign-empty {
-  color: #7a6b78;
+  color: var(--md-sys-color-on-surface-variant);
   font-weight: 700;
+}
+
+/* ===== issue #260 §5C：互動回饋與無障礙（通用性規範 §D 無障礙／§E 互動回饋）===== */
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+.pack-btn:hover,
+.file-button:hover,
+.add-toggle:hover,
+.category-tabs button:hover,
+.type-tabs button:hover,
+.mode-tabs button:hover,
+.scene-gen-fallback button:hover {
+  background: var(--md-sys-color-surface-container-high);
+}
+
+.apply-button:hover:not(:disabled),
+.add-submit:hover:not(:disabled),
+.voice-assign-preview:hover {
+  filter: brightness(0.96);
 }
