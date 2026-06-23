@@ -205,6 +205,17 @@ if ($rII) {
   }
 }
 
+# ---------- II16：web 類 techStack 須附介面設計（hmiIntf 視覺規範綁定或 sitemap）----------
+# 本 repo 變體：techStack 宣告於＜II.D＞values.yaml 之 paramTechStack（非 🧱）；介面設計併於＜II.C＞呈現。
+if ($rII) {
+  $txtII = (Get-Seg $rII) -join "`n"
+  if ($txtII -match 'paramTechStack\s*=\s*`?(techStackStaticWeb|techStackReactWeb)') {
+    if (-not (($txtII -match 'hmiIntf通用視覺規範') -or ($txtII -match 'sitemap'))) {
+      Add-V 'II16' ($rII.Start + 1) '＜II＞偵測到 web 類 techStack，須於介面設計呈現 [hmiIntf通用視覺規範] 綁定或 sitemap（FORMAT II16）'
+    }
+  }
+}
+
 # ---------- ＜III＞ ----------
 $rIII = Get-ChapterRange 'III. 測試規格'
 if ($rIII) {
