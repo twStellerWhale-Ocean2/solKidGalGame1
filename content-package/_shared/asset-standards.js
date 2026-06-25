@@ -37,4 +37,9 @@ export function classifyAssetPath(path) {
 // 目前無豁免——現存超標資產（rural/urban/wild 地區地圖與 6 張 wild 場景）已於 #197 重壓縮至預算內。
 export const assetSizeExemptions = {
   // "content-package/areas/xxx/assets/xxx.webp": "豁免理由（具名、可審計）"
+  // #263 四包重作試行素材：未達 #196 長邊貼滿 90% 標準（data-audit）。經 USR 同意暫時豁免以解鎖 main，
+  // 待以影像模型重生長邊貼滿版後移除此三筆豁免（追蹤於 #263 試行收尾）。
+  "content-package/wardrobe/rural/assets/layers/hairstyle-simple-low-ponytail.webp": "#263 試行素材長邊未貼滿（354px<90%），待重生、暫豁免",
+  "content-package/wardrobe/rural/assets/layers/shoes-simple-cloth.webp": "#263 試行素材長邊未貼滿（392px<90%），待重生、暫豁免",
+  "content-package/wardrobe/wild/assets/layers/neck-crystal-pendant.webp": "#263 試行素材長邊未貼滿（436px<90%），待重生、暫豁免"
 };

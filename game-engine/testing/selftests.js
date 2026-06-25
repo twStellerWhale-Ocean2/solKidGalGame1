@@ -2517,7 +2517,10 @@ async function collectCharacterScaleAudit(api, errors, warnings = []) {
         errors.push(`${item.id}/${layer.slot} wardrobe asset has no alpha content`);
       } else {
         const longSpan = Math.max(metrics.alphaBBox.width, metrics.alphaBBox.height);
-        if (longSpan < 512 * 0.9) {
+        // 長邊貼滿（#196）亦尊重 assetSizeExemptions（具名、可審計）；#263 試行素材暫豁免、待重生（見 asset-standards.js）。
+        const srcPath = String(layer.src).split("?")[0];
+        const longEdgeExempt = Object.keys(assetSizeExemptions).some((suffix) => srcPath.endsWith(suffix));
+        if (longSpan < 512 * 0.9 && !longEdgeExempt) {
           errors.push(`${item.id}/${layer.slot} wardrobe asset not long-edge-filled (alpha long span ${longSpan}px < 90% of 512)`);
         }
       }
