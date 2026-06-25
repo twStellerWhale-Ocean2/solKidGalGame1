@@ -13,12 +13,12 @@ export const princessStart = {
   // issue #131：背景花紋（spec#6），與識別色組成公主視覺主題；"none"=無花紋。
   backgroundPattern: "none",
   coins: 200,
-  owned: ["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair", "starterPajama", "twinBraidHair", "blueDress", "pinkSlippers", "blueBoots", "pearlTiara", "roundGlasses", "starMask"],
+  owned: ["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair", "starterPajama", "urbanSideBraid", "castleGoldHairnetLongHair", "urbanLowPonytail", "urbanRibbonLongHair", "countrysideNaturalShortCurls", "fairyVineBraid", "countrysideLowPonytail", "urbanMilkTeaCoat", "countrysideWoodenClogs", "urbanWalkingBoots", "castlePearlSatinShoes", "countrysideRoughLeatherBoots", "castleGoldTrimCourtHeels", "urbanPlaidVestLongSkirt", "urbanGreyBlueTownDress", "castleJeweledStrapSoftShoes"],
   outfit: {
-    hairstyle: "twinBraidHair",
-    outfit: "blueDress",
-    shoes: "blueBoots",
-    headTop: "pearlTiara",
+    hairstyle: "countrysideLowPonytail",
+    outfit: "urbanGreyBlueTownDress",
+    shoes: "countrysideWoodenClogs",
+    headTop: "none",
     headSide: "none",
     faceEyes: "none",
     faceMask: "none",
