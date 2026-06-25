@@ -23,7 +23,7 @@ export const assetTargetOverrides = Object.freeze({
   "rural/hairstyle-kerchief-short-hair": { left: 175, top: 267, right: 307, bottom: 421 },
   "rural/hairstyle-linen-tie-braid": { left: 166, top: 260, right: 350, bottom: 497 },
   "rural/hairstyle-natural-short-curls": { left: 196, top: 269, right: 319, bottom: 441 },
-  "rural/hairstyle-simple-low-ponytail": { left: 163, top: 264, right: 347, bottom: 521 },
+  "rural/hairstyle-simple-low-ponytail": { left: 166, top: 264, right: 341, bottom: 459 },
   "rural/hand-straw-basket": { left: 294, top: 544, right: 404, bottom: 654 },
   "rural/headtop-cloth-cap": { left: 187, top: 250, right: 327, bottom: 390 },
   "rural/headtop-head-kerchief": { left: 210, top: 246, right: 350, bottom: 386 },

@@ -27,12 +27,12 @@ export const defaultState = {
     sessionMaxEndsAt: 0,
     cycle: { coinsAtStart: 0, answered: 0, correct: 0 }
   },
-  owned: ["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair", "starterPajama", "twinBraidHair", "blueDress", "pinkSlippers", "blueBoots", "pearlTiara", "roundGlasses", "starMask"],
+  owned: ["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair", "starterPajama", "urbanSideBraid", "castleGoldHairnetLongHair", "urbanLowPonytail", "urbanRibbonLongHair", "countrysideNaturalShortCurls", "fairyVineBraid", "countrysideLowPonytail", "urbanMilkTeaCoat", "countrysideWoodenClogs", "urbanWalkingBoots", "castlePearlSatinShoes", "countrysideRoughLeatherBoots", "castleGoldTrimCourtHeels", "urbanPlaidVestLongSkirt", "urbanGreyBlueTownDress", "castleJeweledStrapSoftShoes"],
   outfit: {
-    hairstyle: "twinBraidHair",
-    outfit: "blueDress",
-    shoes: "blueBoots",
-    headTop: "pearlTiara",
+    hairstyle: "countrysideLowPonytail",
+    outfit: "urbanGreyBlueTownDress",
+    shoes: "countrysideWoodenClogs",
+    headTop: "none",
     headSide: "none",
     faceEyes: "none",
     faceMask: "none",
