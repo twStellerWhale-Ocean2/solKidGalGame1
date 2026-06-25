@@ -1,38 +1,49 @@
 {
-  "_comment": "issue #210 區級資源包（wild）：一店一包、多類別共用同一野地 packStyle；既有素材沿用不重生（#196 itemDesc 全數保留，由原 wild-fairy-atelier／wild-dwarf-cottage 合併）。",
+  "_comment": "Fairy Forest wardrobe pack. Internal pack id remains wild; public style maps to Fairy Forest.",
   "packStyle": {
-    "name": "野地服飾 Wild Outfitter",
-    "reference": "woodland fairy and dwarf fashion — airy festival gowns, dainty fairy accessories, helper cloaks and lace-up boots",
+    "name": "童話森林 Fairy Forest Wardrobe",
+    "reference": "fantasy natural magical fairy forest fashion for forest elves, fairies, princess adventures, magical plants and mysterious lakes",
     "palette": [
-      "coral",
-      "silver",
-      "aurora",
-      "lilac",
-      "moss green",
-      "fern green",
-      "soft violet",
-      "autumn orange",
-      "cocoa brown"
+      "tender green",
+      "mint green",
+      "aqua lake blue",
+      "lavender purple",
+      "starlight white",
+      "rose pink",
+      "moonlight silver",
+      "glowing cyan"
     ],
     "motifs": [
-      "airy flared skirts",
-      "crescent moons and stars",
-      "wild flowers",
-      "closed helper cloaks",
-      "laces"
+      "flowers",
+      "vines",
+      "leaves",
+      "butterflies",
+      "fairy wings",
+      "crystals",
+      "stars",
+      "moon",
+      "mushrooms",
+      "glowing runes"
     ],
-    "linework": "soft and airy",
-    "mood": "whimsical, woodland, magical"
+    "linework": "light, flowing, asymmetric, natural curves, skirts opening like petals or leaves",
+    "mood": "dreamy, mysterious, free, magical, forest-like, fairytale adventure"
   },
   "items": {
-    "dress-coral-festival": "a coral fairy festival dress with a fitted bodice and airy flared skirt",
-    "dress-starlight-gown": "a silver starlight fairy gown with a fitted bodice and long airy skirt",
-    "dress-aurora-gown": "an aurora-tinted fairy gown with a fitted bodice and long airy skirt",
-    "faceeyes-silver-glasses": "a pair of delicate silver fairy glasses, front view",
-    "facemask-moon-mask": "a small crescent-moon decorative eye mask, front view",
-    "neck-rose-necklace": "a delicate rose fairy necklace, front view",
-    "hand-lilac-bag": "a small lilac fairy pouch bag",
-    "shoes-cocoa-boots": "a pair of cocoa-brown dwarf ankle boots with laces, shown from the front as worn standing upright, both boots side by side — do NOT show the soles or a top-down view",
-    "shoes-silver-boots": "a pair of silver dwarf ankle boots with laces, shown from the front as worn standing upright, both boots side by side — do NOT show the soles or a top-down view"
+    "hairstyle-flower-wreath-long-waves": "front-view wearable hairstyle layer: long wavy fairy hair with flower wreath, open face area, hair and flowers only, no face, no head, no skin, no mannequin frame",
+    "hairstyle-vine-braid": "front-view wearable hairstyle layer: magical vine-braided hair, open face area, hair and vines only, no face, no head, no skin, no mannequin frame",
+    "hairstyle-elf-side-braid": "front-view wearable hairstyle layer: forest elf side braid, open face area, hair only, no face, no head, no skin, no mannequin frame",
+    "hairstyle-starlight-half-up": "front-view wearable hairstyle layer: starlight half-up fairy hair, open face area, hair and tiny star accents only, no face, no head, no skin, no mannequin frame",
+    "outfit-petal-fairy-dress": "front-as-worn transparent outfit layer: petal fairy dress with fitted bodice and layered petal skirt, no head, no face, no hands, no legs, no body frame",
+    "outfit-vine-decorated-long-skirt": "front-as-worn transparent outfit layer: vine-decorated forest dress with flowing long skirt, no head, no face, no hands, no legs, no body frame",
+    "outfit-gauze-forest-princess-dress": "front-as-worn transparent outfit layer: airy gauze forest princess dress, no head, no face, no hands, no legs, no body frame",
+    "outfit-aqua-magic-dress": "front-as-worn transparent outfit layer: aqua lake-blue magic dress with light flowing fabric, no head, no face, no hands, no legs, no body frame",
+    "shoes-vine-lace-sandals": "front-view paper-doll footwear layer: vine-laced fairy sandals worn on invisible standing feet, front straps, no top-down view, no legs, no body",
+    "shoes-flower-decorated": "front-view paper-doll footwear layer: flower-decorated shoes worn on invisible standing feet, front view, no visible insoles, no top-down view, no legs",
+    "shoes-elf-short-boots": "front-view paper-doll footwear layer: elf short boots worn on invisible standing feet, front view, no visible insoles, no top-down view, no legs",
+    "shoes-leaf-soft-sole": "front-view paper-doll footwear layer: leaf soft-sole shoes worn on invisible standing feet, front view, no visible insoles, no top-down view, no legs",
+    "headtop-flower-wreath": "front-view head-top accessory layer: flower wreath crown, wreath only, no hair, no face, no head, no skin",
+    "neck-crystal-pendant": "front-view neck accessory layer: delicate crystal pendant necklace, pendant only, no neck, no skin, no body",
+    "headside-star-hair-clip": "front-view side hair accessory layer: small star hair clip, clip only, no hair, no face, no head, no skin",
+    "hand-vine-bracelet": "front-view hand accessory layer: vine bracelet positioned for an invisible hand, bracelet only, no hand, no arm, no skin"
   }
 }

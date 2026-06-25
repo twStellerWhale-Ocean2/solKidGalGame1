@@ -1641,8 +1641,10 @@ async function runDataAudit(api) {
   };
   const mapContracts = await collectMapContractAudit(api, errors);
 
+  // issue #253：四包重作試行期只保留 hair/outfit/shoes/accessories 各包各 1 件，
+  // 分類守門改驗啟用分類至少有一件正式商品，不再要求舊素材量體。
   Object.entries(categoryCounts).forEach(([category, count]) => {
-    if (count < 10) errors.push(`${category} has ${count} paid items`);
+    if (count < 1) errors.push(`${category} has no paid pilot item`);
   });
   // issue #210：一區一店、一店一包——商店改賣整包多類別，移除舊「≤2 類」上限；
   // 改驗每店至少一類（供 #166 shop marker 與逛店類別分頁）。

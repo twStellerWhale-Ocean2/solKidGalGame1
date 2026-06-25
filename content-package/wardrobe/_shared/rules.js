@@ -32,7 +32,7 @@ export const outfitSlots = [
 //#endregion 可裝備欄位
 
 //#region 衣櫃圖層對位契約
-// 所有正式穿戴素材維持 512x768 透明畫布；render bounds 因此預設全畫布，避免二次縮放。
+// 所有正式穿戴素材維持 512x512 透明圖；render bounds 預設全畫布，投影到 512x768 紙娃娃 canvas。
 // safeBox 是素材透明像素應落入的類別級範圍，供 data-audit 檢查 GPT 童話手繪 bitmap 是否對齊角色 rig。
 const fullCanvasBounds = Object.freeze({ left: 0, top: 0, right: 0, bottom: 0 });
 

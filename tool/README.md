@@ -106,6 +106,24 @@ These write to the pack manifests / asset files via `server.mjs` (dev only,
 
 The page reloads after add/delete so the manifests are re-read.
 
+## Regenerating wardrobe art
+
+`tool/generate-wardrobe-asset.mjs` builds each prompt from the shared house style,
+the pack `style.json` and the item description, then writes one `512×512`
+transparent WebP used by both the wardrobe layer and shop preview.
+
+```powershell
+node tool/generate-wardrobe-asset.mjs castle --item hairstyle-crown-braided-updo
+node tool/generate-wardrobe-asset.mjs castle --apply --quality medium
+```
+
+The official generation path always uses a chroma-key mannequin guide first:
+hair, outfit, shoes, and accessories are drawn in their worn state on a pure
+`#ff00ff` temporary body/frame, then the key color is removed to produce the
+transparent wardrobe layer. Do not ship direct product-shot style assets. The
+`--direct` mode is only for temporary experiments and must not be used for final
+wardrobe layers unless the design rules are changed.
+
 ## Trim tool
 
 `node tool/trim-wardrobe-assets.mjs` (dry-run) measures every layer asset's
