@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.55.3 — 2026-06-25 _(internal)_
+- fix (#263): 修復 #263 衣物四包重作後預設新局裝扣指向已移除物件（新局公主造型與 owned 改指向 castle 新包有效物件：側捲公主髮／皇家藍長裙／珍珠緞鞋／小皇冠＋有效 starter），使新局有效、data-audit／monkey 回綠；既有存檔不受影響
+
 ## 0.55.2 — 2026-06-25 _(internal)_
 - refactor (#259): 內部整理（玩家無感）：遊戲起始狀態組態依關注點在同一檔案內分為三具名片段（公主新局／起始位置／遊戲規則），defaultState 收斂為三片之唯讀聚合，與 #260 管理設定工具三頁籤對齊；起始值與舊存檔相容不變、不拆多檔不另建相容層；mood 宣告矛盾另循 #262
 

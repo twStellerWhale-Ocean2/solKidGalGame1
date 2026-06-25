@@ -1910,8 +1910,9 @@ async function collectPaperDollCharacterAudit(api, errors, warnings = []) {
   if (!outfitSlots.includes("outfit")) errors.push("outfitSlots missing 'outfit' slot (issue #251)");
   if (!wardrobeLayerBoundsByType.outfit) errors.push("wardrobeLayerBoundsByType missing 'outfit' bounds (issue #251)");
   if (api.normalizeState) {
-    const legacyDressSave = api.normalizeState({ outfit: { dress: "blueDress", top: "coralBlouse", bottom: "skyShorts" } });
-    if (legacyDressSave.outfit.outfit !== "blueDress") errors.push(`legacy dress did not migrate to outfit slot (got ${legacyDressSave.outfit.outfit}, issue #251)`);
+    // #263 移除了原 fixture 之 blueDress；改用現有有效 outfit 物件（非預設 outfit，以區辨「真遷移」與「退回預設」）驗證 dress→outfit 改鍵遷移。
+    const legacyDressSave = api.normalizeState({ outfit: { dress: "castleGoldCourtGown", top: "coralBlouse", bottom: "skyShorts" } });
+    if (legacyDressSave.outfit.outfit !== "castleGoldCourtGown") errors.push(`legacy dress did not migrate to outfit slot (got ${legacyDressSave.outfit.outfit}, issue #251)`);
     if ("top" in legacyDressSave.outfit || "bottom" in legacyDressSave.outfit) errors.push("legacy top/bottom slots not dropped on load (issue #251)");
     if ("dress" in legacyDressSave.outfit) errors.push("legacy dress slot not renamed on load (issue #251)");
     const legacyPiecesSave = api.normalizeState({ outfit: { hairstyle: "twinBraidHair", top: "coralBlouse", bottom: "skyShorts" } });

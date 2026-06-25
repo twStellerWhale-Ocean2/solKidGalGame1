@@ -1,8 +1,9 @@
 {
-  "version": "0.55.2",
+  "version": "0.55.3",
   "date": "2026-06-25",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    { "version": "0.55.3", "date": "2026-06-25", "type": "fix", "playerVisible": false, "issue": "#263", "summaryZh": "修復 #263 衣物四包重作後預設新局裝扣指向已移除物件（新局公主造型與 owned 改指向 castle 新包有效物件：側捲公主髮／皇家藍長裙／珍珠緞鞋／小皇冠＋有效 starter），使新局有效、data-audit／monkey 回綠；既有存檔不受影響" },
     { "version": "0.55.2", "date": "2026-06-25", "type": "refactor", "playerVisible": false, "issue": "#259", "summaryZh": "內部整理（玩家無感）：遊戲起始狀態組態依關注點在同一檔案內分為三具名片段（公主新局／起始位置／遊戲規則），defaultState 收斂為三片之唯讀聚合，與 #260 管理設定工具三頁籤對齊；起始值與舊存檔相容不變、不拆多檔不另建相容層；mood 宣告矛盾另循 #262" },
     { "version": "0.55.1", "date": "2026-06-23", "type": "refactor", "playerVisible": false, "issue": "#260", "summaryZh": "管理設定工具導覽改依 content-package 資料包分組（公主／衣物／地圖與場景／聲音 兩層導覽，舊深連結相容），並改為管理網站版面（左側 Navigation Drawer ＋ Top App Bar ＋ Main Content）、全面板套用 MD3 視覺規範 token（粉彩種子、system/light/dark）；屬本機 dev 維護者工具、不影響公開遊戲" },
     { "version": "0.55.0", "date": "2026-06-22", "type": "feat", "playerVisible": true, "issue": "#246", "summaryZh": "角色語音指定（依性別×性格挑選瀏覽器語音）從遊戲設定移到維護者用的管理設定工具新分頁「聲音管理」（本機 dev 環境才出現，可逐桶試聽）；公開遊戲設定不再提供語音挑選、改為一律自動依性別與語言選用，設定頁僅保留 Voice 開關" },
