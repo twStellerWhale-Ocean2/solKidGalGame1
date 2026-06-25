@@ -1,31 +1,48 @@
 {
-  "_comment": "issue #210 區級資源包（rural）：一店一包、多類別共用同一郊區 packStyle；既有素材沿用不重生（#196 itemDesc 全數保留，由原 rural-workwear-stall／rural-field-cobbler 合併）。",
+  "_comment": "Countryside wardrobe pack. Internal pack id remains rural; public style maps to Countryside.",
   "packStyle": {
-    "name": "郊區服飾 Rural Outfitter",
-    "reference": "sturdy country fieldwear and trail gear — sailor work tops, field skirts, lace-up boots and woodland tiaras",
+    "name": "郊區鄉村 Countryside Wardrobe",
+    "reference": "simple natural durable medieval countryside clothing for villages, pastures, mills, gardens and cottages; princess travelling incognito or on a rural adventure",
     "palette": [
-      "violet",
-      "butter yellow",
-      "mint",
-      "sun yellow",
-      "coral",
-      "rustic brown",
-      "plum",
-      "aurora"
+      "beige",
+      "linen white",
+      "earth brown",
+      "grass green",
+      "pale yellow",
+      "blue grey",
+      "terracotta red",
+      "wood brown"
     ],
     "motifs": [
-      "sailor collars",
-      "field skirts",
-      "laces",
-      "wild flowers"
+      "cotton linen",
+      "coarse cloth",
+      "aprons",
+      "kerchiefs",
+      "straw weaving",
+      "wood",
+      "flowers and grass",
+      "small baskets",
+      "farm tools"
     ],
-    "linework": "soft and sturdy",
-    "mood": "earthy, cheerful, practical"
+    "linework": "loose, light, shorter skirts for movement, simple warm decoration",
+    "mood": "natural, plain, friendly, warm, free, everyday"
   },
   "items": {
-    "shoes-wild-boots": "a pair of rustic brown trail ankle boots with laces, shown from the front as worn standing upright, both boots side by side — do NOT show the soles or a top-down view",
-    "shoes-plum-boots": "a pair of plum field ankle boots with laces, shown from the front as worn standing upright, both boots side by side — do NOT show the soles or a top-down view",
-    "headtop-wild-tiara": "a small woodland tiara woven with tiny wild flowers",
-    "headtop-aurora-tiara": "a small field tiara with soft aurora-tinted gems"
+    "hairstyle-kerchief-short-hair": "front-view wearable hairstyle layer: short countryside hair tucked under a simple kerchief, open face area, hair and kerchief only, no face, no head, no skin, no mannequin frame",
+    "hairstyle-simple-low-ponytail": "front-view wearable hairstyle layer: simple low ponytail tied with plain cloth, open face area, hair only, no face, no head, no skin, no mannequin frame",
+    "hairstyle-linen-tie-braid": "front-view wearable hairstyle layer: countryside braid tied with linen cord, open face area, hair only, no face, no head, no skin, no mannequin frame",
+    "hairstyle-natural-short-curls": "front-view wearable hairstyle layer: natural short curls for a rural girl, open face area, hair only, no face, no head, no skin, no mannequin frame",
+    "outfit-linen-white-apron-dress": "front-as-worn transparent outfit layer: linen-white apron dress with simple countryside cloth layers, no head, no face, no hands, no legs, no body frame",
+    "outfit-beige-linen-dress": "front-as-worn transparent outfit layer: beige cotton-linen dress with plain rural cut, no head, no face, no hands, no legs, no body frame",
+    "outfit-grass-green-village-dress": "front-as-worn transparent outfit layer: grass green village dress with simple warm shape, no head, no face, no hands, no legs, no body frame",
+    "outfit-terracotta-jacket-skirt": "front-as-worn transparent outfit layer: terracotta short jacket with practical skirt, no head, no face, no hands, no legs, no body frame",
+    "shoes-wooden-clogs": "front-view paper-doll footwear layer: simple wooden clogs worn on invisible standing feet, closed rounded fronts, no visible insoles, no top-down view, no legs",
+    "shoes-rough-leather-short-boots": "front-view paper-doll footwear layer: rough leather short boots worn on invisible standing feet, front view, no visible insoles, no top-down view, no legs",
+    "shoes-grass-walking": "front-view paper-doll footwear layer: grass walking shoes worn on invisible standing feet, front view, no visible insoles, no top-down view, no legs",
+    "shoes-simple-cloth": "front-view paper-doll footwear layer: simple cloth shoes worn on invisible standing feet, front view, no visible insoles, no top-down view, no legs",
+    "headtop-head-kerchief": "front-view head-top accessory layer: plain countryside head kerchief, kerchief only, no hair, no face, no head, no skin",
+    "hand-straw-basket": "front-view hand accessory layer: small straw basket for flowers or vegetables, basket only, no hand, no arm, no body",
+    "headtop-cloth-cap": "front-view head-top accessory layer: simple countryside cloth cap, cap only, no hair, no face, no head, no skin",
+    "hand-wooden-bracelet": "front-view hand accessory layer: small wooden bracelet positioned for an invisible hand, bracelet only, no hand, no arm, no skin"
   }
 }

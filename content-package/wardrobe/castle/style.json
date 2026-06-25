@@ -1,43 +1,48 @@
 {
-  "_comment": "issue #210 區級資源包（castle）：一店一包、多類別共用同一城堡 packStyle；既有素材沿用不重生（#196 itemDesc 全數保留，由原 castle-seamstress／castle-royal-cloak-room 合併）。",
+  "_comment": "Castle wardrobe pack. Internal pack id remains castle; style reset for the medieval European princess wardrobe.",
   "packStyle": {
-    "name": "城堡服飾 Castle Outfitter",
-    "reference": "sweet castle tailoring and gentle fairytale royal wear — girl hairstyles, soft tops, skirts, regal cloaks and tiaras",
+    "name": "城堡宮廷 Castle Court Wardrobe",
+    "reference": "noble formal medieval European royal court fashion for princess ceremonies, palace balls and court rituals; high-status, ornate and ceremonial",
     "palette": [
-      "coral",
-      "rose",
-      "aqua",
-      "sky blue",
-      "lilac",
       "gold",
       "ivory white",
-      "jewel blue",
-      "mint"
+      "wine red",
+      "royal blue",
+      "deep purple",
+      "pearl white",
+      "rose pink",
+      "emerald green"
     ],
     "motifs": [
-      "sailor collars",
-      "ribbons",
-      "small buttons",
-      "stars and moons",
+      "crowns",
+      "jewels",
       "pearls",
-      "gold trim"
+      "lace",
+      "gold embroidery",
+      "family crests",
+      "roses",
+      "lilies",
+      "court floral patterns"
     ],
-    "linework": "fine and delicate",
-    "mood": "sweet, regal, elegant, gentle"
+    "linework": "symmetrical, dignified, graceful drape, wide skirts, fitted bodices, decorated cuffs and collars",
+    "mood": "noble, elegant, formal, ornate, protected, admired, royal"
   },
   "items": {
-    "hairstyle-twin-braid": "a twin-braid girl hairstyle, front view, framing where the face would be",
-    "hairstyle-blonde-bob": "a blonde bob girl hairstyle, front view, framing where the face would be",
-    "hairstyle-twin-braid-chestnut": "a chestnut twin-braid girl hairstyle, front view",
-    "hairstyle-twin-braid-rose": "a rose-tinted twin-braid girl hairstyle, front view",
-    "hairstyle-twin-braid-midnight": "a midnight-blue twin-braid girl hairstyle, front view",
-    "hairstyle-twin-braid-auburn": "an auburn twin-braid girl hairstyle, front view",
-    "hairstyle-blonde-bob-honey": "a honey-blonde bob girl hairstyle, front view",
-    "hairstyle-blonde-bob-silver": "a silver bob girl hairstyle, front view",
-    "hairstyle-blonde-bob-lavender": "a lavender bob girl hairstyle, front view",
-    "hairstyle-blonde-bob-cocoa": "a cocoa-brown bob girl hairstyle, front view",
-    "headtop-pearl-tiara": "a delicate royal tiara set with small pearls",
-    "headtop-starry-tiara": "a royal tiara topped with little star-shaped gems",
-    "headtop-ruby-tiara": "a royal tiara set with a single red ruby gem"
+    "hairstyle-crown-braided-updo": "front-view wearable hairstyle layer: crown-braided princess updo, natural open face area, hair only, no face, no head, no skin, no mannequin frame",
+    "hairstyle-pearl-high-bun": "front-view wearable hairstyle layer: elegant pearl high bun with small pearl accents, open face area, hair only, no face, no head, no skin, no mannequin frame",
+    "hairstyle-side-curl-princess": "front-view wearable hairstyle layer: princess half-up hair with soft curls at both sides, open face area, hair only, no face, no head, no skin, no mannequin frame",
+    "hairstyle-gold-hairnet-long": "front-view wearable hairstyle layer: long court hair held by a delicate gold hairnet, open face area, hair only, no face, no head, no skin, no mannequin frame",
+    "outfit-gold-embroidered-court-gown": "front-as-worn transparent outfit layer: gold-embroidered royal court gown with fitted bodice and ceremonial skirt, no head, no face, no hands, no legs, no body frame",
+    "outfit-royal-blue-train-dress": "front-as-worn transparent outfit layer: royal blue long-train princess dress with gold trim and formal drape, no head, no face, no hands, no legs, no body frame",
+    "outfit-wine-velvet-princess-dress": "front-as-worn transparent outfit layer: wine red velvet princess dress with rich court texture and fitted upper body, no head, no face, no hands, no legs, no body frame",
+    "outfit-pearl-white-ball-gown": "front-as-worn transparent outfit layer: pearl white palace ball gown with wide skirt and delicate lace details, no head, no face, no hands, no legs, no body frame",
+    "shoes-pearl-satin-dance": "front-view paper-doll footwear layer: pearl satin Mary Jane court dance shoes worn on invisible standing feet, two low shoes side by side, no visible insoles, no top-down view, no legs",
+    "shoes-gold-trim-court-heels": "front-view paper-doll footwear layer: gold-trimmed court heels worn on invisible standing feet, two shoes side by side, toe caps at bottom, no visible insoles, no top-down view, no legs",
+    "shoes-jeweled-strap-soft": "front-view paper-doll footwear layer: soft court shoes with jeweled straps worn on invisible standing feet, two shoes side by side, no visible insoles, no top-down view, no legs",
+    "shoes-rose-embroidered-formal": "front-view paper-doll footwear layer: rose-embroidered formal shoes worn on invisible standing feet, two shoes side by side, no visible insoles, no top-down view, no legs",
+    "headtop-small-royal-crown": "front-view head-top accessory layer: small royal crown with gold trim and tiny jewels, crown only, no hair, no face, no head, no skin",
+    "neck-pearl-necklace": "front-view neck accessory layer: elegant pearl necklace, necklace only, no neck, no skin, no body, no dress",
+    "neck-jewel-brooch": "front-view chest-neck accessory layer: ornate jewel brooch for court clothing, brooch only, no body, no dress, no skin",
+    "hand-gold-lace-gloves": "front-view hand accessory layer: pair of gold lace gloves positioned for invisible hands, gloves only, no hands, no skin, no arms"
   }
 }
