@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.55.3 — 2026-06-25 _(internal)_
+- fix (#263): 恢復 main 綠燈（#263 試行收尾）：修正 #251 dress→outfit 遷移測試之過時 fixture（blueDress 已移除，改用 castleGoldCourtGown 並區辨真遷移與退回預設），並暫時豁免 3 件 #263 試行素材長邊未貼滿之 data-audit（待重生後移除豁免）；預設新局造型已由 #265 對齊、本版不再更動
+
 ## 0.55.2 — 2026-06-25 _(internal)_
 - refactor (#259): 內部整理（玩家無感）：遊戲起始狀態組態依關注點在同一檔案內分為三具名片段（公主新局／起始位置／遊戲規則），defaultState 收斂為三片之唯讀聚合，與 #260 管理設定工具三頁籤對齊；起始值與舊存檔相容不變、不拆多檔不另建相容層；mood 宣告矛盾另循 #262
 
