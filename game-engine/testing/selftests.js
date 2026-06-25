@@ -2,6 +2,7 @@ import { createKeyboardWalkController, directionForKey } from "../map/keyboard-w
 import { updateMarkerEdgeVisibility } from "../map/marker-visibility.js";
 import { assetStandards, assetSizeExemptions, classifyAssetPath } from "../../content-package/_shared/asset-standards.js";
 import { outfitSlots, paperDollLayerOrder, wardrobeLayerBoundsByType } from "../../content-package/wardrobe/_shared/rules.js";
+import { defaultState, princessStart, startPosition, gameRules } from "../state/default-state.js";
 
 export function installTestingHooks(api) {
   window.LuminaraTest = {
@@ -50,6 +51,7 @@ export function installTestingHooks(api) {
   };
 
   runSaveLoadSelfTest(api);
+  runDefaultStateSelfTest(api);
   runDataAudit(api);
   runVisualQa(api);
   runMonkeyTest(api);
@@ -2574,6 +2576,62 @@ function runSaveLoadSelfTest(api) {
     activeCharacterId: after.activeCharacterId,
     beforeCoins: before.coins,
     afterCoins: after.coins
+  });
+  document.body.prepend(result);
+}
+
+// issue #259：起始狀態組態依關注點分離為三具名片段（princessStart／startPosition／gameRules）後，
+// 守住「拆到最輕」之結構不變式——三片鍵互斥、聯集 deep-equals defaultState、聚合鍵集合與各關注點落點
+// 不漂移、freshState 讀法不變、結構穩定點（playLimit 子鍵／起始進度空）。比較皆規範化（鍵排序遞迴）以與
+// 鍵順序無關（聚合依分組順序、與重構前不同屬預期）。tuner 可編輯之值（coins／owned／outfit）不在斷言內。
+function runDefaultStateSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "default-state") return;
+  const errors = [];
+  const canon = (o) => {
+    const walk = (x) => Array.isArray(x)
+      ? x.map(walk)
+      : (x && typeof x === "object"
+        ? Object.fromEntries(Object.keys(x).sort().map((k) => [k, walk(x[k])]))
+        : x);
+    return JSON.stringify(walk(o));
+  };
+  const pk = Object.keys(princessStart);
+  const sk = Object.keys(startPosition);
+  const gk = Object.keys(gameRules);
+  const all = [...pk, ...sk, ...gk];
+  // ① 三片鍵互斥、無重疊。
+  if (new Set(all).size !== all.length) errors.push("三片鍵集合有重疊");
+  // ② 三片聯集 deep-equals defaultState（聚合忠實、無遺漏無多餘）。
+  if (canon({ ...princessStart, ...startPosition, ...gameRules }) !== canon(defaultState)) errors.push("三片聯集 != defaultState");
+  // ③ defaultState 鍵集合＝預期 23 鍵（防意外增刪欄位）。
+  const expectedKeys = [
+    "activeCharacterId", "playerName", "profileColor", "backgroundPattern", "coins", "owned", "outfit",
+    "diary", "completedLessons", "metNpcs", "learnedWords", "badges", "purchaseStoreIds", "activeQuest",
+    "area", "player", "playerNode", "world",
+    "energy", "mood", "difficulty", "speechEnabled", "playLimit"
+  ];
+  if (canon(Object.keys(defaultState).sort()) !== canon([...expectedKeys].sort())) errors.push("defaultState 鍵集合與預期不符");
+  // ④ 各關注點落點正確（防欄位錯置）。
+  if (canon(sk.sort()) !== canon(["area", "player", "playerNode", "world"].sort())) errors.push("起始位置片欄位錯置");
+  if (canon(gk.sort()) !== canon(["energy", "mood", "difficulty", "speechEnabled", "playLimit"].sort())) errors.push("遊戲規則片欄位錯置");
+  // ⑤ freshState(randomizeTheme:false) 之鍵與值＝defaultState（深拷一致），確保消費端讀法不變。
+  if (canon(api.freshState({ randomizeTheme: false })) !== canon(defaultState)) errors.push("freshState(randomizeTheme:false) != defaultState");
+  // ⑥ 結構穩定點：playLimit 子鍵集合、起始進度為空。
+  if (canon(Object.keys(defaultState.playLimit).sort()) !==
+    canon(["playMinutes", "restMinutes", "playMaxMinutes", "sessionEndsAt", "restEndsAt", "sessionMaxEndsAt", "cycle"].sort()))
+    errors.push("playLimit 子鍵異動");
+  if (defaultState.diary.length !== 0 || defaultState.badges.length !== 0 || defaultState.activeQuest !== null) errors.push("起始進度初值非空");
+
+  const passed = errors.length === 0;
+  const result = document.createElement("pre");
+  result.id = "selfTestResult";
+  result.textContent = JSON.stringify({
+    test: "default-state",
+    passed,
+    concernSizes: { princess: pk.length, position: sk.length, rules: gk.length },
+    keyCount: Object.keys(defaultState).length,
+    errors
   });
   document.body.prepend(result);
 }

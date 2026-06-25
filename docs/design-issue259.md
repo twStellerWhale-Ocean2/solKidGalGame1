@@ -18,7 +18,7 @@
 
 * **目的**：把 `defaultState` 依語意拆為三個可獨立維護之具名片段（公主新局／起始位置／遊戲規則），使其與 #260 之三頁籤（公主／地圖／遊戲規則）關注點對齊，消除「工具拆、資料沒拆」之組態結構技術債。
 * **範圍**：僅 [game-engine/state/default-state.js] 之內部組織與其直接消費端（`game-state.js`／`defaults-tuner.js`）之 import 形狀；起始值、`normalizeState`／`freshState` 行為、存檔格式、玩法皆不變。
-* **不變式**：① 起始值（每一欄位之預設值）與物件最終形狀與重構前**逐位元等價**；② `normalizeState` 淺合併與逐欄正規化行為不退化、舊存檔載入結果不變；③ 單一事實來源為三具名片段、`defaultState` 僅為其唯讀聚合視圖（不出現「一份資料兩種讀法」雙軌）；④ `mood` 之宣告與行為不動（另循 #262）。
+* **不變式**：① 起始值（每一欄位之鍵與預設值）與重構前**相同（值等價）**；因依關注點分組，`defaultState` 之鍵**列舉順序改變**，不影響行為（物件存取與存檔還原皆以鍵為準、非順序）；② `normalizeState` 淺合併與逐欄正規化行為不退化、舊存檔載入結果不變；③ 單一事實來源為三具名片段、`defaultState` 僅為其唯讀聚合視圖（不出現「一份資料兩種讀法」雙軌）；④ `mood` 之宣告與行為不動（另循 #262）。
 
 ## 3. 設計決策（plan 定方向，3code 落地）
 
@@ -28,7 +28,7 @@
   * `startPosition`（**起始位置**）：`area`／`playerNode`／`player`／`world`。
   * `gameRules`（**遊戲規則與家長**）：`playLimit`／`difficulty`／`energy`／`mood`／`speechEnabled`。
   * **補白決策**：issue 三關注點枚舉原未列入「起始進度」欄位（`diary` 等空初值）；plan 將其歸入 `princessStart`（皆為該帳號公主新局之起始狀態），使三片窮盡覆蓋且互斥，不另立第四片（守「片數固定為三」）。
-* **D3 `defaultState` 收斂為唯讀聚合**：`export const defaultState = { ...princessStart, ...startPosition, ...gameRules }`，欄位順序與內容與重構前等價；既有 `import { defaultState }` 介面與 `defaultState.outfit` 引用維持可用，消費端零改動為目標（除 tuner 寫回見 D5）。
+* **D3 `defaultState` 收斂為唯讀聚合**：`export const defaultState = { ...princessStart, ...startPosition, ...gameRules }`，鍵集合與各欄位值與重構前等價（依分組之鍵列舉順序改變、行為不變）；既有 `import { defaultState }` 介面與 `defaultState.outfit` 引用維持可用，消費端零改動為目標（除 tuner 寫回見 D5）。
 * **D4 `normalizeState`／`freshState` 讀法不變**：合併底仍經 `freshState({ randomizeTheme: false })` 取得，組裝順序與 `randomizeTheme` 隨機主題行為不變；`normalizeOutfit` 之 `baseOutfit = defaultState.outfit` 預設引數沿用。**不**改 normalize 任何分支邏輯。
 * **D5 tuner 寫回相依**：[tool/defaults-tuner.js] 經 `/tool/save-defaults` 寫回 default-state.js 之檔案內容**須能被三具名 export 結構正確解析與再寫回**。3code 須驗證 tuner 套用（編輯 coins／outfit／owned 後寫回）產生之檔案仍合法、三片結構不被破壞；若寫回模板與單一物件耦合，連帶更新寫回邏輯（最小幅度、不改 tuner UI）。
 * **D6 回歸守門（3code 落地）**：以 [game-engine/testing/selftests.js] 固化不變式——`save-load` 維持綠燈（舊存檔載入結果不變）、新增「起始值快照」斷言（`freshState({randomizeTheme:false})`／`defaultState` 之欄位集合與各預設值與重構前一致、且三具名片段聯集等於 `defaultState`、彼此鍵不重疊）。`mood-extend`／`data-audit`／`monkey` 維持綠燈。
@@ -36,7 +36,7 @@
 ## 4. 影響面與不變式
 
 * **預期影響檔案（留 3code 落地）**：[game-engine/state/default-state.js]（三具名 export＋聚合 `defaultState`）、[game-engine/state/game-state.js]（如沿用 `defaultState` 介面則零改；若改引用具名片段則同步）、[tool/defaults-tuner.js]（寫回模板對齊三片，必要時）、[game-engine/testing/selftests.js]（起始值快照斷言）、[docs/design-issue259.md]（本檔）、[README.md]（變更紀錄一行）、[VERSION]／[CHANGELOG.md]／[game-engine/build/version.js]（refactor、playerVisible:false、版號於 merge 釘選）。**[docs/design.md] 不改。**
-* **不變式**：① 起始值與物件形狀逐位元等價；② `normalizeState`／`freshState` 行為與舊存檔載入結果不變；③ 三具名片段聯集＝`defaultState`、鍵互斥不重疊；④ 無多檔拆分、無相容聚合抽象層、無 wear-only 式特例雙軌；⑤ `mood` 宣告與行為不動（#262）；⑥ tuner 寫回後檔案仍合法可解析。
+* **不變式**：① 起始值（鍵與各預設值）等價、鍵集合不變（聚合鍵列舉順序依分組改變、行為不變）；② `normalizeState`／`freshState` 行為與舊存檔載入結果不變；③ 三具名片段聯集＝`defaultState`、鍵互斥不重疊；④ 無多檔拆分、無相容聚合抽象層、無 wear-only 式特例雙軌；⑤ `mood` 宣告與行為不動（#262）；⑥ tuner 寫回後檔案仍合法可解析。
 
 ## 5. 魔鬼代言人回應（承 Issue ＜I＞）
 
@@ -56,4 +56,30 @@
 * **3code 完成判定**：
   * **GATE §1（機器判定）**：`node --check`（改動檔）／`docLint docs/design.md`（sol 0）／`repoLint .` 0／`genVersion --check` 通過；headless selftest PASS、console 0 error；`save-load`＋新增起始值快照 PASS、既有 `mood-extend`／`data-audit`／`monkey` 維持綠燈。
   * **GATE §5（實機 visual-qa）**：**不適用**——本案為起始狀態組態之檔案內部重組、無任何 UI／渲染／玩法變動（純結構、行為保持），以 GATE §1 機判＋起始值快照即足，無新增畫面需人工視覺複核。
-* **依賴安全**：純靜態網站、無 package 相依（techStackStaticWeb），`npm audit` 不適用。
+* **依賴安全**：純靜態網站、無 package 相依（techStackStaticWeb、無 `package.json`），`npm audit` 不適用。
+
+## 7. 實作與驗證結果（3code，2026-06-25）
+
+> 三審查點均採 §3 方向（拆到最輕／同檔具名 export／design.md 不改），USR 於本對話以「GO PLAN and CODE」核准續作。
+
+### 實作（依 §3 D1–D6）
+* **D2／D3（[game-engine/state/default-state.js]）**：拆為 `princessStart`（14 鍵）／`startPosition`（4 鍵）／`gameRules`（5 鍵）三具名 export，`defaultState = { ...princessStart, ...startPosition, ...gameRules }` 唯讀聚合；值與重構前等價（鍵列舉順序依分組改變、行為不變）。
+* **D4（[game-engine/state/game-state.js]）**：**零改動**——`freshState`／`normalizeState`／`normalizeOutfit` 沿用 `defaultState` 聚合介面，組裝順序與 `randomizeTheme` 行為不變。
+* **D5（[server.mjs]／[tool/defaults-tuner.js]）**：**零改動**——`/tool/save-defaults` 寫回採 `coins`／`owned`／`outfit` 欄位級 regex（非整物件重生、非綁 `defaultState` 名），三 regex 經 node 實測對新檔仍命中（`coins:true owned:true outfit:true`，outfit 命中外層物件）；tuner 讀 `defaultState.coins/outfit/owned` 沿用聚合，皆可用。
+* **D6（[game-engine/testing/selftests.js]）**：新增 `?selftest=default-state` 守結構不變式（三片鍵互斥、聯集 deep-equals defaultState、聚合 23 鍵與各關注點落點、`freshState(randomizeTheme:false)` 等於 defaultState、playLimit 子鍵與起始進度空）；`installTestingHooks` 註冊；bump [game-engine/main.js] `selftests.js?v=20260625-issue259-split-default-state`。
+* **版號（[VERSION]→投影）**：refactor→patch，`0.55.1`→**`0.55.2`**（`playerVisible:false`、issue `#259`）；`node scripts/genVersion.mjs` 重生 [game-engine/build/version.js]／[CHANGELOG.md]。
+
+### GATE §1（機器判定，全綠）
+* `node --check`：default-state.js／selftests.js／main.js → OK。
+* `tsc --noEmit --project jsconfig.json` → exit 0。
+* `docLint docs/design.md`（sol）→ PASS 0；`repoLint .` → PASS 0。
+* `node scripts/genVersion.mjs --check` → PASS（投影與 VERSION 一致）；`node scripts/assetLint.mjs` → PASS（142 圖 0 違規）。
+* headless selftest（本機 server :4180 服務本分支檔案，`.codex/run-selftests-259.mjs`）：`default-state`／`save-load`／`mood-extend`／`data-audit`／`monkey` 全 **PASS**、console 0 error（**ALL-PASS**）。
+* 起始值等價佐證：以 `git show HEAD:` 取重構前檔，node 規範化（鍵排序遞迴）deep-compare 新舊 `defaultState` → **values identical**、union==defaultState、keys disjoint、23 鍵。
+* 依賴安全：無 `package.json`、純靜態，`npm audit` 不適用。
+
+### GATE §5（業界水準審查）
+* **鏡頭 C（逐頁 UI/UX）不適用**：本案為起始狀態組態之檔案內部重組，**無任何 UI／渲染／玩法／資產變動**（玩家無感），無新增或異動畫面可逐頁審查。
+* **鏡頭 A／B（能力盤點／專家缺口）**：本案**不新增、不移除任何產品能力**，無責任邊界變動；relevant 風險面為「行為保持」，已以 (a) 新舊 `defaultState` 值等價證明、(b) `save-load`（舊存檔相容）、(c) `default-state` 結構不變式、(d) tuner 寫回 regex 實測 四道守門覆蓋。
+* **分級結論**：`務必要修` 0。鑑於零能力／零畫面變動，逐頁與 ≥10 發現之量化下限不適用（無對應審查單元）；以上述行為保持守門替代，全綠。**結論：可宣稱完成。**
+* **test-summary.pdf**：本案無畫面、無逐頁審查單元，不產製 per-page A5 PDF（GATE §5「無畫面→獨立報告」路徑）；驗證證據即本節（獨立報告）。
