@@ -23,6 +23,5 @@ export const castleItems = [
   wearable({ id: "castleSmallCrown", storeId: "castleSeamstress", type: "headTop", name: "Small royal crown", cost: 240, icon: "Acc", asset: "headtop-small-royal-crown" }),
   wearable({ id: "castlePearlNecklace", storeId: "castleSeamstress", type: "neck", name: "Pearl necklace", cost: 170, icon: "Acc", asset: "neck-pearl-necklace" }),
   wearable({ id: "castleJewelBrooch", storeId: "castleSeamstress", type: "neck", name: "Jewel brooch", cost: 175, icon: "Acc", asset: "neck-jewel-brooch" }),
-  wearable({ id: "castleGoldLaceGloves", storeId: "castleSeamstress", type: "hand", name: "Gold lace gloves", cost: 160, icon: "Acc", asset: "hand-gold-lace-gloves" })
 ];
 //#endregion Castle 衣物資源包

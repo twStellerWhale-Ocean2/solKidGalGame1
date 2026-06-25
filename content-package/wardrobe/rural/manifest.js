@@ -23,6 +23,5 @@ export const ruralItems = [
   wearable({ id: "countrysideHeadKerchief", storeId: "workwearStall", type: "headTop", name: "Head kerchief", cost: 80, icon: "Acc", asset: "headtop-head-kerchief" }),
   wearable({ id: "countrysideStrawBasket", storeId: "workwearStall", type: "hand", name: "Straw basket", cost: 110, icon: "Acc", asset: "hand-straw-basket" }),
   wearable({ id: "countrysideClothCap", storeId: "workwearStall", type: "headTop", name: "Cloth cap", cost: 90, icon: "Acc", asset: "headtop-cloth-cap" }),
-  wearable({ id: "countrysideWoodBracelet", storeId: "workwearStall", type: "hand", name: "Wooden bracelet", cost: 75, icon: "Acc", asset: "hand-wooden-bracelet" })
 ];
 //#endregion Countryside 衣物資源包
