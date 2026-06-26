@@ -10,7 +10,7 @@
 //   node tool/generate-wardrobe-asset.mjs <packId> [--item <asset>] [--apply] [--quality high|medium|low] [--direct]
 //
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = process.cwd();
@@ -45,35 +45,30 @@ if (!KEY) {
 
 const art = JSON.parse(readFileSync(ART_STYLE, "utf8"));
 const stylePath = join(WARDROBE, packId, "style.json");
-const manifestPath = join(WARDROBE, packId, "manifest.js");
+const layersPath = join(WARDROBE, packId, "assets", "layers");
 if (!existsSync(stylePath)) {
   console.error(`missing ${stylePath}`);
   process.exit(1);
 }
-if (!existsSync(manifestPath)) {
-  console.error(`missing ${manifestPath}`);
-  process.exit(1);
-}
 
 const style = JSON.parse(readFileSync(stylePath, "utf8"));
-const manifest = readFileSync(manifestPath, "utf8");
 
 function magick(args, options = {}) {
   return execFileSync("magick", args, { encoding: options.encoding || "buffer", maxBuffer: 64 * 1024 * 1024 });
 }
 
-function manifestMetaByAsset() {
+// issue #267：單品 metadata（type／prompt 等）改自素材旁 sidecar（<asset>.metadata.json）讀取，取代解析 manifest.js 與 style.items。
+function sidecarMetaByAsset() {
   const map = new Map();
-  const re = /wearable\(\{\s*id:\s*"([^"]+)",\s*storeId:\s*"([^"]+)",\s*type:\s*"([^"]+)",\s*name:\s*"([^"]+)",\s*cost:\s*([0-9]+),\s*icon:\s*"([^"]+)",\s*asset:\s*"([^"]+)"/g;
-  let m;
-  while ((m = re.exec(manifest))) {
-    const [, id, storeId, type, name, cost, icon, asset] = m;
-    map.set(asset, { id, storeId, type, name, cost: Number(cost), icon });
+  if (!existsSync(layersPath)) return map;
+  for (const f of readdirSync(layersPath)) {
+    if (!f.endsWith(".metadata.json")) continue;
+    map.set(f.slice(0, -".metadata.json".length), JSON.parse(readFileSync(join(layersPath, f), "utf8")));
   }
   return map;
 }
 
-const itemMeta = manifestMetaByAsset();
+const itemMeta = sidecarMetaByAsset();
 
 function chooseKeyColor(asset, itemDesc) {
   const text = `${asset} ${itemDesc}`.toLowerCase();
@@ -439,7 +434,7 @@ function fitTransparentWebp(src, out, itemType) {
 async function genOne(asset, itemDesc) {
   const meta = itemMeta.get(asset);
   if (!meta) {
-    console.warn(`  skip ${asset}: no manifest item`);
+    console.warn(`  skip ${asset}: no sidecar`);
     return null;
   }
   activeKeyColor = chooseKeyColor(asset, itemDesc);
@@ -461,8 +456,8 @@ async function genOne(asset, itemDesc) {
   return { asset, out, dim, ...result, prompt };
 }
 
-const items = Object.entries(style.items)
-  .map(([asset, v]) => [asset, typeof v === "string" ? v : v.desc])
+const items = [...itemMeta.entries()]
+  .map(([asset, meta]) => [asset, meta.prompt || ""])
   .filter(([asset]) => !onlyItem || asset === onlyItem);
 
 console.log(`gen ${items.length} item(s) of [${packId}] quality=${quality} mode=${useGuide ? "guide-edit" : "direct-transparent-experiment"} → ${apply ? "APPLY layers/" : "preview tool/_gen-preview/"}`);

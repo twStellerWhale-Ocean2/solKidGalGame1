@@ -1,0 +1,14 @@
+{
+  "id": "countrysideRoughLeatherBoots",
+  "type": "shoes",
+  "name": "Rough leather short boots",
+  "cost": 105,
+  "icon": "Shoes",
+  "prompt": "front-view paper-doll footwear layer: rough leather short boots worn on invisible standing feet, front view, no visible insoles, no top-down view, no legs",
+  "targetBox": {
+    "left": 201,
+    "top": 698,
+    "right": 311,
+    "bottom": 768
+  }
+}

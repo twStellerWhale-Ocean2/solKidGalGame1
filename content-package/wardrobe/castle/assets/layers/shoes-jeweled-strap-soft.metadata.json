@@ -1,0 +1,14 @@
+{
+  "id": "castleJeweledStrapSoftShoes",
+  "type": "shoes",
+  "name": "Jeweled strap soft shoes",
+  "cost": 185,
+  "icon": "Shoes",
+  "prompt": "front-view paper-doll footwear layer: soft court shoes with jeweled straps worn on invisible standing feet, two shoes side by side, no visible insoles, no top-down view, no legs",
+  "targetBox": {
+    "left": 207,
+    "top": 658,
+    "right": 302,
+    "bottom": 768
+  }
+}

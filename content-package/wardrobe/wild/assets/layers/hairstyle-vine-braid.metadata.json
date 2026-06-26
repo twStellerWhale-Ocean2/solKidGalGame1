@@ -1,0 +1,14 @@
+{
+  "id": "fairyVineBraid",
+  "type": "hairstyle",
+  "name": "Vine-braided hair",
+  "cost": 205,
+  "icon": "Hair",
+  "prompt": "front-view wearable hairstyle layer: magical vine-braided hair, open face area, hair and vines only, no face, no head, no skin, no mannequin frame",
+  "targetBox": {
+    "left": 152,
+    "top": 262,
+    "right": 361,
+    "bottom": 552
+  }
+}

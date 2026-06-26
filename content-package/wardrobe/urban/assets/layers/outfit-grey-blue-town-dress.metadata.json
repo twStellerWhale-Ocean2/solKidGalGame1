@@ -1,0 +1,14 @@
+{
+  "id": "urbanGreyBlueTownDress",
+  "type": "outfit",
+  "name": "Grey-blue town dress",
+  "cost": 205,
+  "icon": "Outfit",
+  "prompt": "front-as-worn transparent outfit layer: grey-blue town dress with practical walking skirt, no head, no face, no hands, no legs, no body frame",
+  "targetBox": {
+    "left": 153,
+    "top": 392,
+    "right": 359,
+    "bottom": 619
+  }
+}

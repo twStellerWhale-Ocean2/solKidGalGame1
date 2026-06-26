@@ -1,0 +1,14 @@
+{
+  "id": "countrysideLinenApronDress",
+  "type": "outfit",
+  "name": "Linen white apron dress",
+  "cost": 170,
+  "icon": "Outfit",
+  "prompt": "front-as-worn transparent outfit layer: linen-white apron dress with simple countryside cloth layers, no head, no face, no hands, no legs, no body frame",
+  "targetBox": {
+    "left": 162,
+    "top": 389,
+    "right": 356,
+    "bottom": 687
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "storeId": "starter",
+  "items": [
+    {
+      "id": "softBrownHair",
+      "type": "hairstyle",
+      "name": "Soft brown story hair",
+      "cost": 0,
+      "icon": "Hair"
+    },
+    {
+      "id": "yumiStarterHair",
+      "type": "hairstyle",
+      "name": "Yumi silver bob hair",
+      "cost": 0,
+      "icon": "Hair"
+    },
+    {
+      "id": "solStarterHair",
+      "type": "hairstyle",
+      "name": "Mary honey bob hair",
+      "cost": 0,
+      "icon": "Hair"
+    },
+    {
+      "id": "rosaStarterHair",
+      "type": "hairstyle",
+      "name": "Rosa chestnut braid hair",
+      "cost": 0,
+      "icon": "Hair"
+    },
+    {
+      "id": "starterPajama",
+      "type": "outfit",
+      "name": "Starter rose play outfit",
+      "cost": 0,
+      "icon": "Outfit"
+    }
+  ]
+}

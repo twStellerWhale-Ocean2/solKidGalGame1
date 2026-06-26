@@ -1,0 +1,14 @@
+{
+  "id": "countrysideWoodenClogs",
+  "type": "shoes",
+  "name": "Wooden clogs",
+  "cost": 90,
+  "icon": "Shoes",
+  "prompt": "front-view paper-doll footwear layer: simple wooden clogs worn on invisible standing feet, closed rounded fronts, no visible insoles, no top-down view, no legs",
+  "targetBox": {
+    "left": 211,
+    "top": 713,
+    "right": 302,
+    "bottom": 766
+  }
+}

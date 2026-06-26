@@ -1,0 +1,14 @@
+{
+  "id": "countrysideGrassWalkingShoes",
+  "type": "shoes",
+  "name": "Grass walking shoes",
+  "cost": 95,
+  "icon": "Shoes",
+  "prompt": "front-view paper-doll footwear layer: grass walking shoes worn on invisible standing feet, front view, no visible insoles, no top-down view, no legs",
+  "targetBox": {
+    "left": 207,
+    "top": 702,
+    "right": 307,
+    "bottom": 768
+  }
+}

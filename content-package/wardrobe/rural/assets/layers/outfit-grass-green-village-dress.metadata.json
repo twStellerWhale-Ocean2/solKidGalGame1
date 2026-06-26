@@ -1,0 +1,14 @@
+{
+  "id": "countrysideGrassGreenVillageDress",
+  "type": "outfit",
+  "name": "Grass green village dress",
+  "cost": 165,
+  "icon": "Outfit",
+  "prompt": "front-as-worn transparent outfit layer: grass green village dress with simple warm shape, no head, no face, no hands, no legs, no body frame",
+  "targetBox": {
+    "left": 155,
+    "top": 384,
+    "right": 361,
+    "bottom": 709
+  }
+}

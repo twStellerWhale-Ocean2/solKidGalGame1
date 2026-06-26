@@ -1,0 +1,14 @@
+{
+  "id": "castleJewelBrooch",
+  "type": "neck",
+  "name": "Jewel brooch",
+  "cost": 175,
+  "icon": "Acc",
+  "prompt": "front-view chest-neck accessory layer: ornate jewel brooch for court clothing, brooch only, no body, no dress, no skin",
+  "targetBox": {
+    "left": 222,
+    "top": 475,
+    "right": 292,
+    "bottom": 509
+  }
+}

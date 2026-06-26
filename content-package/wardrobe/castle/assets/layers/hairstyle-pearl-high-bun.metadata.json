@@ -1,0 +1,14 @@
+{
+  "id": "castlePearlHighBun",
+  "type": "hairstyle",
+  "name": "Pearl high bun",
+  "cost": 230,
+  "icon": "Hair",
+  "prompt": "front-view wearable hairstyle layer: elegant pearl high bun with small pearl accents, open face area, hair only, no face, no head, no skin, no mannequin frame",
+  "targetBox": {
+    "left": 165,
+    "top": 256,
+    "right": 349,
+    "bottom": 442
+  }
+}

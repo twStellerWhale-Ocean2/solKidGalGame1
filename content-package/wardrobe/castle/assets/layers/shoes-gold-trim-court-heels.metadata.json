@@ -1,0 +1,14 @@
+{
+  "id": "castleGoldTrimCourtHeels",
+  "type": "shoes",
+  "name": "Gold-trim court heels",
+  "cost": 190,
+  "icon": "Shoes",
+  "prompt": "front-view paper-doll footwear layer: gold-trimmed court heels worn on invisible standing feet, two shoes side by side, toe caps at bottom, no visible insoles, no top-down view, no legs",
+  "targetBox": {
+    "left": 208,
+    "top": 674,
+    "right": 303,
+    "bottom": 768
+  }
+}

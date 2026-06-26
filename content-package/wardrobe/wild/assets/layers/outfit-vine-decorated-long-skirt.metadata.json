@@ -1,0 +1,14 @@
+{
+  "id": "fairyVineLongSkirt",
+  "type": "outfit",
+  "name": "Vine-decorated long skirt",
+  "cost": 270,
+  "icon": "Outfit",
+  "prompt": "front-as-worn transparent outfit layer: vine-decorated forest dress with flowing long skirt, no head, no face, no hands, no legs, no body frame",
+  "targetBox": {
+    "left": 142,
+    "top": 391,
+    "right": 372,
+    "bottom": 651
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "fairyCrystalPendant",
+  "type": "neck",
+  "name": "Crystal pendant",
+  "cost": 190,
+  "icon": "Acc",
+  "prompt": "front-view neck accessory layer: delicate crystal pendant necklace, pendant only, no neck, no skin, no body",
+  "targetBox": {
+    "left": 201,
+    "top": 376,
+    "right": 311,
+    "bottom": 486
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "fairyVineBracelet",
+  "type": "hand",
+  "name": "Vine bracelet",
+  "cost": 145,
+  "icon": "Acc",
+  "prompt": "front-view hand accessory layer: vine bracelet positioned for an invisible hand, bracelet only, no hand, no arm, no skin",
+  "targetBox": {
+    "left": 201,
+    "top": 232,
+    "right": 311,
+    "bottom": 342
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "urbanBrownLeatherBoots",
+  "type": "shoes",
+  "name": "Brown leather ankle boots",
+  "cost": 150,
+  "icon": "Shoes",
+  "prompt": "front-view paper-doll footwear layer: brown leather ankle boots worn on invisible standing feet, front uppers, toe caps at bottom, no visible insoles, no top-down view, no legs",
+  "targetBox": {
+    "left": 200,
+    "top": 675,
+    "right": 310,
+    "bottom": 768
+  }
+}

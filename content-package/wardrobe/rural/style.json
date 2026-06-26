@@ -1,5 +1,6 @@
 {
   "_comment": "Countryside wardrobe pack. Internal pack id remains rural; public style maps to Countryside.",
+  "storeId": "workwearStall",
   "packStyle": {
     "name": "郊區鄉村 Countryside Wardrobe",
     "reference": "simple natural durable medieval countryside clothing for villages, pastures, mills, gardens and cottages; princess travelling incognito or on a rural adventure",
@@ -26,22 +27,5 @@
     ],
     "linework": "loose, light, shorter skirts for movement, simple warm decoration",
     "mood": "natural, plain, friendly, warm, free, everyday"
-  },
-  "items": {
-    "hairstyle-kerchief-short-hair": "front-view wearable hairstyle layer: short countryside hair tucked under a simple kerchief, open face area, hair and kerchief only, no face, no head, no skin, no mannequin frame",
-    "hairstyle-simple-low-ponytail": "front-view wearable hairstyle layer: simple low ponytail tied with plain cloth, open face area, hair only, no face, no head, no skin, no mannequin frame",
-    "hairstyle-linen-tie-braid": "front-view wearable hairstyle layer: countryside braid tied with linen cord, open face area, hair only, no face, no head, no skin, no mannequin frame",
-    "hairstyle-natural-short-curls": "front-view wearable hairstyle layer: natural short curls for a rural girl, open face area, hair only, no face, no head, no skin, no mannequin frame",
-    "outfit-linen-white-apron-dress": "front-as-worn transparent outfit layer: linen-white apron dress with simple countryside cloth layers, no head, no face, no hands, no legs, no body frame",
-    "outfit-beige-linen-dress": "front-as-worn transparent outfit layer: beige cotton-linen dress with plain rural cut, no head, no face, no hands, no legs, no body frame",
-    "outfit-grass-green-village-dress": "front-as-worn transparent outfit layer: grass green village dress with simple warm shape, no head, no face, no hands, no legs, no body frame",
-    "outfit-terracotta-jacket-skirt": "front-as-worn transparent outfit layer: terracotta short jacket with practical skirt, no head, no face, no hands, no legs, no body frame",
-    "shoes-wooden-clogs": "front-view paper-doll footwear layer: simple wooden clogs worn on invisible standing feet, closed rounded fronts, no visible insoles, no top-down view, no legs",
-    "shoes-rough-leather-short-boots": "front-view paper-doll footwear layer: rough leather short boots worn on invisible standing feet, front view, no visible insoles, no top-down view, no legs",
-    "shoes-grass-walking": "front-view paper-doll footwear layer: grass walking shoes worn on invisible standing feet, front view, no visible insoles, no top-down view, no legs",
-    "shoes-simple-cloth": "front-view paper-doll footwear layer: simple cloth shoes worn on invisible standing feet, front view, no visible insoles, no top-down view, no legs",
-    "headtop-head-kerchief": "front-view head-top accessory layer: plain countryside head kerchief, kerchief only, no hair, no face, no head, no skin",
-    "hand-straw-basket": "front-view hand accessory layer: small straw basket for flowers or vegetables, basket only, no hand, no arm, no body",
-    "headtop-cloth-cap": "front-view head-top accessory layer: simple countryside cloth cap, cap only, no hair, no face, no head, no skin"
   }
 }

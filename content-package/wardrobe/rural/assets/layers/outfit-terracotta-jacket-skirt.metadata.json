@@ -1,0 +1,14 @@
+{
+  "id": "countrysideTerracottaJacketSkirt",
+  "type": "outfit",
+  "name": "Terracotta jacket skirt",
+  "cost": 175,
+  "icon": "Outfit",
+  "prompt": "front-as-worn transparent outfit layer: terracotta short jacket with practical skirt, no head, no face, no hands, no legs, no body frame",
+  "targetBox": {
+    "left": 141,
+    "top": 393,
+    "right": 371,
+    "bottom": 695
+  }
+}

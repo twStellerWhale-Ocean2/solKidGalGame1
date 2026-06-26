@@ -1,0 +1,14 @@
+{
+  "id": "fairyFlowerShoes",
+  "type": "shoes",
+  "name": "Flower-decorated shoes",
+  "cost": 175,
+  "icon": "Shoes",
+  "prompt": "front-view paper-doll footwear layer: flower-decorated shoes worn on invisible standing feet, front view, no visible insoles, no top-down view, no legs",
+  "targetBox": {
+    "left": 211,
+    "top": 683,
+    "right": 301,
+    "bottom": 768
+  }
+}

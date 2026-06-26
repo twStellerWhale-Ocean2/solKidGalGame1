@@ -1,0 +1,14 @@
+{
+  "id": "castleSmallCrown",
+  "type": "headTop",
+  "name": "Small royal crown",
+  "cost": 240,
+  "icon": "Acc",
+  "prompt": "front-view head-top accessory layer: small royal crown with gold trim and tiny jewels, crown only, no hair, no face, no head, no skin",
+  "targetBox": {
+    "left": 196,
+    "top": 225,
+    "right": 315,
+    "bottom": 340
+  }
+}

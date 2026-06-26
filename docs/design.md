@@ -314,6 +314,7 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
     * paramMoodMinutesPerPoint=`1`
   * [etyCfg自訂modWardrobe組態]
     * paramWardrobeLayerBounds=`wardrobeLayerBoundsByType`（每個 item type 定義 render bounds 與 `safeBox`）
+    * paramWardrobeRegistry=`衣物單品單一事實來源＝素材旁 JSON sidecar（<slug>.metadata.json 與 <slug>.webp 同目錄同基名，欄位 id／type／name／cost／icon／prompt／targetBox?；per-pack storeId 與 packStyle 置 <pack>/style.json）。registry 為其衍生：build 期 scripts/genWardrobeIndex.mjs 掃各包 layers 之 webp＋sidecar 產出 committed content-package/wardrobe/index.generated.js（frozen wardrobeItems，AUTO-GENERATED 勿手改），生成期守門每 webp↔sidecar 一一對應無孤兒、id 全域唯一、type 合法；runtime 只 import 生成 index（瀏覽器永不 readdir、純靜態相容 spec#7），dev server 於內容增刪後重生 index 供即時預覽。取代手寫 wardrobe/manifest.js 聚合、各包 manifest.js 寫死 wearable(...)、style.json items 與 asset-target-overrides.js 之多檔散落；管理工具新增／刪除／改 metadata 皆對單一 sidecar 原子操作、無跨檔孤兒`
     * paramWardrobeAssetStyle=`三層描述詞：全域 houseStyle ＋ 每包 packStyle｛name,reference,palette,motifs,linework,mood｝＋ 單品 itemDesc；組 prompt 經影像模型生成 512×512 透明單品素材（兼投影層與商店預覽），維護工具可編輯三層描述詞並逐件重生，留痕 model／prompt／date 寫入圖檔 metadata`
     * paramWardrobeChromaKeyWorkflow=`正式衣物素材一律採「先上純色人像框／臨時模特兒定位 → 去除人像 key color → 透明 wardrobe layer」流程，不得直接生成商品照或獨立單品圖；此規則適用所有正式穿戴素材：髮型、整件 outfit、鞋子、headTop/headSide/faceEyes/faceMask/neck/hand 等配件。依 item type 建立 1024×1024 chroma-key guide（髮型＝頭部／上胸輪廓，outfit＝含頭頸肩胸腰手腳的全身穿衣輪廓，shoes＝腿腳輪廓，headTop/headSide/faceEyes/faceMask＝頭部輪廓，neck＝頭頸胸輪廓，hand＝身側與手部輪廓）；影像模型必須先在 guide 上畫出「已穿在人像框上的狀態」，再由後處理移除 guide，只留下欲穿戴物件。outfit 領口、肩線、袖口、腰線、裙襬與開口必須依人像框包覆成形，不能像空衣架或平放衣物；鞋子必須依腳踝與腳掌成形，不能像商品陳列鞋；配件必須依頭、頸胸或手側位置成形，不能像孤立 icon。生成與去背後不得留下臉、五官、皮膚、頭、手腳、人物本體、模特兒框線、場景、背景、文字或浮水印；key color 使用高飽和亮洋紅 #ff00ff（必要時亮綠 #00ff00），禁止使用黑色以免深色髮型、鞋、酒紅、墨綠、深紫服飾被誤去除；鞋子素材須是「穿在紙娃娃雙腳上的正面穿戴視角」：左右腳分開、腳尖朝下、鞋口對準腳踝，可保留因 key color 腳部被移除形成的透明鞋口，禁止俯視商品照、側拍鞋、成雙陳列照、鞋盒展示或漂浮鞋子 icon；後處理以 key color/fuzz 去背、alpha bbox 裁切、長邊貼滿並置中輸出 512×512 透明 WebP，若殘留 key color、人體皮膚或模特兒輪廓，該素材不得納入正式 layer。`
     * paramWardrobePackStyles=`四包中世紀歐洲公主換裝風格：castle=城堡宮廷（高貴、正式、華麗、王族／宮廷舞會／典禮，色盤 gold/ivory/wine red/royal blue/deep purple/pearl/rose/emerald，元素 crown/jewel/pearl/lace/gold embroidery/crest/rose/lily/court floral，線條對稱端莊、垂墜寬裙、合身上身、袖口領口裝飾，氣氛 noble/elegant/formal/ornate/royal）；urban=城鎮街區（美麗精緻時髦但貼近日常，城鎮少女／商人之女／工坊學徒／書店少女，色盤 milk tea/caramel/olive/grey blue/misty pink/deep red/cream/dark green，元素 leather/button/plaid/lace/shawl/waist bag/book/key/town sign/brick，線條俐落合身、方便行走、裙襬不過大、外套層次，氣氛 refined/clever/lively/everyday/urban）；rural=Countryside 郊區鄉村（簡便樸素自然耐用，村莊／牧場／磨坊／菜園／小屋，公主微服出遊或鄉村冒險裝，色盤 beige/linen/earth brown/grass green/pale yellow/blue grey/terracotta/wood brown，元素 cotton linen/coarse cloth/apron/kerchief/straw/wood/flowers/basket/farm tools，線條寬鬆輕便短裙襬、少裝飾但溫暖可愛，氣氛 natural/plain/friendly/warm/free）；wild=Fairy Forest 童話森林（奇幻自然魔法精靈感，森林精靈／妖精／魔法植物／神秘湖泊，色盤 tender green/mint/aqua/lavender/starlight white/rose/moonlight silver/glowing cyan，元素 flower/vine/leaf/butterfly/fairy wing/crystal/star/moon/mushroom/glowing rune，線條輕盈飄逸不對稱自然流動、裙襬如花瓣或葉片，氣氛 dreamy/mysterious/free/magical/forest/adventure）。`
@@ -1081,6 +1082,18 @@ erDiagram
 * 預期結果：
   1. 頂層導覽為各內容資料包（公主、衣物、地圖與場景、聲音、遊戲規則），各既有管理頁歸入其所屬資料包節點且皆可正確進入、編輯與寫回不退化。
   2. 地圖與場景節點下依世界→地區→地點/場景→對話分層，導覽結構與內容資料包結構一致。
+
+#### intTest#54-驗證 衣物 registry 衍生一致性與預設裝扣守門
+
+* 既有基底：intTest#01。
+* 新增項目：衣物 registry 自素材旁 sidecar 衍生（paramWardrobeRegistry）＋開發期一致性守門。
+* 步驟：
+  1. 執行 `node scripts/genWardrobeIndex.mjs --check`，比對生成 index 與各包 layers 之 webp／sidecar 配對。
+  2. 載入 registry 後，逐一檢核 `princessStart.owned` 各 id、`princessStart.outfit` 各非 `none` slot 與 starter 相容 id 是否皆能於 registry 解析。
+  3. 以 headless selftest data-audit 跑前述守門並讀回結果。
+* 預期結果：
+  1. 每件 `.webp` 恰有一同名 `.metadata.json` sidecar、反之亦然（無孤兒），`id` 全域唯一、`type` 為合法 slot；違反即非零退出、擋 build。
+  2. 預設 owned／outfit 與 starter fixture 皆解析命中 registry，任一失聯即 selftest 紅（開發期出聲告警）；執行期 `normalizeState` safe-fallback 不受影響、玩家端不崩潰。
 
 ## E. 方案層級：文件程式化測試
 

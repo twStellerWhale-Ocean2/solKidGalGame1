@@ -1,0 +1,14 @@
+{
+  "id": "urbanBuckleLeatherShoes",
+  "type": "shoes",
+  "name": "Buckle leather shoes",
+  "cost": 140,
+  "icon": "Shoes",
+  "prompt": "front-view paper-doll footwear layer: buckle leather town shoes worn on invisible standing feet, two shoes side by side, no visible insoles, no top-down view, no legs",
+  "targetBox": {
+    "left": 201,
+    "top": 685,
+    "right": 311,
+    "bottom": 766
+  }
+}
