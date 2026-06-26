@@ -1,5 +1,6 @@
 {
   "_comment": "Urban wardrobe pack. Style reset for the medieval European town district wardrobe.",
+  "storeId": "boutique",
   "packStyle": {
     "name": "城鎮街區 Urban Town Wardrobe",
     "reference": "pretty refined medieval town fashion for town girls, merchant daughters, workshop apprentices, bookshop girls and market walks; beautiful but practical",
@@ -27,23 +28,5 @@
     ],
     "linework": "tidy fitted practical silhouettes, easy to walk in, modest skirt volume, layered coats and jackets",
     "mood": "refined, clever, lively, everyday, urban, slightly mature"
-  },
-  "items": {
-    "hairstyle-ribbon-long-straight": "front-view wearable hairstyle layer: simple town-girl straight hair with a fabric ribbon headband, two side locks, clear open face area, hair only, no face, no head, no skin, no helmet cap, no mannequin frame",
-    "hairstyle-side-braid": "front-view wearable hairstyle layer: neat single side braid for a town girl, open face area, hair only, no face, no head, no skin, no mannequin frame",
-    "hairstyle-twin-braids": "front-view wearable hairstyle layer: tidy twin braids with practical town style, open face area, hair only, no face, no head, no skin, no mannequin frame",
-    "hairstyle-low-ponytail": "front-view wearable hairstyle layer: simple low ponytail tied with leather or cloth ribbon, open face area, hair only, no face, no head, no skin, no mannequin frame",
-    "outfit-milk-tea-tailored-coat": "front-as-worn transparent outfit layer: milk-tea beige tailored town coat with neat buttons, no head, no face, no hands, no legs, no body frame",
-    "outfit-grey-blue-town-dress": "front-as-worn transparent outfit layer: grey-blue town dress with practical walking skirt, no head, no face, no hands, no legs, no body frame",
-    "outfit-plaid-vest-long-skirt": "front-as-worn transparent outfit layer: plaid vest and long skirt set, refined but practical, no head, no face, no hands, no legs, no body frame",
-    "outfit-olive-short-cape-set": "front-as-worn transparent outfit layer: olive green short cape outfit with town travel layers, no head, no face, no hands, no legs, no body frame",
-    "shoes-brown-leather-ankle-boots": "front-view paper-doll footwear layer: brown leather ankle boots worn on invisible standing feet, front uppers, toe caps at bottom, no visible insoles, no top-down view, no legs",
-    "shoes-buckle-leather": "front-view paper-doll footwear layer: buckle leather town shoes worn on invisible standing feet, two shoes side by side, no visible insoles, no top-down view, no legs",
-    "shoes-town-walking-boots": "front-view paper-doll footwear layer: practical town walking boots worn on invisible standing feet, front view, no visible insoles, no top-down view, no legs",
-    "shoes-low-heel-lace": "front-view paper-doll footwear layer: low-heel lace shoes worn on invisible standing feet, two shoes side by side, no visible insoles, no top-down view, no legs",
-    "hand-leather-waist-bag": "front-view held or waist accessory layer: small practical leather waist bag, bag only, no hand, no arm, no body",
-    "headtop-small-round-hat": "front-view head-top accessory layer: small round town hat, hat only, no hair, no face, no head, no skin",
-    "neck-plaid-scarf": "front-view neck accessory layer: plaid scarf for a town outfit, scarf only, no neck, no skin, no body",
-    "hand-small-town-bag": "front-view hand accessory layer: small handheld town bag, bag only, no hand, no arm, no body"
   }
 }

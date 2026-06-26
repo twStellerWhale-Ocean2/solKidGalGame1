@@ -1,0 +1,14 @@
+{
+  "id": "castleWineVelvetPrincessDress",
+  "type": "outfit",
+  "name": "Wine velvet princess dress",
+  "cost": 310,
+  "icon": "Outfit",
+  "prompt": "front-as-worn transparent outfit layer: wine red velvet princess dress with rich court texture and fitted upper body, no head, no face, no hands, no legs, no body frame",
+  "targetBox": {
+    "left": 140,
+    "top": 391,
+    "right": 370,
+    "bottom": 695
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "fairyFlowerWaveHair",
+  "type": "hairstyle",
+  "name": "Flower wreath long waves",
+  "cost": 210,
+  "icon": "Hair",
+  "prompt": "front-view wearable hairstyle layer: long wavy fairy hair with flower wreath, open face area, hair and flowers only, no face, no head, no skin, no mannequin frame",
+  "targetBox": {
+    "left": 164,
+    "top": 270,
+    "right": 348,
+    "bottom": 510
+  }
+}

@@ -7,8 +7,6 @@ import {
   shopItems,
   wardrobeLayerBoundsByType
 } from "../content-package/wardrobe/manifest.js";
-import { assetContentBoxByPackName } from "../content-package/wardrobe/_shared/asset-content-box.generated.js";
-import { assetTargetOverrides } from "../content-package/wardrobe/_shared/asset-target-overrides.js";
 import { createPaperDollRenderer } from "../game-engine/render/paper-doll.js";
 import { cornerOffsets, hasWarp } from "../game-engine/render/warp.js";
 
@@ -541,7 +539,18 @@ function itemWithWorkingBoxes(id) {
 function selectedItem() { return itemMap.get(state.selectedItemId) || null; }
 function selectedType() { const it = selectedItem(); return it?.layers?.[0]?.type || it?.type || ""; }
 function selectedKey() { const it = selectedItem(); const src = it?.layers?.[0]?.src; return src ? keyFromSrc(src) : ""; }
-function seedItemBox(key) { return assetTargetOverrides[key] || assetContentBoxByPackName[key] || workingSafeBox[typeOfKey(key)] || fullCanvas(); }
+// issue #267：targetBox 來源改自記憶體中該件 layer.bounds.targetBox（由 sidecar 經衍生 index 帶入）；
+// 與類別 safeBox 相同視為無 per-item 覆寫，改 seed 可編輯的 workingSafeBox。
+function currentItemBox(key) {
+  for (const item of shopItems) for (const layer of item.layers || []) {
+    if (keyFromSrc(layer.src) !== key) continue;
+    const tb = layer.bounds?.targetBox || null;
+    const safe = wardrobeLayerBoundsByType[layer.type || item.type]?.safeBox || null;
+    return tb && !sameBox(tb, safe) ? tb : null;
+  }
+  return null;
+}
+function seedItemBox(key) { return currentItemBox(key) || workingSafeBox[typeOfKey(key)] || fullCanvas(); }
 function itemBoxFor(key) { if (!(key in workingItemBox)) workingItemBox[key] = { ...seedItemBox(key) }; return workingItemBox[key]; }
 function typeOfKey(key) {
   for (const item of shopItems) for (const layer of item.layers || []) if (keyFromSrc(layer.src) === key) return layer.type || item.type;
@@ -556,16 +565,15 @@ function buildRulesSnippet() {
     return `  ${type}: layerBounds(${boxLiteral(workingSafeBox[type])}${render})`;
   }).join(",\n")}\n});`;
 }
-function buildOverridesSnippet() {
-  // 合併「既有已存覆寫」（本次工具未碰到的單品須保留，避免套用時被洗掉）與本次編輯；
-  // 本次調回與裁切原始框相同者視為還原 identity、不寫入。
-  const merged = { ...assetTargetOverrides };
+function buildItemBoxes() {
+  // issue #267：只送本次工具碰過的單品（workingItemBox），各寫回其 sidecar 的 targetBox；
+  // 與類別 safeBox 相同視為還原 → 送 null 清除該 sidecar 之 targetBox（退回 safeBox）。未碰到者不送、其 sidecar 不動。
+  const boxes = {};
   for (const key of Object.keys(workingItemBox)) {
-    if (sameBox(workingItemBox[key], assetContentBoxByPackName[key] || null)) delete merged[key];
-    else merged[key] = { ...workingItemBox[key] };
+    const safe = workingSafeBox[typeOfKey(key)] || null;
+    boxes[key] = sameBox(workingItemBox[key], safe) ? null : { ...workingItemBox[key] };
   }
-  const entries = Object.keys(merged).sort().map((key) => `  ${JSON.stringify(key)}: ${boxLiteral(merged[key])}`);
-  return `export const assetTargetOverrides = Object.freeze({\n${entries.join(",\n")}${entries.length ? "\n" : ""}});`;
+  return boxes;
 }
 async function applyToFiles() {
   dom.applyAll.disabled = true;
@@ -573,7 +581,7 @@ async function applyToFiles() {
   try {
     const res = await fetch("/tool/apply-wardrobe", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rules: buildRulesSnippet(), overrides: buildOverridesSnippet() })
+      body: JSON.stringify({ rules: buildRulesSnippet(), boxes: buildItemBoxes() })
     });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);

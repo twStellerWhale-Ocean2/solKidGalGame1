@@ -915,27 +915,30 @@ function runSceneNavSelfTest(api) {
       errors.push(`closet has <2 columns (${closetCols.length}); cannot confirm multi-column shelf (default account should own several categories)`);
     }
 
-    // 穿脫切換（單一來源 toggleShopTryOn、就地更新不重建貨架）：以預設帳號擁有但未穿戴之 pinkSlippers 驗 Wear → Take Off。
-    const toggleItem = api.itemById("pinkSlippers");
+    // 穿脫切換（單一來源 toggleShopTryOn、就地更新不重建貨架）：自 registry 動態挑「預設帳號擁有、具正式 layer、且未穿戴」之
+    // 單品驗 Wear → Take Off（issue #267：取代寫死 pinkSlippers，內容重作不再令 fixture 失效——本案根因之一）。
+    const toggleItem = api.state.owned
+      .map((id) => api.itemById(id))
+      .find((it) => it && it.storeId !== "starter" && (it.layers || []).length > 0 && api.state.outfit[it.type] !== it.id);
     const wearBtnFor = (id) => api.elements.advShopGrid
       .querySelector(`.item-card[data-item-id="${id}"]`)?.closest(".item-panel-row")?.querySelector(".item-panel-tryon");
-    if (toggleItem && api.state.owned.includes(toggleItem.id) && api.state.outfit[toggleItem.type] !== toggleItem.id) {
+    if (toggleItem) {
       const wearBtn = wearBtnFor(toggleItem.id);
       if (!wearBtn) {
-        errors.push("closet wear toggle (.item-panel-tryon) not found for pinkSlippers");
+        errors.push(`closet wear toggle (.item-panel-tryon) not found for ${toggleItem.id}`);
       } else {
         if (!deepPink.test(getComputedStyle(wearBtn).borderColor)) errors.push(`closet wear toggle not deep-pink (border=${getComputedStyle(wearBtn).borderColor})`);
         if (!/wear/i.test(wearBtn.textContent)) errors.push(`unequipped closet wear label = "${wearBtn.textContent.trim()}", expected Wear`);
         wearBtn.click(); // 穿上
-        if (api.state.outfit[toggleItem.type] !== toggleItem.id) errors.push("after Wear, pinkSlippers not equipped");
+        if (api.state.outfit[toggleItem.type] !== toggleItem.id) errors.push(`after Wear, ${toggleItem.id} not equipped`);
         // 就地更新驗證：同一個 DOM 鈕仍掛在文件上（未被重建貨架抽換）、文字就地改為 Take Off——與商店 try-on 同一套，面板不跑。
         if (!wearBtn.isConnected) errors.push("closet wear toggle rebuilt the shelf (button detached) — must update in place like shop, not full re-render");
         if (!/take off/i.test(wearBtn.textContent)) errors.push(`after Wear, in-place label = "${wearBtn.textContent.trim()}", expected Take Off`);
         wearBtn.click(); // 脫下
-        if (api.state.outfit[toggleItem.type] === toggleItem.id) errors.push("after Take Off, pinkSlippers still equipped (toggle failed)");
+        if (api.state.outfit[toggleItem.type] === toggleItem.id) errors.push(`after Take Off, ${toggleItem.id} still equipped (toggle failed)`);
       }
     } else {
-      errors.push("test data: pinkSlippers not owned/unequipped at start (cannot verify wear/take-off toggle)");
+      errors.push("test data: no owned/unequipped real-layer item to verify wear/take-off toggle (registry/default mismatch?)");
     }
 
     // 衣櫃返回回到第一層場景選單，再以 Leave 關閉。
@@ -1812,6 +1815,20 @@ async function runDataAudit(api) {
         }
       });
     });
+  });
+
+  // issue #267：開發期一致性守門——預設公主 owned/outfit 與 starter 相容項皆須對得上衍生 registry（itemById）。
+  // 失聯即紅（出聲告警），杜絕單邊改內容靜默讓預設造型退化（#263 之根因）；執行期 normalizeState safe-fallback 不受影響。
+  const registryHas = (id) => Boolean(api.itemById(id));
+  princessStart.owned.forEach((id) => {
+    if (!registryHas(id)) errors.push(`default princessStart.owned "${id}" 不在衣物 registry（#267 失聯守門）`);
+  });
+  Object.entries(princessStart.outfit).forEach(([slot, id]) => {
+    if (slot === "room" || id === "none") return;
+    if (!registryHas(id)) errors.push(`default princessStart.outfit.${slot} "${id}" 不在衣物 registry（#267 失聯守門）`);
+  });
+  ["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair", "starterPajama"].forEach((id) => {
+    if (!registryHas(id)) errors.push(`starter 相容項 "${id}" 不在衣物 registry（#267 失聯守門）`);
   });
 
   const result = document.createElement("pre");

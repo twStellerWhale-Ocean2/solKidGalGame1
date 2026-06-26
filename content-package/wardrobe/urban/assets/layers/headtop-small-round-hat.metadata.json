@@ -1,0 +1,14 @@
+{
+  "id": "urbanSmallRoundHat",
+  "type": "headTop",
+  "name": "Small round hat",
+  "cost": 120,
+  "icon": "Acc",
+  "prompt": "front-view head-top accessory layer: small round town hat, hat only, no hair, no face, no head, no skin",
+  "targetBox": {
+    "left": 213,
+    "top": 240,
+    "right": 319,
+    "bottom": 337
+  }
+}

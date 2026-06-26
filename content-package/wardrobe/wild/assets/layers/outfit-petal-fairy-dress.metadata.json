@@ -1,0 +1,14 @@
+{
+  "id": "fairyPetalDress",
+  "type": "outfit",
+  "name": "Petal fairy dress",
+  "cost": 280,
+  "icon": "Outfit",
+  "prompt": "front-as-worn transparent outfit layer: petal fairy dress with fitted bodice and layered petal skirt, no head, no face, no hands, no legs, no body frame",
+  "targetBox": {
+    "left": 141,
+    "top": 376,
+    "right": 371,
+    "bottom": 701
+  }
+}

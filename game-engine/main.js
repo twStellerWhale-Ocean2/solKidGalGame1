@@ -93,7 +93,7 @@ import {
   setActiveAccountId,
   updateAccountMeta
 } from "./state/accounts.js";
-import { installTestingHooks } from "./testing/selftests.js?v=20260625-issue259-split-default-state";
+import { installTestingHooks } from "./testing/selftests.js?v=20260626-issue267-wardrobe-ssot";
 import { createSaveLoadController } from "./system/save-load.js";
 import {
   MAX_LIMIT_MINUTES,

@@ -1,0 +1,14 @@
+{
+  "id": "fairyAquaMagicDress",
+  "type": "outfit",
+  "name": "Aqua magic dress",
+  "cost": 290,
+  "icon": "Outfit",
+  "prompt": "front-as-worn transparent outfit layer: aqua lake-blue magic dress with light flowing fabric, no head, no face, no hands, no legs, no body frame",
+  "targetBox": {
+    "left": 141,
+    "top": 367,
+    "right": 371,
+    "bottom": 692
+  }
+}

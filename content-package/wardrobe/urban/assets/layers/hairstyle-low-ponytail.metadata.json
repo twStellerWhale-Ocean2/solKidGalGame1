@@ -1,0 +1,14 @@
+{
+  "id": "urbanLowPonytail",
+  "type": "hairstyle",
+  "name": "Low ponytail",
+  "cost": 130,
+  "icon": "Hair",
+  "prompt": "front-view wearable hairstyle layer: simple low ponytail tied with leather or cloth ribbon, open face area, hair only, no face, no head, no skin, no mannequin frame",
+  "targetBox": {
+    "left": 181,
+    "top": 263,
+    "right": 351,
+    "bottom": 442
+  }
+}

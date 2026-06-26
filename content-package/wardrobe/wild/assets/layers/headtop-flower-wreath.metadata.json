@@ -1,0 +1,14 @@
+{
+  "id": "fairyFlowerWreath",
+  "type": "headTop",
+  "name": "Flower wreath",
+  "cost": 160,
+  "icon": "Acc",
+  "prompt": "front-view head-top accessory layer: flower wreath crown, wreath only, no hair, no face, no head, no skin",
+  "targetBox": {
+    "left": 186,
+    "top": 240,
+    "right": 326,
+    "bottom": 380
+  }
+}

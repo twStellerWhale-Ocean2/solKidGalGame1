@@ -1,0 +1,14 @@
+{
+  "id": "countrysideSimpleClothShoes",
+  "type": "shoes",
+  "name": "Simple cloth shoes",
+  "cost": 85,
+  "icon": "Shoes",
+  "prompt": "front-view paper-doll footwear layer: simple cloth shoes worn on invisible standing feet, front view, no visible insoles, no top-down view, no legs",
+  "targetBox": {
+    "left": 201,
+    "top": 702,
+    "right": 311,
+    "bottom": 766
+  }
+}

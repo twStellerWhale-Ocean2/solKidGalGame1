@@ -1,0 +1,14 @@
+{
+  "id": "urbanMilkTeaCoat",
+  "type": "outfit",
+  "name": "Milk-tea tailored coat",
+  "cost": 220,
+  "icon": "Outfit",
+  "prompt": "front-as-worn transparent outfit layer: milk-tea beige tailored town coat with neat buttons, no head, no face, no hands, no legs, no body frame",
+  "targetBox": {
+    "left": 141,
+    "top": 381,
+    "right": 371,
+    "bottom": 614
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "fairyGauzeForestPrincessDress",
+  "type": "outfit",
+  "name": "Gauze forest princess dress",
+  "cost": 285,
+  "icon": "Outfit",
+  "prompt": "front-as-worn transparent outfit layer: airy gauze forest princess dress, no head, no face, no hands, no legs, no body frame",
+  "targetBox": {
+    "left": 141,
+    "top": 362,
+    "right": 371,
+    "bottom": 687
+  }
+}

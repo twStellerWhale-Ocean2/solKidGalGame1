@@ -62,3 +62,27 @@
   * **GATE §5（實機 visual-qa，本案必做）**：依 Issue ＜I＞「其他注意事項」，須確認**新帳號預設公主造型**於**手機直向與桌機**正確載入、不退化（全身著裝＋頭胸照大頭照），並抽驗一件換裝穿戴對位；以 smoke task 串接（USR 指定）。
   * **smoke task（USR 指定驗收）**：起本機 server → 新局載入預設公主 → headless selftest（含新守門）全綠 → 預設造型截圖（手機直向＋桌機）佐證不退化。
 * **依賴安全**：純靜態、無 `package.json`，`npm audit` 不適用。
+
+## 7. 實作與驗證結果（3code，2026-06-26）
+
+> USR 於本對話選定「完整 SSOT 收斂」並要求 CODE 從簡＋smoke 驗收；plan→code 同一 PR（#269），三審查點以 in-chat 核准續作。
+
+### 實作（依 §3 D1–D10）
+* **D1／D2（sidecar SSOT）**：62 件 layer 各置 `<slug>.metadata.json`（id／type／name／cost／icon／prompt／targetBox?）；各包 `style.json` 收斂為 `{storeId, packStyle}`；starter 5 件無素材相容項 → `starter/items.json`。
+* **D3（衍生 index＋守門）**：新增 [scripts/genWardrobeIndex.mjs]，掃 sidecar＋storeId 產 [content-package/wardrobe/index.generated.js]（**67 件** frozen）；`--check` 守 webp↔sidecar 一一對應無孤兒、id 唯一、type 合法。
+* **D4（runtime 單一路徑）**：[content-package/wardrobe/manifest.js] 改自 index re-export `wardrobeItems`／`shopItems`（下游 game-data.js 契約不變）；[_shared/item-helpers.js] 改 `buildWardrobeItem(raw)`（image≡layers[0].src、targetBox 自 raw）。
+* **D5／D6（dev 即時＋管理工具原子）**：[server.mjs] `handleDeleteItem`＝刪 webp＋sidecar 後重生 index；add／upload／get／save desc／meta 皆對單一 sidecar；Tuner apply 之 targetBox 寫回各 sidecar＋重生。
+* **D7（生成腳本）**：[tool/generate-wardrobe-asset.mjs] 改自 sidecar 取 prompt／type（取代 style.items＋manifest regex）。
+* **D8（開發期守門＋動態 fixture）**：[selftests.js] `data-audit` 斷言預設 owned／outfit＋starter fixture 皆 `itemById` 命中（失聯即紅）；穿脫 fixture 改自 registry 動態挑、廢寫死 `pinkSlippers`；執行期 `normalizeState` safe-fallback 不動。
+* **D9（一次到底遷移）**：移除 asset-target-overrides.js、asset-content-box.generated.js（已空）及其 #176 配套 obsolete [tool/trim-wardrobe-assets.mjs]、各包 manifest.js 寫死 items、style.json items；無新舊雙軌。[tool/wardrobe-tuner.js] 改自記憶體 item.targetBox seed。
+* **版號**：refactor→patch，`0.55.3`→**`0.55.4`**（playerVisible:false、#267）；genVersion 重生 version.js／CHANGELOG，`--check` 0 漂移。
+
+### GATE §1（機器判定，全綠）
+* `node --check`（所有改動檔）OK；`docLint docs/design.md`（sol）PASS 0；`repoLint .` PASS 0；`assetLint` PASS（154 圖 0 違規）；`genVersion --check` PASS；`genWardrobeIndex --check` PASS（67 件、無孤兒、id 唯一）。
+* headless selftest（本機 server :4173、[.codex/run-selftests-267.mjs]）：`data-audit`（#267 守門）／`save-load`（舊存檔相容）／`scene-nav`（穿脫動態 fixture）／`default-state`（#259 不變式）／`monkey` 全 **PASS**、console 0 error（**ALL-PASS**）。
+* 依賴安全：無 `package.json`、純靜態，`npm audit` 不適用；`tsc` 本環境未安裝（jsconfig checkJs 屬編輯期選配、非硬 gate）。
+
+### GATE §5（業界水準審查＝行為保持＋visual-qa smoke）
+* **鏡頭 A／B**：本案行為保持、不新增／移除任何產品能力、無責任邊界變動；relevant 風險＝「載入路徑改寫致預設造型靜默退化」，已以 (a) data-audit 預設裝扣守門、(b) scene-nav 實機渲染穿脫、(c) 新舊 registry 等價（67 件、image≡src、預設 owned/outfit 全解析）三道守門覆蓋。
+* **鏡頭 C（visual-qa smoke，#267 必做）**：新帳號（coins 200＝princessStart）預設公主造型於**手機直向（390×844）＋桌機（1280×800）**入公主房載入——**全身著裝完整（髮型＋grey-blue town dress），未退化為無衣著（#263 症狀不再現）**、console 0 error、45 layer 正常合成（截圖 [.codex/princess-mobile-267.png]／[.codex/princess-desktop-267.png]）。本案無新增／異動畫面，不產 per-page test-summary.pdf（GATE §5「無畫面變動→獨立報告」路徑，本節即報告）。
+* **分級結論**：`務必要修` 0。**結論：可宣稱完成。**

@@ -1,0 +1,14 @@
+{
+  "id": "urbanRibbonLongHair",
+  "type": "hairstyle",
+  "name": "Ribbon long straight hair",
+  "cost": 140,
+  "icon": "Hair",
+  "prompt": "front-view wearable hairstyle layer: simple town-girl straight hair with a fabric ribbon headband, two side locks, clear open face area, hair only, no face, no head, no skin, no helmet cap, no mannequin frame",
+  "targetBox": {
+    "left": 175,
+    "top": 268,
+    "right": 348,
+    "bottom": 465
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "fairyStarHairClip",
+  "type": "headSide",
+  "name": "Star hair clip",
+  "cost": 150,
+  "icon": "Acc",
+  "prompt": "front-view side hair accessory layer: small star hair clip, clip only, no hair, no face, no head, no skin",
+  "targetBox": {
+    "left": 199,
+    "top": 233,
+    "right": 299,
+    "bottom": 333
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "countrysideStrawBasket",
+  "type": "hand",
+  "name": "Straw basket",
+  "cost": 110,
+  "icon": "Acc",
+  "prompt": "front-view hand accessory layer: small straw basket for flowers or vegetables, basket only, no hand, no arm, no body",
+  "targetBox": {
+    "left": 294,
+    "top": 544,
+    "right": 404,
+    "bottom": 654
+  }
+}

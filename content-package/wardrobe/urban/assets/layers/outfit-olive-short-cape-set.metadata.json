@@ -1,0 +1,14 @@
+{
+  "id": "urbanOliveShortCapeSet",
+  "type": "outfit",
+  "name": "Olive short cape set",
+  "cost": 230,
+  "icon": "Outfit",
+  "prompt": "front-as-worn transparent outfit layer: olive green short cape outfit with town travel layers, no head, no face, no hands, no legs, no body frame",
+  "targetBox": {
+    "left": 144,
+    "top": 384,
+    "right": 374,
+    "bottom": 626
+  }
+}

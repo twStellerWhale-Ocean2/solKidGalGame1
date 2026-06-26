@@ -1,0 +1,14 @@
+{
+  "id": "urbanPlaidScarf",
+  "type": "neck",
+  "name": "Plaid scarf",
+  "cost": 115,
+  "icon": "Acc",
+  "prompt": "front-view neck accessory layer: plaid scarf for a town outfit, scarf only, no neck, no skin, no body",
+  "targetBox": {
+    "left": 202,
+    "top": 387,
+    "right": 312,
+    "bottom": 497
+  }
+}

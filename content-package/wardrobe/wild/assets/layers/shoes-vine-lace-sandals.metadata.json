@@ -1,0 +1,14 @@
+{
+  "id": "fairyVineSandals",
+  "type": "shoes",
+  "name": "Vine-lace sandals",
+  "cost": 180,
+  "icon": "Shoes",
+  "prompt": "front-view paper-doll footwear layer: vine-laced fairy sandals worn on invisible standing feet, front straps, no top-down view, no legs, no body",
+  "targetBox": {
+    "left": 201,
+    "top": 656,
+    "right": 311,
+    "bottom": 766
+  }
+}

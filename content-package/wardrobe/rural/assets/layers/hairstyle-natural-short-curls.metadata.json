@@ -1,0 +1,14 @@
+{
+  "id": "countrysideNaturalShortCurls",
+  "type": "hairstyle",
+  "name": "Natural short curls",
+  "cost": 115,
+  "icon": "Hair",
+  "prompt": "front-view wearable hairstyle layer: natural short curls for a rural girl, open face area, hair only, no face, no head, no skin, no mannequin frame",
+  "targetBox": {
+    "left": 196,
+    "top": 269,
+    "right": 319,
+    "bottom": 441
+  }
+}

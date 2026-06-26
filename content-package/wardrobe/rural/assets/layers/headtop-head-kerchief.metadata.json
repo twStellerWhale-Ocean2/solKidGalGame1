@@ -1,0 +1,14 @@
+{
+  "id": "countrysideHeadKerchief",
+  "type": "headTop",
+  "name": "Head kerchief",
+  "cost": 80,
+  "icon": "Acc",
+  "prompt": "front-view head-top accessory layer: plain countryside head kerchief, kerchief only, no hair, no face, no head, no skin",
+  "targetBox": {
+    "left": 210,
+    "top": 246,
+    "right": 350,
+    "bottom": 386
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "castlePearlNecklace",
+  "type": "neck",
+  "name": "Pearl necklace",
+  "cost": 170,
+  "icon": "Acc",
+  "prompt": "front-view neck accessory layer: elegant pearl necklace, necklace only, no neck, no skin, no body, no dress",
+  "targetBox": {
+    "left": 222,
+    "top": 381,
+    "right": 287,
+    "bottom": 469
+  }
+}

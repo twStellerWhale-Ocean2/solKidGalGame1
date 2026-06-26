@@ -1,0 +1,14 @@
+{
+  "id": "castleGoldCourtGown",
+  "type": "outfit",
+  "name": "Gold embroidered court gown",
+  "cost": 320,
+  "icon": "Outfit",
+  "prompt": "front-as-worn transparent outfit layer: gold-embroidered royal court gown with fitted bodice and ceremonial skirt, no head, no face, no hands, no legs, no body frame",
+  "targetBox": {
+    "left": 141,
+    "top": 390,
+    "right": 371,
+    "bottom": 715
+  }
+}

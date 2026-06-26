@@ -1,0 +1,14 @@
+{
+  "id": "countrysideClothCap",
+  "type": "headTop",
+  "name": "Cloth cap",
+  "cost": 90,
+  "icon": "Acc",
+  "prompt": "front-view head-top accessory layer: simple countryside cloth cap, cap only, no hair, no face, no head, no skin",
+  "targetBox": {
+    "left": 187,
+    "top": 250,
+    "right": 327,
+    "bottom": 390
+  }
+}

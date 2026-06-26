@@ -1,0 +1,14 @@
+{
+  "id": "urbanPlaidVestLongSkirt",
+  "type": "outfit",
+  "name": "Plaid vest long skirt",
+  "cost": 215,
+  "icon": "Outfit",
+  "prompt": "front-as-worn transparent outfit layer: plaid vest and long skirt set, refined but practical, no head, no face, no hands, no legs, no body frame",
+  "targetBox": {
+    "left": 141,
+    "top": 388,
+    "right": 371,
+    "bottom": 690
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "urbanHandbag",
+  "type": "hand",
+  "name": "Handheld small bag",
+  "cost": 125,
+  "icon": "Acc",
+  "prompt": "front-view hand accessory layer: small handheld town bag, bag only, no hand, no arm, no body",
+  "targetBox": {
+    "left": 278,
+    "top": 502,
+    "right": 388,
+    "bottom": 612
+  }
+}

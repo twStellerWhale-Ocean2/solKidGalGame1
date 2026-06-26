@@ -1,0 +1,14 @@
+{
+  "id": "countrysideKerchiefShortHair",
+  "type": "hairstyle",
+  "name": "Kerchief short hair",
+  "cost": 120,
+  "icon": "Hair",
+  "prompt": "front-view wearable hairstyle layer: short countryside hair tucked under a simple kerchief, open face area, hair and kerchief only, no face, no head, no skin, no mannequin frame",
+  "targetBox": {
+    "left": 175,
+    "top": 267,
+    "right": 307,
+    "bottom": 421
+  }
+}

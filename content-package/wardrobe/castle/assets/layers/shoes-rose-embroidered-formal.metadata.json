@@ -1,0 +1,14 @@
+{
+  "id": "castleRoseEmbroideredShoes",
+  "type": "shoes",
+  "name": "Rose embroidered formal shoes",
+  "cost": 195,
+  "icon": "Shoes",
+  "prompt": "front-view paper-doll footwear layer: rose-embroidered formal shoes worn on invisible standing feet, two shoes side by side, no visible insoles, no top-down view, no legs",
+  "targetBox": {
+    "left": 209,
+    "top": 697,
+    "right": 301,
+    "bottom": 766
+  }
+}

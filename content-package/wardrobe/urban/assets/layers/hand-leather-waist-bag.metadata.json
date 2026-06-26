@@ -1,0 +1,14 @@
+{
+  "id": "urbanLeatherWaistBag",
+  "type": "hand",
+  "name": "Leather waist bag",
+  "cost": 130,
+  "icon": "Acc",
+  "prompt": "front-view held or waist accessory layer: small practical leather waist bag, bag only, no hand, no arm, no body",
+  "targetBox": {
+    "left": 305,
+    "top": 535,
+    "right": 415,
+    "bottom": 645
+  }
+}

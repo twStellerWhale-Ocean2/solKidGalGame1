@@ -1,0 +1,14 @@
+{
+  "id": "countrysideBeigeLinenDress",
+  "type": "outfit",
+  "name": "Beige cotton-linen dress",
+  "cost": 160,
+  "icon": "Outfit",
+  "prompt": "front-as-worn transparent outfit layer: beige cotton-linen dress with plain rural cut, no head, no face, no hands, no legs, no body frame",
+  "targetBox": {
+    "left": 166,
+    "top": 395,
+    "right": 343,
+    "bottom": 642
+  }
+}
