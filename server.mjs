@@ -149,6 +149,17 @@ async function handleDeleteItem(request, response) {
     try { await unlink(join(packDir(pack), "assets", "layers", `${asset}.webp`)); } catch { /* missing ok */ }
     await spliceMapLine(join(root, "content-package/wardrobe/_shared/asset-target-overrides.js"), `${pack}/${asset}`, null);
     await spliceMapLine(join(root, "content-package/wardrobe/_shared/asset-content-box.generated.js"), `${pack}/${asset}`, null);
+    // 對稱清理 style.json 的生成 prompt（與 manifest/webp/overrides 一致；缺檔或無此 key 皆略過）
+    try {
+      const stylePath = join(packDir(pack), "style.json");
+      const styleSrc = await readFile(stylePath, "utf8");
+      const seol = styleSrc.includes("\r\n") ? "\r\n" : "\n";
+      const style = JSON.parse(styleSrc);
+      if (style.items && Object.prototype.hasOwnProperty.call(style.items, asset)) {
+        delete style.items[asset];
+        await writeFile(stylePath, (JSON.stringify(style, null, 2) + "\n").replace(/\n/g, seol));
+      }
+    } catch { /* 缺 style.json：略過 */ }
     json(response, 200, { ok: true });
   } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
 }

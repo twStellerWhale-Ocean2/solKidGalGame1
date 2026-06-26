@@ -42,7 +42,6 @@
     "shoes-simple-cloth": "front-view paper-doll footwear layer: simple cloth shoes worn on invisible standing feet, front view, no visible insoles, no top-down view, no legs",
     "headtop-head-kerchief": "front-view head-top accessory layer: plain countryside head kerchief, kerchief only, no hair, no face, no head, no skin",
     "hand-straw-basket": "front-view hand accessory layer: small straw basket for flowers or vegetables, basket only, no hand, no arm, no body",
-    "headtop-cloth-cap": "front-view head-top accessory layer: simple countryside cloth cap, cap only, no hair, no face, no head, no skin",
-    "hand-wooden-bracelet": "front-view hand accessory layer: small wooden bracelet positioned for an invisible hand, bracelet only, no hand, no arm, no skin"
+    "headtop-cloth-cap": "front-view head-top accessory layer: simple countryside cloth cap, cap only, no hair, no face, no head, no skin"
   }
 }
