@@ -2390,7 +2390,8 @@ function patchWardrobeItem(itemId, newTargetBox, rotation) {
     delete live.rotation;
   }
   renderPaperDolls();
-  renderWardrobeDetail(true);
+  if (advMode === "wardrobe") renderWardrobeDetail(true);
+  else if (advMode === "shop") renderAdvShop(true);
 }
 
 // issue #272：更新浮動「調整」鈕——item 有 pack/asset 則顯示並定位，否則隱藏。
