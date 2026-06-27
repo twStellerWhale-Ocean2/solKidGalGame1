@@ -1,3 +1,31 @@
+/* issue #272：公主右上角「調整」浮動按鈕——商店與衣櫃皆可開啟 overlay */
+.adv-adjust-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  margin-top: 4px;
+  border-radius: 20px;
+  border: 1.5px solid var(--primary, #c2175a);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--primary, #c2175a);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(194, 23, 90, 0.18);
+  transition: background 0.14s, box-shadow 0.14s;
+  white-space: nowrap;
+}
+
+.adv-adjust-btn:hover {
+  background: rgba(255, 228, 240, 0.97);
+  box-shadow: 0 3px 14px rgba(194, 23, 90, 0.28);
+}
+
+.adv-adjust-btn:focus-visible {
+  outline: 3px solid rgba(255, 214, 80, 0.95);
+  outline-offset: 2px;
+}
+
 /* issue #272：衣物對位即時調整 overlay（<dialog> 全螢幕） */
 .adjust-overlay {
   position: fixed;
@@ -17,27 +45,29 @@
 }
 
 .adjust-overlay::backdrop {
-  background: rgba(20, 10, 18, 0.72);
+  background: rgba(20, 10, 18, 0.66);
 }
 
 .adjust-overlay-content {
   display: flex;
   gap: 16px;
   align-items: flex-start;
-  background: var(--surface-container, #f5eef4);
+  background: rgba(248, 220, 238, 0.90);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: var(--radius, 14px);
   padding: 16px;
   box-shadow: 0 24px 60px rgba(30, 16, 26, 0.52);
-  max-height: 90vh;
+  max-height: 96vh;
   overflow: hidden;
 }
 
 .adjust-overlay-preview {
   flex-shrink: 0;
-  width: min(36vw, 220px);
+  width: min(40vw, 260px);
   aspect-ratio: 512 / 768;
   position: relative;
-  background: var(--surface-variant, #eddde7);
+  background: rgba(240, 220, 235, 0.97);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -50,6 +80,16 @@
   contain: layout paint;
 }
 
+/* SVG 拖拽 handle 層，疊在 paper-doll 上 */
+.adjust-handles-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+}
+
 .adjust-overlay-controls {
   display: flex;
   flex-direction: column;
@@ -57,7 +97,7 @@
   min-width: 190px;
   max-width: 260px;
   overflow-y: auto;
-  max-height: calc(90vh - 32px);
+  max-height: calc(96vh - 32px);
 }
 
 .adjust-title {
@@ -121,30 +161,6 @@
   min-height: 38px;
 }
 
-/* 衣櫃模式：「調整」按鈕放在第二欄（try-on 鈕正下方），不溢位到第一欄 */
-.adv-closet .item-panel-adjust {
-  grid-column: 2;
-  min-width: 0;
-  border: 0;
-  border-radius: 8px;
-  color: var(--on-surface-variant, #5b3d52);
-  background: var(--surface-container-high, #e6d8e2);
-  font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 1.05;
-  cursor: pointer;
-  padding: 4px 6px;
-}
-
-.adv-closet .item-panel-adjust:hover {
-  background: var(--surface-container-highest, #d8ccda);
-}
-
-.adv-closet .item-panel-adjust:focus-visible {
-  outline: 3px solid rgba(255, 214, 80, 0.95);
-  outline-offset: 2px;
-}
-
 /* 手機直向：上下堆疊 */
 @media (max-width: 460px) {
   .adjust-overlay-content {
@@ -154,7 +170,7 @@
     overflow-y: auto;
   }
   .adjust-overlay-preview {
-    width: min(58vw, 200px);
+    width: min(60vw, 210px);
   }
   .adjust-overlay-controls {
     max-width: 90vw;

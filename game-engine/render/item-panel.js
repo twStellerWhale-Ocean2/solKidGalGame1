@@ -1,6 +1,5 @@
 export function renderItemDetailPanel({
   actionForItem,
-  adjustForItem,
   backLabel = "↩ Back",
   categoryLabel,
   columns,
@@ -24,7 +23,6 @@ export function renderItemDetailPanel({
 
   const rowFor = (item) => createItemPanelRow({
     action: actionForItem(item),
-    adjustButton: adjustForItem ? adjustForItem(item) : null,
     categoryLabel,
     item,
     mode,
@@ -73,7 +71,7 @@ export function renderItemDetailPanel({
   return createItemPanelBackButton(backLabel, onBack);
 }
 
-function createItemPanelRow({ action, adjustButton, categoryLabel, item, mode, onAction, onPreview, onTryOn, previewStyle, selected, tryOn }) {
+function createItemPanelRow({ action, categoryLabel, item, mode, onAction, onPreview, onTryOn, previewStyle, selected, tryOn }) {
   const row = document.createElement("div");
   row.className = `shop-buy-row item-panel-row ${mode}-panel-row`;
 
@@ -130,16 +128,6 @@ function createItemPanelRow({ action, adjustButton, categoryLabel, item, mode, o
       onAction(item);
     });
     row.append(actionButton);
-  }
-  // issue #272：衣櫃單品 overlay 對位調整按鈕（adjustButton 為選填設定，僅衣櫃 mode 傳入）
-  if (adjustButton) {
-    const adjBtn = document.createElement("button");
-    adjBtn.type = "button";
-    adjBtn.className = `item-panel-adjust ${mode}-panel-adjust`;
-    adjBtn.textContent = adjustButton.label;
-    adjBtn.setAttribute("aria-label", adjustButton.ariaLabel || `${adjustButton.label} ${item.name}`);
-    adjBtn.addEventListener("click", () => adjustButton.onAdjust(item));
-    row.append(adjBtn);
   }
   return row;
 }

@@ -177,6 +177,8 @@ let advFocusTimer = 0;
 let shopPreviewItemId = "";
 // 商店多件同時試穿：累加試穿中的商品 id（沿用同一個試穿娃娃，依各自部位疊穿）。
 let shopTryOnIds = [];
+// issue #272：面板目前聚焦的單品（商店或衣櫃），用以驅動公主右上角「調整」浮動按鈕。
+let panelFocusItem = null;
 const mapZoomLimits = { min: 1, max: 2.2, mobileBaseScale: 1.06 };
 const areaMapIds = ["castle", "urban", "rural", "wild", "world"];
 let mapGesture = null;
@@ -1125,6 +1127,7 @@ function renderActiveTryOnDoll() {
 
 function clearTryOnPreview({ renderDoll = true } = {}) {
   shopPreviewItemId = "";
+  updateAdvAdjustBtn(null);
   if (renderDoll) renderPaperDolls();
 }
 
@@ -2373,22 +2376,6 @@ function closetItemStatus(item) {
   };
 }
 
-// issue #272：衣櫃單品「調整」按鈕設定（只有有 layer 的單品才提供，starter 無素材者跳過）。
-function closetAdjustButton(item) {
-  if (!item.pack || !item.asset) return null;
-  return {
-    label: "調整",
-    ariaLabel: `調整 ${item.name} 對位`,
-    onAdjust: (it) => openAdjustOverlay({
-      item: it,
-      outfit: { ...state.outfit },
-      renderer: paperDollRenderer,
-      getCharacter: activePaperDollCharacter,
-      onSave: patchWardrobeItem
-    })
-  };
-}
-
 // issue #272：overlay 儲存後動態更新 shopItems 中的 live 項目，再重繪紙娃娃與衣櫃。
 function patchWardrobeItem(itemId, newTargetBox, rotation) {
   const live = itemById(itemId);
@@ -2404,6 +2391,15 @@ function patchWardrobeItem(itemId, newTargetBox, rotation) {
   }
   renderPaperDolls();
   renderWardrobeDetail(true);
+}
+
+// issue #272：更新公主右上角浮動「調整」鈕——item 有 pack/asset 則顯示，否則隱藏。
+// 點擊始終讀取 panelFocusItem（不在此綁定，listener 在初始化時一次設定）。
+function updateAdvAdjustBtn(item) {
+  panelFocusItem = item || null;
+  const btn = elements.advAdjustBtn;
+  if (!btn) return;
+  btn.hidden = !(item && item.pack && item.asset);
 }
 
 function allowedShopCategories(hotspot = activeShopHotspot) {
@@ -2476,7 +2472,6 @@ function renderAdvShop(preserveFocus = false, { closet = false } = {}) {
   // 鈕（actionForItem 回 noButton 之狀態）、不需 onAction、Back 回房間。mode 一律 "shop" 使元件類別與版面完全一致。
   const panel = {
     actionForItem: closet ? closetItemStatus : shopPanelAction,
-    adjustForItem: closet ? closetAdjustButton : undefined,
     categoryLabel,
     emptyText: closet ? "Buy treasures in town first, then dress up here." : `You found all ${activeShopHotspot?.label || "shop"} treasures!`,
     isSelected: shopItemTriedOn,
@@ -2535,6 +2530,7 @@ function shopTryOnState(item) {
 
 function toggleShopTryOn(item) {
   if (!item || !isWearableItem(item)) return;
+  updateAdvAdjustBtn(item); // issue #272：每次點選面板單品即更新浮動調整按鈕
   // issue #244：公主房衣櫃（advMode==="wardrobe"）與商店逛店共用此單一穿脫來源。
   // 衣櫃＝已擁有衣物之持久穿脫：直接 equip/unequip 至 state.outfit 並 persist，再以同一套就地更新
   // （renderActiveTryOnDoll＋updateShopTileStates，不重建貨架）反映，故面板不跑、與商店行為一致。
@@ -3553,6 +3549,16 @@ function bindEvents() {
   elements.systemMenuTabs.forEach((tab) => tab.addEventListener("click", () => changeSystemPanel(tab.dataset.menuPanel)));
   elements.goMapButton?.addEventListener("click", openWorldMap);
   elements.returnHomeButton?.addEventListener("click", () => openArea("castle"));
+  elements.advAdjustBtn?.addEventListener("click", () => {
+    if (!panelFocusItem) return;
+    openAdjustOverlay({
+      item: panelFocusItem,
+      outfit: { ...state.outfit },
+      renderer: paperDollRenderer,
+      getCharacter: activePaperDollCharacter,
+      onSave: patchWardrobeItem
+    });
+  });
   elements.speakPromptButton.addEventListener("click", () => playLessonAudio(elements.advLine.textContent, "en-US"));
   elements.speakPromptButtonZh?.addEventListener("click", () => playLessonAudio(activeOpeningZh, CHINESE_AUDIO_LANG));
   elements.saveButton.addEventListener("click", saveMarkdown);
