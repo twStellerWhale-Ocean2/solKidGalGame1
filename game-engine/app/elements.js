@@ -76,6 +76,7 @@ export function createElements() {
     advTitle: $("#advTitle"),
     advPlayerName: $("#advPlayerName"),
     advNpcName: $("#advNpcName"),
+    advAdjustBtn: $("#advAdjustBtn"),
     advNpcPortrait: $("#advNpcPortrait"),
     advSpeaker: $("#advSpeaker"),
     advLine: $("#advLine"),

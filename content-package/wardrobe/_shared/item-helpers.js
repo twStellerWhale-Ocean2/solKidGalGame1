@@ -15,8 +15,9 @@ export function buildWardrobeItem(raw) {
   }
   const base = wardrobeLayerBoundsForType(type);
   const targetBox = raw.targetBox || base.safeBox || null;
+  const rotation = raw.rotation ?? 0;
   const src = wardrobePackLayer(raw.pack, raw.asset);
-  const layer = { slot: type, type, bounds: targetBox ? { ...base, targetBox } : base, src };
-  return { id, storeId, type, name, cost, icon, image: src, layers: [layer] };
+  const layer = { slot: type, type, bounds: targetBox ? { ...base, targetBox } : base, src, ...(rotation ? { rotation } : {}) };
+  return { id, storeId, type, name, cost, icon, image: src, layers: [layer], pack: raw.pack, asset: raw.asset, ...(rotation ? { rotation } : {}) };
 }
 //#endregion 資源包工具

@@ -62,6 +62,7 @@ import { updateMarkerEdgeVisibility } from "./map/marker-visibility.js";
 import { createAreaMapViewportController } from "./map/viewport.js";
 import { createKeyboardWalkController, directionForKey } from "./map/keyboard-walk.js";
 import { renderItemDetailPanel } from "./render/item-panel.js";
+import { openAdjustOverlay } from "./render/adjust-overlay.js";
 import { createPaperDollRenderer } from "./render/paper-doll.js";
 import { renderBuildInfo, renderAbout, renderVoiceSettings } from "./render/settings.js";
 import { applyAdvSceneArt } from "./scene/scene-art.js";
@@ -176,6 +177,8 @@ let advFocusTimer = 0;
 let shopPreviewItemId = "";
 // 商店多件同時試穿：累加試穿中的商品 id（沿用同一個試穿娃娃，依各自部位疊穿）。
 let shopTryOnIds = [];
+// issue #272：面板目前聚焦的單品（商店或衣櫃），用以驅動公主右上角「調整」浮動按鈕。
+let panelFocusItem = null;
 const mapZoomLimits = { min: 1, max: 2.2, mobileBaseScale: 1.06 };
 const areaMapIds = ["castle", "urban", "rural", "wild", "world"];
 let mapGesture = null;
@@ -1124,6 +1127,7 @@ function renderActiveTryOnDoll() {
 
 function clearTryOnPreview({ renderDoll = true } = {}) {
   shopPreviewItemId = "";
+  updateAdvAdjustBtn(null);
   if (renderDoll) renderPaperDolls();
 }
 
@@ -2372,6 +2376,51 @@ function closetItemStatus(item) {
   };
 }
 
+// issue #272：overlay 儲存後動態更新 shopItems 中的 live 項目，再重繪紙娃娃與衣櫃。
+function patchWardrobeItem(itemId, newTargetBox, rotation) {
+  const live = itemById(itemId);
+  if (!live?.layers?.length) return;
+  const layer = live.layers[0];
+  layer.bounds = { ...layer.bounds, targetBox: { ...newTargetBox } };
+  if (Number.isFinite(rotation) && rotation !== 0) {
+    layer.rotation = rotation;
+    live.rotation = rotation;
+  } else {
+    delete layer.rotation;
+    delete live.rotation;
+  }
+  renderPaperDolls();
+  renderWardrobeDetail(true);
+}
+
+// issue #272：更新浮動「調整」鈕——item 有 pack/asset 則顯示並定位，否則隱藏。
+function updateAdvAdjustBtn(item) {
+  panelFocusItem = item || null;
+  const btn = elements.advAdjustBtn;
+  if (!btn) return;
+  const shouldShow = !!(item && item.pack && item.asset);
+  btn.hidden = !shouldShow;
+  if (shouldShow) requestAnimationFrame(_positionAdjustBtn);
+}
+
+// 把「調整」鈕定位到公主和衣櫃面板正中間、與面板上緣對齊。
+function _positionAdjustBtn() {
+  const btn = elements.advAdjustBtn;
+  const scene = elements.advScene;
+  if (!btn || !scene || btn.hidden) return;
+  const advBox = scene.querySelector(".adv-box");
+  if (!advBox) return;
+  const sceneRect = scene.getBoundingClientRect();
+  const boxRect = advBox.getBoundingClientRect();
+  const princess = scene.querySelector(".adv-princess");
+  const princessRect = princess ? princess.getBoundingClientRect() : sceneRect;
+  const gapStart = princessRect.right - sceneRect.left;
+  const gapEnd = boxRect.left - sceneRect.left;
+  const cx = (gapStart + gapEnd) / 2;
+  btn.style.left = Math.max(0, cx - btn.offsetWidth / 2) + "px";
+  btn.style.top = (boxRect.top - sceneRect.top) + "px";
+}
+
 function allowedShopCategories(hotspot = activeShopHotspot) {
   return allowedShopCategoriesFor(hotspot);
 }
@@ -2500,6 +2549,7 @@ function shopTryOnState(item) {
 
 function toggleShopTryOn(item) {
   if (!item || !isWearableItem(item)) return;
+  updateAdvAdjustBtn(item); // issue #272：每次點選面板單品即更新浮動調整按鈕
   // issue #244：公主房衣櫃（advMode==="wardrobe"）與商店逛店共用此單一穿脫來源。
   // 衣櫃＝已擁有衣物之持久穿脫：直接 equip/unequip 至 state.outfit 並 persist，再以同一套就地更新
   // （renderActiveTryOnDoll＋updateShopTileStates，不重建貨架）反映，故面板不跑、與商店行為一致。
@@ -3518,6 +3568,17 @@ function bindEvents() {
   elements.systemMenuTabs.forEach((tab) => tab.addEventListener("click", () => changeSystemPanel(tab.dataset.menuPanel)));
   elements.goMapButton?.addEventListener("click", openWorldMap);
   elements.returnHomeButton?.addEventListener("click", () => openArea("castle"));
+  elements.advAdjustBtn?.addEventListener("click", () => {
+    if (!panelFocusItem) return;
+    openAdjustOverlay({
+      item: panelFocusItem,
+      outfit: { ...state.outfit },
+      renderer: paperDollRenderer,
+      getCharacter: activePaperDollCharacter,
+      onSave: patchWardrobeItem
+    });
+  });
+  window.addEventListener("resize", _positionAdjustBtn, { passive: true });
   elements.speakPromptButton.addEventListener("click", () => playLessonAudio(elements.advLine.textContent, "en-US"));
   elements.speakPromptButtonZh?.addEventListener("click", () => playLessonAudio(activeOpeningZh, CHINESE_AUDIO_LANG));
   elements.saveButton.addEventListener("click", saveMarkdown);

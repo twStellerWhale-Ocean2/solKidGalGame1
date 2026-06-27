@@ -1,0 +1,182 @@
+/* issue #272：公主右上角「調整」浮動按鈕——商店與衣櫃皆可開啟 overlay */
+.adv-adjust-btn[hidden] { display: none; }
+
+.adv-adjust-btn {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(194, 23, 90, 0.6);
+  background: rgba(47, 38, 52, 0.92);
+  color: rgba(255, 220, 240, 0.95);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(20, 10, 18, 0.4);
+  transition: background 0.14s;
+  white-space: nowrap;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.adv-adjust-btn:hover {
+  background: rgba(70, 52, 76, 0.97);
+}
+
+.adv-adjust-btn:focus-visible {
+  outline: 3px solid rgba(255, 214, 80, 0.95);
+  outline-offset: 2px;
+}
+
+/* issue #272：衣物對位即時調整 overlay（<dialog> 全螢幕） */
+.adjust-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  border: none;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.adjust-overlay::backdrop {
+  background: rgba(20, 10, 18, 0.66);
+}
+
+.adjust-overlay-content {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: rgba(248, 220, 238, 0.90);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: var(--radius, 14px);
+  padding: 16px;
+  box-shadow: 0 24px 60px rgba(30, 16, 26, 0.52);
+  max-height: 96vh;
+  overflow: hidden;
+}
+
+.adjust-overlay-preview {
+  flex-shrink: 0;
+  width: min(40vw, 260px);
+  aspect-ratio: 512 / 768;
+  position: relative;
+  background: rgba(240, 220, 235, 0.97);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.adjust-preview-doll {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  contain: layout paint;
+}
+
+/* SVG 拖拽 handle 層，疊在 paper-doll 上 */
+.adjust-handles-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+}
+
+.adjust-overlay-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 190px;
+  max-width: 260px;
+  overflow-y: auto;
+  max-height: calc(96vh - 32px);
+}
+
+.adjust-title {
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--on-surface, #261624);
+}
+
+.adjust-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.adjust-slider-row {
+  display: grid;
+  grid-template-columns: 3.5em 2.5em 1fr;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--on-surface-variant, #5b3d52);
+  cursor: default;
+}
+
+.adjust-slider-label {
+  font-weight: 600;
+}
+
+.adjust-slider-val {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary, #c2175a);
+  font-size: 0.75rem;
+}
+
+.adjust-range {
+  width: 100%;
+  accent-color: var(--primary, #c2175a);
+  cursor: pointer;
+}
+
+.adjust-error {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #b91c1c;
+  background: #fee2e2;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.adjust-overlay-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.adjust-overlay-actions .choice-button,
+.adjust-overlay-actions .shop-buy-button {
+  flex: 1;
+  min-height: 38px;
+}
+
+/* 手機直向：上下堆疊 */
+@media (max-width: 460px) {
+  .adjust-overlay-content {
+    flex-direction: column;
+    align-items: center;
+    max-height: 95vh;
+    overflow-y: auto;
+  }
+  .adjust-overlay-preview {
+    width: min(60vw, 210px);
+  }
+  .adjust-overlay-controls {
+    max-width: 90vw;
+    max-height: unset;
+  }
+}

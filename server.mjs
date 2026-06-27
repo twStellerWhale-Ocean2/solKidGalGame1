@@ -91,8 +91,14 @@ async function handleApplyWardrobe(request, response) {
         const pack = safeName(key.slice(0, slash), "pack");
         const asset = safeName(key.slice(slash + 1), "asset");
         const meta = await readSidecar(pack, asset);
-        if (box === null) delete meta.targetBox;
-        else meta.targetBox = { left: box.left, top: box.top, right: box.right, bottom: box.bottom, ...(box.corners ? { corners: box.corners } : {}) };
+        if (box === null) {
+          delete meta.targetBox;
+          delete meta.rotation;
+        } else {
+          meta.targetBox = { left: box.left, top: box.top, right: box.right, bottom: box.bottom, ...(box.corners ? { corners: box.corners } : {}) };
+          if (Number.isFinite(box.rotation) && box.rotation !== 0) meta.rotation = box.rotation;
+          else delete meta.rotation;
+        }
         await writeSidecar(pack, asset, meta);
         n += 1;
       }
