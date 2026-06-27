@@ -55,7 +55,7 @@
   display: flex;
   gap: 16px;
   align-items: flex-start;
-  background: rgba(248, 220, 238, 0.90);
+  background: rgba(248, 220, 238, 0.75);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: var(--radius, 14px);
@@ -67,7 +67,7 @@
 
 .adjust-overlay-preview {
   flex-shrink: 0;
-  width: min(40vw, 260px);
+  width: min(50vw, 325px);
   aspect-ratio: 512 / 768;
   position: relative;
   background: rgba(240, 220, 235, 0.97);
@@ -139,8 +139,8 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  min-width: 190px;
-  max-width: 260px;
+  min-width: 238px;
+  max-width: 325px;
   overflow-y: auto;
   max-height: calc(96vh - 32px);
 }
@@ -215,7 +215,7 @@
     overflow-y: auto;
   }
   .adjust-overlay-preview {
-    width: min(60vw, 210px);
+    width: min(75vw, 263px);
   }
   .adjust-overlay-controls {
     max-width: 90vw;

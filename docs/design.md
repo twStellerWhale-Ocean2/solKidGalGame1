@@ -1169,6 +1169,21 @@ erDiagram
   1. 預設啟動時 log 顯示 LAN IP，區網裝置可存取工具頁面。
   2. `HOST` 環境變數可限縮監聽位址（向下相容）。
 
+#### intTest#59-驗證 調整介面英化、版面放大與半透明（issue #282）
+
+* 既有基底：intTest#55。
+* 新增項目：`#advAdjustBtn` 文字、`.adjust-overlay-content` 版面尺寸與背景透明度。
+* 步驟：
+  1. 開啟衣櫃並選取已擁有且有 pack/asset 的衣物，確認浮動按鈕顯示文字為 `Adjust`（英文，非「調整」）。
+  2. 點擊 `Adjust` 開啟 overlay，量測 `.adjust-overlay-content` 寬度：桌機版 preview 欄應約為 `min(50vw,325px)`、控制欄 `min-width 238px`；手機直向（viewport ≤ 460px）preview 應約為 `min(75vw,263px)`。
+  3. 以瀏覽器 DevTools 確認 `.adjust-overlay-content` 的 `background` alpha 為 `0.75`（計算值），overlay 半透明、後方場景可透視。
+  4. overlay 在各 viewport 下維持置中（flex 中心對齊），不偏移。
+* 預期結果：
+  1. 按鈕文字為英文 `Adjust`。
+  2. overlay content 尺寸較舊版放大約 25%，手機版同步。
+  3. overlay content 背景呈半透明，後方內容隱約可見。
+  4. overlay 維持正確置中。
+
 ## E. 方案層級：文件程式化測試
 
 #### docProgTest#01-productReadme 承接 [solStory#1-短回合英文練習]
