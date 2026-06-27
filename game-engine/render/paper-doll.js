@@ -13,6 +13,7 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
             class="paper-doll-layer paper-doll-layer-${cssName(layer.slot)} paper-doll-layer-type-${cssName(layer.type || layer.slot)}"
             style="--layer-img:url('${assetUrl(layer.src)}');${boundsStyle(layer.bounds)}"
             ${warpAttr(layer.bounds)}
+            ${layer.rotation ? `data-rotation="${layer.rotation}"` : ""}
             aria-hidden="true"
           ></span>
         `).join("")}
@@ -106,7 +107,8 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
     return fr ? `data-warp="${fr.map((v) => Math.round(v * 1e4) / 1e4).join(",")}"` : "";
   }
 
-  // 對帶 data-warp 的 layer 以實際渲染尺寸算投影 matrix3d，把矩形映到任意四邊形。
+  // 對帶 data-warp 的 layer 以實際渲染尺寸算投影 matrix3d，把矩形映到任意四邊形；
+  // 對帶 data-rotation 的 layer（不含 warp）以中心旋轉。兩類互斥：warp 不套旋轉。
   function applyLayerTransforms(container) {
     if (!container) return;
     container.querySelectorAll(".paper-doll-layer[data-warp]").forEach((el) => {
@@ -116,6 +118,13 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
       if (!w || !h || f.length < 8 || f.some((v) => !Number.isFinite(v))) { el.style.transform = ""; return; }
       el.style.transformOrigin = "0 0";
       el.style.transform = warpMatrix(w, h, f);
+    });
+    container.querySelectorAll(".paper-doll-layer[data-rotation]").forEach((el) => {
+      if (el.dataset.warp) return;
+      const r = parseFloat(el.dataset.rotation);
+      if (!Number.isFinite(r) || r === 0) { el.style.transform = ""; el.style.transformOrigin = ""; return; }
+      el.style.transformOrigin = "center center";
+      el.style.transform = `rotate(${r}deg)`;
     });
   }
 

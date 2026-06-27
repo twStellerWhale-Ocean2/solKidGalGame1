@@ -62,6 +62,7 @@ import { updateMarkerEdgeVisibility } from "./map/marker-visibility.js";
 import { createAreaMapViewportController } from "./map/viewport.js";
 import { createKeyboardWalkController, directionForKey } from "./map/keyboard-walk.js";
 import { renderItemDetailPanel } from "./render/item-panel.js";
+import { openAdjustOverlay } from "./render/adjust-overlay.js";
 import { createPaperDollRenderer } from "./render/paper-doll.js";
 import { renderBuildInfo, renderAbout, renderVoiceSettings } from "./render/settings.js";
 import { applyAdvSceneArt } from "./scene/scene-art.js";
@@ -2372,6 +2373,39 @@ function closetItemStatus(item) {
   };
 }
 
+// issue #272：衣櫃單品「調整」按鈕設定（只有有 layer 的單品才提供，starter 無素材者跳過）。
+function closetAdjustButton(item) {
+  if (!item.pack || !item.asset) return null;
+  return {
+    label: "調整",
+    ariaLabel: `調整 ${item.name} 對位`,
+    onAdjust: (it) => openAdjustOverlay({
+      item: it,
+      outfit: { ...state.outfit },
+      renderer: paperDollRenderer,
+      getCharacter: activePaperDollCharacter,
+      onSave: patchWardrobeItem
+    })
+  };
+}
+
+// issue #272：overlay 儲存後動態更新 shopItems 中的 live 項目，再重繪紙娃娃與衣櫃。
+function patchWardrobeItem(itemId, newTargetBox, rotation) {
+  const live = itemById(itemId);
+  if (!live?.layers?.length) return;
+  const layer = live.layers[0];
+  layer.bounds = { ...layer.bounds, targetBox: { ...newTargetBox } };
+  if (Number.isFinite(rotation) && rotation !== 0) {
+    layer.rotation = rotation;
+    live.rotation = rotation;
+  } else {
+    delete layer.rotation;
+    delete live.rotation;
+  }
+  renderPaperDolls();
+  renderWardrobeDetail(true);
+}
+
 function allowedShopCategories(hotspot = activeShopHotspot) {
   return allowedShopCategoriesFor(hotspot);
 }
@@ -2442,6 +2476,7 @@ function renderAdvShop(preserveFocus = false, { closet = false } = {}) {
   // 鈕（actionForItem 回 noButton 之狀態）、不需 onAction、Back 回房間。mode 一律 "shop" 使元件類別與版面完全一致。
   const panel = {
     actionForItem: closet ? closetItemStatus : shopPanelAction,
+    adjustForItem: closet ? closetAdjustButton : undefined,
     categoryLabel,
     emptyText: closet ? "Buy treasures in town first, then dress up here." : `You found all ${activeShopHotspot?.label || "shop"} treasures!`,
     isSelected: shopItemTriedOn,

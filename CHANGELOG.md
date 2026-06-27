@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.56.0 — 2026-06-27
+- feat (#272): 公主衣櫃新增衣物對位即時調整 overlay：每件已擁有單品右側出現「調整」按鈕，點擊後以全螢幕 overlay 以五組滑桿（中心X/Y、寬、高、旋轉 -180°～180°）即時預覽；儲存 POST /tool/apply-wardrobe 回寫 sidecar，動態更新遊戲 itemMap 不整頁重整；無 server（公開 Pages）時顯示提示不 crash；sidecar 新增 rotation 欄位支援旋轉儲存與遊戲端渲染
+
 ## 0.55.4 — 2026-06-26 _(internal)_
 - refactor (#267): 內部架構整理（玩家無感）：衣物單品收斂為素材旁 JSON sidecar 單一事實來源＋build 期衍生 registry（取代手寫 manifest 聚合／style.json items／asset-target-overrides 多檔散落與隱性雙 id）；新增開發期一致性守門（預設造型與 fixture 失聯即 selftest 紅）、穿脫 selftest fixture 改自 registry 動態挑選；管理工具改對單一 sidecar 原子增刪改、執行期 safe-fallback 不變
 

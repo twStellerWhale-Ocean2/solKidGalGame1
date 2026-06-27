@@ -1,8 +1,9 @@
 {
-  "version": "0.55.4",
-  "date": "2026-06-26",
+  "version": "0.56.0",
+  "date": "2026-06-27",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    { "version": "0.56.0", "date": "2026-06-27", "type": "feat", "playerVisible": true, "issue": "#272", "summaryZh": "公主衣櫃新增衣物對位即時調整 overlay：每件已擁有單品右側出現「調整」按鈕，點擊後以全螢幕 overlay 以五組滑桿（中心X/Y、寬、高、旋轉 -180°～180°）即時預覽；儲存 POST /tool/apply-wardrobe 回寫 sidecar，動態更新遊戲 itemMap 不整頁重整；無 server（公開 Pages）時顯示提示不 crash；sidecar 新增 rotation 欄位支援旋轉儲存與遊戲端渲染" },
     { "version": "0.55.4", "date": "2026-06-26", "type": "refactor", "playerVisible": false, "issue": "#267", "summaryZh": "內部架構整理（玩家無感）：衣物單品收斂為素材旁 JSON sidecar 單一事實來源＋build 期衍生 registry（取代手寫 manifest 聚合／style.json items／asset-target-overrides 多檔散落與隱性雙 id）；新增開發期一致性守門（預設造型與 fixture 失聯即 selftest 紅）、穿脫 selftest fixture 改自 registry 動態挑選；管理工具改對單一 sidecar 原子增刪改、執行期 safe-fallback 不變" },
     { "version": "0.55.3", "date": "2026-06-25", "type": "fix", "playerVisible": false, "issue": "#263", "summaryZh": "恢復 main 綠燈（#263 試行收尾）：修正 #251 dress→outfit 遷移測試之過時 fixture（blueDress 已移除，改用 castleGoldCourtGown 並區辨真遷移與退回預設），並暫時豁免 3 件 #263 試行素材長邊未貼滿之 data-audit（待重生後移除豁免）；預設新局造型已由 #265 對齊、本版不再更動" },
     { "version": "0.55.2", "date": "2026-06-25", "type": "refactor", "playerVisible": false, "issue": "#259", "summaryZh": "內部整理（玩家無感）：遊戲起始狀態組態依關注點在同一檔案內分為三具名片段（公主新局／起始位置／遊戲規則），defaultState 收斂為三片之唯讀聚合，與 #260 管理設定工具三頁籤對齊；起始值與舊存檔相容不變、不拆多檔不另建相容層；mood 宣告矛盾另循 #262" },

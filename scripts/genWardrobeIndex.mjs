@@ -49,6 +49,7 @@ for (const pack of LAYER_PACKS) {
     }
     const item = { pack, id: meta.id, storeId, type: meta.type, name: meta.name, cost: meta.cost, icon: meta.icon, asset: slug };
     if (meta.targetBox) item.targetBox = meta.targetBox;
+    if (meta.rotation) item.rotation = meta.rotation;
     items.push(item);
   }
   items.sort((a, b) => typeRank(a.type) - typeRank(b.type) || a.id.localeCompare(b.id));
