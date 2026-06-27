@@ -6,9 +6,9 @@
   "icon": "Outfit",
   "prompt": "front-as-worn transparent outfit layer: milk-tea beige tailored town coat with neat buttons, no head, no face, no hands, no legs, no body frame",
   "targetBox": {
-    "left": 141,
-    "top": 381,
-    "right": 371,
-    "bottom": 614
+    "left": 137.49903846153848,
+    "top": 381.00006009615385,
+    "right": 374.50072115384614,
+    "bottom": 601.7469951923077
   }
 }
