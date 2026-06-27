@@ -75,6 +75,15 @@
   overflow: hidden;
 }
 
+/* Zoomable/pannable inner canvas — sized & positioned by JS */
+.adjust-preview-inner {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
 .adjust-preview-doll {
   position: absolute;
   inset: 0;
@@ -83,7 +92,7 @@
   contain: layout paint;
 }
 
-/* SVG 拖拽 handle 層，疊在 paper-doll 上 */
+/* SVG drag-handle layer */
 .adjust-handles-svg {
   position: absolute;
   inset: 0;
@@ -91,6 +100,39 @@
   height: 100%;
   touch-action: none;
   user-select: none;
+}
+
+/* Zoom controls — fixed overlay at bottom of preview */
+.adjust-zoom-controls {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  z-index: 20;
+  pointer-events: auto;
+}
+
+.adj-zoom-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid rgba(194, 23, 90, 0.5);
+  background: rgba(47, 38, 52, 0.82);
+  color: rgba(255, 220, 240, 0.95);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.12s;
+}
+
+.adj-zoom-btn:hover {
+  background: rgba(70, 52, 76, 0.97);
 }
 
 .adjust-overlay-controls {
@@ -118,7 +160,7 @@
 
 .adjust-slider-row {
   display: grid;
-  grid-template-columns: 3.5em 2.5em 1fr;
+  grid-template-columns: 4.8em 2.5em 1fr;
   align-items: center;
   gap: 4px;
   font-size: 0.8rem;
