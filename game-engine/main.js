@@ -2393,13 +2393,32 @@ function patchWardrobeItem(itemId, newTargetBox, rotation) {
   renderWardrobeDetail(true);
 }
 
-// issue #272：更新公主右上角浮動「調整」鈕——item 有 pack/asset 則顯示，否則隱藏。
-// 點擊始終讀取 panelFocusItem（不在此綁定，listener 在初始化時一次設定）。
+// issue #272：更新浮動「調整」鈕——item 有 pack/asset 則顯示並定位，否則隱藏。
 function updateAdvAdjustBtn(item) {
   panelFocusItem = item || null;
   const btn = elements.advAdjustBtn;
   if (!btn) return;
-  btn.hidden = !(item && item.pack && item.asset);
+  const shouldShow = !!(item && item.pack && item.asset);
+  btn.hidden = !shouldShow;
+  if (shouldShow) requestAnimationFrame(_positionAdjustBtn);
+}
+
+// 把「調整」鈕定位到公主和衣櫃面板正中間、與面板上緣對齊。
+function _positionAdjustBtn() {
+  const btn = elements.advAdjustBtn;
+  const scene = elements.advScene;
+  if (!btn || !scene || btn.hidden) return;
+  const advBox = scene.querySelector(".adv-box");
+  if (!advBox) return;
+  const sceneRect = scene.getBoundingClientRect();
+  const boxRect = advBox.getBoundingClientRect();
+  const princess = scene.querySelector(".adv-princess");
+  const princessRect = princess ? princess.getBoundingClientRect() : sceneRect;
+  const gapStart = princessRect.right - sceneRect.left;
+  const gapEnd = boxRect.left - sceneRect.left;
+  const cx = (gapStart + gapEnd) / 2;
+  btn.style.left = Math.max(0, cx - btn.offsetWidth / 2) + "px";
+  btn.style.top = (boxRect.top - sceneRect.top) + "px";
 }
 
 function allowedShopCategories(hotspot = activeShopHotspot) {
@@ -3559,6 +3578,7 @@ function bindEvents() {
       onSave: patchWardrobeItem
     });
   });
+  window.addEventListener("resize", _positionAdjustBtn, { passive: true });
   elements.speakPromptButton.addEventListener("click", () => playLessonAudio(elements.advLine.textContent, "en-US"));
   elements.speakPromptButtonZh?.addEventListener("click", () => playLessonAudio(activeOpeningZh, CHINESE_AUDIO_LANG));
   elements.saveButton.addEventListener("click", saveMarkdown);

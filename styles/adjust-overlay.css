@@ -1,24 +1,27 @@
 /* issue #272：公主右上角「調整」浮動按鈕——商店與衣櫃皆可開啟 overlay */
+.adv-adjust-btn[hidden] { display: none; }
+
 .adv-adjust-btn {
+  position: absolute;
   display: inline-flex;
   align-items: center;
-  padding: 4px 12px;
-  margin-top: 4px;
+  padding: 5px 14px;
   border-radius: 20px;
-  border: 1.5px solid var(--primary, #c2175a);
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--primary, #c2175a);
-  font-size: 0.78rem;
+  border: 1.5px solid rgba(194, 23, 90, 0.6);
+  background: rgba(47, 38, 52, 0.92);
+  color: rgba(255, 220, 240, 0.95);
+  font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(194, 23, 90, 0.18);
-  transition: background 0.14s, box-shadow 0.14s;
+  box-shadow: 0 2px 10px rgba(20, 10, 18, 0.4);
+  transition: background 0.14s;
   white-space: nowrap;
+  pointer-events: auto;
+  z-index: 10;
 }
 
 .adv-adjust-btn:hover {
-  background: rgba(255, 228, 240, 0.97);
-  box-shadow: 0 3px 14px rgba(194, 23, 90, 0.28);
+  background: rgba(70, 52, 76, 0.97);
 }
 
 .adv-adjust-btn:focus-visible {
