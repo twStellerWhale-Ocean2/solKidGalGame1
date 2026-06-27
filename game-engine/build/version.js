@@ -7,6 +7,7 @@ export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
   { version: "0.56.0", buildDateTime: "2026-06-27", summaryZh: "公主衣櫃新增衣物對位即時調整 overlay：每件已擁有單品右側出現「調整」按鈕，點擊後以全螢幕 overlay 以五組滑桿（中心X/Y、寬、高、旋轉 -180°～180°）即時預覽；儲存 POST /tool/apply-wardrobe 回寫 sidecar，動態更新遊戲 itemMap 不整頁重整；無 server（公開 Pages）時顯示提示不 crash；sidecar 新增 rotation 欄位支援旋轉儲存與遊戲端渲染" },
+  /* 0.57.0 (#270) is internal-only (playerVisible: false), not included here */
   { version: "0.55.0", buildDateTime: "2026-06-22", summaryZh: "角色語音指定（依性別×性格挑選瀏覽器語音）從遊戲設定移到維護者用的管理設定工具新分頁「聲音管理」（本機 dev 環境才出現，可逐桶試聽）；公開遊戲設定不再提供語音挑選、改為一律自動依性別與語言選用，設定頁僅保留 Voice 開關" },
   { version: "0.54.6", buildDateTime: "2026-06-22", summaryZh: "修正換裝圖層順序：上一版改名 outfit 時漏改 CSS z-index，導致公主身體蓋住衣服；改回衣服正確疊在身體之上，並加上回歸自我測試" },
   { version: "0.54.5", buildDateTime: "2026-06-22", summaryZh: "簡化服裝類型：移除分開的上衣／下身（top／bottom），整件衣服統一為 outfit（原 dress 改名），帽子併入配件分類；衣櫃服裝分類精簡為髮型／整件 outfit／鞋／配件四類，既有存檔自動相容（移除已不存在的上衣下身、舊洋裝轉為整件）" },
@@ -41,8 +42,8 @@ export const versionHistory = [
 ];
 
 export const buildInfo = {
-  version: "0.56.0",
+  version: "0.57.0",
   buildDate: "2026-06-27",
   buildDateTime: "2026-06-27",
-  issues: ["#272"]
+  issues: ["#270"]
 };

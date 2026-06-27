@@ -3,6 +3,7 @@ import { readFile, writeFile, stat, unlink } from "node:fs/promises";
 import { dirname, extname, join, normalize, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn, execFile } from "node:child_process";
+import { networkInterfaces } from "node:os";
 import { outfitSlots } from "./content-package/wardrobe/_shared/rules.js";
 import { SCENE_AREA_KEYS, SCENE_DIALOG_KINDS, bankConstName, rewardVarFor, serializeBank, validateBank } from "./tool/scene-bank-io.mjs";
 
@@ -474,6 +475,11 @@ createServer(async (request, response) => {
     return;
   }
   await serveStatic(request, response);
-}).listen(port, "127.0.0.1", () => {
-  console.log(`Luminara local server running at http://127.0.0.1:${port}/`);
+}).listen(port, process.env.HOST || "0.0.0.0", () => {
+  const host = process.env.HOST || "0.0.0.0";
+  console.log(`Luminara local server running at http://${host === "0.0.0.0" ? "127.0.0.1" : host}:${port}/`);
+  if (host === "0.0.0.0") {
+    const lanIp = (() => { for (const ifaces of Object.values(networkInterfaces())) for (const i of ifaces) if (i.family === "IPv4" && !i.internal) return i.address; return null; })();
+    if (lanIp) console.log(`  LAN: http://${lanIp}:${port}/`);
+  }
 });

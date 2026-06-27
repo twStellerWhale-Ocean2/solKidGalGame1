@@ -24,6 +24,7 @@ const workingSafeBox = Object.fromEntries(
   Object.entries(wardrobeLayerBoundsByType).map(([type, b]) => [type, b.safeBox ? { ...b.safeBox } : fullCanvas()])
 );
 const workingItemBox = {}; // key `<pack>/<name>` → { left, top, right, bottom }（lazy seed）
+const workingRotation = {}; // key → number degrees（lazy seed；未觸碰的 key 不在此 map）
 const baseOutfit = Object.fromEntries(Object.keys(wardrobeLayerBoundsByType).map((type) => [type, "none"]));
 const state = {
   selectedItemId: firstShownItem()?.id || "",
@@ -43,7 +44,8 @@ const dom = {
   addPack: q("#addPack"), addType: q("#addType"), addId: q("#addId"),
   addName: q("#addName"), addAsset: q("#addAsset"), addCost: q("#addCost"),
   addFile: q("#addFile"), addOverwrite: q("#addOverwrite"), addStatus: q("#addStatus"),
-  itemSearch: q("#itemSearch")
+  itemSearch: q("#itemSearch"),
+  rotationSlider: q("#rotationSlider"), rotationNumber: q("#rotationNumber"), rotationReset: q("#rotationReset")
 };
 
 const paperDollRenderer = createPaperDollRenderer({
@@ -75,6 +77,9 @@ function bindEvents() {
   dom.addItemToggle.addEventListener("click", () => { dom.addItemForm.hidden = !dom.addItemForm.hidden; });
   dom.addItemForm.addEventListener("submit", submitAddItem);
   dom.applyAll.addEventListener("click", applyToFiles);
+  dom.rotationSlider?.addEventListener("input", () => { setRotation(selectedKey(), Number(dom.rotationSlider.value)); syncRotationNumber(); });
+  dom.rotationNumber?.addEventListener("change", () => { const v = clampN(Number(dom.rotationNumber.value) || 0, -180, 180); setRotation(selectedKey(), v); syncRotationSlider(); });
+  dom.rotationReset?.addEventListener("click", () => { setRotation(selectedKey(), 0); syncRotationInputs(); });
   setupDrag(dom.typeOverlay);
   setupDrag(dom.itemOverlay);
   setupColumnResize();
@@ -142,6 +147,7 @@ function renderAll() {
   renderModeTabs();
   renderSelectedInfo();
   renderPreview();
+  syncRotationInputs();
 }
 
 function renderModeTabs() {
@@ -406,8 +412,10 @@ function renderSelectedInfo() {
   const item = selectedItem();
   const key = selectedKey();
   const overridden = key && key in workingItemBox && !sameBox(workingItemBox[key], seedItemBox(key));
+  const rotOverridden = key && key in workingRotation && workingRotation[key] !== seedRotation(key);
+  const tags = [overridden && "框已覆寫", rotOverridden && `旋轉 ${workingRotation[key]}°`].filter(Boolean).join(" · ");
   dom.selectedInfo.innerHTML = item
-    ? `<strong>${escapeHtml(item.name)}</strong><span>type <code>${escapeHtml(selectedType() || "—")}</code> · ${key ? `<code>${escapeHtml(key)}</code>` : "（無單一 layer）"}${overridden ? " · <em>已覆寫</em>" : ""}</span>`
+    ? `<strong>${escapeHtml(item.name)}</strong><span>type <code>${escapeHtml(selectedType() || "—")}</code> · ${key ? `<code>${escapeHtml(key)}</code>` : "（無單一 layer）"}${tags ? ` · <em>${tags}</em>` : ""}</span>`
     : "（未選單品）";
 }
 
@@ -532,7 +540,8 @@ function itemWithWorkingBoxes(id) {
     layers: (item.layers || []).map((layer) => {
       const key = keyFromSrc(layer.src);
       const type = layer.type || item.type;
-      return { ...layer, bounds: { ...(wardrobeLayerBoundsByType[type] || {}), targetBox: key ? itemBoxFor(key) : null } };
+      const rotation = key in workingRotation ? workingRotation[key] : (layer.rotation ?? 0);
+      return { ...layer, rotation, bounds: { ...(wardrobeLayerBoundsByType[type] || {}), targetBox: key ? itemBoxFor(key) : null } };
     })
   };
 }
@@ -568,13 +577,42 @@ function buildRulesSnippet() {
 function buildItemBoxes() {
   // issue #267：只送本次工具碰過的單品（workingItemBox），各寫回其 sidecar 的 targetBox；
   // 與類別 safeBox 相同視為還原 → 送 null 清除該 sidecar 之 targetBox（退回 safeBox）。未碰到者不送、其 sidecar 不動。
+  // issue #270：觸碰過旋轉（workingRotation）的 key 亦納入，box 帶 rotation 欄位寫回 sidecar。
+  const keys = new Set([...Object.keys(workingItemBox), ...Object.keys(workingRotation)]);
   const boxes = {};
-  for (const key of Object.keys(workingItemBox)) {
+  for (const key of keys) {
     const safe = workingSafeBox[typeOfKey(key)] || null;
-    boxes[key] = sameBox(workingItemBox[key], safe) ? null : { ...workingItemBox[key] };
+    const hasBox = key in workingItemBox;
+    const rotation = workingRotation[key] ?? seedRotation(key);
+    if (hasBox && sameBox(workingItemBox[key], safe) && !rotation) {
+      boxes[key] = null; // 位置還原且旋轉為 0 → 清除 sidecar 所有覆寫
+    } else if (hasBox && sameBox(workingItemBox[key], safe)) {
+      boxes[key] = rotation ? { rotation } : null; // 只剩旋轉
+    } else if (hasBox) {
+      boxes[key] = { ...workingItemBox[key], ...(rotation ? { rotation } : {}) };
+    } else {
+      boxes[key] = rotation ? { rotation } : null; // 只改過旋轉、未觸碰 box
+    }
   }
   return boxes;
 }
+
+function seedRotation(key) {
+  for (const item of shopItems) for (const layer of item.layers || []) {
+    if (keyFromSrc(layer.src) === key) return layer.rotation ?? 0;
+  }
+  return 0;
+}
+function rotationFor(key) { return key in workingRotation ? workingRotation[key] : seedRotation(key); }
+function setRotation(key, deg) {
+  if (!key) return;
+  workingRotation[key] = Math.round(clampN(deg, -180, 180));
+  renderPreview();
+  renderSelectedInfo();
+}
+function syncRotationSlider() { if (dom.rotationSlider) dom.rotationSlider.value = String(rotationFor(selectedKey())); }
+function syncRotationNumber() { if (dom.rotationNumber) dom.rotationNumber.value = String(rotationFor(selectedKey())); }
+function syncRotationInputs() { syncRotationSlider(); syncRotationNumber(); }
 async function applyToFiles() {
   dom.applyAll.disabled = true;
   setApplyStatus("套用中…", "");
