@@ -16,13 +16,6 @@
       "icon": "Hair"
     },
     {
-      "id": "solStarterHair",
-      "type": "hairstyle",
-      "name": "Mary honey bob hair",
-      "cost": 0,
-      "icon": "Hair"
-    },
-    {
       "id": "rosaStarterHair",
       "type": "hairstyle",
       "name": "Rosa chestnut braid hair",

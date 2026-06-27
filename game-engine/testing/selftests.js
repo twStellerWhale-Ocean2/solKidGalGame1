@@ -904,7 +904,7 @@ function runSceneNavSelfTest(api) {
     if (!api.elements.advScene.classList.contains("adv-closet")) errors.push("closet missing .adv-closet marker class");
     if (getComputedStyle(api.elements.advShopGrid).display !== "flex") errors.push(`closet grid display = ${getComputedStyle(api.elements.advShopGrid).display}, expected flex (horizontal shelf, not stacked single column)`);
     // issue #244：衣櫃不得列出 starter 內建預設外觀（storeId="starter"、無單品素材）。
-    ["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair", "starterPajama"].forEach((sid) => {
+    ["softBrownHair", "yumiStarterHair", "rosaStarterHair", "starterPajama"].forEach((sid) => {
       if (api.elements.advShopGrid.querySelector(`.item-card[data-item-id="${sid}"]`)) errors.push(`closet should not list starter default item "${sid}" (no real wardrobe asset)`);
     });
     const closetCols = [...api.elements.advShopGrid.querySelectorAll(".shop-shelf-col")];
@@ -999,6 +999,7 @@ function runProfileColorSelfTest(api) {
     if (!api.backgroundPatternIds.includes(missingTheme.backgroundPattern) || missingTheme.backgroundPattern === "none") {
       errors.push(`missing backgroundPattern normalized to ${missingTheme.backgroundPattern}, expected visible legal pattern`);
     }
+    if (missingTheme.activeCharacterId !== "lumi") errors.push(`sol→lumi fallback failed: normalizeState returned activeCharacterId="${missingTheme.activeCharacterId}", expected "lumi"`);
 
     account = api.accounts.create();
     const createdInitial = api.accounts.loadState(account.id);
@@ -1827,7 +1828,7 @@ async function runDataAudit(api) {
     if (slot === "room" || id === "none") return;
     if (!registryHas(id)) errors.push(`default princessStart.outfit.${slot} "${id}" 不在衣物 registry（#267 失聯守門）`);
   });
-  ["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair", "starterPajama"].forEach((id) => {
+  ["softBrownHair", "yumiStarterHair", "rosaStarterHair", "starterPajama"].forEach((id) => {
     if (!registryHas(id)) errors.push(`starter 相容項 "${id}" 不在衣物 registry（#267 失聯守門）`);
   });
 
@@ -1865,7 +1866,7 @@ async function runDataAudit(api) {
 async function collectPaperDollCharacterAudit(api, errors, warnings = []) {
   const registry = api.characterRegistry || {};
   const characters = [];
-  const expectedPlayableIds = ["lumi", "yumi", "sol", "rosa"];
+  const expectedPlayableIds = ["lumi", "yumi", "rosa"];
   if (!Object.keys(registry).length) {
     errors.push("characterRegistry is empty");
   }
@@ -1873,8 +1874,8 @@ async function collectPaperDollCharacterAudit(api, errors, warnings = []) {
     if (!registry[characterId]) errors.push(`characterRegistry missing ${characterId}`);
     if (!api.playableVoiceById?.[characterId]) errors.push(`playableVoiceById missing ${characterId}`);
   });
-  if (registry.sol?.label !== "Princess Mary" || registry.sol?.defaultName !== "Mary") {
-    errors.push("sol stable id is not exposed as Princess Mary");
+  if (registry.sol) {
+    errors.push("sol should have been removed from characterRegistry (issue #277)");
   }
   const defaultCharacter = api.playableCharacterById(api.defaultActiveCharacterId);
   if (!defaultCharacter?.id) {
