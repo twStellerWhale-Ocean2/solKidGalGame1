@@ -5,7 +5,6 @@
 export const wardrobeRaw = Object.freeze([
   Object.freeze({"pack":"starter","id":"softBrownHair","storeId":"starter","type":"hairstyle","name":"Soft brown story hair","cost":0,"icon":"Hair","asset":null}),
   Object.freeze({"pack":"starter","id":"yumiStarterHair","storeId":"starter","type":"hairstyle","name":"Yumi silver bob hair","cost":0,"icon":"Hair","asset":null}),
-  Object.freeze({"pack":"starter","id":"solStarterHair","storeId":"starter","type":"hairstyle","name":"Mary honey bob hair","cost":0,"icon":"Hair","asset":null}),
   Object.freeze({"pack":"starter","id":"rosaStarterHair","storeId":"starter","type":"hairstyle","name":"Rosa chestnut braid hair","cost":0,"icon":"Hair","asset":null}),
   Object.freeze({"pack":"starter","id":"starterPajama","storeId":"starter","type":"outfit","name":"Starter rose play outfit","cost":0,"icon":"Outfit","asset":null}),
   Object.freeze({"pack":"urban","id":"urbanLowPonytail","storeId":"boutique","type":"hairstyle","name":"Low ponytail","cost":130,"icon":"Hair","asset":"hairstyle-low-ponytail","targetBox":{"left":179,"top":263,"right":349,"bottom":442}}),
