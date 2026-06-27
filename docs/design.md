@@ -28,6 +28,8 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 * **spec#11-可依場景情境分流生活聊天與打工任務並給予不同回饋**：方案須讓各可互動場景皆可提供「生活聊天」「逛店」「打工任務」三種互動、不以商店為特例——其中生活聊天為各可互動場景（含商店場景）預設皆可進行之互動（公主房換裝與城門傳送非寒暄場景，不開啟生活聊天），逛店與打工任務則選擇性開啟；生活聊天為輕鬆日常寒暄對話、採較少選項（2 選項），答對提升心情並在護眼時長上限內延長當次可玩時間，使兒童體會社交是滿足自我需求而非期待他人回饋；打工任務為切合該場景主體的任務、採較多選項（3 選項）、可結合簡易數學與生活常識，以 coins 回饋體現勞動所得（各地區打工報酬採平緩等差級距、隨地區英文難度微幅遞增，避免單一地區報酬畸高而誘發洗 coins 或使其他地區失去意義）；逛店沿用既有以 coins 購買外觀之機制（商店定價與報酬級距相稱、隨地區平緩遞增，使各地區商品皆可於數題勞動之內負擔、不因地區出現懸殊價差）；藉此以互動選項多寡與回饋型別（心情 vs coins）共同使人際互動的精神回饋與勞動所得的金錢回饋明確分流。
 * **spec#12-可依透明角色輪廓強化角色立繪圖地分離**：方案須以角色透明輪廓為基準提供常態描邊與自然陰影，讓角色在複雜背景中維持清楚辨識；描邊與陰影須可依 ADV 立繪、紙娃娃、地圖 token、頭胸照等 surface 分級調整，並與試穿提示等互動狀態光暈維持語意分離，不得以大範圍糊化發光取代角色本體輪廓辨識。
 * **spec#13-可由維護者依內容資料包結構維護與擴充各項組態**：方案須讓維護者能依內容資料包（公主、衣物、地圖與場景、聲音等）及其相依與含蓋關係，集中檢視、調整與擴充各包之可設定項（公主登記與新局起始、衣物單品與投影對位、地圖座標、場景背景與對話題庫、角色語音指定、遊戲時間限制等）；新增內容包或設定項時可沿既有資料包結構擴充、不需打散既有維護動線；此維護者組態管理僅於本機開發環境提供、不出現於公開遊玩端。
+* **spec#14-公主衣櫃可開啟單品 overlay 即時調整對位**：方案須讓所有家庭使用者可於公主衣櫃每件已擁有單品旁觸發「調整」按鈕，以全螢幕 overlay 在不離開遊戲的前提下，利用五組滑桿（中心 X、中心 Y、寬、高、旋轉角度 -180°～180°）即時調整目標單品的對位與旋轉，預覽立即反映於同一 overlay 之 paper-doll；確認後以一次操作將調整結果儲存回 sidecar，overlay 關閉後遊戲即時套用新對位而不需整頁重整。
+* **spec#15-overlay 調整不中斷遊戲流程且不引入四角變形**：[adjust-overlay] 以不干擾現有遊戲表單 DOM 的獨立 `<dialog>` 覆蓋層呈現，關閉後遊戲回到原位；本 spec 範圍不引入四角任意變形（warp/corners），對位調整限矩形邊界（left/top/right/bottom 換算為滑桿友善的中心＋尺寸），配合旋轉組合使用；無法連線 server（如公開 GitHub Pages）時，overlay 可預覽但儲存失敗時以明確提示通知，不 crash 遊戲。
 
 # II. 設計分析
 
@@ -128,6 +130,8 @@ HOST -->|"🎚️paramDeployBranch=`main`"| SYS
   * **solCase#15.1**：[sysGame系統]執行[runAct自訂系統渲染角色輪廓]，於 ADV 角色立繪、紙娃娃、地圖 token 與頭胸照等 surface 套用依透明 alpha 輪廓產生的常態描邊與自然陰影，使角色在複雜背景中清楚辨識，且不把試穿提示等互動狀態光暈混作常態輪廓效果。
 * **solStory#16-依資料包集中維護組態**：
   * **solCase#16.1**：[etyCfg通用家長維護者]執行[setAct自訂維護者依資料包管理組態]，於 [管理設定工具] 依內容資料包結構（公主、衣物、地圖與場景、聲音、遊戲規則）及其相依與含蓋關係集中檢視、調整與擴充各包之可設定項，導覽依資料包分層（地圖與場景再依世界→地區→地點/場景→對話），新增內容包或設定項時沿既有資料包結構擴充而不打散既有維護動線；此維護者組態管理僅於本機開發環境提供、不出現於公開遊玩端。
+* **solStory#17-衣物對位即時調整**：
+  * **solCase#17.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家調整衣物對位]，於公主衣櫃按下已擁有單品之「調整」按鈕，在不離開遊戲的前提下以 overlay 即時調整並預覽該單品之對位（位移、縮放）與旋轉，儲存後遊戲立即反映新對位。
 
 ### (D) 重點組態
 
@@ -227,6 +231,7 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
   * **sysCase#3.2**：[modWardrobe模組]承接[runAct自訂玩家換裝]，以共用 `body` ＋ per-character `head` ＋ 髮型、衣物與配件 layer 的順序更新 outfit 並重繪紙娃娃（`body` 為含永久肌膚安全底著之最底層、`head` 疊於其上承載臉與預設髮、其餘 wardrobe layer 再依序疊上）；穿戴衣物疊於 `body` 底著之上、穿戴髮型 layer 須完全覆蓋 `head` 預設髮，更換時舊層卸下不殘留，舊存檔 starter 相容項正規化為 no overlay 以避免重複疊圖；[Yumi] 與 [Mary] 髮色與眼睛校準須回到該角色 `head` raster 素材本身，不由 [modWardrobe模組] 以濾鏡或額外 layer 代改。wardrobe layer 渲染須先依 item type／slot 取得類別級上下左右邊界或安全框，再將該類 layer 放入對應範圍；單件商品預設不得自帶一次性 nudge，必要例外須受控且可由視覺 QA 追溯。換裝模型採單品單層：每件 wardrobe item 至多對應單一外觀層，不採整套綁定（outfit set）一次裝備多件、亦不採單件跨多層（如 outer 前後雙層），換裝一律以單品逐件穿戴疊合呈現。可裝備服裝型別精簡為整件 `outfit`（原 `dress` 改名之單件全身衣著）、配件（含 `headTop`）與髮型、鞋——移除分件 `top`／`bottom` 型別、slot 與紙娃娃圖層，`outfitSlots`／`paperDollLayerOrder`／類別級 layer bounds 同步移除 top／bottom 並將 `dress` 鍵改名 `outfit`；舊存檔曾穿之 `top`／`bottom` 於 [modState模組] 載入正規化時清除、舊 `dress` 欄位改讀為 `outfit`，使既有存檔相容載入不殘留懸空 slot。
   * **sysCase#3.3**：[modWardrobe模組]承接[runAct自訂玩家退款]，回補 coins 並取消擁有。
   * **sysCase#3.4**：[modWardrobe模組]承接[runAct自訂玩家換裝]，公主房衣櫃與商店逛店**為同一套機制**——共用同一套多欄貨架面板（同一 `renderAdvShop`），且**穿脫互動直接走商店試穿之同一單一來源**（同一 `shopTryOnState`／`toggleShopTryOn`／`updateShopTileStates`，內部依 `advMode` 區分：衣櫃＝持久穿戴、商店＝暫時試穿），不另寫第二套穿脫函式；故衣櫃穿脫鈕即商店左側那顆 try-on 鈕（同位置、按下**就地更新不重建貨架**、面板不跳），就已擁有衣物提供穿脫切換（Wear↔Take Off），衣櫃不渲染右側購買鈕、商店則保留試穿＋購買；衣櫃穿脫鈕著深粉紅以與商店購買鈕（暗色玻璃）區辨。公主房第一層場景選單以單一「換裝」入口開啟此面板，入口鈕沿用一般場景選單樣式（不特別上色）。衣物類型不含 outerwear（外套，issue #244 移除）與分件 `top`／`bottom`（上下身，issue #251 移除、整件改稱 `outfit`）；衣櫃顯示分類精簡為髮型、整件 `outfit`、鞋與配件四類，原 `hats`（`headTop`）由獨立分類併入配件分類顯示。
+  * **sysCase#3.5**：[modWardrobe模組]承接[runAct自訂玩家調整衣物對位]，於衣櫃面板每件已擁有單品右側渲染「調整」按鈕（[item-panel] `createItemPanelRow` 增加選填 `adjustButton` 設定，僅 advMode=`wardrobe` 傳入、商店與退款 mode 不傳即不渲染）；點擊後開啟 [adjust-overlay]——以獨立 `<dialog>` 全螢幕覆蓋，含固定 512:768 比例預覽區與五組 `<input type=range>`（中心 X、中心 Y、寬、高、旋轉 -180°～180°）；預覽區以 [paper-doll.js] `avatarMarkup`＋`applyLayerTransforms` 渲染目前 state.outfit 著裝，目標單品 targetBox（由滑桿 centerX／Y＋width／height 換算 left/top/right/bottom、並驗 left < right、top < bottom、不超出 512×768 canvas）與 rotation 即時覆寫（不呼叫 server）；「儲存」POST `/tool/apply-wardrobe` 寫回 sidecar 並觸發 index 重生（server 端已有此邏輯），成功後以動態 patch itemMap（不整頁重整）使調整立即反映於遊戲；「取消」丟棄本次調整；overlay 以獨立容器渲染、不共享遊戲 `[data-doll]` 選取器、不嵌入現有遊戲表單 DOM；公開 GitHub Pages 無 server 時儲存 POST 失敗，overlay 顯示明確提示、不 crash；本 spec 範圍不實作 warp/corners 四角任意變形。
 * **sysStory#4-承接狀態保存與還原**：
   * **sysCase#4.1**：[modState模組]承接[runAct自訂系統保存進度]，寫入瀏覽器本機儲存。
   * **sysCase#4.2**：[modState模組]承接[setAct自訂玩家匯入存檔]，解析 Markdown 並正規化還原。
@@ -1095,6 +1100,36 @@ erDiagram
   1. 每件 `.webp` 恰有一同名 `.metadata.json` sidecar、反之亦然（無孤兒），`id` 全域唯一、`type` 為合法 slot；違反即非零退出、擋 build。
   2. 預設 owned／outfit 與 starter fixture 皆解析命中 registry，任一失聯即 selftest 紅（開發期出聲告警）；執行期 `normalizeState` safe-fallback 不受影響、玩家端不崩潰。
 
+#### intTest#55-驗證 [runAct自訂玩家調整衣物對位] overlay 即時預覽與邊界保護
+
+* 既有基底：intTest#08、intTest#51。
+* 新增項目：[sysGame系統]之衣物對位調整 overlay 開啟、五組滑桿即時預覽、邊界保護與取消行為。
+* 步驟：
+  1. 以一件已穿戴之衣物進入公主衣櫃，確認其右側出現「調整」按鈕且僅衣櫃 mode 出現（商店與退款 mode 不出現）。
+  2. 點擊「調整」按鈕，確認 overlay 以 `<dialog>` 開啟、不破壞遊戲既有表單 DOM；overlay 含固定 512:768 比例預覽區與五組 range input（中心 X、中心 Y、寬、高、旋轉）。
+  3. 拖動各滑桿，確認預覽區 paper-doll 之目標 layer 即時更新（不呼叫 server）；以最大值確認邊界換算正確（left < right、top < bottom、不超出 512×768）。
+  4. 點擊「取消」，確認 overlay 關閉、遊戲回到原位、itemMap 未被修改。
+* 預期結果：
+  1. 「調整」按鈕僅出現於衣櫃 mode（advMode=`wardrobe`），商店、退款等其他 mode 無此按鈕。
+  2. overlay 以獨立 `<dialog>` 全螢幕覆蓋，不嵌入遊戲表單 DOM、不共享 `[data-doll]` 選取器；五組滑桿之 input type、min/max/step 符合設計（中心 X/Y 對應 canvas 範圍、旋轉 -180～180）。
+  3. 滑桿拖動後預覽 paper-doll 之目標 layer 位移、縮放或旋轉即時反映，期間無 server 呼叫；邊界換算後 left < right、top < bottom 不觸犯，不超出 512×768 canvas。
+  4. 取消後 overlay 關閉、gameOverlay 無殘留、itemMap 與 sidecar 未被更改。
+
+#### intTest#56-驗證 [runAct自訂玩家調整衣物對位] 儲存回 sidecar、itemMap 動態更新與無 server 降級
+
+* 既有基底：intTest#55。
+* 新增項目：[sysGame系統]之 overlay 儲存 POST `/tool/apply-wardrobe`、itemMap 動態更新與無 server 降級行為。
+* 步驟：
+  1. 接續 intTest#55 步驟 3，拖動滑桿至非預設值後點擊「儲存」，以 spy 攔截 POST `/tool/apply-wardrobe`，確認 payload 含正確 key（`pack/slug`）與換算後之 `{left, top, right, bottom, rotation}` 值。
+  2. server 回傳成功後確認 overlay 關閉，itemMap 中目標單品之 targetBox 與 rotation 已動態更新（不整頁重整）。
+  3. 於遊戲衣櫃脫下再穿上同一單品，確認紙娃娃套用新對位。
+  4. 模擬 POST 失敗（無 server 或 network error），確認 overlay 顯示明確提示訊息、不 crash 遊戲、itemMap 未被改動。
+* 預期結果：
+  1. 「儲存」POST payload 之 key 為 `<pack>/<slug>`、value 含換算後合法 targetBox 四邊值與 rotation（與 sidecar 及 server 端 `handleApplyWardrobe` 格式一致）。
+  2. server 成功後 overlay 關閉，itemMap（wardrobeItems 或其運行期快取）以新 targetBox 與 rotation 動態 patch，無整頁重整。
+  3. 脫下再穿上後，紙娃娃該 layer 之位置、尺寸與旋轉反映新對位，不需重整頁面。
+  4. POST 失敗時 overlay 保持開啟（或提示後關閉），顯示使用者可讀之錯誤提示，遊戲流程不中斷。
+
 ## E. 方案層級：文件程式化測試
 
 #### docProgTest#01-productReadme 承接 [solStory#1-短回合英文練習]
@@ -1223,6 +1258,15 @@ erDiagram
   1. 說明維護者可於本機開發環境開啟 [管理設定工具]，其導覽依內容資料包（公主、衣物、地圖與場景、聲音、遊戲規則）組織、地圖與場景再依世界→地區→地點/場景→對話分層，並指出此入口僅本機 dev 環境提供、公開 GitHub Pages 不出現。
 * 通過判定：
   1. 維護者可依 productReadme 依資料包結構找到並進入欲維護之組態管理頁。
+
+#### docProgTest#17-productReadme 承接 [solStory#17-衣物對位即時調整]
+
+* productReadme 要求：
+  1. 說明家庭使用者可於公主衣櫃每件已擁有單品旁按「調整」按鈕，以 overlay 利用五組滑桿（中心 X、中心 Y、寬、高、旋轉）即時預覽並調整對位，確認後儲存；說明此功能需 `node server.mjs` 在執行（家庭 LAN），公開 GitHub Pages 上可預覽但儲存會失敗並顯示提示。
+  2. 說明 overlay 不干擾遊戲流程，取消可回到原位；本功能不提供四角任意變形。
+* 通過判定：
+  1. 家庭使用者可依 productReadme 開啟 overlay 並完成一次衣物對位調整儲存。
+  2. 讀者可依 productReadme 理解儲存功能的 server 前提，以及取消的無損語意。
 
 ## F. 方案層級：文件端對端測試
 
@@ -1401,6 +1445,19 @@ erDiagram
 * 預期結果：
   1. 導覽依資料包兩層組織、目標管理頁可由資料包結構定位進入，編輯寫回成功且不影響其他資料包。
 
+#### e2eTest#17-依 productReadme 驗測衣物 overlay 即時調整與儲存
+
+* 依據：docProgTest#17、[solCase#17.1]。
+* 步驟：
+  1. 依 productReadme 確認 `node server.mjs` 在執行（家庭 LAN 環境），進入公主房衣櫃，選取一件已穿戴衣物。
+  2. 依 productReadme 點擊「調整」按鈕，在 overlay 中拖動中心 X 與旋轉滑桿至非預設值，確認預覽 paper-doll 即時更新。
+  3. 依 productReadme 點擊「儲存」，待 overlay 關閉後脫下再穿上同一單品。
+  4. 依 productReadme 點擊「調整」後按「取消」，確認遊戲回到原位且對位未被更改。
+* 預期結果：
+  1. overlay 以全螢幕 dialog 呈現，不蓋掉已開啟的遊戲對話框外的背後 DOM；預覽隨滑桿即時更新，無 server 呼叫延遲。
+  2. 儲存後脫下再穿上同一單品，紙娃娃呈現新對位（位移與旋轉）而不需整頁重整。
+  3. 取消後 overlay 關閉、itemMap 與 sidecar 未被更改，遊戲繼續正常執行。
+
 # IV. 部署成效
 
 ## A. 部署組態
@@ -1462,3 +1519,9 @@ erDiagram
 * **spec#13-可由維護者依內容資料包結構維護與擴充各項組態**
   * 評估方式：於本機開發環境開啟 [管理設定工具]，檢視頂層導覽是否依內容資料包組織、各既有管理頁是否歸入所屬資料包節點且編輯寫回不退化，並確認地圖與場景依世界→地區→地點/場景→對話分層、公開遊玩端不出現此入口。
   * 觀察項目：頂層導覽節點對齊內容資料包之正確率、各既有管理頁歸入正確資料包節點之正確率、地圖與場景包內分層正確率、既有各管理頁編輯與寫回未退化率、hash 深連結相容率、公開 GitHub Pages 無此維護者入口之合格率。
+* **spec#14-公主衣櫃可開啟單品 overlay 即時調整對位**
+  * 評估方式：以家庭 LAN 環境（`node server.mjs` 在執行）實際穿上一件衣物後點擊「調整」，拖動五組滑桿並確認預覽即時更新，儲存後脫下再穿上確認新對位已反映，不需整頁重整；並以 spy 確認儲存路徑 POST `/tool/apply-wardrobe` 與 itemMap 動態更新。
+  * 觀察項目：「調整」按鈕出現於衣櫃 mode 正確率（商店與退款 mode 應為 0）、overlay 開啟不破壞遊戲 DOM 正確率、五組滑桿即時預覽更新正確率（無 server 呼叫）、邊界換算合法率（left < right、top < bottom、不超出 canvas）、儲存 POST payload 格式正確率、itemMap 動態更新生效率（無整頁重整）、脫下再穿後新對位反映正確率、取消後 itemMap 未被改動正確率、overlay 取消/關閉後遊戲回復原位正確率。
+* **spec#15-overlay 調整不中斷遊戲流程且不引入四角變形**
+  * 評估方式：確認 overlay 使用獨立 `<dialog>` 元素、不嵌入既有遊戲表單 DOM、不共享 `[data-doll]` 選取器；模擬 POST 失敗確認不 crash 且顯示提示；確認無 warp/corners 四角任意變形相關 UI 或後端路徑；於公開 GitHub Pages 環境（無 server）確認 overlay 可開啟並預覽，儲存失敗時顯示明確提示、遊戲不中斷。
+  * 觀察項目：overlay 使用獨立 `<dialog>` 且不污染遊戲表單 DOM 之合格率、無 warp/corners UI 及後端路徑之確認率、POST 失敗時明確提示且不 crash 之通過率、公開 Pages 無 server 環境下預覽可用率、取消操作無損遊戲狀態之正確率。
