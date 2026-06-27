@@ -30,6 +30,8 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 * **spec#13-可由維護者依內容資料包結構維護與擴充各項組態**：方案須讓維護者能依內容資料包（公主、衣物、地圖與場景、聲音等）及其相依與含蓋關係，集中檢視、調整與擴充各包之可設定項（公主登記與新局起始、衣物單品與投影對位、地圖座標、場景背景與對話題庫、角色語音指定、遊戲時間限制等）；新增內容包或設定項時可沿既有資料包結構擴充、不需打散既有維護動線；此維護者組態管理僅於本機開發環境提供、不出現於公開遊玩端。
 * **spec#14-公主衣櫃可開啟單品 overlay 即時調整對位**：方案須讓所有家庭使用者可於公主衣櫃每件已擁有單品旁觸發「調整」按鈕，以全螢幕 overlay 在不離開遊戲的前提下，利用五組滑桿（中心 X、中心 Y、寬、高、旋轉角度 -180°～180°）即時調整目標單品的對位與旋轉，預覽立即反映於同一 overlay 之 paper-doll；確認後以一次操作將調整結果儲存回 sidecar，overlay 關閉後遊戲即時套用新對位而不需整頁重整。
 * **spec#15-overlay 調整不中斷遊戲流程且不引入四角變形**：[adjust-overlay] 以不干擾現有遊戲表單 DOM 的獨立 `<dialog>` 覆蓋層呈現，關閉後遊戲回到原位；本 spec 範圍不引入四角任意變形（warp/corners），對位調整限矩形邊界（left/top/right/bottom 換算為滑桿友善的中心＋尺寸），配合旋轉組合使用；無法連線 server（如公開 GitHub Pages）時，overlay 可預覽但儲存失敗時以明確提示通知，不 crash 遊戲。
+* **spec#16-可由維護者在瀏覽器端調整衣物旋轉角度並儲存**：方案須讓維護者能在 [wardrobe-tuner] 以旋轉角度滑桿（-180°～180°）即時預覽並儲存衣物 layer 的旋轉設定；旋轉值儲存於各衣物 sidecar metadata 選填 `rotation` 欄位（缺省 0，向下相容），[server.mjs] 寫入路徑支援 rotation 欄位讀寫，[game-engine] 渲染衣物 layer 時讀取並套用 CSS `transform: rotate(Ndeg)`（旋轉中心為元素中心），使維護者不需手動計算即可精確控制衣物旋轉。
+* **spec#17-可從區網任何家庭裝置存取 wardrobe-tuner**：方案須讓 [server.mjs] 預設監聽 `0.0.0.0`（可由 `HOST` 環境變數覆寫），並於啟動 log 顯示局域網可連線 IP，使同一家庭區網內的任何裝置（手機、平板）可直接以瀏覽器開啟 [wardrobe-tuner] 並儲存衣物對位設定；此設定僅影響 dev-only [server.mjs]，不納入靜態部署。
 
 # II. 設計分析
 
@@ -70,6 +72,7 @@ ADM -.->|"🔧setAct自訂維護者部署網站"| HOST
 ADM -.->|"🔧setAct自訂維護者移除部署"| HOST
 ADM -.->|"🔧setAct自訂維護者設定角色語音"| SYS
 ADM -.->|"🔧setAct自訂維護者依資料包管理組態"| SYS
+ADM -.->|"🔧setAct自訂維護者調整衣物旋轉"| SYS
 USR -.->|"🔧setAct自訂玩家匯入存檔"| SYS
 HOST -->|"🎚️paramDeployBranch=`main`"| SYS
 ```
@@ -132,6 +135,8 @@ HOST -->|"🎚️paramDeployBranch=`main`"| SYS
   * **solCase#16.1**：[etyCfg通用家長維護者]執行[setAct自訂維護者依資料包管理組態]，於 [管理設定工具] 依內容資料包結構（公主、衣物、地圖與場景、聲音、遊戲規則）及其相依與含蓋關係集中檢視、調整與擴充各包之可設定項，導覽依資料包分層（地圖與場景再依世界→地區→地點/場景→對話），新增內容包或設定項時沿既有資料包結構擴充而不打散既有維護動線；此維護者組態管理僅於本機開發環境提供、不出現於公開遊玩端。
 * **solStory#17-衣物對位即時調整**：
   * **solCase#17.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家調整衣物對位]，於公主衣櫃按下已擁有單品之「調整」按鈕，在不離開遊戲的前提下以 overlay 即時調整並預覽該單品之對位（位移、縮放）與旋轉，儲存後遊戲立即反映新對位。
+* **solStory#18-衣物旋轉調整與區網維護**：
+  * **solCase#18.1**：[etyCfg通用家長維護者]執行[setAct自訂維護者調整衣物旋轉]，於 [wardrobe-tuner] 以旋轉角度滑桿調整並即時預覽目標衣物 layer 的旋轉，儲存後反映至遊戲渲染，且可於區網內任一裝置（如手機）開啟工具頁執行上述調整。
 
 ### (D) 重點組態
 
@@ -199,6 +204,7 @@ end
 ADM -.->|"🔧setAct自訂維護者擴充內容"| CONTENT
 ADM -.->|"🔧setAct自訂維護者設定角色語音"| SCENE
 ADM -.->|"🔧setAct自訂維護者依資料包管理組態"| CONTENT
+ADM -.->|"🔧setAct自訂維護者調整衣物旋轉"| WARDROBE
 STATE -->|"🎚️paramStorageKey=`luminara-princess-english-adv`"| SYS
 STATE -->|"🎚️paramAccountIndexKey=`luminara-princess-english-accounts`"| SYS
 CONTENT -->|"🎚️paramDefaultArea=`castle`"| SYS
@@ -232,6 +238,7 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
   * **sysCase#3.3**：[modWardrobe模組]承接[runAct自訂玩家退款]，回補 coins 並取消擁有。
   * **sysCase#3.4**：[modWardrobe模組]承接[runAct自訂玩家換裝]，公主房衣櫃與商店逛店**為同一套機制**——共用同一套多欄貨架面板（同一 `renderAdvShop`），且**穿脫互動直接走商店試穿之同一單一來源**（同一 `shopTryOnState`／`toggleShopTryOn`／`updateShopTileStates`，內部依 `advMode` 區分：衣櫃＝持久穿戴、商店＝暫時試穿），不另寫第二套穿脫函式；故衣櫃穿脫鈕即商店左側那顆 try-on 鈕（同位置、按下**就地更新不重建貨架**、面板不跳），就已擁有衣物提供穿脫切換（Wear↔Take Off），衣櫃不渲染右側購買鈕、商店則保留試穿＋購買；衣櫃穿脫鈕著深粉紅以與商店購買鈕（暗色玻璃）區辨。公主房第一層場景選單以單一「換裝」入口開啟此面板，入口鈕沿用一般場景選單樣式（不特別上色）。衣物類型不含 outerwear（外套，issue #244 移除）與分件 `top`／`bottom`（上下身，issue #251 移除、整件改稱 `outfit`）；衣櫃顯示分類精簡為髮型、整件 `outfit`、鞋與配件四類，原 `hats`（`headTop`）由獨立分類併入配件分類顯示。
   * **sysCase#3.5**：[modWardrobe模組]承接[runAct自訂玩家調整衣物對位]，於衣櫃面板每件已擁有單品右側渲染「調整」按鈕（[item-panel] `createItemPanelRow` 增加選填 `adjustButton` 設定，僅 advMode=`wardrobe` 傳入、商店與退款 mode 不傳即不渲染）；點擊後開啟 [adjust-overlay]——以獨立 `<dialog>` 全螢幕覆蓋，含固定 512:768 比例預覽區與五組 `<input type=range>`（中心 X、中心 Y、寬、高、旋轉 -180°～180°）；預覽區以 [paper-doll.js] `avatarMarkup`＋`applyLayerTransforms` 渲染目前 state.outfit 著裝，目標單品 targetBox（由滑桿 centerX／Y＋width／height 換算 left/top/right/bottom、並驗 left < right、top < bottom、不超出 512×768 canvas）與 rotation 即時覆寫（不呼叫 server）；「儲存」POST `/tool/apply-wardrobe` 寫回 sidecar 並觸發 index 重生（server 端已有此邏輯），成功後以動態 patch itemMap（不整頁重整）使調整立即反映於遊戲；「取消」丟棄本次調整；overlay 以獨立容器渲染、不共享遊戲 `[data-doll]` 選取器、不嵌入現有遊戲表單 DOM；公開 GitHub Pages 無 server 時儲存 POST 失敗，overlay 顯示明確提示、不 crash；本 spec 範圍不實作 warp/corners 四角任意變形。
+  * **sysCase#3.6**：[modWardrobe模組]承接[setAct自訂維護者調整衣物旋轉]，以旋轉角度滑桿呈現於 [wardrobe-tuner]（前端單頁工具，非遊戲主體），拖動即時更新紙娃娃 layer 之 CSS `transform: rotate(Ndeg)`（旋轉中心為元素中心）；確認後 POST `/tool/apply-wardrobe`，[server.mjs] 將 `rotation` 欄位與 `targetBox` 一併寫回 sidecar 並重生 [index.generated.js]；[buildWardrobeItem] 自 sidecar 讀取 `rotation`（缺省 0、後向相容）傳入 item 物件；遊戲引擎於 `avatarMarkup` 以 `data-rotation` attribute 記錄、`applyLayerTransforms` 套用旋轉（與 `data-warp` 形變並存時合成）；[server.mjs] 預設監聽 `0.0.0.0`（`HOST` 環境變數可覆寫），啟動 log 顯示 LAN IP，使區網內任一裝置可直接開啟工具頁。
 * **sysStory#4-承接狀態保存與還原**：
   * **sysCase#4.1**：[modState模組]承接[runAct自訂系統保存進度]，寫入瀏覽器本機儲存。
   * **sysCase#4.2**：[modState模組]承接[setAct自訂玩家匯入存檔]，解析 Markdown 並正規化還原。
@@ -324,7 +331,11 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
     * paramWardrobeChromaKeyWorkflow=`正式衣物素材一律採「先上純色人像框／臨時模特兒定位 → 去除人像 key color → 透明 wardrobe layer」流程，不得直接生成商品照或獨立單品圖；此規則適用所有正式穿戴素材：髮型、整件 outfit、鞋子、headTop/headSide/faceEyes/faceMask/neck/hand 等配件。依 item type 建立 1024×1024 chroma-key guide（髮型＝頭部／上胸輪廓，outfit＝含頭頸肩胸腰手腳的全身穿衣輪廓，shoes＝腿腳輪廓，headTop/headSide/faceEyes/faceMask＝頭部輪廓，neck＝頭頸胸輪廓，hand＝身側與手部輪廓）；影像模型必須先在 guide 上畫出「已穿在人像框上的狀態」，再由後處理移除 guide，只留下欲穿戴物件。outfit 領口、肩線、袖口、腰線、裙襬與開口必須依人像框包覆成形，不能像空衣架或平放衣物；鞋子必須依腳踝與腳掌成形，不能像商品陳列鞋；配件必須依頭、頸胸或手側位置成形，不能像孤立 icon。生成與去背後不得留下臉、五官、皮膚、頭、手腳、人物本體、模特兒框線、場景、背景、文字或浮水印；key color 使用高飽和亮洋紅 #ff00ff（必要時亮綠 #00ff00），禁止使用黑色以免深色髮型、鞋、酒紅、墨綠、深紫服飾被誤去除；鞋子素材須是「穿在紙娃娃雙腳上的正面穿戴視角」：左右腳分開、腳尖朝下、鞋口對準腳踝，可保留因 key color 腳部被移除形成的透明鞋口，禁止俯視商品照、側拍鞋、成雙陳列照、鞋盒展示或漂浮鞋子 icon；後處理以 key color/fuzz 去背、alpha bbox 裁切、長邊貼滿並置中輸出 512×512 透明 WebP，若殘留 key color、人體皮膚或模特兒輪廓，該素材不得納入正式 layer。`
     * paramWardrobePackStyles=`四包中世紀歐洲公主換裝風格：castle=城堡宮廷（高貴、正式、華麗、王族／宮廷舞會／典禮，色盤 gold/ivory/wine red/royal blue/deep purple/pearl/rose/emerald，元素 crown/jewel/pearl/lace/gold embroidery/crest/rose/lily/court floral，線條對稱端莊、垂墜寬裙、合身上身、袖口領口裝飾，氣氛 noble/elegant/formal/ornate/royal）；urban=城鎮街區（美麗精緻時髦但貼近日常，城鎮少女／商人之女／工坊學徒／書店少女，色盤 milk tea/caramel/olive/grey blue/misty pink/deep red/cream/dark green，元素 leather/button/plaid/lace/shawl/waist bag/book/key/town sign/brick，線條俐落合身、方便行走、裙襬不過大、外套層次，氣氛 refined/clever/lively/everyday/urban）；rural=Countryside 郊區鄉村（簡便樸素自然耐用，村莊／牧場／磨坊／菜園／小屋，公主微服出遊或鄉村冒險裝，色盤 beige/linen/earth brown/grass green/pale yellow/blue grey/terracotta/wood brown，元素 cotton linen/coarse cloth/apron/kerchief/straw/wood/flowers/basket/farm tools，線條寬鬆輕便短裙襬、少裝飾但溫暖可愛，氣氛 natural/plain/friendly/warm/free）；wild=Fairy Forest 童話森林（奇幻自然魔法精靈感，森林精靈／妖精／魔法植物／神秘湖泊，色盤 tender green/mint/aqua/lavender/starlight white/rose/moonlight silver/glowing cyan，元素 flower/vine/leaf/butterfly/fairy wing/crystal/star/moon/mushroom/glowing rune，線條輕盈飄逸不對稱自然流動、裙襬如花瓣或葉片，氣氛 dreamy/mysterious/free/magical/forest/adventure）。`
     * paramWardrobePilotItems=`第一批補齊為 4×4×4 共 64 件正式素材：4 個素材包（castle/urban/rural/wild）× 4 個 UI 類別（hair/outfit/shoes/accessories）× 每類 4 件。各包沿用內部 id：rural 對應 Countryside，wild 對應 Fairy Forest；accessories 依穿戴位置落在 headTop/headSide/neck/hand 等既有 slot。舊正式 wardrobe layer 可移除，starter no-layer 相容項可保留；本輪只要求素材本身為正確穿戴視角透明 layer，位置大小由後續人工 targetBox 調整。`
+    * paramWardrobeRotation=`sidecar metadata 根層級選填 rotation 欄位（度數 number，順時針正方向，缺省 0，後向相容）；[wardrobe-tuner] 旋轉滑桿（-180～180）可調整並即時預覽，套用後經 [server.mjs] handleApplyWardrobe 寫回 sidecar、重生 index；[buildWardrobeItem] 傳遞至 item 物件（缺省補 0）；遊戲引擎渲染 wardrobe layer 時套用 CSS transform: rotate(Ndeg)（旋轉中心為元素中心）。`
     * paramCharacterSilhouetteFilter=`outline+depth-shadow`
+  * [etyCfg自訂devServer組態]
+    * paramServerHost=`server.mjs 本機監聽位址，由環境變數 HOST 覆寫；預設 0.0.0.0 使同一區網裝置可直接存取工具頁面；僅作用於 dev-only server.mjs，不納入正式靜態部署（techStackStaticWeb）；啟動 log 顯示第一個非迴環 IPv4 LAN IP 供參考`
+    * paramServerPort=`4174`
 
 ## C. 補充設計(選配)
 
@@ -467,6 +478,7 @@ erDiagram
 | cfgTest#06 | [etyCfg自訂modState組態] | 儲存鍵與存檔標記組態符合契約規範 |
 | cfgTest#07 | [etyCfg自訂modScene組態] | 英文練習、中文協助與獎勵組態符合契約規範 |
 | cfgTest#08 | [etyCfg自訂modWardrobe組態] | wardrobe 類別級 layer bounds 與素材限制組態符合契約規範 |
+| cfgTest#09 | [etyCfg自訂devServer組態] | dev server 監聽位址與端口組態符合契約規範 |
 
 ## D. 方案層級：整合測試(setAct/runAct)
 
@@ -1130,6 +1142,33 @@ erDiagram
   3. 脫下再穿上後，紙娃娃該 layer 之位置、尺寸與旋轉反映新對位，不需重整頁面。
   4. POST 失敗時 overlay 保持開啟（或提示後關閉），顯示使用者可讀之錯誤提示，遊戲流程不中斷。
 
+#### intTest#57-驗證 衣物旋轉欄位讀寫回合
+
+* 既有基底：intTest#54。
+* 新增項目：sidecar rotation 欄位讀寫（paramWardrobeRotation）。
+* 步驟：
+  1. 以 [wardrobe-tuner] 對一件衣物單品設定非零旋轉角度（如 15°），按「套用」呼叫 `/tool/apply-wardrobe`。
+  2. 讀取對應 `<slug>.metadata.json` sidecar，確認 `rotation` 欄位值與設定值一致。
+  3. 執行 `node scripts/genWardrobeIndex.mjs`，確認 `index.generated.js` 中該件單品含正確 `rotation`。
+  4. 載入遊戲頁面，開啟換裝後確認對應 wardrobe layer element 之 `style.transform` 含 `rotate(15deg)`。
+  5. 在 [wardrobe-tuner] 中將同一件旋轉歸零並套用，確認 sidecar `rotation` 欄位清除。
+* 預期結果：
+  1. sidecar 寫入正確 `rotation` 值；box=null 時同步清除。
+  2. index.generated.js 反映 rotation；缺省 0 時不輸出欄位（runtime 補 0）。
+  3. 遊戲引擎渲染時 CSS transform 正確套用；rotation=0 或缺省時不套用 transform（或 rotate(0deg)）。
+
+#### intTest#58-驗證 [wardrobe-tuner] 區網存取
+
+* 既有基底：intTest#01。
+* 新增項目：dev server 監聽位址（paramServerHost）。
+* 步驟：
+  1. 以無 `HOST` 環境變數方式啟動 `node server.mjs`，確認啟動 log 輸出 LAN IP（格式：`http://<LAN-IP>:4174/`）。
+  2. 以同一區網另一裝置（手機或平板）直接瀏覽 log 所示 URL，確認 [wardrobe-tuner] 頁面可正常載入。
+  3. 以 `HOST=127.0.0.1 node server.mjs` 啟動，確認啟動 log 綁定 `127.0.0.1` 且非 LAN 裝置無法連線。
+* 預期結果：
+  1. 預設啟動時 log 顯示 LAN IP，區網裝置可存取工具頁面。
+  2. `HOST` 環境變數可限縮監聽位址（向下相容）。
+
 ## E. 方案層級：文件程式化測試
 
 #### docProgTest#01-productReadme 承接 [solStory#1-短回合英文練習]
@@ -1267,6 +1306,15 @@ erDiagram
 * 通過判定：
   1. 家庭使用者可依 productReadme 開啟 overlay 並完成一次衣物對位調整儲存。
   2. 讀者可依 productReadme 理解儲存功能的 server 前提，以及取消的無損語意。
+
+#### docProgTest#18-productReadme 承接 [solStory#18-衣物旋轉調整與區網維護]
+
+* productReadme 要求：
+  1. 說明維護者可於 [wardrobe-tuner] 以旋轉角度滑桿調整衣物 layer 旋轉並即時預覽，儲存後自動更新遊戲中的衣物渲染。
+  2. 說明 `node server.mjs` 預設以 `0.0.0.0` 監聽、啟動 log 顯示 LAN IP，可由區網內任一裝置（手機、平板）開啟工具頁。
+* 通過判定：
+  1. 維護者可依 productReadme 找到 [wardrobe-tuner] 並完成一次旋轉調整與儲存。
+  2. 維護者可依 productReadme 在區網裝置上開啟 [wardrobe-tuner] 並驗證可連線。
 
 ## F. 方案層級：文件端對端測試
 
@@ -1458,6 +1506,18 @@ erDiagram
   2. 儲存後脫下再穿上同一單品，紙娃娃呈現新對位（位移與旋轉）而不需整頁重整。
   3. 取消後 overlay 關閉、itemMap 與 sidecar 未被更改，遊戲繼續正常執行。
 
+#### e2eTest#18-依 productReadme 驗測衣物旋轉調整與區網存取
+
+* 依據：docProgTest#18、[solCase#18.1]。
+* 步驟：
+  1. 依 productReadme 啟動 `node server.mjs`，確認啟動 log 顯示 LAN IP（非 127.0.0.1）。
+  2. 依 productReadme 於 [wardrobe-tuner] 找到一件衣物，以旋轉滑桿調整角度並即時觀察預覽變化，確認後儲存。
+  3. 於區網內另一裝置（手機或平板）以 LAN IP 開啟 [wardrobe-tuner]，確認可連線並操作。
+* 預期結果：
+  1. 啟動 log 正確顯示 LAN IP（非 127.0.0.1）。
+  2. 旋轉調整即時反映於 [wardrobe-tuner] 預覽，儲存後衣物 sidecar 之 `rotation` 欄位更新，遊戲重整後渲染套用旋轉。
+  3. 區網裝置可成功開啟工具頁並完成一次旋轉調整。
+
 # IV. 部署成效
 
 ## A. 部署組態
@@ -1466,7 +1526,7 @@ erDiagram
 * **產品 REPO**：`待定`（預設與開發 REPO 同庫，經 GitHub Pages 發佈）
 * **productReadme 來源**：`README.md`（本 repo 根目錄產品手冊；尚未採 buildStage 目錄慣例）
 * **部署方式**：靜態網站包，依 [techStackStaticWeb]；預設直推 GitHub Pages（Deploy from a branch，repository root 為站根，保留 .nojekyll），可選後置標準 static-serve Helm chart。namespace、release、主機與網域由部署者於實際部署時決定並記錄。
-* **建置指令**：無打包（no-op，直接收集靜態檔）；本機預覽 `python -m http.server 4173`，或 `node server.mjs`（預設 `http://127.0.0.1:4174/`）。
+* **建置指令**：無打包（no-op，直接收集靜態檔）；本機預覽 `python -m http.server 4173`，或 `node server.mjs`（預設 `http://0.0.0.0:4174/`，可設 `HOST` 環境變數覆寫監聽位址；啟動 log 顯示 LAN IP 供區網存取）。
 * **本機開發工具入口**：本機開發環境（前端偵測 `location.hostname` 為 `127.0.0.1`／`localhost`／`[::1]`）下，起始選單之選角對話框 `Start` 鈕下方顯示［衣物調整工具］dev 入口，點擊以相對路徑導向 `tool/wardrobe-tuner.html`；以前端環境偵測為閘門，正式發佈站（GitHub Pages 公開網域）一律不顯示此入口。屬 dev-only 作者工具便利性、非玩家功能（不進產品手冊主流程與 e2e），其完整套用／管理功能仍需 `node server.mjs`。
 * **測試指令**：型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=data-audit`／`?selftest=save-load`／`?selftest=accounts`／`?selftest=playtimer`／`?selftest=profile-color`／`?selftest=map-avatar`／`?selftest=character-silhouette`／`?selftest=monkey`／`?selftest=chinese-reward`／`?selftest=scene-nav`／`?selftest=dev-tools`／`?selftest=visual-qa&surface=<id>`；場景背景資產 visual QA 需輸出全場景 contact sheet 與手機直向／桌機截圖；圖像資產標準尺寸與檔重預算之檔案系統 gate `node scripts/assetLint.mjs`（掃描 content-base／content-package 全部 shipped 圖像檔、不只 registry 引用，對照 paramAssetStandards），瀏覽器 `?selftest=data-audit` 另對 registry 引用資產做 runtime 尺寸／檔重檢查；版號投影防漂移 gate `node scripts/genVersion.mjs --check`（斷言 `game-engine/build/version.js`／`CHANGELOG.md` 與根目錄 `VERSION` SSOT 一致）；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`。
 * **部署指令**：GitHub Pages「Deploy from a branch」，站根為 repository root，保留 `.nojekyll`；可選後置 static-serve Helm chart。
@@ -1525,3 +1585,9 @@ erDiagram
 * **spec#15-overlay 調整不中斷遊戲流程且不引入四角變形**
   * 評估方式：確認 overlay 使用獨立 `<dialog>` 元素、不嵌入既有遊戲表單 DOM、不共享 `[data-doll]` 選取器；模擬 POST 失敗確認不 crash 且顯示提示；確認無 warp/corners 四角任意變形相關 UI 或後端路徑；於公開 GitHub Pages 環境（無 server）確認 overlay 可開啟並預覽，儲存失敗時顯示明確提示、遊戲不中斷。
   * 觀察項目：overlay 使用獨立 `<dialog>` 且不污染遊戲表單 DOM 之合格率、無 warp/corners UI 及後端路徑之確認率、POST 失敗時明確提示且不 crash 之通過率、公開 Pages 無 server 環境下預覽可用率、取消操作無損遊戲狀態之正確率。
+* **spec#16-可由維護者在瀏覽器端調整衣物旋轉角度並儲存**
+  * 評估方式：於 [wardrobe-tuner] 為任一衣物以旋轉滑桿調整並儲存，確認 sidecar `rotation` 欄位寫回正確值，且遊戲引擎渲染後 layer 以正確角度呈現；另確認缺省（無 rotation 欄位）舊 sidecar 正常渲染不出現 NaN 或旋轉失效。
+  * 觀察項目：旋轉滑桿可用範圍（-180°～180°）正確性、即時預覽更新精準度、儲存後 sidecar 值與遊戲渲染吻合度、缺省 rotation=0 後向相容率。
+* **spec#17-可從區網任何家庭裝置存取 wardrobe-tuner**
+  * 評估方式：啟動 `node server.mjs`，以區網內另一裝置（手機）使用啟動 log 顯示之 LAN IP 存取工具頁，確認可正常開啟並儲存旋轉設定；另確認正式靜態部署（GitHub Pages）無此路徑暴露。
+  * 觀察項目：server 啟動 log 正確顯示非迴環 LAN IP 之合格率、區網裝置連線工具頁成功率、儲存成功（POST 200）率、靜態部署不受影響之合格率。

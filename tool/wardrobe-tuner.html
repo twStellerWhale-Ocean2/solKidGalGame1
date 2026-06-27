@@ -109,10 +109,23 @@
         <p class="control-help">在左側預覽圖上直接拖拉所選的框：中央 ✛ 方塊移動、四邊四角 8 點縮放（非等比）。選「無選擇」可隱藏所有框，純看衣物。</p>
       </section>
 
+      <section class="control-section" id="rotationSection">
+        <h2>旋轉角度</h2>
+        <div class="rotation-controls">
+          <input id="rotationSlider" type="range" min="-180" max="180" step="1" value="0" aria-label="旋轉角度滑桿">
+          <div class="rotation-value-row">
+            <input id="rotationNumber" type="number" min="-180" max="180" step="1" value="0" aria-label="旋轉角度數值">
+            <span aria-hidden="true">°</span>
+            <button type="button" id="rotationReset" class="rotation-reset">歸零</button>
+          </div>
+        </div>
+        <p class="control-help">旋轉目前選取的單品（-180°～180°）；套用後寫回 sidecar。</p>
+      </section>
+
       <section class="control-section apply-section">
         <button id="applyAll" type="button" class="apply-button">✓ 套用到檔案 (Apply)</button>
         <div id="applyStatus" class="apply-status"></div>
-        <p class="control-help">寫回 <code>asset-target-overrides.js</code>（單品框）與 <code>rules.js</code>；重新整理遊戲即可看到。</p>
+        <p class="control-help">寫回各件 sidecar（單品框與旋轉角度）與 <code>rules.js</code>；重新整理遊戲即可看到。</p>
       </section>
     </aside>
   </main>

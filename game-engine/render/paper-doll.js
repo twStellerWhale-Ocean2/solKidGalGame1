@@ -108,7 +108,7 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
   }
 
   // 對帶 data-warp 的 layer 以實際渲染尺寸算投影 matrix3d，把矩形映到任意四邊形；
-  // 對帶 data-rotation 的 layer（不含 warp）以中心旋轉。兩類互斥：warp 不套旋轉。
+  // 帶 data-rotation（無 warp）的 layer 套用 rotate()；兩者並存時合成（warp 優先、旋轉附加）。
   function applyLayerTransforms(container) {
     if (!container) return;
     container.querySelectorAll(".paper-doll-layer[data-warp]").forEach((el) => {
@@ -117,14 +117,12 @@ export function createPaperDollRenderer({ baseLayer, getCharacter, itemById, lay
       const h = el.offsetHeight;
       if (!w || !h || f.length < 8 || f.some((v) => !Number.isFinite(v))) { el.style.transform = ""; return; }
       el.style.transformOrigin = "0 0";
-      el.style.transform = warpMatrix(w, h, f);
+      const rotation = Number(el.dataset.rotation || 0);
+      el.style.transform = rotation ? `${warpMatrix(w, h, f)} rotate(${rotation}deg)` : warpMatrix(w, h, f);
     });
-    container.querySelectorAll(".paper-doll-layer[data-rotation]").forEach((el) => {
-      if (el.dataset.warp) return;
-      const r = parseFloat(el.dataset.rotation);
-      if (!Number.isFinite(r) || r === 0) { el.style.transform = ""; el.style.transformOrigin = ""; return; }
-      el.style.transformOrigin = "center center";
-      el.style.transform = `rotate(${r}deg)`;
+    container.querySelectorAll(".paper-doll-layer[data-rotation]:not([data-warp])").forEach((el) => {
+      const rotation = Number(el.dataset.rotation || 0);
+      el.style.transform = rotation ? `rotate(${rotation}deg)` : "";
     });
   }
 

@@ -1548,3 +1548,51 @@ button.active {
 .voice-assign-preview:hover {
   filter: brightness(0.96);
 }
+
+/* ===== 旋轉角度控件（issue #270）===== */
+.rotation-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rotation-controls input[type="range"] {
+  width: 100%;
+  accent-color: var(--md-sys-color-primary);
+}
+
+.rotation-value-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rotation-value-row input[type="number"] {
+  width: 72px;
+  padding: 6px 8px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 6px;
+  background: var(--md-sys-color-surface);
+  font-size: 14px;
+  text-align: right;
+}
+
+.rotation-value-row span {
+  font-size: 14px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.rotation-reset {
+  margin-left: auto;
+  padding: 5px 12px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 6px;
+  background: var(--md-sys-color-surface);
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.rotation-reset:hover {
+  background: var(--md-sys-color-surface-variant);
+}
