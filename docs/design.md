@@ -32,6 +32,7 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 * **spec#15-overlay 調整不中斷遊戲流程且不引入四角變形**：[adjust-overlay] 以不干擾現有遊戲表單 DOM 的獨立 `<dialog>` 覆蓋層呈現，關閉後遊戲回到原位；本 spec 範圍不引入四角任意變形（warp/corners），對位調整限矩形邊界（left/top/right/bottom 換算為滑桿友善的中心＋尺寸），配合旋轉組合使用；無法連線 server（如公開 GitHub Pages）時，overlay 可預覽但儲存失敗時以明確提示通知，不 crash 遊戲。
 * **spec#16-可由維護者在瀏覽器端調整衣物旋轉角度並儲存**：方案須讓維護者能在 [wardrobe-tuner] 以旋轉角度滑桿（-180°～180°）即時預覽並儲存衣物 layer 的旋轉設定；旋轉值儲存於各衣物 sidecar metadata 選填 `rotation` 欄位（缺省 0，向下相容），[server.mjs] 寫入路徑支援 rotation 欄位讀寫，[game-engine] 渲染衣物 layer 時讀取並套用 CSS `transform: rotate(Ndeg)`（旋轉中心為元素中心），使維護者不需手動計算即可精確控制衣物旋轉。
 * **spec#17-可從區網任何家庭裝置存取 wardrobe-tuner**：方案須讓 [server.mjs] 預設監聽 `0.0.0.0`（可由 `HOST` 環境變數覆寫），並於啟動 log 顯示局域網可連線 IP，使同一家庭區網內的任何裝置（手機、平板）可直接以瀏覽器開啟 [wardrobe-tuner] 並儲存衣物對位設定；此設定僅影響 dev-only [server.mjs]，不納入靜態部署。
+* **spec#18-調整儲存後維持原環境不跳轉**：`patchWardrobeItem` 在呼叫 `renderPaperDolls()` 後，須依 `advMode` 選擇對應重繪：`advMode === "wardrobe"` → `renderWardrobeDetail(true)`；`advMode === "shop"` → `renderAdvShop(true)`；其他模式 → 不另行重繪商品面板；使調整 overlay 儲存後維持原環境（衣櫃回衣櫃、商店回商店），不誤跳至公主衣櫃。
 
 # II. 設計分析
 
@@ -137,6 +138,8 @@ HOST -->|"🎚️paramDeployBranch=`main`"| SYS
   * **solCase#17.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家調整衣物對位]，於公主衣櫃按下已擁有單品之「調整」按鈕，在不離開遊戲的前提下以 overlay 即時調整並預覽該單品之對位（位移、縮放）與旋轉，儲存後遊戲立即反映新對位。
 * **solStory#18-衣物旋轉調整與區網維護**：
   * **solCase#18.1**：[etyCfg通用家長維護者]執行[setAct自訂維護者調整衣物旋轉]，於 [wardrobe-tuner] 以旋轉角度滑桿調整並即時預覽目標衣物 layer 的旋轉，儲存後反映至遊戲渲染，且可於區網內任一裝置（如手機）開啟工具頁執行上述調整。
+* **solStory#19-調整儲存後環境不跳轉**：
+  * **solCase#19.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家調整衣物對位]，在商店模式按下 overlay 儲存後，仍維持商店環境、不跳回公主衣櫃。
 
 ### (D) 重點組態
 
@@ -239,6 +242,7 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
   * **sysCase#3.4**：[modWardrobe模組]承接[runAct自訂玩家換裝]，公主房衣櫃與商店逛店**為同一套機制**——共用同一套多欄貨架面板（同一 `renderAdvShop`），且**穿脫互動直接走商店試穿之同一單一來源**（同一 `shopTryOnState`／`toggleShopTryOn`／`updateShopTileStates`，內部依 `advMode` 區分：衣櫃＝持久穿戴、商店＝暫時試穿），不另寫第二套穿脫函式；故衣櫃穿脫鈕即商店左側那顆 try-on 鈕（同位置、按下**就地更新不重建貨架**、面板不跳），就已擁有衣物提供穿脫切換（Wear↔Take Off），衣櫃不渲染右側購買鈕、商店則保留試穿＋購買；衣櫃穿脫鈕著深粉紅以與商店購買鈕（暗色玻璃）區辨。公主房第一層場景選單以單一「換裝」入口開啟此面板，入口鈕沿用一般場景選單樣式（不特別上色）。衣物類型不含 outerwear（外套，issue #244 移除）與分件 `top`／`bottom`（上下身，issue #251 移除、整件改稱 `outfit`）；衣櫃顯示分類精簡為髮型、整件 `outfit`、鞋與配件四類，原 `hats`（`headTop`）由獨立分類併入配件分類顯示。
   * **sysCase#3.5**：[modWardrobe模組]承接[runAct自訂玩家調整衣物對位]，於衣櫃面板每件已擁有單品右側渲染「調整」按鈕（[item-panel] `createItemPanelRow` 增加選填 `adjustButton` 設定，僅 advMode=`wardrobe` 傳入、商店與退款 mode 不傳即不渲染）；點擊後開啟 [adjust-overlay]——以獨立 `<dialog>` 全螢幕覆蓋，含固定 512:768 比例預覽區與五組 `<input type=range>`（中心 X、中心 Y、寬、高、旋轉 -180°～180°）；預覽區以 [paper-doll.js] `avatarMarkup`＋`applyLayerTransforms` 渲染目前 state.outfit 著裝，目標單品 targetBox（由滑桿 centerX／Y＋width／height 換算 left/top/right/bottom、並驗 left < right、top < bottom、不超出 512×768 canvas）與 rotation 即時覆寫（不呼叫 server）；「儲存」POST `/tool/apply-wardrobe` 寫回 sidecar 並觸發 index 重生（server 端已有此邏輯），成功後以動態 patch itemMap（不整頁重整）使調整立即反映於遊戲；「取消」丟棄本次調整；overlay 以獨立容器渲染、不共享遊戲 `[data-doll]` 選取器、不嵌入現有遊戲表單 DOM；公開 GitHub Pages 無 server 時儲存 POST 失敗，overlay 顯示明確提示、不 crash；本 spec 範圍不實作 warp/corners 四角任意變形。
   * **sysCase#3.6**：[modWardrobe模組]承接[setAct自訂維護者調整衣物旋轉]，以旋轉角度滑桿呈現於 [wardrobe-tuner]（前端單頁工具，非遊戲主體），拖動即時更新紙娃娃 layer 之 CSS `transform: rotate(Ndeg)`（旋轉中心為元素中心）；確認後 POST `/tool/apply-wardrobe`，[server.mjs] 將 `rotation` 欄位與 `targetBox` 一併寫回 sidecar 並重生 [index.generated.js]；[buildWardrobeItem] 自 sidecar 讀取 `rotation`（缺省 0、後向相容）傳入 item 物件；遊戲引擎於 `avatarMarkup` 以 `data-rotation` attribute 記錄、`applyLayerTransforms` 套用旋轉（與 `data-warp` 形變並存時合成）；[server.mjs] 預設監聽 `0.0.0.0`（`HOST` 環境變數可覆寫），啟動 log 顯示 LAN IP，使區網內任一裝置可直接開啟工具頁。
+  * **sysCase#3.7**：[modWardrobe模組]承接[runAct自訂玩家調整衣物對位]，`patchWardrobeItem`（overlay 儲存後的 `onSave` 回呼）於呼叫 `renderPaperDolls()` 後依 `advMode` 決定重繪目標：`advMode === "wardrobe"` 時呼叫 `renderWardrobeDetail(true)`；`advMode === "shop"` 時呼叫 `renderAdvShop(true)`；其他模式不另行重繪商品面板；確保調整儲存後使用者維持原環境。
 * **sysStory#4-承接狀態保存與還原**：
   * **sysCase#4.1**：[modState模組]承接[runAct自訂系統保存進度]，寫入瀏覽器本機儲存。
   * **sysCase#4.2**：[modState模組]承接[setAct自訂玩家匯入存檔]，解析 Markdown 並正規化還原。
@@ -1184,6 +1188,17 @@ erDiagram
   3. overlay content 背景呈半透明，後方內容隱約可見。
   4. overlay 維持正確置中。
 
+#### intTest#60-驗證 adjust overlay 儲存後維持原環境（spec#18）
+
+* 既有基底：intTest#55、intTest#56。
+* 新增項目：[sysGame系統]之 adjust overlay 在不同 `advMode` 下儲存後維持原環境。
+* 步驟：
+  1. 進入公主房衣櫃（advMode=`wardrobe`），穿上一件已擁有衣物，點擊「Adjust」開啟 overlay，拖動滑桿至非預設值後點擊「Save」，待 overlay 關閉，確認面板仍停留於公主房衣櫃視圖（onBack 指向 backToRoomScene）。
+  2. 進入商店場景（advMode=`shop`），試穿一件商品，點擊「Adjust」開啟 overlay，拖動滑桿後點擊「Save」，待 overlay 關閉，確認面板仍停留於商店逛店視圖（onBack 指向 backToStoreScene），而非跳至公主房衣櫃。
+* 預期結果：
+  1. advMode=`wardrobe` 時儲存後呼叫 `renderWardrobeDetail(true)`，面板維持公主房衣櫃狀態，onBack 仍為 backToRoomScene。
+  2. advMode=`shop` 時儲存後呼叫 `renderAdvShop(true)`，面板維持商店逛店狀態，onBack 仍為 backToStoreScene；不因儲存後重繪而誤切至公主房環境。
+
 ## E. 方案層級：文件程式化測試
 
 #### docProgTest#01-productReadme 承接 [solStory#1-短回合英文練習]
@@ -1330,6 +1345,13 @@ erDiagram
 * 通過判定：
   1. 維護者可依 productReadme 找到 [wardrobe-tuner] 並完成一次旋轉調整與儲存。
   2. 維護者可依 productReadme 在區網裝置上開啟 [wardrobe-tuner] 並驗證可連線。
+
+#### docProgTest#19-productReadme 承接 [solStory#19-調整儲存後環境不跳轉]
+
+* productReadme 要求：
+  1. 說明於商店模式使用「Adjust」overlay 後，儲存後仍維持商店環境、不跳回公主衣櫃。
+* 通過判定：
+  1. 讀者可依 productReadme 預期調整 overlay 儲存後維持原環境。
 
 ## F. 方案層級：文件端對端測試
 
@@ -1533,6 +1555,14 @@ erDiagram
   2. 旋轉調整即時反映於 [wardrobe-tuner] 預覽，儲存後衣物 sidecar 之 `rotation` 欄位更新，遊戲重整後渲染套用旋轉。
   3. 區網裝置可成功開啟工具頁並完成一次旋轉調整。
 
+#### e2eTest#19-依 productReadme 驗測 adjust overlay 儲存後維持原環境
+
+* 依據：docProgTest#19、[solCase#19.1]。
+* 步驟：
+  1. 依 productReadme 進入商店場景，試穿一件商品，點擊「Adjust」，拖動滑桿後點擊「Save」。
+* 預期結果：
+  1. overlay 關閉後面板仍為商店逛店視圖，不跳回公主房衣櫃；onBack 指向 backToStoreScene。
+
 # IV. 部署成效
 
 ## A. 部署組態
@@ -1606,3 +1636,6 @@ erDiagram
 * **spec#17-可從區網任何家庭裝置存取 wardrobe-tuner**
   * 評估方式：啟動 `node server.mjs`，以區網內另一裝置（手機）使用啟動 log 顯示之 LAN IP 存取工具頁，確認可正常開啟並儲存旋轉設定；另確認正式靜態部署（GitHub Pages）無此路徑暴露。
   * 觀察項目：server 啟動 log 正確顯示非迴環 LAN IP 之合格率、區網裝置連線工具頁成功率、儲存成功（POST 200）率、靜態部署不受影響之合格率。
+* **spec#18-調整儲存後維持原環境不跳轉**
+  * 評估方式：在商店模式（advMode=`shop`）對已試穿商品點擊「Adjust」並儲存，確認面板仍停留於商店逛店視圖、onBack 仍指向 backToStoreScene；同樣於衣櫃模式（advMode=`wardrobe`）確認儲存後維持衣櫃視圖。
+  * 觀察項目：商店模式儲存後維持商店環境比率（應 100%）、衣櫃模式儲存後維持衣櫃環境比率（應 100%）、誤跳至公主衣櫃環境檢出率（應 0%）。
