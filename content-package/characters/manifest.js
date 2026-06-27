@@ -18,7 +18,7 @@ export const characterAsset = (characterId, name) => (
   `content-package/characters/${characterId}/assets/${name}.webp${characterAssetVersion}`
 );
 
-// issue #214：四位可玩公主共用同一張 neck-down body（含永久肌膚安全底著），不分角色。
+// issue #214：可玩公主共用同一張 neck-down body（含永久肌膚安全底著），不分角色。
 export const sharedBodyLayer = `content-package/characters/body.webp${characterAssetVersion}`;
 
 // issue #131：識別色色盤由 16 高飽和色改為 8 種低飽和粉彩色（spec#6）。
@@ -60,18 +60,6 @@ export const characterRegistry = Object.freeze({
     baseLayer: sharedBodyLayer,
     headLayer: characterAsset("yumi", "head"),
     defaultProfileColor: "#93c5fd",
-    defaultOutfit: Object.freeze({ hairstyle: "none", outfit: "none" }),
-    naturalHeightCm: 125,
-    stageScale: 1.2,
-    rig: sharedPaperDollRig
-  }),
-  sol: Object.freeze({
-    id: "sol",
-    label: "Princess Mary",
-    defaultName: "Mary",
-    baseLayer: sharedBodyLayer,
-    headLayer: characterAsset("sol", "head"),
-    defaultProfileColor: "#fcd34d",
     defaultOutfit: Object.freeze({ hairstyle: "none", outfit: "none" }),
     naturalHeightCm: 125,
     stageScale: 1.2,

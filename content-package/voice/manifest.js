@@ -93,7 +93,6 @@ export function resolveVoiceProfile(voiceDecl) {
 export const playableVoiceById = Object.freeze({
   lumi: Object.freeze({ gender: "female", age: "child", personality: "cheerful" }),
   yumi: Object.freeze({ gender: "female", age: "child", personality: "graceful" }),
-  sol: Object.freeze({ gender: "female", age: "child", personality: "bold" }),
   rosa: Object.freeze({ gender: "female", age: "child", personality: "cheerful" })
 });
 
