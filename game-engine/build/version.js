@@ -6,6 +6,7 @@
 export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
+  { version: "0.59.0", buildDateTime: "2026-06-28", summaryZh: "新局公主改以城堡裁縫店的珍珠白舞會裙作為得體入門造型（取代灰藍鎮裙），且新局只擁有身上所穿的三件（髮型、整件衣著、鞋）、其餘外觀一律改為未擁有須以 coins 購買，讓「答對得幣→換裝」的成長從第一次遊玩就開始；順帶清除已移除角色 sol 殘留的起始髮" },
   { version: "0.58.0", buildDateTime: "2026-06-28", summaryZh: "對話場景畫面內即時顯示金錢（coins）；桌機寬螢幕衣櫃面板加寬、一次完整顯示所有衣物類別（免水平捲動、欄寬變小），且面板置於公主立繪之後、換裝時公主完整可見" },
   { version: "0.56.0", buildDateTime: "2026-06-27", summaryZh: "公主衣櫃新增衣物對位即時調整 overlay：每件已擁有單品右側出現「調整」按鈕，點擊後以全螢幕 overlay 以五組滑桿（中心X/Y、寬、高、旋轉 -180°～180°）即時預覽；儲存 POST /tool/apply-wardrobe 回寫 sidecar，動態更新遊戲 itemMap 不整頁重整；無 server（公開 Pages）時顯示提示不 crash；sidecar 新增 rotation 欄位支援旋轉儲存與遊戲端渲染" },
   { version: "0.55.0", buildDateTime: "2026-06-22", summaryZh: "角色語音指定（依性別×性格挑選瀏覽器語音）從遊戲設定移到維護者用的管理設定工具新分頁「聲音管理」（本機 dev 環境才出現，可逐桶試聽）；公開遊戲設定不再提供語音挑選、改為一律自動依性別與語言選用，設定頁僅保留 Voice 開關" },
@@ -42,8 +43,8 @@ export const versionHistory = [
 ];
 
 export const buildInfo = {
-  version: "0.58.0",
+  version: "0.59.0",
   buildDate: "2026-06-28",
   buildDateTime: "2026-06-28",
-  issues: ["#286"]
+  issues: ["#289"]
 };
