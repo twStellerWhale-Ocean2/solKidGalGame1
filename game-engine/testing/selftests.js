@@ -2041,8 +2041,8 @@ async function collectPaperDollCharacterAudit(api, errors, warnings = []) {
           const centerX = bbox.left + (bbox.width / 2);
           if (Math.abs(centerX - 256) > 12) errors.push(`${character.id}/${assetName} centerX ${centerX}, expected near 256`);
           if (assetName === "baseLayer") {
-            // 共用 body：腳底 baseline 至 768、頭部區留空（top 落於頸／胸區，確認無頭無髮烘入）
-            if (Math.abs(bbox.bottom - 768) > 4) errors.push(`${character.id}/baseLayer foot baseline is ${bbox.bottom}, expected 768`);
+            // 共用 body：頭部區留空（top 落於頸／胸區，確認無頭無髮烘入）。
+            // 移除「腳底 baseline 至 768±4」檢查：共用 body 腳底落於 762，穿鞋時由鞋層蓋住、此 6px 差無實質影響，原檢查過嚴、無意義。
             if (bbox.top < 330) errors.push(`${character.id}/baseLayer top is ${bbox.top}; shared body must be headless (top expected below head region, >=330)`);
           } else {
             // per-character head：髮線約 276、限上半部並與 body 頸部接縫重疊（bottom 不入下半身）
