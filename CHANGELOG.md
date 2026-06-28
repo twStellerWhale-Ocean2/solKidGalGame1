@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.59.2 — 2026-06-29 _(internal)_
+- docs: README 產品手冊同步為三角色 roster（Lumi/Yumi/Rosa）：移除已自 roster 移除之 Princess Mary（舊 sol）之現行描述、roster 改為三位，並註明帶 sol id 之舊存檔讀取時 fallback 為 lumi；歷次設計/實作紀錄之歷史條目（#123/#126/#163 等）保留不動
+
 ## 0.59.1 — 2026-06-29 _(internal)_
 - test: 移除 data-audit 中無意義的共用 body 腳底 baseline=768±4 檢查（腳底落於 762、穿鞋時被鞋層蓋住、此 6px 差無實質影響，原檢查過嚴）；保留『共用 body 不得烘入頭』檢查，data-audit 回綠
 
