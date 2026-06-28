@@ -649,6 +649,8 @@ function render() {
 
 function renderStatus() {
   elements.coinValue.textContent = state.coins;
+  // issue #286 spec#20：對話場景畫面內即時顯示金錢，與側欄同一資料來源（state.coins）。
+  if (elements.advCoinValue) elements.advCoinValue.textContent = `🪙 ${state.coins}`;
 }
 
 // 玩家公主的名字為使用者設定；遊戲內稱呼一律取此值（世界觀／品牌名 Luminara 不在此列）。

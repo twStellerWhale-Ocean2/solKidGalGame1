@@ -3,10 +3,10 @@
 @import "./map.css";
 @import "./system.css";
 @import "./paper-doll.css";
-@import "./adv.css";
-@import "./shop.css";
+@import "./adv.css?v=20260628-issue286-adv-coins-wardrobe";
+@import "./shop.css?v=20260628-issue286-adv-coins-wardrobe";
 @import "./character-select.css";
 @import "./account-select.css";
 @import "./play-break.css";
 @import "./adjust-overlay.css";
-@import "./mobile.css";
+@import "./mobile.css?v=20260628-issue286-adv-coins-wardrobe";
