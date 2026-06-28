@@ -13,10 +13,13 @@ export const princessStart = {
   // issue #131：背景花紋（spec#6），與識別色組成公主視覺主題；"none"=無花紋。
   backgroundPattern: "none",
   coins: 200,
-  owned: ["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair", "starterPajama", "urbanSideBraid", "castleGoldHairnetLongHair", "urbanLowPonytail", "urbanRibbonLongHair", "countrysideNaturalShortCurls", "fairyVineBraid", "countrysideLowPonytail", "urbanMilkTeaCoat", "countrysideWoodenClogs", "urbanWalkingBoots", "castlePearlSatinShoes", "countrysideRoughLeatherBoots", "castleGoldTrimCourtHeels", "urbanPlaidVestLongSkirt", "urbanGreyBlueTownDress", "castleJeweledStrapSoftShoes"],
+  // issue #289（spec#21）：新局僅預先擁有身上所穿之三件（髮型、整件 outfit、鞋），其餘外觀一律未擁有、
+  // 須以答題所得 coins 購買，使「答對得幣→換裝」之成長動機自第一次遊玩即成立（spec#4 正向閉環）。
+  owned: ["countrysideLowPonytail", "castlePearlWhiteBallGown", "countrysideWoodenClogs"],
   outfit: {
     hairstyle: "countrysideLowPonytail",
-    outfit: "urbanGreyBlueTownDress",
+    // issue #289：預設穿著由灰藍鎮裙改為城堡裁縫店之珍珠白舞會裙（得體入門造型）；髮型與鞋維持既有簡約款。
+    outfit: "castlePearlWhiteBallGown",
     shoes: "countrysideWoodenClogs",
     headTop: "none",
     headSide: "none",

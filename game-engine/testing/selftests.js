@@ -71,6 +71,7 @@ export function installTestingHooks(api) {
   runAboutSelfTest(api);
   runDevToolsSelfTest(api);
   runSceneCoinsSelfTest(api);
+  runStarterOutfitSelfTest(api);
 }
 
 // issue #212：本機開發環境 dev 入口（衣物調整工具）閘門驗證。
@@ -147,6 +148,35 @@ function runSceneCoinsSelfTest(api) {
   const result = document.createElement("pre");
   result.id = "sceneCoinsResult";
   result.textContent = JSON.stringify({ test: "scene-coins", passed, errors });
+  document.body.prepend(result);
+}
+
+// issue #289 spec#21：新局得體入門造型與精簡起始擁有。
+// ①新局預設穿著＝castlePearlWhiteBallGown、髮型/鞋維持既有；②owned 恰等於所穿三件；③owned 不含已移除角色殘留。
+function runStarterOutfitSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "starter-outfit") return;
+  const errors = [];
+  const start = princessStart;
+
+  if (start.outfit.outfit !== "castlePearlWhiteBallGown") errors.push(`新局預設 outfit = "${start.outfit.outfit}"，預期 castlePearlWhiteBallGown`);
+  if (start.outfit.hairstyle !== "countrysideLowPonytail") errors.push(`新局預設 hairstyle = "${start.outfit.hairstyle}"，預期維持 countrysideLowPonytail`);
+  if (start.outfit.shoes !== "countrysideWoodenClogs") errors.push(`新局預設 shoes = "${start.outfit.shoes}"，預期維持 countrysideWoodenClogs`);
+
+  // owned 恰等於所穿三件（hairstyle/outfit/shoes），無其他預先擁有品項。
+  const worn = JSON.stringify([start.outfit.hairstyle, start.outfit.outfit, start.outfit.shoes].sort());
+  const owned = JSON.stringify([...start.owned].sort());
+  if (owned !== worn) errors.push(`新局 owned = ${JSON.stringify(start.owned)}，預期恰為所穿三件 [${start.outfit.hairstyle}, ${start.outfit.outfit}, ${start.outfit.shoes}]`);
+
+  // 每件 owned 須為合法 registry 品項（與 data-audit #267 守門一致）。
+  start.owned.forEach((id) => { if (!api.itemById(id)) errors.push(`新局 owned "${id}" 不在衣物 registry`); });
+
+  if (start.owned.includes("solStarterHair")) errors.push("新局 owned 仍含已移除角色之 solStarterHair");
+
+  const passed = errors.length === 0;
+  const result = document.createElement("pre");
+  result.id = "starterOutfitResult";
+  result.textContent = JSON.stringify({ test: "starter-outfit", passed, errors });
   document.body.prepend(result);
 }
 
@@ -922,6 +952,11 @@ function runSceneNavSelfTest(api) {
     // 換裝開啟之衣櫃與商店共用同一「多欄貨架」面板（renderAdvShop closet 模式）、為 wear-only 穿脫切換、無試穿鈕；
     // 深粉紅僅在衣櫃內「穿上／脫下」動作鈕（border #ad1457 = rgb(173,20,87)），非入口鈕。
     const deepPink = /173,\s*20,\s*87/;
+    // issue #289：新局 owned 精簡為僅所穿三件後，衣櫃預設無「已擁有但未穿」之可切換品項；為穿脫測試自
+    // registry（api.shopItems）動態注入一件正式 layer、非 starter、未穿戴之品項，使測試不依賴預設 owned
+    // 規模（承 issue #267「fixture 自 registry 動態挑」之意，內容重作不再令 fixture 失效）。
+    const wearFixture = (api.shopItems || []).find((it) => it && it.storeId !== "starter" && (it.layers || []).length > 0 && api.state.outfit[it.type] !== it.id);
+    if (wearFixture && !api.state.owned.includes(wearFixture.id)) api.state.owned.push(wearFixture.id);
     api.openRoomScene(api.hotspotById("princessRoom"));
     if (api.getAdvMode() !== "scene") errors.push(`room first layer mode = ${api.getAdvMode()}, expected scene`);
     const changeOutfitBtn = choiceBtn("Change Outfit");
