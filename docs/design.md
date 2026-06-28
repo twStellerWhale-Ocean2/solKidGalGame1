@@ -34,6 +34,7 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 * **spec#17-可從區網任何家庭裝置存取 wardrobe-tuner**：方案須讓 [server.mjs] 預設監聽 `0.0.0.0`（可由 `HOST` 環境變數覆寫），並於啟動 log 顯示局域網可連線 IP，使同一家庭區網內的任何裝置（手機、平板）可直接以瀏覽器開啟 [wardrobe-tuner] 並儲存衣物對位設定；此設定僅影響 dev-only [server.mjs]，不納入靜態部署。
 * **spec#18-調整儲存後維持原環境不跳轉**：`patchWardrobeItem` 在呼叫 `renderPaperDolls()` 後，須依 `advMode` 選擇對應重繪：`advMode === "wardrobe"` → `renderWardrobeDetail(true)`；`advMode === "shop"` → `renderAdvShop(true)`；其他模式 → 不另行重繪商品面板；使調整 overlay 儲存後維持原環境（衣櫃回衣櫃、商店回商店），不誤跳至公主衣櫃。
 * **spec#19-可玩角色 roster 精簡為三位（Lumi、Yumi、Rosa）**：可玩公主 roster 不含 sol（Mary）；選角介面、語音 profile 與初始衣物均不再呈現 sol 相關選項；既有存檔帶 `activeCharacterId: "sol"` 者，於讀取時 `normalizeState` 自動 fallback 為 `defaultActiveCharacterId`（`"lumi"`），使舊存檔可無縫升級至新三角色 roster 而不 crash 或顯示殘留選項。
+* **spec#20-可於對話場景即時看見金錢並順暢瀏覽換裝面板**：方案須讓兒童於進入對話場景（含打工任務、生活聊天、逛店、衣櫃換裝）時，於場景畫面內即時看見目前 coins 數量，不因全屏對話覆蓋而看不見獎勵，使「答對得幣」之所得於當下可感（與 spec#4 正向閉環一致）；換裝與商店共用之衣櫃面板（spec#3）須提供足夠寬之瀏覽區，於桌機寬視口一次完整呈現所有可選品項而非以捲動藏起，且選衣時公主立繪維持完整可見、不被面板遮擋。換裝面板版面與金錢呈現之合格須含手機直向與桌機寬視口、實際穿上代表性衣物後之視覺檢查（與 spec#3 完成判定一致）。
 
 # II. 設計分析
 
@@ -143,6 +144,9 @@ HOST -->|"🎚️paramDeployBranch=`main`"| SYS
   * **solCase#19.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家調整衣物對位]，在商店模式按下 overlay 儲存後，仍維持商店環境、不跳回公主衣櫃。
 * **solStory#20-角色 roster 精簡並平滑升級舊存檔**：
   * **solCase#20.1**：[etyCfg通用兒童玩家]執行[runAct自訂玩家選角命名]，可見公主 roster 精簡為 Lumi、Yumi、Rosa 三位；既有帶 `sol` 角色 id 之舊存檔於下次讀取時自動 fallback 為預設角色 `lumi`，使原以 sol（Mary）遊玩之帳號無縫升級至新 roster、不 crash 亦不殘留已移除角色。
+* **solStory#21-對話場景金錢可見與換裝面板瀏覽**：
+  * **solCase#21.1**：[sysGame系統]執行[runAct自訂系統顯示場景金錢]，於對話場景（打工任務、生活聊天、逛店、衣櫃換裝等全屏對話覆蓋）畫面內即時呈現目前帳號的 coins 數量，並隨答對得幣或購買消費同步更新，使玩家不需離開場景即可看見金錢變化。
+  * **solCase#21.2**：[sysGame系統]執行[runAct自訂系統渲染換裝面板]，於換裝與商店共用之衣櫃面板加寬瀏覽區，並於桌機寬視口一次完整呈現所有可選品項（窄屏維持精簡欄數與必要捲動），且將面板置於公主立繪圖層之後，使選衣時公主維持完整可見、不被面板遮擋。
 
 ### (D) 重點組態
 
@@ -1217,6 +1221,21 @@ erDiagram
   2. `normalizeState` 回傳之 `activeCharacterId` 為 `"lumi"`（預設角色），不 crash 亦不保留 `"sol"`。
   3. 選角畫面僅呈現 Lumi、Yumi、Rosa；不出現 Mary、sol 或任何殘留 UI。
 
+#### intTest#62-驗證對話場景金錢即時顯示與換裝面板版面圖層（spec#20）
+
+* 既有基底：intTest#30。
+* 新增項目：[sysGame系統]之對話場景 coins 指示同步、換裝面板寬版全展與面板置於公主立繪圖層之後。
+* 步驟：
+  1. 開啟任一對話場景（advMode 非 `closed`），讀取場景內 coins 指示元素之文字。
+  2. 以已知值設定 `state.coins` 並觸發既有 coins 渲染流程，重讀場景內 coins 指示文字。
+  3. 開啟衣櫃換裝面板（advMode=`wardrobe`），於模擬桌機寬視口量測貨架欄數與是否所有品項皆可見（不因面板高度上限而需捲動藏起）。
+  4. 量測公主立繪層與衣櫃面板層之堆疊次序。
+* 預期結果：
+  1. 對話場景開啟時存在 coins 指示元素，其文字等於 `state.coins`。
+  2. 更新 `state.coins` 後場景內 coins 指示文字同步更新為新值（單一資料來源、無第二份狀態）。
+  3. 桌機寬視口下衣櫃面板欄數較窄屏增加、所有品項一次完整呈現（不需捲動藏起）。
+  4. 公主立繪層之堆疊高於衣櫃面板層，面板不遮擋公主。
+
 ## E. 方案層級：文件程式化測試
 
 #### docProgTest#01-productReadme 承接 [solStory#1-短回合英文練習]
@@ -1377,6 +1396,15 @@ erDiagram
   1. 說明可玩公主 roster 精簡為 Lumi、Yumi、Rosa 三位；說明既有帶 `sol` 角色 id 之舊存檔，於下次讀取時自動升級為預設角色 `lumi`，不 crash 亦不須手動遷移。
 * 通過判定：
   1. 讀者可依 productReadme 了解三角色 roster 選角方式，且理解帶 `sol` id 之舊帳號在重新進入時無縫升級至 Lumi；讀者確認選角介面不顯示 Mary/sol 選項。
+
+#### docProgTest#21-productReadme 承接 [solStory#21-對話場景金錢可見與換裝面板瀏覽]
+
+* productReadme 要求：
+  1. 說明對話場景畫面內可即時看見目前 coins 數量，答對得幣或消費時於場景內同步可見。
+  2. 說明衣櫃（換裝與商店）面板於桌機寬視口可一次完整瀏覽所有品項，且選衣時公主立繪維持完整可見。
+* 通過判定：
+  1. 讀者可依 productReadme 預期在對話場景看到金錢數量並隨遊玩變動。
+  2. 讀者可依 productReadme 預期寬視口下衣櫃面板完整展示品項且公主不被遮擋。
 
 ## F. 方案層級：文件端對端測試
 
@@ -1598,6 +1626,16 @@ erDiagram
   1. 選角畫面恰好呈現三位可辨識公主（Lumi、Yumi、Rosa），無殘留 sol/Mary 選項。
   2. 帶 `sol` 之舊存檔讀取後 `activeCharacterId` 正規化為 `"lumi"`，遊戲正常進入、不顯示錯誤。
 
+#### e2eTest#21-依 productReadme 驗測對話場景金錢顯示與換裝面板瀏覽（spec#20）
+
+* 依據：docProgTest#21、[solCase#21.1]、[solCase#21.2]。
+* 步驟：
+  1. 依 productReadme 進入任一打工場景，答對一題取得 coins，於對話場景畫面內確認金錢數量即時顯示並反映增加。
+  2. 依 productReadme 於桌機寬視口開啟公主衣櫃換裝面板，確認所有品項一次完整呈現、且公主立繪維持完整可見不被面板遮擋。
+* 預期結果：
+  1. 對話場景內可見 coins 數量，答對後該數量同步增加，無需離開場景查看側欄。
+  2. 桌機寬視口下衣櫃面板完整展示所有可選品項（不需捲動藏起），公主立繪完整可見、未被面板遮擋。
+
 # IV. 部署成效
 
 ## A. 部署組態
@@ -1677,3 +1715,6 @@ erDiagram
 * **spec#19-可玩角色 roster 精簡為三位（Lumi、Yumi、Rosa）**
   * 評估方式：確認 `characterRegistry` 不含 `sol` 鍵、`playableVoiceById("sol")` 無有效回傳、選角介面僅顯示三位公主、starter wardrobe 不含 `solStarterHair`；並以帶 `activeCharacterId: "sol"` 之模擬舊存檔呼叫 `normalizeState`，確認 fallback 為 `"lumi"` 且不 crash。
   * 觀察項目：`characterRegistry.sol` 為 `undefined` 合格率（應 100%）、選角介面僅呈現三位公主合格率（應 100%）、帶 `sol` id 舊存檔升級為 `lumi` 正確率（應 100%）、`sol` 相關 UI 殘留檢出率（應 0%）、舊存檔讀取不 crash 率（應 100%）。
+* **spec#20-可於對話場景即時看見金錢並順暢瀏覽換裝面板**
+  * 評估方式：以手機直向與桌機寬視口進入打工、聊天、逛店與衣櫃換裝等對話場景，確認場景畫面內即時顯示 coins 且隨答對得幣／消費同步更新；於桌機寬視口開啟衣櫃面板確認所有品項一次完整呈現、公主立繪維持完整可見不被面板遮擋；並以實際穿上代表性衣物後之視覺 QA 檢查面板加寬與圖層次序。
+  * 觀察項目：對話場景 coins 指示存在且與 `state.coins` 同步之正確率（應 100%）、coins 變動後場景內即時反映率、第二份 coins 狀態殘留檢出率（應 0%）、桌機寬視口衣櫃面板所有品項完整呈現（無捲動藏起）合格率、公主立繪未被換裝面板遮擋之 QA 通過率、手機直向窄屏衣櫃面板可用性（精簡欄數不擠爆）合格率。

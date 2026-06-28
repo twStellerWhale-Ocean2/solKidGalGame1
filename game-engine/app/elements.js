@@ -16,6 +16,7 @@ export function createElements() {
     systemMenuTabs: $$(".system-menu-tab"),
     systemPanels: $$(".system-panel"),
     coinValue: $("#coinValue"),
+    advCoinValue: $("#advCoinValue"),
     playerNameValue: $("#playerNameValue"),
     playTimeValue: $("#playTimeValue"),
     timeLeftValue: $("#timeLeftValue"),

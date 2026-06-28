@@ -103,6 +103,13 @@
   background: rgba(69, 43, 51, 0.66);
 }
 
+/* issue #286 spec#20：對話場景畫面內金錢指示（左上角，與 player/npc tag 同家族、金幣色調） */
+.adv-tag-coins {
+  font-size: 0.82rem;
+  font-weight: 900;
+  background: rgba(122, 82, 28, 0.82);
+}
+
 /* 純場景無對話對象時，場景角色名留空即隱藏次行 */
 .adv-tag-npc:empty {
   display: none;

@@ -3955,3 +3955,37 @@ body {
   border: 0;
   font-weight: 800;
 }
+
+/* ============================================================
+   issue #286 spec#20：對話場景金錢即時顯示 + 衣櫃寬版全展 + 面板置於公主立繪圖層之後
+   桌機寬視口（min-width:821）下 shop/wardrobe（含 .adv-closet 公主房衣櫃）共用面板：
+   ② 面板加寬約 30%（min(56%,480px)→min(70%,640px)）；類別貨架欄由「固定寬＋水平捲動」
+      改為彈性平分（欄寬變小）一次完整顯示所有類別、免水平捲動（每欄仍可垂直捲動多件）。
+   ③ 面板加寬後左緣會覆蓋公主，故公主立繪層恆置於面板（z-index 5）之上、保持完整可見；
+      公主於此模式僅顯示不互動，設 pointer-events:none 以免遮擋面板按鈕點擊。
+   （金錢指示 #advCoinValue 顯示與同步見 index.html／game-engine renderStatus，跨斷點皆顯示。）
+   ============================================================ */
+@media (min-width: 821px) {
+  /* ② 面板加寬約 30% */
+  #advScene[data-mode="shop"] .adv-box {
+    width: min(70%, 640px);
+  }
+
+  /* ② 類別欄彈性平分、欄寬變小，一次顯示所有類別、不再水平捲動 */
+  .adv-scene[data-mode="shop"] .item-panel-list {
+    overflow-x: hidden;
+    gap: 8px;
+  }
+
+  .adv-scene[data-mode="shop"] .shop-shelf-col {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+  }
+
+  /* ③ 公主立繪層恆在換裝/商店面板之上（面板 z-index 5 → 公主提至 6），面板加寬重疊時公主完整可見 */
+  #advScene[data-mode="shop"] .adv-portraits {
+    z-index: 6;
+    pointer-events: none;
+  }
+}

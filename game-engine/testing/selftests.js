@@ -70,6 +70,7 @@ export function installTestingHooks(api) {
   runMapWalkSelfTest(api);
   runAboutSelfTest(api);
   runDevToolsSelfTest(api);
+  runSceneCoinsSelfTest(api);
 }
 
 // issue #212：本機開發環境 dev 入口（衣物調整工具）閘門驗證。
@@ -106,6 +107,46 @@ function runDevToolsSelfTest(api) {
   const result = document.createElement("pre");
   result.id = "devToolsResult";
   result.textContent = JSON.stringify({ test: "dev-tools", passed, errors });
+  document.body.prepend(result);
+}
+
+// issue #286 spec#20：對話場景金錢即時顯示。
+// ①金錢指示元素存在；②位於對話場景覆蓋層 #advModal 內（隨場景顯示、非被覆蓋之側欄）；
+// ③變更 state.coins 後重繪，場景金錢指示與側欄同一單一資料來源同步更新。
+function runSceneCoinsSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "scene-coins") return;
+  const errors = [];
+
+  const coinEl = api.elements.advCoinValue;
+  const sideEl = api.elements.coinValue;
+  if (!coinEl) {
+    errors.push("找不到 #advCoinValue（對話場景金錢指示元素）");
+  } else if (!coinEl.closest("#advModal")) {
+    errors.push("#advCoinValue 不在 #advModal 對話場景覆蓋層內（不應只在被覆蓋的側欄）");
+  }
+
+  if (coinEl) {
+    const original = api.state.coins;
+    const probe = (Number(original) || 0) + 137;
+    api.state.coins = probe;
+    api.render();
+    const advShown = (coinEl.textContent || "").replace(/[^0-9]/g, "");
+    const sideShown = (sideEl?.textContent || "").replace(/[^0-9]/g, "");
+    if (advShown !== String(probe)) {
+      errors.push(`變更 coins 後場景金錢顯示「${coinEl.textContent}」未同步為 ${probe}`);
+    }
+    if (sideShown !== advShown) {
+      errors.push(`場景金錢「${advShown}」與側欄金錢「${sideShown}」不一致（非單一資料來源）`);
+    }
+    api.state.coins = original;
+    api.render();
+  }
+
+  const passed = errors.length === 0;
+  const result = document.createElement("pre");
+  result.id = "sceneCoinsResult";
+  result.textContent = JSON.stringify({ test: "scene-coins", passed, errors });
   document.body.prepend(result);
 }
 
