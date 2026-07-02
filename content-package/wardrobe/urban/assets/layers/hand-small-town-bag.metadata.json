@@ -6,9 +6,9 @@
   "icon": "Acc",
   "prompt": "front-view hand accessory layer: small handheld town bag, bag only, no hand, no arm, no body",
   "targetBox": {
-    "left": 278,
-    "top": 502,
-    "right": 388,
-    "bottom": 612
+    "left": 285.08984375,
+    "top": 546.794921875,
+    "right": 352.12109375,
+    "bottom": 613.826171875
   }
 }

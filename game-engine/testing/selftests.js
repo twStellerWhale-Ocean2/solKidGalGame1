@@ -1453,6 +1453,9 @@ function runCharacterVoiceSelfTest(api) {
       synth.cancel = () => {};
       try {
         api.state.speechEnabled = true;
+        // 消除套件順序相依：前段 intTest#24/#25 已在 kingHall 答對打工賺得 coins，#177 規則使該場景
+        // 打工本週期下架，practice 會走無語音的 hint 路徑；此處重置本週期 jobsDone 使打工題可開、語音可驗。
+        if (api.state.playLimit?.cycle?.jobsDone?.length) api.state.playLimit.cycle.jobsDone = [];
         const hotspot = api.hotspotById("kingHall");
         api.closeAdv(); // 自乾淨狀態起，確保進入＝新造訪
         // 進入場景第一層 → 觸發歡迎詞語音。
@@ -3425,7 +3428,8 @@ function runMonkeyTest(api) {
       const visibleButtons = [...document.querySelectorAll("button")].filter((button) => {
         const rect = button.getBoundingClientRect();
         const style = getComputedStyle(button);
-        const nativeDialogButtons = new Set(["saveButton", "loadButton", "clearDiaryButton", "resetButton"]);
+        // 排除原生對話鈕與會導航離站的 dev 入口鈕（點了整頁跳走、monkey 回報 pre 永不出現）。
+        const nativeDialogButtons = new Set(["saveButton", "loadButton", "clearDiaryButton", "resetButton", "wardrobeTunerDevButton", "wardrobeTunerDevButtonAccount"]);
         return !nativeDialogButtons.has(button.id) && !button.disabled && rect.width > 0 && rect.height > 0 && style.visibility !== "hidden" && style.display !== "none";
       });
       if (visibleButtons.length) visibleButtons[Math.floor(Math.random() * visibleButtons.length)].click();
@@ -3445,7 +3449,10 @@ function runMonkeyTest(api) {
       if (api.state.coins < 0) errors.push("coins below zero");
       if (!api.state.player || !api.isWalkable(api.state.player.x, api.state.player.y)) errors.push("invalid player position");
       Object.entries(api.state.outfit).forEach(([slot, itemId]) => {
-        if (itemId !== "none" && !api.state.owned.includes(itemId)) errors.push(`unowned equipped ${slot}:${itemId}`);
+        // #291 後 starter 無外觀層相容項（storeId=starter、asset:null 基本造型佔位）不在 owned、
+        // 由 normalizeVisibleOutfit 於空 slot 回填，屬合法穿戴、不計入未擁有違規。
+        const starterCompat = api.shopItems.find((item) => item.id === itemId)?.storeId === "starter";
+        if (itemId !== "none" && !starterCompat && !api.state.owned.includes(itemId)) errors.push(`unowned equipped ${slot}:${itemId}`);
       });
       if (api.$$(".view.active").length !== 1) errors.push("active view count is not one");
     } catch (error) {

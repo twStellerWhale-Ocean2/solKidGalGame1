@@ -1,0 +1,122 @@
+.room-stage {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+.room-stage > img {
+  filter: saturate(1.05);
+}
+
+.room-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 41% 22%, rgba(255, 255, 255, 0.5), transparent 15%),
+    linear-gradient(105deg, transparent 0 34%, rgba(255, 246, 214, 0.25) 42%, transparent 56%);
+  animation: roomLight 7s ease-in-out infinite alternate;
+}
+
+@keyframes roomLight {
+  from { opacity: 0.45; transform: translateX(-8px); }
+  to { opacity: 0.78; transform: translateX(8px); }
+}
+
+.big-doll {
+  animation: dollIdle 3.8s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+@keyframes dollIdle {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -5px; }
+}
+
+.wardrobe-accordion-tab {
+  justify-content: space-between;
+  text-align: left;
+  border: 1px solid rgba(216, 103, 140, 0.16);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.wardrobe-accordion-tab::before {
+  content: "▸ ";
+}
+
+.wardrobe-accordion-tab.active::before {
+  content: "▾ ";
+}
+
+.wardrobe-empty {
+  padding: 14px;
+  color: var(--muted);
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+}
+
+@keyframes seaShimmer {
+  from { transform: translateX(-18px) translateY(8px); }
+  to { transform: translateX(22px) translateY(-8px); }
+}
+
+@keyframes windGlow {
+  from { opacity: 0.25; }
+  to { opacity: 0.5; }
+}
+
+.leave-choice {
+  color: var(--muted);
+  background: #fffaf6;
+}
+
+.room-stage::after {
+  content: "";
+  position: absolute;
+  left: 22%;
+  top: 18%;
+  z-index: 2;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.75);
+  box-shadow:
+    0 0 0 1px currentColor,
+    42px 34px 0 0 currentColor,
+    88px 12px 0 0 currentColor,
+    134px 58px 0 0 currentColor,
+    212px 26px 0 0 currentColor;
+  animation: dustFloat 6s ease-in-out infinite alternate;
+}
+
+@keyframes dustFloat {
+  from { transform: translateY(0); opacity: 0.35; }
+  to { transform: translateY(-16px); opacity: 0.8; }
+}
+
+@keyframes windmillTurn {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes flagWave {
+  from { transform: skewY(-7deg); }
+  to { transform: skewY(8deg); }
+}
+
+@keyframes targetBreath {
+  0%, 100% { filter: saturate(1.04) brightness(1); }
+  50% { filter: saturate(1.25) brightness(1.08); }
+}
+
+@keyframes questRing {
+  from { transform: scale(0.88); opacity: 0.78; }
+  to { transform: scale(1.38); opacity: 0; }
+}
+
+@keyframes tickBounce {
+  50% { transform: translateY(-4px); }
+}

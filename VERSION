@@ -1,51 +1,362 @@
 {
-  "version": "0.60.0",
+  "version": "0.60.1",
   "date": "2026-07-03",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
-    { "version": "0.60.0", "date": "2026-07-03", "type": "feat", "playerVisible": true, "issue": "#295", "summaryZh": "體驗品質總修（規格不變）：四地區 151 題英文會話全量重寫至專業語感——干擾選項改為情境內合理的自然回應（去除荒謬句與文法錯誤句）、正解口語化並體現思考；場景招呼語全面自然化；版型修正衣物卡單字中斷、平板寬度空間利用、觸控目標 44px 與選角按鈕恆可見；納入公主底圖更新（腳掌預留鞋距）並同步對位檢查；新增會話語感與版型視覺雙 QA 查核基準（design intTest#64/#65）" },
-    { "version": "0.59.2", "date": "2026-06-29", "type": "docs", "playerVisible": false, "summaryZh": "README 產品手冊同步為三角色 roster（Lumi/Yumi/Rosa）：移除已自 roster 移除之 Princess Mary（舊 sol）之現行描述、roster 改為三位，並註明帶 sol id 之舊存檔讀取時 fallback 為 lumi；歷次設計/實作紀錄之歷史條目（#123/#126/#163 等）保留不動" },
-    { "version": "0.59.1", "date": "2026-06-29", "type": "test", "playerVisible": false, "summaryZh": "移除 data-audit 中無意義的共用 body 腳底 baseline=768±4 檢查（腳底落於 762、穿鞋時被鞋層蓋住、此 6px 差無實質影響，原檢查過嚴）；保留『共用 body 不得烘入頭』檢查，data-audit 回綠" },
-    { "version": "0.59.0", "date": "2026-06-28", "type": "feat", "playerVisible": true, "issue": "#289", "summaryZh": "新局公主改以城堡裁縫店的珍珠白舞會裙作為得體入門造型（取代灰藍鎮裙），且新局只擁有身上所穿的三件（髮型、整件衣著、鞋）、其餘外觀一律改為未擁有須以 coins 購買，讓「答對得幣→換裝」的成長從第一次遊玩就開始；順帶清除已移除角色 sol 殘留的起始髮" },
-    { "version": "0.58.0", "date": "2026-06-28", "type": "feat", "playerVisible": true, "issue": "#286", "summaryZh": "對話場景畫面內即時顯示金錢（coins）；桌機寬螢幕衣櫃面板加寬、一次完整顯示所有衣物類別（免水平捲動、欄寬變小），且面板置於公主立繪之後、換裝時公主完整可見" },
-    { "version": "0.57.0", "date": "2026-06-27", "type": "feat", "playerVisible": false, "issue": "#270", "summaryZh": "管理工具「衣物調校器」新增旋轉角度滑桿（-180°～180°），可在區網瀏覽器端即時預覽旋轉並寫回 sidecar；遊戲引擎套用 CSS rotate() 渲染；開發伺服器改綁 0.0.0.0 並於啟動時印出區網 IP，家庭成員可直接以手機訪問" },
-    { "version": "0.56.0", "date": "2026-06-27", "type": "feat", "playerVisible": true, "issue": "#272", "summaryZh": "公主衣櫃新增衣物對位即時調整 overlay：每件已擁有單品右側出現「調整」按鈕，點擊後以全螢幕 overlay 以五組滑桿（中心X/Y、寬、高、旋轉 -180°～180°）即時預覽；儲存 POST /tool/apply-wardrobe 回寫 sidecar，動態更新遊戲 itemMap 不整頁重整；無 server（公開 Pages）時顯示提示不 crash；sidecar 新增 rotation 欄位支援旋轉儲存與遊戲端渲染" },
-    { "version": "0.55.4", "date": "2026-06-26", "type": "refactor", "playerVisible": false, "issue": "#267", "summaryZh": "內部架構整理（玩家無感）：衣物單品收斂為素材旁 JSON sidecar 單一事實來源＋build 期衍生 registry（取代手寫 manifest 聚合／style.json items／asset-target-overrides 多檔散落與隱性雙 id）；新增開發期一致性守門（預設造型與 fixture 失聯即 selftest 紅）、穿脫 selftest fixture 改自 registry 動態挑選；管理工具改對單一 sidecar 原子增刪改、執行期 safe-fallback 不變" },
-    { "version": "0.55.3", "date": "2026-06-25", "type": "fix", "playerVisible": false, "issue": "#263", "summaryZh": "恢復 main 綠燈（#263 試行收尾）：修正 #251 dress→outfit 遷移測試之過時 fixture（blueDress 已移除，改用 castleGoldCourtGown 並區辨真遷移與退回預設），並暫時豁免 3 件 #263 試行素材長邊未貼滿之 data-audit（待重生後移除豁免）；預設新局造型已由 #265 對齊、本版不再更動" },
-    { "version": "0.55.2", "date": "2026-06-25", "type": "refactor", "playerVisible": false, "issue": "#259", "summaryZh": "內部整理（玩家無感）：遊戲起始狀態組態依關注點在同一檔案內分為三具名片段（公主新局／起始位置／遊戲規則），defaultState 收斂為三片之唯讀聚合，與 #260 管理設定工具三頁籤對齊；起始值與舊存檔相容不變、不拆多檔不另建相容層；mood 宣告矛盾另循 #262" },
-    { "version": "0.55.1", "date": "2026-06-23", "type": "refactor", "playerVisible": false, "issue": "#260", "summaryZh": "管理設定工具導覽改依 content-package 資料包分組（公主／衣物／地圖與場景／聲音 兩層導覽，舊深連結相容），並改為管理網站版面（左側 Navigation Drawer ＋ Top App Bar ＋ Main Content）、全面板套用 MD3 視覺規範 token（粉彩種子、system/light/dark）；屬本機 dev 維護者工具、不影響公開遊戲" },
-    { "version": "0.55.0", "date": "2026-06-22", "type": "feat", "playerVisible": true, "issue": "#246", "summaryZh": "角色語音指定（依性別×性格挑選瀏覽器語音）從遊戲設定移到維護者用的管理設定工具新分頁「聲音管理」（本機 dev 環境才出現，可逐桶試聽）；公開遊戲設定不再提供語音挑選、改為一律自動依性別與語言選用，設定頁僅保留 Voice 開關" },
-    { "version": "0.54.6", "date": "2026-06-22", "type": "fix", "playerVisible": true, "issue": "#251", "summaryZh": "修正換裝圖層順序：上一版改名 outfit 時漏改 CSS z-index，導致公主身體蓋住衣服；改回衣服正確疊在身體之上，並加上回歸自我測試" },
-    { "version": "0.54.5", "date": "2026-06-22", "type": "refactor", "playerVisible": true, "issue": "#251", "summaryZh": "簡化服裝類型：移除分開的上衣／下身（top／bottom），整件衣服統一為 outfit（原 dress 改名），帽子併入配件分類；衣櫃服裝分類精簡為髮型／整件 outfit／鞋／配件四類，既有存檔自動相容（移除已不存在的上衣下身、舊洋裝轉為整件）" },
-    { "version": "0.54.4", "date": "2026-06-22", "type": "fix", "playerVisible": true, "issue": "#244", "summaryZh": "公主房穿脫衣物改為直接走商店那顆「Try on」鈕的同一套程式（單一來源）：穿脫鈕移到左側、按下就地更新不再整面重跳、且能正常穿脫；並移除 outerwear（外套）衣物類型與其商品、素材" },
-    { "version": "0.54.3", "date": "2026-06-22", "type": "fix", "playerVisible": true, "issue": "#244", "summaryZh": "公主房衣櫃不再列出各角色內建的 starter 預設髮（那 4 個沒有單品素材、預覽是空框）；並把商店與衣櫃的單品預覽圖放大為填滿欄寬的正方形，去除商品照片上下留白" },
-    { "version": "0.54.2", "date": "2026-06-22", "type": "fix", "playerVisible": true, "issue": "#244", "summaryZh": "公主房衣櫃的版面真正與商店一致：之前雖共用同一函式，但 CSS 仍把衣櫃壓成單欄垂直清單、商店是多欄並排貨架；本次讓衣櫃直接套用商店的多欄水平貨架版面，兩者外觀完全一致" },
-    { "version": "0.54.1", "date": "2026-06-22", "type": "fix", "playerVisible": true, "issue": "#244", "summaryZh": "公主房換裝改為真正沿用商店現行的多欄貨架衣櫃面板（而非舊的單類別分頁、第二套機制）；深粉紅改到衣櫃內每件衣物的「穿上／脫下」按鈕，場景選單的「換裝」入口鈕恢復與其他場景一致、不特別上色" },
-    { "version": "0.54.0", "date": "2026-06-22", "type": "feat", "playerVisible": false, "issue": "#245", "summaryZh": "管理編輯工具（Luminara Editor）新增「場景設定」頁籤：可檢視各場景名稱／角色／背景並檢視與手動編修場景對話（打工任務、生活聊天題庫），另提供依提示詞 AI 自動生成對話（無金鑰時降級為輸出提示詞供外部模型貼回）；屬本機 dev 作者工具、不影響公開遊戲" },
-    { "version": "0.53.1", "date": "2026-06-22", "type": "refactor", "playerVisible": true, "issue": "#244", "summaryZh": "公主房改用單一「換裝」按鈕（深粉紅）打開右側衣櫃，和商店同一套面板；衣櫃只穿不買——按一下穿上、按鈕字變「脫下」再按即脫下，移除原本攤開的逐分類換裝表單以簡併機制、減少技術債" },
-    { "version": "0.53.0", "date": "2026-06-21", "type": "feat", "playerVisible": true, "issue": "#226", "summaryZh": "桌機寬螢幕下，地圖與場景等固定比例畫面左右（或上下）留白改以該畫面背景的模糊放大版鋪底，消除空白邊、維持沉浸；畫面內容本身仍完整清楚、不被模糊" },
-    { "version": "0.52.5", "date": "2026-06-21", "type": "fix", "playerVisible": true, "summaryZh": "頭胸照統一為單一即時來源：選角卡與側欄／帳號卡 bust 一律以公主身上即時穿搭（state.outfit）渲染，不再有 defaultOutfit 第二套外觀來源——修正選角卡仍光頭、與側欄造型分歧的問題，換髮型／衣物時所有頭胸照同步反映" },
-    { "version": "0.52.4", "date": "2026-06-21", "type": "fix", "playerVisible": true, "summaryZh": "公主選單選角卡頭胸照改為直接引用該公主預設組態（defaultOutfit）渲染，不再餵入寫死的空 outfit：與確認選角後側欄／帳號卡 bust 採同一資料來源，預設髮型／衣物在選角預覽即與實際遊玩造型一致，消除潛在不一致" },
-    { "version": "0.52.3", "date": "2026-06-21", "type": "fix", "playerVisible": true, "issue": "#207", "summaryZh": "移除所有立繪／地圖角色腳底的橢圓接地圓盤（舊 .avatar-shadow）：該扁橢圓既被讀為「腳步圓盤」、又在施了深灰投影的合成 stage 內被再模糊成糊化光暈；全站一致改由角色本體的簡潔深灰立體投影接地，不再保留任何圓盤元件或開關，徹底落地 #207 去圓盤去光暈意圖" },
-    { "version": "0.52.2", "date": "2026-06-21", "type": "refactor", "playerVisible": true, "issue": "#214", "summaryZh": "公主底圖拆為共用 body（含永久肌膚安全底著）＋ per-character head（含預設髮、髮色識別）分層立繪：衣物疊於底著之上、髮型須完全覆蓋 head 預設髮，更換衣物或髮型時舊的不殘留（消除昔日 baked-in 底圖不可移除之雙重疊圖）" },
-    { "version": "0.52.1", "date": "2026-06-21", "type": "refactor", "playerVisible": true, "issue": "#210", "summaryZh": "衣物改以資源包為單位：各地區收斂為單一服飾店、整包販售多類別衣物（含髮型），商店可用類別分頁瀏覽；既有存檔已購衣物以 id 相容保留" },
-    { "version": "0.52.0", "date": "2026-06-21", "type": "feat", "playerVisible": true, "issue": "#205", "summaryZh": "打工改為實際賺到 coins 後才在本遊玩週期下架；答對但沒拿到 coins（用了中文協助或第三次以上）不下架、本週期仍可再作答賺錢" },
-    { "version": "0.51.1", "date": "2026-06-20", "type": "fix", "playerVisible": true, "issue": "#207", "summaryZh": "公主與場景人物 ADV 立繪改用簡潔深灰立體投影，去除詭異光暈與糊化腳底陰影" },
-    { "version": "0.51.0", "date": "2026-06-20", "type": "chore", "playerVisible": false, "summaryZh": "導入結構化 VERSION 版號 SSOT（version.js／CHANGELOG／About 改為投影、附防漂移檢查）；補標既有 99 個 merge PR 之 Conventional Commits 型別後回算版號基準＝0.51.0（51 feat→minor、29 fix、9 refactor、6 docs、3 test、2 perf、0 breaking）" },
-    { "version": "2026.06.19-character-theme-defaults", "date": "2026-06-19", "type": "feat", "playerVisible": true, "issue": "#163", "summaryZh": "Yumi 深藍髮、Mary 深綠髮與新帳號隨機初始主題" },
-    { "version": "2026.06.16-speech-quality", "date": "2026-06-16", "type": "feat", "playerVisible": true, "issue": "#109", "summaryZh": "Web Speech API 語音品質改善：80% 語速、voice fallback、佇列與診斷紀錄" },
-    { "version": "2026.06.16-rest-profile-flow", "date": "2026-06-16", "type": "feat", "playerVisible": true, "issue": "#126", "summaryZh": "兒童休息預設 15 分鐘，公主識別色、大頭照與切換入口一致化" },
-    { "version": "2026.06.16-user-princess-base", "date": "2026-06-16", "type": "feat", "playerVisible": true, "issue": "#123", "summaryZh": "依使用者提供圖片替換四位公主 base，轉透明 WebP 並對齊紙娃娃版型" },
-    { "version": "2026.06.15-princess-roster", "date": "2026-06-15", "type": "feat", "playerVisible": true, "issue": "#123", "summaryZh": "重整可玩公主 base 分層，新增 Rosa 並調整 Yumi／Sol" },
-    { "version": "2026.06.15-about-tab", "date": "2026-06-15", "type": "feat", "playerVisible": true, "issue": "#110", "summaryZh": "設定選單新增 About 頁籤：作品版權宣告與歷次版本中文短主旨" },
-    { "version": "2026.06.15-map-avatar", "date": "2026-06-15", "type": "feat", "playerVisible": true, "issue": "#99", "summaryZh": "統一世界／城堡／各地區地圖的公主頭像顯示與移動" },
-    { "version": "2026.06.15-coins-only", "date": "2026-06-15", "type": "feat", "playerVisible": true, "issue": "#100", "summaryZh": "答題獎勵統一只發 coins，移除其他屬性獎勵" },
-    { "version": "2026.06.14-slower-voice", "date": "2026-06-14", "type": "feat", "playerVisible": true, "issue": "#102", "summaryZh": "語音放慢為約 3/4 速度，兒童更易聽辨" },
-    { "version": "2026.06.14-character-voice", "date": "2026-06-14", "type": "feat", "playerVisible": true, "issue": "#93", "summaryZh": "角色差異化配音，公主以其聲音朗讀作答" },
-    { "version": "2026.06.14-remove-help", "date": "2026-06-14", "type": "feat", "playerVisible": true, "issue": "#106", "summaryZh": "移除 Help 與 OpenAI 設定入口，Practice 直接開始" },
-    { "version": "2026.06.14-chinese-help", "date": "2026-06-14", "type": "feat", "playerVisible": true, "issue": "#73", "summaryZh": "新增中文協助與獎勵階梯" },
-    { "version": "2026.06.13-2tech-design", "date": "2026-06-13", "type": "feat", "playerVisible": true, "issue": "#88", "summaryZh": "導入 2tech 設計方法論與 design.md／docLint" },
-    { "version": "2026.06.13-multi-account", "date": "2026-06-13", "type": "feat", "playerVisible": true, "issue": "#63", "summaryZh": "本機多帳號選擇與管理" },
-    { "version": "2026.06.13-play-limit", "date": "2026-06-13", "type": "feat", "playerVisible": true, "issue": "#6", "summaryZh": "遊玩時間限制與護眼休息" }
+    {
+      "version": "0.60.1",
+      "date": "2026-07-03",
+      "type": "refactor",
+      "playerVisible": false,
+      "issue": "#298",
+      "summaryZh": "內部結構重構（玩家無感）：main.js 巨石（4052 行）依關注點拆解為 15 個模組、收斂為 256 行組裝與調度；mobile.css（4083 行）同選擇器重複覆寫歸零並依畫面域解體為八個分層樣式檔；以 40 張雙視口截圖像素回歸與全套 selftest 驗證行為零變更；新增 structureLint 結構守門（單檔行數上限、CSS 重複規則塊歸零）防巨石長回；併修復三處既有守門缺陷（hand 配件長邊貼滿等視覺重正規化、monkey 誤點 dev 鈕、voice 套件順序相依）"
+    },
+    {
+      "version": "0.60.0",
+      "date": "2026-07-03",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#295",
+      "summaryZh": "體驗品質總修（規格不變）：四地區 151 題英文會話全量重寫至專業語感——干擾選項改為情境內合理的自然回應（去除荒謬句與文法錯誤句）、正解口語化並體現思考；場景招呼語全面自然化；版型修正衣物卡單字中斷、平板寬度空間利用、觸控目標 44px 與選角按鈕恆可見；納入公主底圖更新（腳掌預留鞋距）並同步對位檢查；新增會話語感與版型視覺雙 QA 查核基準（design intTest#64/#65）"
+    },
+    {
+      "version": "0.59.2",
+      "date": "2026-06-29",
+      "type": "docs",
+      "playerVisible": false,
+      "summaryZh": "README 產品手冊同步為三角色 roster（Lumi/Yumi/Rosa）：移除已自 roster 移除之 Princess Mary（舊 sol）之現行描述、roster 改為三位，並註明帶 sol id 之舊存檔讀取時 fallback 為 lumi；歷次設計/實作紀錄之歷史條目（#123/#126/#163 等）保留不動"
+    },
+    {
+      "version": "0.59.1",
+      "date": "2026-06-29",
+      "type": "test",
+      "playerVisible": false,
+      "summaryZh": "移除 data-audit 中無意義的共用 body 腳底 baseline=768±4 檢查（腳底落於 762、穿鞋時被鞋層蓋住、此 6px 差無實質影響，原檢查過嚴）；保留『共用 body 不得烘入頭』檢查，data-audit 回綠"
+    },
+    {
+      "version": "0.59.0",
+      "date": "2026-06-28",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#289",
+      "summaryZh": "新局公主改以城堡裁縫店的珍珠白舞會裙作為得體入門造型（取代灰藍鎮裙），且新局只擁有身上所穿的三件（髮型、整件衣著、鞋）、其餘外觀一律改為未擁有須以 coins 購買，讓「答對得幣→換裝」的成長從第一次遊玩就開始；順帶清除已移除角色 sol 殘留的起始髮"
+    },
+    {
+      "version": "0.58.0",
+      "date": "2026-06-28",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#286",
+      "summaryZh": "對話場景畫面內即時顯示金錢（coins）；桌機寬螢幕衣櫃面板加寬、一次完整顯示所有衣物類別（免水平捲動、欄寬變小），且面板置於公主立繪之後、換裝時公主完整可見"
+    },
+    {
+      "version": "0.57.0",
+      "date": "2026-06-27",
+      "type": "feat",
+      "playerVisible": false,
+      "issue": "#270",
+      "summaryZh": "管理工具「衣物調校器」新增旋轉角度滑桿（-180°～180°），可在區網瀏覽器端即時預覽旋轉並寫回 sidecar；遊戲引擎套用 CSS rotate() 渲染；開發伺服器改綁 0.0.0.0 並於啟動時印出區網 IP，家庭成員可直接以手機訪問"
+    },
+    {
+      "version": "0.56.0",
+      "date": "2026-06-27",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#272",
+      "summaryZh": "公主衣櫃新增衣物對位即時調整 overlay：每件已擁有單品右側出現「調整」按鈕，點擊後以全螢幕 overlay 以五組滑桿（中心X/Y、寬、高、旋轉 -180°～180°）即時預覽；儲存 POST /tool/apply-wardrobe 回寫 sidecar，動態更新遊戲 itemMap 不整頁重整；無 server（公開 Pages）時顯示提示不 crash；sidecar 新增 rotation 欄位支援旋轉儲存與遊戲端渲染"
+    },
+    {
+      "version": "0.55.4",
+      "date": "2026-06-26",
+      "type": "refactor",
+      "playerVisible": false,
+      "issue": "#267",
+      "summaryZh": "內部架構整理（玩家無感）：衣物單品收斂為素材旁 JSON sidecar 單一事實來源＋build 期衍生 registry（取代手寫 manifest 聚合／style.json items／asset-target-overrides 多檔散落與隱性雙 id）；新增開發期一致性守門（預設造型與 fixture 失聯即 selftest 紅）、穿脫 selftest fixture 改自 registry 動態挑選；管理工具改對單一 sidecar 原子增刪改、執行期 safe-fallback 不變"
+    },
+    {
+      "version": "0.55.3",
+      "date": "2026-06-25",
+      "type": "fix",
+      "playerVisible": false,
+      "issue": "#263",
+      "summaryZh": "恢復 main 綠燈（#263 試行收尾）：修正 #251 dress→outfit 遷移測試之過時 fixture（blueDress 已移除，改用 castleGoldCourtGown 並區辨真遷移與退回預設），並暫時豁免 3 件 #263 試行素材長邊未貼滿之 data-audit（待重生後移除豁免）；預設新局造型已由 #265 對齊、本版不再更動"
+    },
+    {
+      "version": "0.55.2",
+      "date": "2026-06-25",
+      "type": "refactor",
+      "playerVisible": false,
+      "issue": "#259",
+      "summaryZh": "內部整理（玩家無感）：遊戲起始狀態組態依關注點在同一檔案內分為三具名片段（公主新局／起始位置／遊戲規則），defaultState 收斂為三片之唯讀聚合，與 #260 管理設定工具三頁籤對齊；起始值與舊存檔相容不變、不拆多檔不另建相容層；mood 宣告矛盾另循 #262"
+    },
+    {
+      "version": "0.55.1",
+      "date": "2026-06-23",
+      "type": "refactor",
+      "playerVisible": false,
+      "issue": "#260",
+      "summaryZh": "管理設定工具導覽改依 content-package 資料包分組（公主／衣物／地圖與場景／聲音 兩層導覽，舊深連結相容），並改為管理網站版面（左側 Navigation Drawer ＋ Top App Bar ＋ Main Content）、全面板套用 MD3 視覺規範 token（粉彩種子、system/light/dark）；屬本機 dev 維護者工具、不影響公開遊戲"
+    },
+    {
+      "version": "0.55.0",
+      "date": "2026-06-22",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#246",
+      "summaryZh": "角色語音指定（依性別×性格挑選瀏覽器語音）從遊戲設定移到維護者用的管理設定工具新分頁「聲音管理」（本機 dev 環境才出現，可逐桶試聽）；公開遊戲設定不再提供語音挑選、改為一律自動依性別與語言選用，設定頁僅保留 Voice 開關"
+    },
+    {
+      "version": "0.54.6",
+      "date": "2026-06-22",
+      "type": "fix",
+      "playerVisible": true,
+      "issue": "#251",
+      "summaryZh": "修正換裝圖層順序：上一版改名 outfit 時漏改 CSS z-index，導致公主身體蓋住衣服；改回衣服正確疊在身體之上，並加上回歸自我測試"
+    },
+    {
+      "version": "0.54.5",
+      "date": "2026-06-22",
+      "type": "refactor",
+      "playerVisible": true,
+      "issue": "#251",
+      "summaryZh": "簡化服裝類型：移除分開的上衣／下身（top／bottom），整件衣服統一為 outfit（原 dress 改名），帽子併入配件分類；衣櫃服裝分類精簡為髮型／整件 outfit／鞋／配件四類，既有存檔自動相容（移除已不存在的上衣下身、舊洋裝轉為整件）"
+    },
+    {
+      "version": "0.54.4",
+      "date": "2026-06-22",
+      "type": "fix",
+      "playerVisible": true,
+      "issue": "#244",
+      "summaryZh": "公主房穿脫衣物改為直接走商店那顆「Try on」鈕的同一套程式（單一來源）：穿脫鈕移到左側、按下就地更新不再整面重跳、且能正常穿脫；並移除 outerwear（外套）衣物類型與其商品、素材"
+    },
+    {
+      "version": "0.54.3",
+      "date": "2026-06-22",
+      "type": "fix",
+      "playerVisible": true,
+      "issue": "#244",
+      "summaryZh": "公主房衣櫃不再列出各角色內建的 starter 預設髮（那 4 個沒有單品素材、預覽是空框）；並把商店與衣櫃的單品預覽圖放大為填滿欄寬的正方形，去除商品照片上下留白"
+    },
+    {
+      "version": "0.54.2",
+      "date": "2026-06-22",
+      "type": "fix",
+      "playerVisible": true,
+      "issue": "#244",
+      "summaryZh": "公主房衣櫃的版面真正與商店一致：之前雖共用同一函式，但 CSS 仍把衣櫃壓成單欄垂直清單、商店是多欄並排貨架；本次讓衣櫃直接套用商店的多欄水平貨架版面，兩者外觀完全一致"
+    },
+    {
+      "version": "0.54.1",
+      "date": "2026-06-22",
+      "type": "fix",
+      "playerVisible": true,
+      "issue": "#244",
+      "summaryZh": "公主房換裝改為真正沿用商店現行的多欄貨架衣櫃面板（而非舊的單類別分頁、第二套機制）；深粉紅改到衣櫃內每件衣物的「穿上／脫下」按鈕，場景選單的「換裝」入口鈕恢復與其他場景一致、不特別上色"
+    },
+    {
+      "version": "0.54.0",
+      "date": "2026-06-22",
+      "type": "feat",
+      "playerVisible": false,
+      "issue": "#245",
+      "summaryZh": "管理編輯工具（Luminara Editor）新增「場景設定」頁籤：可檢視各場景名稱／角色／背景並檢視與手動編修場景對話（打工任務、生活聊天題庫），另提供依提示詞 AI 自動生成對話（無金鑰時降級為輸出提示詞供外部模型貼回）；屬本機 dev 作者工具、不影響公開遊戲"
+    },
+    {
+      "version": "0.53.1",
+      "date": "2026-06-22",
+      "type": "refactor",
+      "playerVisible": true,
+      "issue": "#244",
+      "summaryZh": "公主房改用單一「換裝」按鈕（深粉紅）打開右側衣櫃，和商店同一套面板；衣櫃只穿不買——按一下穿上、按鈕字變「脫下」再按即脫下，移除原本攤開的逐分類換裝表單以簡併機制、減少技術債"
+    },
+    {
+      "version": "0.53.0",
+      "date": "2026-06-21",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#226",
+      "summaryZh": "桌機寬螢幕下，地圖與場景等固定比例畫面左右（或上下）留白改以該畫面背景的模糊放大版鋪底，消除空白邊、維持沉浸；畫面內容本身仍完整清楚、不被模糊"
+    },
+    {
+      "version": "0.52.5",
+      "date": "2026-06-21",
+      "type": "fix",
+      "playerVisible": true,
+      "summaryZh": "頭胸照統一為單一即時來源：選角卡與側欄／帳號卡 bust 一律以公主身上即時穿搭（state.outfit）渲染，不再有 defaultOutfit 第二套外觀來源——修正選角卡仍光頭、與側欄造型分歧的問題，換髮型／衣物時所有頭胸照同步反映"
+    },
+    {
+      "version": "0.52.4",
+      "date": "2026-06-21",
+      "type": "fix",
+      "playerVisible": true,
+      "summaryZh": "公主選單選角卡頭胸照改為直接引用該公主預設組態（defaultOutfit）渲染，不再餵入寫死的空 outfit：與確認選角後側欄／帳號卡 bust 採同一資料來源，預設髮型／衣物在選角預覽即與實際遊玩造型一致，消除潛在不一致"
+    },
+    {
+      "version": "0.52.3",
+      "date": "2026-06-21",
+      "type": "fix",
+      "playerVisible": true,
+      "issue": "#207",
+      "summaryZh": "移除所有立繪／地圖角色腳底的橢圓接地圓盤（舊 .avatar-shadow）：該扁橢圓既被讀為「腳步圓盤」、又在施了深灰投影的合成 stage 內被再模糊成糊化光暈；全站一致改由角色本體的簡潔深灰立體投影接地，不再保留任何圓盤元件或開關，徹底落地 #207 去圓盤去光暈意圖"
+    },
+    {
+      "version": "0.52.2",
+      "date": "2026-06-21",
+      "type": "refactor",
+      "playerVisible": true,
+      "issue": "#214",
+      "summaryZh": "公主底圖拆為共用 body（含永久肌膚安全底著）＋ per-character head（含預設髮、髮色識別）分層立繪：衣物疊於底著之上、髮型須完全覆蓋 head 預設髮，更換衣物或髮型時舊的不殘留（消除昔日 baked-in 底圖不可移除之雙重疊圖）"
+    },
+    {
+      "version": "0.52.1",
+      "date": "2026-06-21",
+      "type": "refactor",
+      "playerVisible": true,
+      "issue": "#210",
+      "summaryZh": "衣物改以資源包為單位：各地區收斂為單一服飾店、整包販售多類別衣物（含髮型），商店可用類別分頁瀏覽；既有存檔已購衣物以 id 相容保留"
+    },
+    {
+      "version": "0.52.0",
+      "date": "2026-06-21",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#205",
+      "summaryZh": "打工改為實際賺到 coins 後才在本遊玩週期下架；答對但沒拿到 coins（用了中文協助或第三次以上）不下架、本週期仍可再作答賺錢"
+    },
+    {
+      "version": "0.51.1",
+      "date": "2026-06-20",
+      "type": "fix",
+      "playerVisible": true,
+      "issue": "#207",
+      "summaryZh": "公主與場景人物 ADV 立繪改用簡潔深灰立體投影，去除詭異光暈與糊化腳底陰影"
+    },
+    {
+      "version": "0.51.0",
+      "date": "2026-06-20",
+      "type": "chore",
+      "playerVisible": false,
+      "summaryZh": "導入結構化 VERSION 版號 SSOT（version.js／CHANGELOG／About 改為投影、附防漂移檢查）；補標既有 99 個 merge PR 之 Conventional Commits 型別後回算版號基準＝0.51.0（51 feat→minor、29 fix、9 refactor、6 docs、3 test、2 perf、0 breaking）"
+    },
+    {
+      "version": "2026.06.19-character-theme-defaults",
+      "date": "2026-06-19",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#163",
+      "summaryZh": "Yumi 深藍髮、Mary 深綠髮與新帳號隨機初始主題"
+    },
+    {
+      "version": "2026.06.16-speech-quality",
+      "date": "2026-06-16",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#109",
+      "summaryZh": "Web Speech API 語音品質改善：80% 語速、voice fallback、佇列與診斷紀錄"
+    },
+    {
+      "version": "2026.06.16-rest-profile-flow",
+      "date": "2026-06-16",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#126",
+      "summaryZh": "兒童休息預設 15 分鐘，公主識別色、大頭照與切換入口一致化"
+    },
+    {
+      "version": "2026.06.16-user-princess-base",
+      "date": "2026-06-16",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#123",
+      "summaryZh": "依使用者提供圖片替換四位公主 base，轉透明 WebP 並對齊紙娃娃版型"
+    },
+    {
+      "version": "2026.06.15-princess-roster",
+      "date": "2026-06-15",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#123",
+      "summaryZh": "重整可玩公主 base 分層，新增 Rosa 並調整 Yumi／Sol"
+    },
+    {
+      "version": "2026.06.15-about-tab",
+      "date": "2026-06-15",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#110",
+      "summaryZh": "設定選單新增 About 頁籤：作品版權宣告與歷次版本中文短主旨"
+    },
+    {
+      "version": "2026.06.15-map-avatar",
+      "date": "2026-06-15",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#99",
+      "summaryZh": "統一世界／城堡／各地區地圖的公主頭像顯示與移動"
+    },
+    {
+      "version": "2026.06.15-coins-only",
+      "date": "2026-06-15",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#100",
+      "summaryZh": "答題獎勵統一只發 coins，移除其他屬性獎勵"
+    },
+    {
+      "version": "2026.06.14-slower-voice",
+      "date": "2026-06-14",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#102",
+      "summaryZh": "語音放慢為約 3/4 速度，兒童更易聽辨"
+    },
+    {
+      "version": "2026.06.14-character-voice",
+      "date": "2026-06-14",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#93",
+      "summaryZh": "角色差異化配音，公主以其聲音朗讀作答"
+    },
+    {
+      "version": "2026.06.14-remove-help",
+      "date": "2026-06-14",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#106",
+      "summaryZh": "移除 Help 與 OpenAI 設定入口，Practice 直接開始"
+    },
+    {
+      "version": "2026.06.14-chinese-help",
+      "date": "2026-06-14",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#73",
+      "summaryZh": "新增中文協助與獎勵階梯"
+    },
+    {
+      "version": "2026.06.13-2tech-design",
+      "date": "2026-06-13",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#88",
+      "summaryZh": "導入 2tech 設計方法論與 design.md／docLint"
+    },
+    {
+      "version": "2026.06.13-multi-account",
+      "date": "2026-06-13",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#63",
+      "summaryZh": "本機多帳號選擇與管理"
+    },
+    {
+      "version": "2026.06.13-play-limit",
+      "date": "2026-06-13",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#6",
+      "summaryZh": "遊玩時間限制與護眼休息"
+    }
   ]
 }

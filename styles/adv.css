@@ -179,14 +179,13 @@
   box-shadow: var(--shadow);
 }
 
+
 .dialog-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-}
 
-.dialog-title {
   color: var(--rose-dark);
   font-size: 1.08rem;
   font-weight: 900;
