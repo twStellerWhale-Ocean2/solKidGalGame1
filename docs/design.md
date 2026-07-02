@@ -165,6 +165,7 @@ HOST -->|"🎚️paramDeployBranch=`main`"| SYS
     * paramExperienceQualityGate=`體驗品質雙人工查核（會話語感 QA intTest#64、版型視覺 QA intTest#65）為釋出必要條件；機械守門（lint／selftest）綠 ≠ 可收——機械守門驗「有沒有」、體驗查核驗「好不好」，兩者缺一不得宣稱完成`
     * paramLayoutQualityBar=`版型品質準則：手機直向（390×844 級）與桌機寬視口（1280×800 以上）逐畫面走查——無溢位、裁切、錯位或擠壓；間距遵循 8px 節奏、字級遵循一致型階；觸控目標 ≥44px；文字對比達 WCAG AA；同類元件跨畫面樣式一致（樣式收斂為 design token 與共用類別，禁單點 magic 補丁）；查核清單見 intTest#65`
     * paramCodeQualityBar=`工程品質準則：模組單一職責、邊界清楚；無死碼、殘留相容碼與重複實作；樣式與常數收斂為具名 token；函式短小具名、錯誤處理明確；任何重寫後全部既有守門（tsc／selftest／data-audit／assetLint／docLint／repoLint／genVersion --check）須維持綠`
+    * paramStructureQualityBar=`結構品質準則（issue #298 重構收斂條件、防巨石長回之長期結構守門）：(a) 單檔行數上限——JS 與 CSS 單檔 ≤800 行，其中 main.js 收斂為組裝與調度 ≤500 行；(b) 樣式疊層歸零——同一 CSS 檔內同一 media 範圍之同一選擇器重複規則塊為 0；styles/mobile.css 依畫面歸位解體（含 #295 append-only 品質總修段之歸位），樣式常數收斂為 base.css :root design token 與依畫面分層樣式檔，禁 append-only 補丁段；(c) 超標須具名豁免並登記於 lint 內豁免清單（初始豁免：game-engine/testing/selftests.js 為行為層守門檔、拆分另案）；由 node scripts/structureLint.mjs 機檢、納入 ＜IV.A＞ 測試指令常備守門（intTest#66）`
   * [etyCfg通用靜態主機平台]
     * paramDeployBranch=`main`
 
@@ -359,6 +360,7 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
 
 ## C. 補充設計(選配)
 
+* **模組實作對照（issue #298 main.js 拆解後之引擎結構與責任）**：[sysGame系統] 實作沿 [game-engine] 既有資料夾慣例承載 ＜II.B (A)＞ 各模組、不另創架構層或抽象框架——`main.js` 收斂為**組裝與調度**（bootstrap、模組接線、跨模組 facade 與全域事件掛載），不再承載各關注點實作；ADV 場景流程／題目互動與語音（speechManager 與診斷）歸 [modScene模組]（`scene/`）、商店與衣櫃（貨架面板、試穿穿脫、退款、調整入口）歸 [modWardrobe模組]（`wardrobe/`，資料夾沿既有慣例新增）、HUD／人物資訊與狀態渲染歸 `render/`、遊玩時鐘／帳號／存檔歸 [modState模組]（`state/`）、地圖既有 `map/` 不動；模組介面以現行函式邊界為準、不重設計對外行為（spec#7 模組化方向之內部延伸，全程行為零變更、玩家無感）；拆解過程一併移除死樣式規則與無呼叫者殘留函式。結構收斂條件與長期守門見 ＜II.A (D)＞ paramStructureQualityBar 與 intTest#66。
 * [datIntf自訂角色音色目錄]：角色特性維度與其音頻參數對照，併同維護者語音指定之單一資料來源，供 [modScene模組] 查表配音。維度（如性別、年齡、性格）相互組合為音色項，每項對應 pitch／rate／語言與 voice hint，並含 `default` 降級項；pitch／rate 由維度合成（年齡主要於此表現）。角色（NPC 與可玩公主）以其特性宣告對應至一個音色項。實際播放之 voice 解析優先序為：維護者於 [管理設定工具] 為該（性別×性格）類型指定之語音 → 同性別類型之指定（繼承）→ 依內建「性別→候選語音名稱(優先序)」清單（voiceNameCandidatesByGender／paramVoiceGenderCandidates）自瀏覽器 `getVoices()` 挑同性別具名 voice → 依語言優先 fallback；系統不硬編單一 voice name——性別候選為「可擴充名稱清單」而非單一綁定，挑「裝置上實際存在且命中候選」者，命中不到才退語言優先以維持跨平台可攜（如 Android 不具名代號），指定之 voice 於本機不存在時亦依上述順序降級。候選清單刻意不含 `male`／`female` 裸字（瀏覽器 voice 名稱鮮少帶此字、且 `female` 內含 `male` 會誤判）。
 
 ```mermaid
@@ -1282,6 +1284,19 @@ erDiagram
   2. 全畫面全項通過率 100%；修正清單清空。
   3. 走查紀錄納入 test-summary 供釋出審查引用。
 
+#### intTest#66-驗證 結構守門與重構等價性（spec#7）
+
+* 既有基底：全部既有 selftest 課目、＜IV.A＞測試指令之機械守門（tsc／assetLint／genVersion --check／docLint／repoLint）。
+* 新增項目：[etyCfg自訂sysGame組態]之 paramStructureQualityBar 結構守門 `node scripts/structureLint.mjs`。
+* 步驟：
+  1. 執行 `node scripts/structureLint.mjs`：逐檔檢查 JS／CSS 單檔行數上限（≤800 行、main.js ≤500 行，lint 內具名豁免清單除外），並解析各 CSS 檔，檢出同一檔內同一 media 範圍之同一選擇器重複規則塊。
+  2. 確認 styles/mobile.css 已依畫面歸位解體（含 #295 append-only 品質總修段之歸位），樣式常數收斂為 base.css :root design token 與依畫面分層樣式檔。
+  3. 重構等價性：執行全部既有 selftest 課目與機械守門，並以重構前版本產生之既有存檔匯入，驗證載入相容、行為零變更。
+* 預期結果：
+  1. structureLint 0 違規（行數上限與重複規則塊歸零；豁免清單僅含具名登記項）。
+  2. 全部既有守門綠、0 console error；既有存檔載入相容、玩家無感。
+  3. structureLint 納入 ＜IV.A＞ 測試指令清單，成為後續每個增量之常備結構守門。
+
 ## E. 方案層級：文件程式化測試
 
 #### docProgTest#01-productReadme 承接 [solStory#1-短回合英文練習]
@@ -1711,7 +1726,7 @@ erDiagram
 * **部署方式**：靜態網站包，依 [techStackStaticWeb]；預設直推 GitHub Pages（Deploy from a branch，repository root 為站根，保留 .nojekyll），可選後置標準 static-serve Helm chart。namespace、release、主機與網域由部署者於實際部署時決定並記錄。
 * **建置指令**：無打包（no-op，直接收集靜態檔）；本機預覽 `python -m http.server 4173`，或 `node server.mjs`（預設 `http://0.0.0.0:4174/`，可設 `HOST` 環境變數覆寫監聽位址；啟動 log 顯示 LAN IP 供區網存取）。
 * **本機開發工具入口**：本機開發環境（前端偵測 `location.hostname` 為 `127.0.0.1`／`localhost`／`[::1]`）下，起始選單之選角對話框 `Start` 鈕下方顯示［衣物調整工具］dev 入口，點擊以相對路徑導向 `tool/wardrobe-tuner.html`；以前端環境偵測為閘門，正式發佈站（GitHub Pages 公開網域）一律不顯示此入口。屬 dev-only 作者工具便利性、非玩家功能（不進產品手冊主流程與 e2e），其完整套用／管理功能仍需 `node server.mjs`。
-* **測試指令**：型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=data-audit`／`?selftest=save-load`／`?selftest=accounts`／`?selftest=playtimer`／`?selftest=profile-color`／`?selftest=map-avatar`／`?selftest=character-silhouette`／`?selftest=monkey`／`?selftest=chinese-reward`／`?selftest=scene-nav`／`?selftest=dev-tools`／`?selftest=visual-qa&surface=<id>`；場景背景資產 visual QA 需輸出全場景 contact sheet 與手機直向／桌機截圖；圖像資產標準尺寸與檔重預算之檔案系統 gate `node scripts/assetLint.mjs`（掃描 content-base／content-package 全部 shipped 圖像檔、不只 registry 引用，對照 paramAssetStandards），瀏覽器 `?selftest=data-audit` 另對 registry 引用資產做 runtime 尺寸／檔重檢查；版號投影防漂移 gate `node scripts/genVersion.mjs --check`（斷言 `game-engine/build/version.js`／`CHANGELOG.md` 與根目錄 `VERSION` SSOT 一致）；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`；**體驗品質雙人工查核（paramExperienceQualityGate，機械守門綠 ≠ 可收）**——會話語感 QA 逐題查核紀錄（intTest#64，落 `docs/qa/`）與版型視覺 QA 雙視口逐畫面走查紀錄（intTest#65，落 `docs/qa/`）齊備且全數通過、並納入 test-summary，方可宣稱完成。
+* **測試指令**：型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=data-audit`／`?selftest=save-load`／`?selftest=accounts`／`?selftest=playtimer`／`?selftest=profile-color`／`?selftest=map-avatar`／`?selftest=character-silhouette`／`?selftest=monkey`／`?selftest=chinese-reward`／`?selftest=scene-nav`／`?selftest=dev-tools`／`?selftest=visual-qa&surface=<id>`；場景背景資產 visual QA 需輸出全場景 contact sheet 與手機直向／桌機截圖；圖像資產標準尺寸與檔重預算之檔案系統 gate `node scripts/assetLint.mjs`（掃描 content-base／content-package 全部 shipped 圖像檔、不只 registry 引用，對照 paramAssetStandards），瀏覽器 `?selftest=data-audit` 另對 registry 引用資產做 runtime 尺寸／檔重檢查；版號投影防漂移 gate `node scripts/genVersion.mjs --check`（斷言 `game-engine/build/version.js`／`CHANGELOG.md` 與根目錄 `VERSION` SSOT 一致）；結構守門 `node scripts/structureLint.mjs`（JS／CSS 單檔行數上限、main.js 組裝上限與 CSS 同檔同 media 重複規則塊歸零，對照 paramStructureQualityBar，lint 內具名豁免清單除外）；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`；**體驗品質雙人工查核（paramExperienceQualityGate，機械守門綠 ≠ 可收）**——會話語感 QA 逐題查核紀錄（intTest#64，落 `docs/qa/`）與版型視覺 QA 雙視口逐畫面走查紀錄（intTest#65，落 `docs/qa/`）齊備且全數通過、並納入 test-summary，方可宣稱完成。
 * **部署指令**：GitHub Pages「Deploy from a branch」，站根為 repository root，保留 `.nojekyll`；可選後置 static-serve Helm chart。
 * **版號與發佈（單一 VERSION SSOT、版號釘選於 merge、release 解耦）**：
   * **單一 SSOT＝根目錄 `VERSION`**：版號之唯一事實來源為根目錄 `VERSION`（**結構化 JSON**，持有 `version`（SemVer，現行 `0.1.0`）＋`date`＋`copyright`＋`history[]`，後者即版本沿革/about；`history[0]` 須等於頂層 `version`／`date`）。其餘所有版號面皆自 `VERSION` **投影、不另存第二份**：`game-engine/build/version.js`（遊戲 runtime）與 `CHANGELOG.md` 由 `node scripts/genVersion.mjs` 生成，git tag 為 `v{version}`，遊戲 About 與 buildInfo 由 `version.js` 導出。
