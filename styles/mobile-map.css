@@ -1,0 +1,541 @@
+.map-toolbar h2 {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.map-toolbar p {
+  margin-top: 3px;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.map-stage::before,
+.map-stage::after,
+.castle-stage::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* issue #226：地圖／城堡固定比例畫面之視口 letterbox 留白共用模糊鋪底（同一機制與 --stage-backdrop-* 常數）；
+   置於 stage > img（z-index 1）之下、不攔截 hotspot／marker，桌機寬視口露出留白時填滿，內容區本身不被模糊。 */
+.map-stage::before,
+.castle-stage::before {
+  content: "";
+  z-index: 0;
+  background:
+    linear-gradient(rgba(255, 250, 246, 0.24), rgba(196, 229, 236, 0.22)),
+    var(--map-backdrop-image, url("../content-package/areas/urban/assets/map-1536.webp?v=20260606-issue66-map-contract-r1")) center / cover no-repeat;
+  filter: blur(var(--stage-backdrop-blur)) saturate(var(--stage-backdrop-saturate));
+  transform: scale(var(--stage-backdrop-scale));
+  opacity: 0.56;
+}
+
+.map-stage::after {
+  content: none;
+}
+
+.map-doll {
+  width: 108px;
+  height: 140px;
+  animation: mapIdle 3.2s ease-in-out infinite;
+}
+
+@keyframes mapIdle {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-3px) rotate(1deg); }
+}
+
+.player.walking {
+  animation: none;
+}
+
+.hotspot.nearby::after {
+  content: attr(data-label) "  Enter";
+}
+
+.nearby-card.show {
+  display: grid !important;
+}
+
+.map-stage,
+.room-stage {
+  width: 100%;
+  height: 100%;
+}
+
+.map-toolbar {
+  position: absolute;
+  z-index: 16;
+  height: auto;
+  min-height: 56px;
+  padding: 10px 14px;
+  background: rgba(255, 250, 246, 0.76);
+  border-color: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(10px);
+
+
+  left: 14px;
+  top: 14px;
+  width: min(610px, calc(100% - 28px));
+  max-width: calc(100% - 28px);
+}
+
+.map-stage {
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+
+  isolation: isolate;
+}
+
+.map-stage > img {
+  transform: none;
+}
+
+.map-life-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.map-actor {
+  position: absolute;
+  display: block;
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+
+.map-actor-image {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  image-rendering: auto;
+}
+
+.map-actor-water {
+  background-size: cover;
+  filter: saturate(1.08) brightness(1.14) blur(0.15px);
+  mix-blend-mode: screen;
+  opacity: 0.28;
+}
+
+.map-actor-ship {
+  filter: drop-shadow(0 4px 5px rgba(23, 82, 105, 0.16));
+  transform-origin: center 70%;
+}
+
+.map-actor-wave {
+  border-top: 2px solid rgba(255, 255, 255, 0.58);
+  border-radius: 50%;
+  filter: blur(0.3px) drop-shadow(0 1px 2px rgba(48, 128, 165, 0.22));
+  mix-blend-mode: screen;
+  opacity: 0.48;
+}
+
+.map-actor-bird {
+  opacity: 0.72;
+  filter: drop-shadow(0 1px 1px rgba(66, 91, 116, 0.14));
+}
+
+.map-actor-bird::before,
+.map-actor-bird::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  width: 18px;
+  height: 9px;
+  border-top: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+}
+
+.map-actor-bird::before {
+  left: 0;
+  transform: rotate(16deg);
+}
+
+.map-actor-bird::after {
+  right: 0;
+  transform: rotate(-16deg);
+}
+
+.map-actor-windmill {
+  filter: drop-shadow(0 1px 2px rgba(68, 45, 32, 0.18));
+  opacity: 0.8;
+}
+
+.map-actor-flag {
+  filter: drop-shadow(0 1px 2px rgba(61, 55, 42, 0.14));
+  opacity: 0.76;
+}
+
+.map-actor-glow {
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 246, 155, 0.34), rgba(255, 246, 155, 0.12) 36%, transparent 70%);
+  mix-blend-mode: screen;
+}
+
+#hotspotLayer::before,
+#hotspotLayer::after {
+  content: none !important;
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+}
+
+#hotspotLayer {
+
+  z-index: 12;
+}
+
+.player {
+  width: 108px;
+  height: 140px;
+  transition: left 0.18s ease, top 0.18s ease;
+
+  z-index: 11;
+}
+
+.nearby-card {
+  display: none !important;
+
+  z-index: 28;
+}
+
+#hotspotLayer::before {
+  left: 72%;
+  top: 18%;
+  width: 34px;
+  height: 34px;
+  border: 4px solid rgba(255, 255, 255, 0.82);
+  border-left-color: rgba(193, 80, 126, 0.78);
+  border-radius: 50%;
+  animation: windmillTurn 5.5s linear infinite;
+}
+
+#hotspotLayer::after {
+  left: 43%;
+  top: 28%;
+  width: 24px;
+  height: 34px;
+  background: url("../content-package/areas/urban/assets/map-layers/castle-flag.webp?v=20260601-optimized-assets") center / contain no-repeat;
+  transform-origin: left center;
+  animation: flagWave 1.8s ease-in-out infinite alternate;
+}
+
+.hotspot {
+  z-index: 9;
+  transition: transform 0.16s ease, filter 0.16s ease, box-shadow 0.16s ease;
+
+  transform: translate(-50%, -50%);
+}
+
+.hotspot.target {
+  animation: targetBreath 1.9s ease-in-out infinite;
+}
+
+.hotspot.target::before {
+  content: "";
+  right: auto;
+  top: auto;
+  inset: -12px;
+  width: auto;
+  height: auto;
+  background: transparent;
+  border: 3px solid rgba(255, 244, 148, 0.78);
+  border-radius: 50%;
+  animation: questRing 1.35s ease-out infinite;
+}
+
+.hotspot.nearby {
+  z-index: 12;
+  filter: saturate(1.18);
+
+  transform: translate(-50%, -50%) scale(1.24);
+
+  box-shadow: 0 0 0 7px rgba(255, 210, 104, 0.38), 0 0 28px rgba(255, 255, 255, 0.95), 0 10px 22px rgba(82, 61, 37, 0.28);
+}
+
+.hotspot.nearby .hotspot-icon {
+  animation: tickBounce 0.28s ease;
+}
+
+@media (max-width: 820px) {
+.room-stage,
+  .map-stage {
+    width: 100vw;
+    height: 100dvh;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+  }
+
+.map-stage > img {
+    z-index: 1;
+    object-fit: fill;
+    filter: drop-shadow(0 8px 16px rgba(46, 88, 109, 0.18));
+  }
+
+.destination-panel {
+    left: 10px;
+    right: 10px;
+    top: 196px;
+    bottom: 150px;
+    width: auto;
+    padding: 10px;
+  }
+
+.destination-heading {
+    grid-template-columns: 1fr;
+  }
+
+.destination-list {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+.destination-card {
+    min-height: 62px;
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+    padding: 7px 8px;
+  }
+
+.destination-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 1.2rem;
+  }
+
+.destination-copy strong {
+    font-size: 0.84rem;
+  }
+
+.destination-copy small {
+    font-size: 0.66rem;
+    -webkit-line-clamp: 2;
+  }
+
+.map-toolbar h2 {
+    font-size: 0.92rem;
+  }
+
+.map-toolbar p {
+    max-height: 2.5em;
+    overflow: hidden;
+    font-size: 0.74rem;
+  }
+
+.hotspot {
+    width: 30px;
+    height: 30px;
+    border-width: 2px;
+    box-shadow: 0 0 0 3px rgba(255, 230, 118, 0.18), 0 6px 10px rgba(82, 61, 37, 0.18);
+  }
+
+.hotspot-icon {
+    width: 22px;
+    height: 22px;
+    font-size: 0.82rem;
+  }
+
+.hotspot::after {
+    top: 30px;
+    max-width: 86px;
+    display: none;
+    padding: 3px 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.5rem;
+  }
+
+.hotspot.target::after,
+  .hotspot.nearby::after {
+    display: block;
+  }
+
+.hotspot.nearby {
+    transform: translate(-50%, -50%) scale(1.16);
+  }
+
+.player {
+    width: 108px;
+    height: 140px;
+  }
+
+.nearby-card {
+    left: 10px;
+    right: 10px;
+    bottom: 92px;
+    width: auto;
+    padding: 9px;
+  }
+
+.map-stage::before {
+    content: "";
+    position: absolute;
+    inset: -18px;
+    z-index: 0;
+  
+    background:
+      linear-gradient(180deg, rgba(194, 232, 235, 0.92), rgba(116, 188, 211, 0.9)),
+      var(--map-backdrop-image, url("../content-package/areas/urban/assets/map-1536.webp?v=20260606-issue66-map-contract-r1")) center / cover no-repeat;
+    filter: saturate(1.06);
+    opacity: 0.7;
+    transform: none;
+  }
+}
+
+.castle-stage {
+  --map-display-width: 100%;
+  --map-display-height: 100%;
+  --map-offset-x: 0px;
+  --map-offset-y: 0px;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: #bfe8f4;
+  box-shadow: var(--shadow);
+  outline: none;
+  touch-action: none;
+  user-select: none;
+}
+
+.castle-stage:focus {
+  box-shadow: var(--shadow), 0 0 0 4px rgba(110, 169, 200, 0.28);
+}
+
+.castle-stage > img {
+  position: absolute;
+  left: var(--map-offset-x);
+  top: var(--map-offset-y);
+  z-index: 1;
+  width: var(--map-display-width);
+  height: var(--map-display-height);
+  display: block;
+  object-fit: fill;
+  object-position: center center;
+  transform: none;
+}
+
+.castle-title-panel {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  z-index: 7;
+  width: min(390px, calc(100% - 36px));
+  padding: 12px 14px;
+  color: #503846;
+  background: rgba(255, 250, 246, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+}
+
+.castle-title-panel h2,
+.castle-title-panel p {
+  margin: 0;
+}
+
+.castle-title-panel p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+#castleMarkerLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+}
+
+.castle-marker {
+  pointer-events: auto;
+}
+
+.castle-marker.disabled {
+  opacity: 0.68;
+  filter: saturate(0.72);
+}
+
+.castle-marker.disabled::after {
+  content: attr(data-label) " Soon";
+}
+
+.castle-nearby-card,
+.nearby-card {
+  bottom: 84px;
+}
+
+.nearby-card,
+.nearby-card.show,
+.hotspot::after,
+.hotspot.target::after,
+.hotspot.nearby::after,
+.castle-marker.disabled::after {
+  display: none !important;
+  content: none !important;
+}
+
+@media (max-width: 820px) {
+.castle-stage,
+  .map-stage {
+    width: 100vw;
+    height: 100dvh;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+  }
+
+.castle-title-panel {
+    left: 10px;
+    right: 10px;
+    top: 128px;
+    width: auto;
+    padding: 10px 12px;
+  }
+
+.castle-title-panel h2 {
+    font-size: 1.04rem;
+  }
+
+.castle-title-panel p {
+    font-size: 0.76rem;
+    line-height: 1.22;
+  }
+
+.castle-nearby-card,
+  .nearby-card {
+    left: 10px;
+    right: 10px;
+    bottom: 76px;
+    width: auto;
+  }
+
+.map-toolbar {
+    left: 10px;
+    right: 10px;
+    top: 128px;
+    width: auto;
+    max-width: none;
+    min-height: 0;
+    padding: 8px 10px;
+    display: block;
+    background: rgba(255, 250, 246, 0.82);
+  
+    z-index: 28;
+  }
+}
+
+/* Issues #30-#33: gate-only travel, compact shopping, and action-first wardrobe details. */
+.map-return-button {
+  display: none !important;
+}

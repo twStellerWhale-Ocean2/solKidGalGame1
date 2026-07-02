@@ -9,4 +9,11 @@
 @import "./account-select.css";
 @import "./play-break.css";
 @import "./adjust-overlay.css";
-@import "./mobile.css?v=20260628-issue286-adv-coins-wardrobe";
+@import "./mobile-shell.css";
+@import "./mobile-map.css";
+@import "./mobile-select-screens.css";
+@import "./mobile-system-menu.css";
+@import "./mobile-adv-scene.css";
+@import "./mobile-shop-panel.css";
+@import "./mobile-shop-items.css";
+@import "./mobile-misc.css";
