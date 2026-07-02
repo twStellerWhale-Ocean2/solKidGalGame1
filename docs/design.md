@@ -1,6 +1,6 @@
 ---
 name: solKidGalGame
-date: 2026/6/21
+date: 2026/7/3
 formatVersion: "2.0"
 description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 ---
@@ -162,6 +162,9 @@ HOST -->|"🎚️paramDeployBranch=`main`"| SYS
     * paramTechStack=`techStackStaticWeb`
     * paramDeployTarget=`github-pages`
     * paramSiteRoot=`repository-root`
+    * paramExperienceQualityGate=`體驗品質雙人工查核（會話語感 QA intTest#64、版型視覺 QA intTest#65）為釋出必要條件；機械守門（lint／selftest）綠 ≠ 可收——機械守門驗「有沒有」、體驗查核驗「好不好」，兩者缺一不得宣稱完成`
+    * paramLayoutQualityBar=`版型品質準則：手機直向（390×844 級）與桌機寬視口（1280×800 以上）逐畫面走查——無溢位、裁切、錯位或擠壓；間距遵循 8px 節奏、字級遵循一致型階；觸控目標 ≥44px；文字對比達 WCAG AA；同類元件跨畫面樣式一致（樣式收斂為 design token 與共用類別，禁單點 magic 補丁）；查核清單見 intTest#65`
+    * paramCodeQualityBar=`工程品質準則：模組單一職責、邊界清楚；無死碼、殘留相容碼與重複實作；樣式與常數收斂為具名 token；函式短小具名、錯誤處理明確；任何重寫後全部既有守門（tsc／selftest／data-audit／assetLint／docLint／repoLint／genVersion --check）須維持綠`
   * [etyCfg通用靜態主機平台]
     * paramDeployBranch=`main`
 
@@ -330,6 +333,7 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
     * paramSpeechPreferredVoices=`user-assigned,gender-default,lang-first`
     * paramSpeechLeadingPad=`8 full-width spaces`
     * paramVoiceBucketDimensions=`gender,personality`
+    * paramDialogueQualityBar=`題庫文本品質準則（spec#1 規則之語感落地）：(a) 母語者自然口語、貼近 6–10 歲兒童日常，讀來像真人對話而非教科書孤立句或翻譯腔；(b) 情境貼合場景主體與角色身分，題幹為角色台詞、選項為公主可回應語句；(c) 正解與干擾選項同語域、語意有別且皆情境內合理，辨析價值來自語意而非荒謬排除；(d) 打工正解以自然應允語開頭並體現思考決策；(e) 題庫重寫或新增須全題逐題通過人工語感查核（查核清單見 intTest#64），不得僅抽樣`
     * paramVoiceGenderCandidates=`內建「性別→候選語音名稱(優先序)」清單（voiceNameCandidatesByGender，資料源 Readium Speech＋各平台官方命名），供未指定時自 getVoices() 挑同性別具名 voice；刻意不含 "male"/"female" 裸字`
   * [etyCfg自訂modState組態]
     * paramStorageKey=`luminara-princess-english-adv`
@@ -1224,7 +1228,7 @@ erDiagram
   2. `normalizeState` 回傳之 `activeCharacterId` 為 `"lumi"`（預設角色），不 crash 亦不保留 `"sol"`。
   3. 選角畫面僅呈現 Lumi、Yumi、Rosa；不出現 Mary、sol 或任何殘留 UI。
 
-#### intTest#62-驗證對話場景金錢即時顯示與換裝面板版面圖層（spec#20）
+#### intTest#62-驗證 對話場景金錢即時顯示與換裝面板版面圖層（spec#20）
 
 * 既有基底：intTest#30。
 * 新增項目：[sysGame系統]之對話場景 coins 指示同步、換裝面板寬版全展與面板置於公主立繪圖層之後。
@@ -1239,7 +1243,7 @@ erDiagram
   3. 桌機寬視口下衣櫃面板欄數較窄屏增加、所有品項一次完整呈現（不需捲動藏起）。
   4. 公主立繪層之堆疊高於衣櫃面板層，面板不遮擋公主。
 
-#### intTest#63-驗證新局起始造型得體且僅擁有所穿品項（spec#21）
+#### intTest#63-驗證 新局起始造型得體且僅擁有所穿品項（spec#21）
 
 * 既有基底：intTest#30。
 * 新增項目：[sysGame系統]之新局 `princessStart` 初始造型與精簡 owned 契約。
@@ -1251,6 +1255,32 @@ erDiagram
   1. 新局預設穿著之 `outfit` 為 `castlePearlWhiteBallGown`；hairstyle／shoes 維持既有（`countrysideLowPonytail`／`countrysideWoodenClogs`）。
   2. `owned` 恰等於所穿三件（hairstyle、outfit、shoes），無其他預先擁有品項。
   3. `owned` 不含 `solStarterHair` 或任何已移除角色殘留。
+
+#### intTest#64-驗證 英文會話文本語感品質 QA（spec#1）
+
+* 既有基底：intTest#05、intTest#36、intTest#38。
+* 新增項目：[etyCfg自訂modScene組態]之 paramDialogueQualityBar 全題逐題人工語感查核。
+* 步驟：
+  1. 彙整全部場景題庫（打工任務與生活聊天，含題幹、正解、干擾選項與歡迎詞）為逐題清單。
+  2. 逐題依 paramDialogueQualityBar 查核清單判定：(a) 自然口語貼齡、(b) 情境貼合場景與角色、(c) 選項同語域有語意辨析價值、(d) 打工正解應允語開頭且體現決策、(e) 無 meta 敘述與考試式 prompt。
+  3. 任一題任一項不合格即列入重寫清單，重寫後重新過檢，直至全題全項通過。
+* 預期結果：
+  1. 全題庫逐題查核紀錄存在（含各題各項判定結果），非抽樣。
+  2. 全題全項通過率 100%；重寫清單清空。
+  3. 查核紀錄納入 test-summary 供釋出審查引用。
+
+#### intTest#65-驗證 版型視覺品質 QA（spec#2、spec#20）
+
+* 既有基底：intTest#62、場景背景 visual QA（`?selftest=visual-qa`）。
+* 新增項目：[etyCfg自訂sysGame組態]之 paramLayoutQualityBar 逐畫面雙視口走查。
+* 步驟：
+  1. 以手機直向（390×844 級）與桌機寬視口（1280×800 以上）兩視口，逐一走查主要畫面：帳號選單、選角命名、世界／城堡／地區地圖、ADV 場景（打工、聊天、逛店、衣櫃換裝，含實穿代表性衣物）、結算與休息、設定與 About。
+  2. 逐畫面依 paramLayoutQualityBar 判定：無溢位／裁切／錯位／擠壓、8px 間距節奏、一致型階、觸控目標 ≥44px、對比 WCAG AA、同類元件樣式一致。
+  3. 任一畫面不合格即列入修正清單，修正後重走該畫面，直至全數通過。
+* 預期結果：
+  1. 兩視口逐畫面走查截圖與判定紀錄存在。
+  2. 全畫面全項通過率 100%；修正清單清空。
+  3. 走查紀錄納入 test-summary 供釋出審查引用。
 
 ## E. 方案層級：文件程式化測試
 
@@ -1681,7 +1711,7 @@ erDiagram
 * **部署方式**：靜態網站包，依 [techStackStaticWeb]；預設直推 GitHub Pages（Deploy from a branch，repository root 為站根，保留 .nojekyll），可選後置標準 static-serve Helm chart。namespace、release、主機與網域由部署者於實際部署時決定並記錄。
 * **建置指令**：無打包（no-op，直接收集靜態檔）；本機預覽 `python -m http.server 4173`，或 `node server.mjs`（預設 `http://0.0.0.0:4174/`，可設 `HOST` 環境變數覆寫監聽位址；啟動 log 顯示 LAN IP 供區網存取）。
 * **本機開發工具入口**：本機開發環境（前端偵測 `location.hostname` 為 `127.0.0.1`／`localhost`／`[::1]`）下，起始選單之選角對話框 `Start` 鈕下方顯示［衣物調整工具］dev 入口，點擊以相對路徑導向 `tool/wardrobe-tuner.html`；以前端環境偵測為閘門，正式發佈站（GitHub Pages 公開網域）一律不顯示此入口。屬 dev-only 作者工具便利性、非玩家功能（不進產品手冊主流程與 e2e），其完整套用／管理功能仍需 `node server.mjs`。
-* **測試指令**：型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=data-audit`／`?selftest=save-load`／`?selftest=accounts`／`?selftest=playtimer`／`?selftest=profile-color`／`?selftest=map-avatar`／`?selftest=character-silhouette`／`?selftest=monkey`／`?selftest=chinese-reward`／`?selftest=scene-nav`／`?selftest=dev-tools`／`?selftest=visual-qa&surface=<id>`；場景背景資產 visual QA 需輸出全場景 contact sheet 與手機直向／桌機截圖；圖像資產標準尺寸與檔重預算之檔案系統 gate `node scripts/assetLint.mjs`（掃描 content-base／content-package 全部 shipped 圖像檔、不只 registry 引用，對照 paramAssetStandards），瀏覽器 `?selftest=data-audit` 另對 registry 引用資產做 runtime 尺寸／檔重檢查；版號投影防漂移 gate `node scripts/genVersion.mjs --check`（斷言 `game-engine/build/version.js`／`CHANGELOG.md` 與根目錄 `VERSION` SSOT 一致）；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`。
+* **測試指令**：型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=data-audit`／`?selftest=save-load`／`?selftest=accounts`／`?selftest=playtimer`／`?selftest=profile-color`／`?selftest=map-avatar`／`?selftest=character-silhouette`／`?selftest=monkey`／`?selftest=chinese-reward`／`?selftest=scene-nav`／`?selftest=dev-tools`／`?selftest=visual-qa&surface=<id>`；場景背景資產 visual QA 需輸出全場景 contact sheet 與手機直向／桌機截圖；圖像資產標準尺寸與檔重預算之檔案系統 gate `node scripts/assetLint.mjs`（掃描 content-base／content-package 全部 shipped 圖像檔、不只 registry 引用，對照 paramAssetStandards），瀏覽器 `?selftest=data-audit` 另對 registry 引用資產做 runtime 尺寸／檔重檢查；版號投影防漂移 gate `node scripts/genVersion.mjs --check`（斷言 `game-engine/build/version.js`／`CHANGELOG.md` 與根目錄 `VERSION` SSOT 一致）；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`；**體驗品質雙人工查核（paramExperienceQualityGate，機械守門綠 ≠ 可收）**——會話語感 QA 逐題查核紀錄（intTest#64，落 `docs/qa/`）與版型視覺 QA 雙視口逐畫面走查紀錄（intTest#65，落 `docs/qa/`）齊備且全數通過、並納入 test-summary，方可宣稱完成。
 * **部署指令**：GitHub Pages「Deploy from a branch」，站根為 repository root，保留 `.nojekyll`；可選後置 static-serve Helm chart。
 * **版號與發佈（單一 VERSION SSOT、版號釘選於 merge、release 解耦）**：
   * **單一 SSOT＝根目錄 `VERSION`**：版號之唯一事實來源為根目錄 `VERSION`（**結構化 JSON**，持有 `version`（SemVer，現行 `0.1.0`）＋`date`＋`copyright`＋`history[]`，後者即版本沿革/about；`history[0]` 須等於頂層 `version`／`date`）。其餘所有版號面皆自 `VERSION` **投影、不另存第二份**：`game-engine/build/version.js`（遊戲 runtime）與 `CHANGELOG.md` 由 `node scripts/genVersion.mjs` 生成，git tag 為 `v{version}`，遊戲 About 與 buildInfo 由 `version.js` 導出。

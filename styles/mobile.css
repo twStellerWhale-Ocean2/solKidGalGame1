@@ -3041,13 +3041,14 @@ body {
 }
 
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card {
-  grid-template-columns: clamp(50px, 18%, 62px) minmax(0, 1fr);
+  /* issue #295：縮圖欄讓位給品名/狀態文字（防 "Weari-ng" 式擠壓斷字） */
+  grid-template-columns: clamp(42px, 15%, 54px) minmax(0, 1fr);
   min-width: 0;
 }
 
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card .item-preview {
-  width: clamp(48px, 100%, 58px);
-  height: clamp(48px, 100%, 58px);
+  width: clamp(40px, 100%, 50px);
+  height: clamp(40px, 100%, 50px);
   min-width: 0;
   min-height: 0;
   justify-self: start;
@@ -3063,7 +3064,9 @@ body {
   .adv-scene {
     left: 50%;
     top: 50%;
-    width: min(330px, calc(100vw - 20px));
+    /* issue #295：原鎖 330px 使 480–820px 視窗（平板直向/小視窗）空間浪費、
+       衣物卡文字被擠壓斷字；放寬至 420px 上限、窄機仍以視窗寬-20 為準。 */
+    width: min(420px, calc(100vw - 20px));
     height: var(--adv-scene-height);
   }
 
@@ -3988,4 +3991,93 @@ body {
     z-index: 6;
     pointer-events: none;
   }
+}
+
+/* =====================================================================
+   issue #295 品質總修（quality overhaul）：跨畫面一致性與可讀性收斂。
+   採 append-only 覆寫，統一修正走查（intTest#65）發現之跨畫面缺陷；
+   間距與尺寸遵循 8px 節奏（base.css tokens）。
+   ===================================================================== */
+
+/* ① 商品／衣物卡文字：品名與穿戴狀態不得於單字中間斷行
+   （原 overflow-wrap:anywhere 於窄卡造成 "Weari-ng" 式斷字，兒童不可讀）。
+   特異性須壓過 .adv-scene:is([data-mode=…]) .item-panel-card .item-state 等原規則。 */
+.adv-scene .item-card strong,
+.adv-scene .item-card small,
+.adv-scene .item-card .item-state,
+.adv-scene .item-card .item-category,
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card .item-state,
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card strong,
+.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-action {
+  overflow-wrap: break-word;
+  word-break: keep-all;
+  hyphens: none;
+}
+
+/* ①-2 貨架卡縮圖欄讓位文字：closet／商店貨架欄寬僅 148–188px，
+   原 72px 縮圖欄使品名/狀態文字僅剩 ~39px 而擠壓斷字；縮圖降為 48px。 */
+.adv-scene[data-mode="shop"] .compact-shop .item-card {
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  column-gap: 8px;
+}
+
+.adv-scene[data-mode="shop"] .compact-shop .item-preview {
+  width: 48px;
+  height: 48px;
+}
+
+/* ② 兒童觸控目標下限：窄視口主要互動控件 ≥44px（WCAG 2.5.5／paramLayoutQualityBar）。
+   含商店/衣櫃實際渲染之 .item-panel-tryon（試穿/穿脫）與 .item-panel-action（購買等），
+   並同步放大貨架列高（原 68–76px 容不下 44px 鈕）。 */
+@media (max-width: 820px) {
+  .choice-button,
+  .primary-button,
+  .character-select-actions button,
+  .account-select-overlay button,
+  .adv-scene[data-mode="shop"] .item-panel-tryon,
+  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-action {
+    min-height: 44px;
+  }
+
+  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) {
+    --item-panel-row-height: 92px;
+  }
+}
+
+/* ③ 選角卡動作列改為卡內 sticky：長內容捲動時 Start／Back 恆可見、不落在摺線下。 */
+.character-select-actions {
+  position: sticky;
+  bottom: -20px; /* 抵銷卡片 padding，貼齊卡片可視底緣 */
+  z-index: 2;
+  margin: 0 -20px -20px;
+  padding: 12px 20px 20px;
+  background: linear-gradient(180deg, rgba(255, 250, 246, 0), var(--panel) 42%);
+}
+
+.character-select-actions button {
+  min-height: 44px;
+}
+
+/* ④ 面板捲軸美化：與童話粉彩視覺一致的細圓捲軸（衣櫃/商店/選項清單共用）。 */
+.compact-shop::-webkit-scrollbar,
+.item-panel-list::-webkit-scrollbar,
+#choiceList::-webkit-scrollbar,
+.character-select-card::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.compact-shop::-webkit-scrollbar-thumb,
+.item-panel-list::-webkit-scrollbar-thumb,
+#choiceList::-webkit-scrollbar-thumb,
+.character-select-card::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--rose) 55%, transparent);
+}
+
+.compact-shop::-webkit-scrollbar-track,
+.item-panel-list::-webkit-scrollbar-track,
+#choiceList::-webkit-scrollbar-track,
+.character-select-card::-webkit-scrollbar-track {
+  background: transparent;
 }
