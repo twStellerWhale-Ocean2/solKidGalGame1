@@ -7,7 +7,6 @@
 
 @media (max-width: 1360px) {
   .app-shell {
-    min-height: 700px;
   }
 
   .game-layout {
@@ -21,38 +20,30 @@
   }
 }
 
-/* Game scene shell pass: keep the app as one PC ADV stage instead of a website layout. */
-html,
-body {
-  min-width: 1100px;
-  overflow: hidden;
-}
 
-.app-shell {
-  position: relative;
-  width: min(1800px, 100vw);
-  height: min(960px, 100vh);
-  min-height: min(960px, 100vh);
-  padding: 0;
-  display: block;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  background: #f8edf0;
-}
 
 .topbar {
-  position: absolute;
-  left: 18px;
-  bottom: 18px;
-  z-index: 30;
-  width: 232px;
   display: grid;
   grid-template-columns: 1fr;
   gap: 8px;
-  padding: 10px;
-  background: rgba(255, 250, 246, 0.78);
   border-color: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(10px);
+
+  grid-column: 1;
+  grid-row: 1;
+  position: relative;
+  left: auto;
+  bottom: auto;
+  z-index: 5;
+  width: auto;
+  align-self: end;
+
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+
+  margin: 0 10px 12px;
+  padding: 0 8px 12px;
 }
 
 .brand {
@@ -87,24 +78,7 @@ body {
   font-size: 0.78rem;
 }
 
-.game-layout {
-  position: absolute;
-  inset: 0;
-  display: block;
-}
 
-.side-panel {
-  position: absolute;
-  left: 18px;
-  top: 18px;
-  z-index: 22;
-  width: 222px;
-  max-height: 392px;
-  padding: 10px;
-  background: rgba(255, 250, 246, 0.76);
-  border-color: rgba(255, 255, 255, 0.58);
-  backdrop-filter: blur(10px);
-}
 
 
 .view-stack,
@@ -114,9 +88,6 @@ body {
   height: 100%;
 }
 
-.view {
-  display: none;
-}
 
 .view.active {
   display: block;
@@ -149,20 +120,6 @@ body {
   to { opacity: 0.78; transform: translateX(8px); }
 }
 
-.room-title-panel {
-  left: auto;
-  right: 20.5%;
-  top: 43%;
-  width: 128px;
-  min-height: 86px;
-  padding: 10px;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  background: rgba(85, 52, 65, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.38);
-  backdrop-filter: blur(8px);
-}
 
 .room-title-panel h2 {
   margin: 0;
@@ -206,12 +163,13 @@ body {
   top: 92px;
   right: 24px;
   bottom: auto;
-  width: min(340px, 24vw);
   height: min(700px, calc(100% - 128px));
   transform: none;
   z-index: 14;
   background: rgba(255, 250, 246, 0.86);
   backdrop-filter: blur(8px);
+
+  width: min(340px, 24vw);
 }
 
 .wardrobe-grid {
@@ -273,19 +231,6 @@ body {
   border-radius: var(--radius);
 }
 
-.map-toolbar {
-  position: absolute;
-  left: 258px;
-  top: 18px;
-  z-index: 16;
-  width: min(610px, calc(100vw - 560px));
-  height: auto;
-  min-height: 56px;
-  padding: 10px 14px;
-  background: rgba(255, 250, 246, 0.76);
-  border-color: rgba(255, 255, 255, 0.58);
-  backdrop-filter: blur(10px);
-}
 
 .map-toolbar h2 {
   margin: 0;
@@ -302,13 +247,6 @@ body {
   display: none;
 }
 
-.map-stage {
-  height: 100%;
-  margin: 0;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-}
 
 .map-stage::before,
 .map-stage::after,
@@ -346,16 +284,7 @@ body {
   to { opacity: 0.5; }
 }
 
-#hotspotLayer {
-  z-index: 8;
-}
 
-.player {
-  width: 108px;
-  height: 140px;
-  z-index: 18;
-  transition: left 0.18s ease, top 0.18s ease;
-}
 
 .map-doll {
   width: 108px;
@@ -372,25 +301,12 @@ body {
   animation: none;
 }
 
-.hotspot {
-  z-index: 9;
-  transition: transform 0.16s ease, filter 0.16s ease, box-shadow 0.16s ease;
-}
 
-.hotspot.nearby {
-  transform: translate(-50%, -50%) scale(1.16);
-  z-index: 12;
-  filter: saturate(1.18);
-  box-shadow: 0 0 0 6px rgba(255, 242, 153, 0.32), 0 0 18px rgba(255, 255, 255, 0.88), 0 10px 18px rgba(82, 61, 37, 0.22);
-}
 
 .hotspot.nearby::after {
   content: attr(data-label) "  Enter";
 }
 
-.nearby-card {
-  display: none !important;
-}
 
 .nearby-card.show {
   display: grid !important;
@@ -418,13 +334,6 @@ body {
   background: #fffaf0 var(--item-img) center / contain no-repeat;
 }
 
-.compact-shop {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  max-height: 244px;
-  gap: 8px;
-  padding-right: 4px;
-}
 
 .compact-shop .item-card {
   /* issue #103 專家會審: 縮減購物列高度，貼近對話選項列的節奏 */
@@ -445,22 +354,7 @@ body {
   font-size: 1rem;
 }
 
-.adv-scene {
-  width: min(980px, 70vw);
-  height: var(--adv-scene-height);
-  border: 1px solid rgba(255, 255, 255, 0.62);
-  border-radius: var(--radius);
-}
 
-.adv-princess,
-.adv-npc {
-  top: auto;
-  bottom: 0;
-  --adv-character-stage-height: min(calc(100% - 18px), 300px);
-  width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
-  height: var(--adv-character-stage-height);
-  max-height: 300px;
-}
 
 .adv-princess {
   left: 42px;
@@ -470,16 +364,6 @@ body {
   right: 42px;
 }
 
-.adv-box {
-  position: relative;
-  z-index: 6;
-  margin: 0 24px 24px;
-  padding: 18px;
-  min-height: 0;
-  overflow-y: auto;
-  background: rgba(255, 250, 246, 0.92);
-  backdrop-filter: blur(6px);
-}
 
 .adv-princess .paper-doll,
 .adv-npc .paper-doll {
@@ -493,25 +377,12 @@ body {
   height: 100%;
 }
 
-.english-line {
-  font-size: 1.42rem;
-}
 
 .task-line {
   font-size: 1rem;
 }
 
-.choice-list {
-  grid-template-columns: minmax(0, 1fr);
-  gap: 9px;
-}
 
-.choice-button {
-  min-height: 56px;
-  padding: 12px 16px;
-  font-size: 1.22rem;
-  border-width: 2px;
-}
 
 .choice-button::before {
   content: "";
@@ -546,14 +417,9 @@ body {
 
   .adv-princess,
   .adv-npc {
-    --adv-character-stage-height: calc(100% - 12px);
-    height: var(--adv-character-stage-height);
-    width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
   }
 
   .choice-button {
-    min-height: 48px;
-    font-size: 1.08rem;
   }
 }
 
@@ -567,71 +433,37 @@ body {
   }
 }
 
-/* Left command column: status and system menu are part of the shell, not overlays on the map. */
-.app-shell {
-  display: grid;
-  grid-template-columns: 254px minmax(0, 1fr);
-  grid-template-rows: 1fr;
-  gap: 0;
-  background:
-    linear-gradient(180deg, rgba(255, 245, 249, 0.96), rgba(244, 225, 232, 0.98)) left / 254px 100% no-repeat,
-    #f8edf0;
-}
 
 .game-layout {
+  inset: 0;
+
   display: contents;
   position: static;
 }
 
-.side-panel {
-  grid-column: 1;
-  grid-row: 1;
-  position: relative;
-  left: auto;
-  top: auto;
-  z-index: 4;
-  width: auto;
-  max-height: none;
-  height: auto;
-  margin: 18px 14px 0;
-  align-self: start;
-  background: rgba(255, 250, 246, 0.86);
-}
 
-.topbar {
-  grid-column: 1;
-  grid-row: 1;
-  position: relative;
-  left: auto;
-  bottom: auto;
-  z-index: 5;
-  width: auto;
-  margin: 0 14px 18px;
-  align-self: end;
-  background: rgba(255, 250, 246, 0.88);
-}
 
 .view-stack {
   grid-column: 2;
   grid-row: 1;
-  position: relative;
   inset: auto;
   width: 100%;
   height: 100%;
   min-width: 0;
   overflow: hidden;
+
+  max-width: 100%;
+
+  position: relative;
 }
 
 .view {
+  display: none;
+
   position: absolute;
   inset: 0;
 }
 
-.map-toolbar {
-  left: 18px;
-  top: 18px;
-  width: min(610px, calc(100% - 36px));
-}
 
 .map-stage,
 .room-stage {
@@ -639,31 +471,9 @@ body {
   height: 100%;
 }
 
-.wardrobe-drawer {
-  width: min(340px, 24vw);
-}
 
-#homeView .room-paper-doll {
-  left: 46%;
-  top: 50%;
-  bottom: auto;
-  width: min(400px, 27vw);
-  height: min(650px, 78vh);
-  transform: translate(-50%, -50%);
-}
 
-#homeView .wardrobe-drawer {
-  top: 72px;
-  right: 18px;
-  bottom: auto;
-  width: min(340px, 24vw);
-  height: min(760px, calc(100% - 104px));
-}
 
-.adv-scene {
-  width: min(1800px, 100vw);
-  height: var(--adv-scene-height);
-}
 
 @media (max-height: 760px) {
   .topbar {
@@ -671,13 +481,6 @@ body {
   }
 }
 
-.topbar {
-  padding: 0 12px 14px;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  backdrop-filter: none;
-}
 
 .topbar::before {
   content: "";
@@ -705,21 +508,7 @@ body {
   font-size: 0.9rem;
 }
 
-#homeView .room-paper-doll {
-  left: 45%;
-  top: 50%;
-  width: min(520px, 34vw);
-  height: min(850px, 92vh);
-}
 
-#homeView .wardrobe-drawer {
-  top: 62px;
-  right: 18px;
-  width: min(360px, 25vw);
-  height: calc(100dvh - 92px);
-  max-height: 820px;
-  min-height: 560px;
-}
 
 #homeView .wardrobe-drawer .category-tabs {
   display: none;
@@ -771,6 +560,7 @@ body {
 /* Audit-111 stabilization pass: responsive PC game viewport, clearer map focus, and game overlays. */
 html,
 body {
+
   width: 100%;
   height: 100%;
   min-width: 0;
@@ -783,6 +573,17 @@ body {
 }
 
 .app-shell {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+
+  display: grid;
+  grid-template-rows: 1fr;
+  gap: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 245, 249, 0.96), rgba(244, 225, 232, 0.98)) left / 254px 100% no-repeat,
+    #f8edf0;
+
   width: 100vw;
   height: 100dvh;
   min-height: 0;
@@ -792,21 +593,38 @@ body {
 
 /* issue #132：桌機側欄依內容自適應（不再滿欄、不留舊版 154px 底距）；於格線欄內靠頂對齊。 */
 .side-panel {
+  border-color: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(10px);
+
+  grid-column: 1;
+  grid-row: 1;
+  position: relative;
+  left: auto;
+  top: auto;
+  z-index: 4;
+  width: auto;
+  max-height: none;
+  height: auto;
+  background: rgba(255, 250, 246, 0.86);
+
   margin: 12px 10px;
   align-self: start;
   padding: 14px;
 }
 
-.topbar {
-  margin: 0 10px 12px;
-  padding: 0 8px 12px;
-}
 
-.view-stack {
-  max-width: 100%;
-}
 
 .map-toolbar {
+  position: absolute;
+  z-index: 16;
+  height: auto;
+  min-height: 56px;
+  padding: 10px 14px;
+  background: rgba(255, 250, 246, 0.76);
+  border-color: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(10px);
+
+
   left: 14px;
   top: 14px;
   width: min(610px, calc(100% - 28px));
@@ -814,12 +632,21 @@ body {
 }
 
 #homeView .room-paper-doll {
+  bottom: auto;
+  transform: translate(-50%, -50%);
+
+  top: 50%;
+
   left: 44%;
   width: clamp(300px, 39%, 510px);
   height: min(830px, 90dvh);
 }
 
 #homeView .wardrobe-drawer {
+  bottom: auto;
+
+  max-height: 820px;
+
   top: 54px;
   right: 14px;
   width: clamp(276px, 32%, 360px);
@@ -841,6 +668,19 @@ body {
 }
 
 .room-title-panel {
+  left: auto;
+  right: 20.5%;
+  top: 43%;
+  width: 128px;
+  min-height: 86px;
+  padding: 10px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  background: rgba(85, 52, 65, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(8px);
+
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.16), 0 12px 22px rgba(58, 37, 46, 0.22);
 }
 
@@ -869,6 +709,12 @@ body {
 }
 
 .map-stage {
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+
   isolation: isolate;
 }
 
@@ -969,14 +815,21 @@ body {
 }
 
 #hotspotLayer {
+
   z-index: 12;
 }
 
 .player {
+  width: 108px;
+  height: 140px;
+  transition: left 0.18s ease, top 0.18s ease;
+
   z-index: 11;
 }
 
 .nearby-card {
+  display: none !important;
+
   z-index: 28;
 }
 
@@ -1011,6 +864,9 @@ body {
 }
 
 .hotspot {
+  z-index: 9;
+  transition: transform 0.16s ease, filter 0.16s ease, box-shadow 0.16s ease;
+
   transform: translate(-50%, -50%);
 }
 
@@ -1032,12 +888,12 @@ body {
 }
 
 .hotspot.nearby {
+  z-index: 12;
+  filter: saturate(1.18);
+
   transform: translate(-50%, -50%) scale(1.24);
-  box-shadow:
-    0 0 0 8px rgba(255, 242, 153, 0.42),
-    0 0 0 14px rgba(193, 80, 126, 0.14),
-    0 0 26px rgba(255, 255, 255, 0.96),
-    0 12px 22px rgba(82, 61, 37, 0.28);
+
+  box-shadow: 0 0 0 7px rgba(255, 210, 104, 0.38), 0 0 28px rgba(255, 255, 255, 0.95), 0 10px 22px rgba(82, 61, 37, 0.28);
 }
 
 .hotspot.nearby .hotspot-icon {
@@ -1120,15 +976,6 @@ body {
   display: block;
 }
 
-.adv-scene {
-  left: 56%;
-  top: 49%;
-  width: min(980px, 70vw);
-  height: var(--adv-scene-height);
-  max-width: calc(100vw - 32px);
-  max-height: calc(100dvh - 32px);
-  border-radius: var(--radius);
-}
 
 .shop-area.show {
   display: grid;
@@ -1144,17 +991,16 @@ body {
 }
 
 .compact-shop {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding-right: 4px;
+
   max-height: min(260px, 30dvh);
 }
 
 @media (max-width: 820px) {
-  .adv-scene {
-    left: 50%;
-    top: 52%;
-    width: calc(100vw - 20px);
-    height: var(--adv-scene-height);
-  }
-
+  
   .adv-backdrop {
     background: rgba(54, 35, 45, 0.34);
   }
@@ -1190,17 +1036,10 @@ body {
 
   .adv-princess,
   .adv-npc {
-    width: calc(var(--adv-character-stage-height) * var(--adv-character-stage-aspect));
   }
 }
 
-.adv-scene[data-mode="shop"] .compact-shop {
-  max-height: 96px;
-}
 
-.adv-scene[data-mode="shop"] .shop-area.show {
-  gap: 8px;
-}
 
 .shop-area.show .shop-command-list {
   grid-template-columns: minmax(0, 1fr) minmax(110px, 0.44fr);
@@ -1214,11 +1053,7 @@ body {
 }
 
 @media (max-width: 820px) {
-  .app-shell {
-    display: block;
-    grid-template-columns: none;
-  }
-
+  
   .game-layout,
   .view-stack,
   .view {
@@ -1383,17 +1218,7 @@ body {
     border-radius: 0;
   }
 
-  .map-stage::before {
-    content: "";
-    position: absolute;
-    inset: -18px;
-    z-index: 0;
-    background: var(--map-backdrop-image, url("../content-package/areas/urban/assets/map-1536.webp?v=20260606-issue66-map-contract-r1")) center / cover no-repeat;
-    filter: blur(9px) saturate(1.08);
-    opacity: 0.42;
-    transform: scale(1.04);
-  }
-
+  
   .map-stage > img {
     z-index: 1;
     object-fit: fill;
@@ -1496,18 +1321,7 @@ body {
     margin-top: 8px;
   }
 
-  .map-toolbar {
-    left: 10px;
-    right: 10px;
-    top: 128px;
-    width: auto;
-    max-width: none;
-    min-height: 0;
-    padding: 8px 10px;
-    display: block;
-    background: rgba(255, 250, 246, 0.82);
-  }
-
+  
   .map-toolbar h2 {
     font-size: 0.92rem;
   }
@@ -1606,14 +1420,17 @@ body {
   border: 6px solid rgba(255, 244, 224, 0.96);
 }
 
-#settingsView .simple-panel {
-  background:
-    linear-gradient(90deg, rgba(255, 250, 246, 0.8), rgba(255, 250, 246, 0.62)),
-    url("../content-base/ui/settings-book.webp") center / cover no-repeat;
-  border: 6px solid rgba(255, 244, 224, 0.96);
-}
 
 .adv-scene {
+  border: 1px solid rgba(255, 255, 255, 0.62);
+
+
+  left: 56%;
+  top: 49%;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  border-radius: var(--radius);
+
   width: min(1080px, calc(100vw - 32px));
   height: var(--adv-scene-height);
   grid-template-rows: minmax(230px, 1fr) auto;
@@ -1625,6 +1442,8 @@ body {
 
 .adv-princess,
 .adv-npc {
+  top: auto;
+
   max-height: none;
   --adv-character-stage-height: calc(100% + 26px);
   height: var(--adv-character-stage-height);
@@ -1633,21 +1452,32 @@ body {
 }
 
 .adv-box {
-  display: flex;
-  flex-direction: column;
+  position: relative;
+  z-index: 6;
+  min-height: 0;
+  overflow-y: auto;
+  background: rgba(255, 250, 246, 0.92);
+  backdrop-filter: blur(6px);
+
   max-height: min(330px, 47dvh);
   margin: 0 24px 24px;
   padding: 13px 16px;
+
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
 .english-line {
+
   margin: 5px 0 6px;
   font-size: clamp(1.02rem, 1.35vw, 1.28rem);
   line-height: 1.2;
 }
 
 .choice-list {
+  grid-template-columns: minmax(0, 1fr);
+
   flex: 1 1 auto;
   min-height: 0;
   gap: 6px;
@@ -1656,6 +1486,8 @@ body {
 }
 
 .choice-button {
+  border-width: 2px;
+
   min-height: 38px;
   padding: 7px 12px;
   font-size: clamp(0.86rem, 1.1vw, 1rem);
@@ -1668,19 +1500,8 @@ body {
   max-height: min(360px, 50dvh);
 }
 
-.adv-scene[data-mode="shop"] #advShopTabs {
-  display: none;
-}
 
-.adv-scene[data-mode="shop"] .shop-area.show {
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto;
-}
 
-.adv-scene[data-mode="shop"] .shop-feature {
-  grid-row: 1 / 3;
-  grid-template-rows: minmax(118px, 1fr) auto;
-}
 
 .adv-scene[data-mode="shop"] .shop-feature-stage {
   min-height: 118px;
@@ -1697,27 +1518,23 @@ body {
   right: 6%;
 }
 
-.adv-scene[data-mode="shop"] .compact-shop {
-  max-height: min(190px, 27dvh);
-  overflow-y: auto;
-}
 
 .adv-scene[data-mode="shop"] .compact-shop .item-card {
   min-height: 76px;
-  grid-template-columns: 76px 1fr auto;
+
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  column-gap: 8px;
 }
 
-.adv-scene[data-mode="shop"] .compact-shop .item-preview {
-  width: 76px;
-  height: 60px;
-}
 
-.adv-scene[data-mode="shop"] .shop-command-list {
-  align-self: end;
-}
 
 @media (max-width: 820px) {
   .map-stage::before {
+    content: "";
+    position: absolute;
+    inset: -18px;
+    z-index: 0;
+  
     background:
       linear-gradient(180deg, rgba(194, 232, 235, 0.92), rgba(116, 188, 211, 0.9)),
       var(--map-backdrop-image, url("../content-package/areas/urban/assets/map-1536.webp?v=20260606-issue66-map-contract-r1")) center / cover no-repeat;
@@ -1726,13 +1543,7 @@ body {
     transform: none;
   }
 
-  .adv-scene {
-    top: 50%;
-    width: calc(100vw - 20px);
-    height: var(--adv-scene-height);
-    grid-template-rows: minmax(270px, 1fr) auto;
-  }
-
+  
   .adv-portraits {
     min-height: 270px;
   }
@@ -1777,12 +1588,7 @@ body {
     max-height: 48dvh;
   }
 
-  .adv-scene[data-mode="shop"] .shop-area.show {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
-    gap: 7px;
-  }
-
+  
   .adv-scene[data-mode="shop"] .shop-feature,
   .adv-scene[data-mode="shop"] #advShopTabs,
   .adv-scene[data-mode="shop"] .compact-shop,
@@ -1790,70 +1596,33 @@ body {
     grid-column: 1;
   }
 
-  .adv-scene[data-mode="shop"] .shop-feature {
-    grid-row: auto;
-    grid-template-columns: 132px minmax(0, 1fr);
-    grid-template-rows: 112px;
-    min-height: 112px;
-  }
-
-  .adv-scene[data-mode="shop"] .shop-feature-stage {
-    min-height: 112px;
-  }
-
-  .adv-scene[data-mode="shop"] .shop-preview-doll {
-    left: 36%;
-    width: 54px;
-    height: 78px;
-  }
-
-  .adv-scene[data-mode="shop"] .shop-feature-item {
-    right: 3%;
-    width: 70px;
-    height: 70px;
-  }
-
+  
+  
+  
+  
   .adv-scene[data-mode="shop"] .shop-feature-copy {
     border-top: 0;
     border-left: 1px solid rgba(216, 103, 140, 0.16);
     overflow: hidden;
   }
 
-  .adv-scene[data-mode="shop"] .shop-feature-copy p {
-    display: none;
-  }
-
-  .adv-scene[data-mode="shop"] .compact-shop {
-    grid-template-columns: 1fr;
-    max-height: 100px;
-    overflow-y: auto;
-  }
-
+  
+  
   .adv-scene[data-mode="shop"] .compact-shop .item-card {
     min-height: 72px;
-    grid-template-columns: 72px 1fr auto;
   }
 
   .adv-scene[data-mode="shop"] .compact-shop .item-preview {
-    width: 72px;
-    height: 56px;
   }
 
   .adv-scene[data-mode="shop"] .shop-buy-row {
-    grid-template-columns: minmax(0, 1fr) 70px;
-    gap: 6px;
   }
 
   .adv-scene[data-mode="shop"] .shop-buy-button {
-    min-height: 72px;
-    padding: 4px;
     font-size: 0.68rem;
   }
 
-  .adv-scene[data-mode="shop"] .shop-command-list {
-    grid-template-columns: minmax(0, 1fr) minmax(90px, 0.45fr);
-  }
-
+  
   .adv-scene[data-mode="shop"] .shop-command-list .choice-button {
     min-height: 32px;
     padding: 5px 8px;
@@ -1869,9 +1638,6 @@ body {
   }
 
   #settingsView .simple-panel {
-    background:
-      linear-gradient(180deg, rgba(255, 250, 246, 0.84), rgba(255, 250, 246, 0.76)),
-      url("../content-base/ui/settings-book.webp") center / cover no-repeat;
   }
 }
 
@@ -1993,6 +1759,8 @@ body {
 }
 
 #settingsView .simple-panel {
+  border: 6px solid rgba(255, 244, 224, 0.96);
+
   background:
     linear-gradient(90deg, rgba(255, 250, 246, 0.95), rgba(255, 250, 246, 0.9)),
     url("../content-base/ui/settings-book.webp") center / cover no-repeat;
@@ -2122,10 +1890,6 @@ body {
   }
 }
 
-/* 2026-05-31 area registry / scene layering overrides. */
-.view-stack {
-  position: relative;
-}
 
 .castle-stage {
   --map-display-width: 100%;
@@ -2208,9 +1972,6 @@ body {
   content: attr(data-label) " Soon";
 }
 
-.hotspot.nearby {
-  box-shadow: 0 0 0 7px rgba(255, 210, 104, 0.38), 0 0 28px rgba(255, 255, 255, 0.95), 0 10px 22px rgba(82, 61, 37, 0.28);
-}
 
 .castle-nearby-card,
 .nearby-card {
@@ -2274,9 +2035,6 @@ body {
   grid-template-rows: auto minmax(0, 1fr) auto;
 }
 
-.adv-scene[data-mode="wardrobe"] .compact-shop {
-  grid-template-columns: 1fr;
-}
 
 .adv-scene[data-mode="wardrobe"] .compact-shop .item-card {
   grid-template-columns: 86px minmax(0, 1fr);
@@ -2331,6 +2089,16 @@ body {
   }
 
   .map-toolbar {
+    left: 10px;
+    right: 10px;
+    top: 128px;
+    width: auto;
+    max-width: none;
+    min-height: 0;
+    padding: 8px 10px;
+    display: block;
+    background: rgba(255, 250, 246, 0.82);
+  
     z-index: 28;
   }
 
@@ -2460,18 +2228,17 @@ body {
   display: none;
 }
 
-.adv-scene[data-mode="shop"] .shop-area.show {
-  grid-template-columns: minmax(136px, 0.54fr) minmax(0, 1.46fr);
-  grid-template-rows: minmax(0, 1fr) auto;
-  gap: 8px;
-}
 
 .adv-scene[data-mode="shop"] .shop-feature {
+  grid-template-rows: minmax(118px, 1fr) auto;
+
   grid-column: 1;
   grid-row: 1 / 3;
 }
 
 .adv-scene[data-mode="shop"] .compact-shop {
+
+
   grid-column: 2;
   grid-row: 1;
   display: grid;
@@ -2483,6 +2250,8 @@ body {
 }
 
 .adv-scene[data-mode="shop"] .shop-command-list {
+  align-self: end;
+
   grid-column: 2;
   grid-row: 2;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2531,6 +2300,8 @@ body {
 }
 
 .adv-scene[data-mode="wardrobe"] .compact-shop {
+  grid-template-columns: 1fr;
+
   max-height: min(300px, 34dvh);
 }
 
@@ -2543,22 +2314,20 @@ body {
   }
 
   .app-shell {
+    display: block;
+    grid-template-columns: none;
+  
     width: 100vw;
     height: 100dvh;
     min-height: 0;
   }
 
   .adv-scene[data-mode="shop"] .shop-area.show {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr) auto;
   }
 
-  .adv-scene {
-    left: 50%;
-    width: min(330px, calc(100vw - 20px));
-  }
-
+  
   .adv-scene[data-mode="shop"] .shop-feature {
+  
     grid-column: 1;
     grid-row: 1;
     grid-template-columns: 104px minmax(0, 1fr);
@@ -2567,24 +2336,31 @@ body {
   }
 
   .adv-scene[data-mode="shop"] .shop-feature-copy p {
+  
     display: none;
   }
 
   .adv-scene[data-mode="shop"] .shop-feature-stage {
+  
     min-height: 88px;
   }
 
   .adv-scene[data-mode="shop"] .shop-preview-doll {
+    left: 36%;
+  
     width: 58px;
     height: 82px;
   }
 
   .adv-scene[data-mode="shop"] .shop-feature-item {
+    right: 3%;
+  
     width: 42px;
     height: 42px;
   }
 
   .adv-scene[data-mode="shop"] .compact-shop {
+  
     grid-column: 1;
     grid-row: 2;
     grid-template-columns: minmax(0, 1fr);
@@ -2592,6 +2368,7 @@ body {
   }
 
   .adv-scene[data-mode="shop"] .shop-command-list {
+  
     grid-column: 1;
     grid-row: 3;
     grid-template-columns: minmax(0, 1fr);
@@ -2638,44 +2415,17 @@ body {
   --item-panel-row-height: 76px;
   --item-panel-gap: 8px;
   --item-panel-list-height: calc((var(--item-panel-row-height) * 3) + (var(--item-panel-gap) * 2));
+
+  --adv-dialog-bg: rgba(47, 38, 52, 0.23);
 }
 
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) #advShopTabs {
   display: none;
 }
 
-.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .shop-area.show {
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: var(--item-panel-list-height) auto;
-  gap: 10px;
-}
 
-/* issue #210：一區一店一包後，服飾店改賣整包多類別（含髮型）。商店模式須顯示類別分頁讓玩家切換瀏覽
-   各類別（取代舊「店僅 1–2 類、隱藏分頁」假設）；衣櫃 (wardrobe) 與退款 (refund) 維持原樣不顯示。 */
-.adv-scene[data-mode="shop"] #advShopTabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin: 0;
-}
 
-.adv-scene[data-mode="shop"] .shop-area.show {
-  grid-template-rows: auto var(--item-panel-list-height) auto;
-}
 
-.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-list {
-  grid-column: 1;
-  grid-row: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-auto-rows: var(--item-panel-row-height);
-  gap: var(--item-panel-gap);
-  min-height: var(--item-panel-list-height);
-  max-height: var(--item-panel-list-height);
-  overflow-y: auto;
-  align-content: start;
-  padding: 0 4px 0 0;
-}
 
 .item-panel-empty {
   min-height: var(--item-panel-list-height);
@@ -2690,32 +2440,8 @@ body {
   font-weight: 900;
 }
 
-.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(78px, 0.28fr);
-  gap: 8px;
-  min-height: var(--item-panel-row-height);
-  height: var(--item-panel-row-height);
-}
 
-.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card {
-  min-height: 0;
-  height: 100%;
-  display: grid;
-  grid-template-columns: 54px minmax(0, 1fr);
-  grid-template-rows: auto auto;
-  gap: 2px 8px;
-  align-items: center;
-  padding: 7px;
-  text-align: left;
-}
 
-.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card .item-preview {
-  grid-column: 1;
-  grid-row: 1 / 3;
-  width: 54px;
-  height: 54px;
-}
 
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card strong,
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card .item-state {
@@ -2749,11 +2475,6 @@ body {
   display: none;
 }
 
-.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-action {
-  min-height: 0;
-  height: 100%;
-  padding: 6px;
-}
 
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .shop-command-list {
   grid-column: 1;
@@ -2764,48 +2485,20 @@ body {
   align-self: end;
 }
 
-.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-back {
-  min-height: 42px;
-}
 
 @media (max-width: 480px) {
   .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) {
-    --item-panel-row-height: 68px;
     --item-panel-gap: 7px;
+  
+    --item-panel-row-height: 70px;
   }
 
-  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-row {
-    grid-template-columns: minmax(0, 1fr) 74px;
-    gap: 6px;
+  
+  
+  
+  
   }
 
-  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card {
-    grid-template-columns: 46px minmax(0, 1fr);
-    padding: 6px;
-  }
-
-  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card .item-preview {
-    width: 46px;
-    height: 46px;
-  }
-
-  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card strong {
-    font-size: 0.78rem;
-    line-height: 1.08;
-  }
-
-  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card .item-state,
-  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-action {
-    font-size: 0.7rem;
-  }
-}
-
-/* Issue #40: all ADV panels use fixed prompt, scrollable middle, fixed navigation footer. */
-.adv-box {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
 
 .adv-box > .dialog-title,
 .adv-box > .english-line,
@@ -2862,25 +2555,7 @@ body {
   align-content: start;
 }
 
-.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .shop-area.show {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr);
-  overflow: hidden;
-  gap: 0;
-}
 
-.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-list {
-  grid-column: 1;
-  grid-row: 1;
-  min-height: 0;
-  max-height: none;
-  height: auto;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  align-content: start;
-  box-sizing: border-box;
-}
 
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-empty {
   min-height: 0;
@@ -2888,6 +2563,7 @@ body {
 }
 
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-back {
+
   min-height: 42px;
 }
 
@@ -2903,47 +2579,8 @@ body {
   }
 }
 
-/* Issue #42: first-layer and second-layer ADV panels share one stable mobile stage contract. */
-.adv-scene:is(
-  [data-mode="scene"],
-  [data-mode="hint"],
-  [data-mode="quest"],
-  [data-mode="complete"],
-  [data-mode="shop"],
-  [data-mode="wardrobe"],
-  [data-mode="refund"]
-) {
-  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
-}
 
-.adv-scene:is(
-  [data-mode="scene"],
-  [data-mode="hint"],
-  [data-mode="quest"],
-  [data-mode="complete"],
-  [data-mode="shop"],
-  [data-mode="wardrobe"],
-  [data-mode="refund"]
-) .adv-portraits {
-  min-height: 0;
-  overflow: hidden;
-}
 
-.adv-scene:is(
-  [data-mode="scene"],
-  [data-mode="hint"],
-  [data-mode="quest"],
-  [data-mode="complete"],
-  [data-mode="shop"],
-  [data-mode="wardrobe"],
-  [data-mode="refund"]
-) .adv-box {
-  display: grid;
-  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
-  min-height: 0;
-  overflow: hidden;
-  box-sizing: border-box;
-}
 
 .adv-scene:is(
   [data-mode="scene"],
@@ -3019,6 +2656,9 @@ body {
 }
 
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .shop-area.show {
+
+  gap: 0;
+
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
@@ -3026,6 +2666,17 @@ body {
 }
 
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--item-panel-gap);
+  padding: 0 4px 0 0;
+
+  grid-column: 1;
+  grid-row: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-sizing: border-box;
+
   min-height: 0;
   max-height: 100%;
   height: 100%;
@@ -3034,6 +2685,9 @@ body {
 }
 
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-row {
+  display: grid;
+  gap: 8px;
+
   grid-template-columns: minmax(0, 1fr) clamp(82px, 22%, 112px);
   min-height: var(--item-panel-row-height);
   height: var(--item-panel-row-height);
@@ -3041,12 +2695,24 @@ body {
 }
 
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card {
+  min-height: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 2px 8px;
+  align-items: center;
+  padding: 7px;
+  text-align: left;
+
   /* issue #295：縮圖欄讓位給品名/狀態文字（防 "Weari-ng" 式擠壓斷字） */
   grid-template-columns: clamp(42px, 15%, 54px) minmax(0, 1fr);
   min-width: 0;
 }
 
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card .item-preview {
+  grid-column: 1;
+  grid-row: 1 / 3;
+
   width: clamp(40px, 100%, 50px);
   height: clamp(40px, 100%, 50px);
   min-width: 0;
@@ -3054,14 +2720,13 @@ body {
   justify-self: start;
 }
 
-.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-action {
-  overflow-wrap: anywhere;
-  line-height: 1.08;
-  white-space: normal;
-}
 
 @media (max-width: 820px) {
   .adv-scene {
+  
+    grid-template-rows: minmax(270px, 1fr) auto;
+  
+  
     left: 50%;
     top: 50%;
     /* issue #295：原鎖 330px 使 480–820px 視窗（平板直向/小視窗）空間浪費、
@@ -3070,21 +2735,7 @@ body {
     height: var(--adv-scene-height);
   }
 
-  .adv-scene:is(
-    [data-mode="scene"],
-    [data-mode="hint"],
-    [data-mode="quest"],
-    [data-mode="complete"],
-    [data-mode="shop"],
-    [data-mode="wardrobe"],
-    [data-mode="refund"]
-  ) .adv-box {
-    height: calc(100% - 12px);
-    max-height: none;
-    margin: 0 10px 12px;
-    padding: 12px;
-  }
-
+  
   .adv-scene:is(
     [data-mode="scene"],
     [data-mode="hint"],
@@ -3099,7 +2750,6 @@ body {
     height: var(--adv-character-stage-height);
     max-height: none;
     bottom: -6px;
-    left: -52px;
   }
 
   .adv-scene:is(
@@ -3116,14 +2766,9 @@ body {
     height: var(--adv-character-stage-height);
     max-height: none;
     bottom: -6px;
-    right: 0;
   }
 
-  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) {
-    --item-panel-row-height: 72px;
-    --item-panel-gap: 7px;
-  }
-
+  
   .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-row {
     grid-template-columns: minmax(0, 1fr) 74px;
     gap: 6px;
@@ -3142,33 +2787,35 @@ body {
 }
 
 @media (max-width: 480px) {
-  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) {
-    --item-panel-row-height: 70px;
-  }
-
+  
   .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-row {
+  
     grid-template-columns: minmax(0, 1fr) 66px;
     gap: 5px;
   }
 
   .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card {
+  
     grid-template-columns: 40px minmax(0, 1fr);
     gap: 2px 6px;
     padding: 5px;
   }
 
   .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card .item-preview {
+  
     width: 40px;
     height: 40px;
   }
 
   .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card strong {
+  
     font-size: 0.74rem;
     line-height: 1.08;
   }
 
   .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-card .item-state,
   .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-action {
+  
     font-size: 0.68rem;
     line-height: 1.08;
   }
@@ -3256,10 +2903,19 @@ body {
 /* 面板內：商品分「多欄貨架」——每類一欄、欄內直向堆疊，整體可水平拖拉瀏覽各類別。
    類別標題已在每欄上方，故移除上方類別分頁與下方摘要文字（商品方塊本身已含名稱與價格）。 */
 .adv-scene[data-mode="shop"] #advShopTabs {
+
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+
   display: none;
 }
 
 .adv-scene[data-mode="shop"] .shop-area.show {
+
+
+
+
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
   gap: 0;
@@ -3589,6 +3245,8 @@ body {
   [data-mode="wardrobe"],
   [data-mode="refund"]
 ) {
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+
   --adv-dialog-height: clamp(230px, 34%, 330px);
   --adv-dialog-bg: rgba(47, 38, 52, 0.46);
   --adv-dialog-bg-soft: rgba(65, 51, 70, 0.62);
@@ -3612,6 +3270,8 @@ body {
   [data-mode="wardrobe"],
   [data-mode="refund"]
 ) .adv-portraits {
+  min-height: 0;
+
   position: absolute;
   inset: 0;
   z-index: 2;
@@ -3682,6 +3342,12 @@ body {
   [data-mode="wardrobe"],
   [data-mode="refund"]
 ) .adv-box {
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+
   position: absolute;
   left: clamp(14px, 3%, 34px);
   right: clamp(14px, 3%, 34px);
@@ -3887,6 +3553,8 @@ body {
     [data-mode="wardrobe"],
     [data-mode="refund"]
   ) .adv-box {
+    padding: 12px;
+  
     left: 10px;
     right: 10px;
     bottom: max(10px, env(safe-area-inset-bottom));
@@ -3894,21 +3562,18 @@ body {
   }
 }
 
-/* ============================================================
-   issue #167: 統一場景對話方塊選項樣式、調整透明度與商品白底使試穿可見
-   （承 issue #70 視覺小說分層 --adv-dialog-* token 系統；
-    設計決策見 docs/design-issue167.md D1–D4，確切數值經實機 visual-qa 校準）
-   ============================================================ */
-
-/* D2：第三層（逛店/退款/換裝）對話方塊較第二層更透明（dialog-bg 0.46→0.23 之半），
-   使其後角色試穿透出；僅降方塊容器底色，選項/命令按鈕保有自身底色維持可讀（分層）。 */
-.adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) {
-  --adv-dialog-bg: rgba(47, 38, 52, 0.23);
-}
 
 /* D1：第三層明細面板的命令/動作鈕收斂為對話選項同一家族（取代 shop 粉紅漸層），
    沿用 .choice-button 之 --adv-dialog-* 暗色玻璃質感；動作鈕以 accent 邊框維持主要操作辨識（同一機制、非另起一套）。 */
 .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-action {
+  min-height: 0;
+  height: 100%;
+  padding: 6px;
+
+  overflow-wrap: anywhere;
+  line-height: 1.08;
+  white-space: normal;
+
   color: var(--adv-dialog-text);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(0, 0, 0, 0.045)),
@@ -4014,14 +3679,9 @@ body {
   hyphens: none;
 }
 
-/* ①-2 貨架卡縮圖欄讓位文字：closet／商店貨架欄寬僅 148–188px，
-   原 72px 縮圖欄使品名/狀態文字僅剩 ~39px 而擠壓斷字；縮圖降為 48px。 */
-.adv-scene[data-mode="shop"] .compact-shop .item-card {
-  grid-template-columns: 48px minmax(0, 1fr) auto;
-  column-gap: 8px;
-}
 
 .adv-scene[data-mode="shop"] .compact-shop .item-preview {
+
   width: 48px;
   height: 48px;
 }
@@ -4040,6 +3700,8 @@ body {
   }
 
   .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) {
+    --item-panel-gap: 7px;
+  
     --item-panel-row-height: 92px;
   }
 }
