@@ -8,7 +8,7 @@ import { renderVoiceSettings } from "./render/settings.js";
 import { VOICE_ASSIGNMENT_KEY } from "./state/voice-assignments.js";
 import { createQuestForPlace, createRandomQuest, createFreshAccount, freshState, loadAccountState, normalizeState } from "./state/game-state.js";
 import { deleteAccount, getActiveAccountId, listAccounts, setActiveAccountId } from "./state/accounts.js";
-import { installTestingHooks } from "./testing/selftests.js?v=20260626-issue267-wardrobe-ssot";
+import { installTestingHooks } from "./testing/selftests.js?v=20260703-issue298-split-monolith";
 import { elements, session } from "./core/session.js";
 import { bindEvents } from "./app/bind-events.js";
 import { buildSaveMarkdown, loadMarkdownText, persist } from "./system/persistence.js";
