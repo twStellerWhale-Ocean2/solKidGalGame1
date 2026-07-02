@@ -1034,7 +1034,7 @@ function activePaperDollCharacter() {
 }
 
 function tryOnOutfitFor(item) {
-  const previewOutfit = { ...state.outfit };
+  const previewOutfit = { ...session.state.outfit };
   if (isWearableItem(item)) equipOutfitItem(item, previewOutfit);
   return previewOutfit;
 }
@@ -1067,7 +1067,7 @@ function shopTryOnItems() {
 }
 
 function tryOnOutfitForItems(items) {
-  const previewOutfit = { ...state.outfit };
+  const previewOutfit = { ...session.state.outfit };
   items.forEach((item) => {
     if (isWearableItem(item)) equipOutfitItem(item, previewOutfit);
   });
@@ -3014,7 +3014,7 @@ function resetMapGestureStart() {
   if (!session.mapGesture) return;
   const viewport = areaMapViewport(session.mapGesture.areaId);
   const metrics = areaMapMetrics(session.mapGesture.areaId);
-  const pointers = [...mapGesture.pointers.values()];
+  const pointers = [...session.mapGesture.pointers.values()];
   session.mapGesture.startPan = { ...viewport.pan };
   session.mapGesture.startZoom = viewport.zoom;
   session.mapGesture.startPoints = pointers.map((pointer) => ({ ...pointer }));
@@ -3082,7 +3082,7 @@ function beginAreaMapGesture(areaId, event) {
 function moveAreaMapGesture(areaId, event) {
   if (!session.mapGesture || session.mapGesture.areaId !== areaId || !session.mapGesture.pointers.has(event.pointerId)) return;
   session.mapGesture.pointers.set(event.pointerId, { pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY });
-  const pointers = [...mapGesture.pointers.values()];
+  const pointers = [...session.mapGesture.pointers.values()];
   if (pointers.length >= 2) {
     const center = pointerCenter(pointers[0], pointers[1]);
     const centerStage = relativeStagePoint(session.mapGesture.stage, center);
@@ -3210,7 +3210,7 @@ function bindEvents() {
     if (!session.panelFocusItem) return;
     openAdjustOverlay({
       item: session.panelFocusItem,
-      outfit: { ...state.outfit },
+      outfit: { ...session.state.outfit },
       renderer: paperDollRenderer,
       getCharacter: activePaperDollCharacter,
       onSave: patchWardrobeItem
@@ -3429,8 +3429,8 @@ Object.defineProperty(window, "__luminaraTest", {
         coins: session.state.coins,
         energy: session.state.energy,
         difficulty: session.state.difficulty,
-        outfit: { ...state.outfit },
-        owned: [...state.owned],
+        outfit: { ...session.state.outfit },
+        owned: [...session.state.owned],
         activeQuest: session.state.activeQuest?.id || ""
       };
       const markdown = buildSaveMarkdown();
@@ -3442,8 +3442,8 @@ Object.defineProperty(window, "__luminaraTest", {
         coins: session.state.coins,
         energy: session.state.energy,
         difficulty: session.state.difficulty,
-        outfit: { ...state.outfit },
-        owned: [...state.owned],
+        outfit: { ...session.state.outfit },
+        owned: [...session.state.owned],
         activeQuest: session.state.activeQuest?.id || ""
       };
       return {
