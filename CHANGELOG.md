@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.60.0 — 2026-07-03
+- feat (#295): 體驗品質總修（規格不變）：四地區 151 題英文會話全量重寫至專業語感——干擾選項改為情境內合理的自然回應（去除荒謬句與文法錯誤句）、正解口語化並體現思考；場景招呼語全面自然化；版型修正衣物卡單字中斷、平板寬度空間利用、觸控目標 44px 與選角按鈕恆可見；納入公主底圖更新（腳掌預留鞋距）並同步對位檢查；新增會話語感與版型視覺雙 QA 查核基準（design intTest#64/#65）
+
 ## 0.59.2 — 2026-06-29 _(internal)_
 - docs: README 產品手冊同步為三角色 roster（Lumi/Yumi/Rosa）：移除已自 roster 移除之 Princess Mary（舊 sol）之現行描述、roster 改為三位，並註明帶 sol id 之舊存檔讀取時 fallback 為 lumi；歷次設計/實作紀錄之歷史條目（#123/#126/#163 等）保留不動
 
