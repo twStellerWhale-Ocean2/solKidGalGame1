@@ -68,89 +68,89 @@ export const urbanArea = Object.freeze({
 });
 //#endregion 地圖與地點設定
 
-//#region 場景自帶題庫（issue #96 結構；issue #149 全量改寫：角色第一人稱、prompt 即台詞、選項即公主回應、無 opening/ending）
+//#region 場景自帶題庫（issue #96 結構；issue #149 角色第一人稱；issue #295 全量重寫：語感自然化、干擾選項改為情境內合理但判斷較差／語意錯誤之回應，去除荒謬句）
 // urbanLessonBank：以 place 為鍵的「打工任務」題庫（答對得 coins＝勞動所得）。
-// issue #149：Starters 分級；每場景 3 題、每題 3 選項；prompt＝角色第一人稱請求／任務、choices＝公主回應；數學包進角色任務情境。
+// Starters 分級；每場景 3 題、每題 3 選項；prompt＝角色第一人稱請求／任務、choices＝公主回應；數學包進角色任務情境。
 const jobReward = { coins: 105 };
 const urbanLessonBank = Object.freeze({
   garden: {
     title: "Help in the Castle Garden",
     questions: [
-      { questionType: "sentence-choice", prompt: "My cat is hiding and she loves warm, soft places. Where should we look first?", promptZh: "我的貓躲起來了，她喜歡溫暖柔軟的地方。我們應該先找哪裡？", answer: "Sure, let's look under the soft rose bushes first.", choices: ["Sure, let's look under the soft rose bushes first.","Sure, let's look on the cold stone wall first.","Sure, let's look in the wet water bucket first."], choicesZh: ["好啊，我們先找柔軟的玫瑰叢下面。","好啊，我們先找冰冷的石牆上。","好啊，我們先找濕濕的水桶裡。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "I need three red roses and five pink roses for a bouquet. How many roses is that?", promptZh: "我做花束需要三朵紅玫瑰和五朵粉紅玫瑰。一共是幾朵？", answer: "OK, let me add them up — that is eight roses.", choices: ["OK, let me add them up — that is eight roses.","OK, let me add them up — that is six roses.","OK, let me add them up — that is two roses."], choicesZh: ["好，我來加加看——一共是八朵玫瑰。","好，我來加加看——一共是六朵玫瑰。","好，我來加加看——一共是兩朵玫瑰。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "My white flowers did not sell yesterday. Can you give me some advice?", promptZh: "我的白花昨天沒賣完。可以給我一些建議嗎？", answer: "Sure, maybe you can sell some other flowers too.", choices: ["Sure, maybe you can sell some other flowers too.","Sure, maybe you can buy lots more white flowers.","Sure, maybe you can stop selling flowers."], choicesZh: ["當然，也許你可以也賣一些別種花。","當然，也許你可以多買很多白花。","當然，也許你可以不要再賣花了。"], reward: jobReward }
+      { questionType: "sentence-choice", prompt: "My cat is hiding, and she loves warm, soft places. Where should we look first?", promptZh: "我的貓躲起來了，她喜歡溫暖柔軟的地方。我們該先找哪裡？", answer: "Sure — cats love warm spots. Let's check under the rose bush.", choices: ["Sure — cats love warm spots. Let's check under the rose bush.","OK — maybe she climbed up onto the stone wall.","Well, she could be down by the pond, watching the fish."], choicesZh: ["好啊——貓咪最愛溫暖的地方，我們先看看玫瑰叢下面。","好的——也許她爬到石牆上了。","嗯，她可能在池塘邊看魚。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "I need three red roses and five pink roses for a bouquet. How many roses is that?", promptZh: "我做花束需要三朵紅玫瑰和五朵粉紅玫瑰。一共是幾朵？", answer: "OK — three and five make eight roses.", choices: ["OK — three and five make eight roses.","OK — I think that makes six roses.","OK — I count seven roses in all."], choicesZh: ["好——三加五，一共是八朵玫瑰。","好——我想應該是六朵。","好——我數起來一共七朵。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "My white flowers did not sell well yesterday. Can you give me some advice?", promptZh: "我的白花昨天賣得不好。可以給我一些建議嗎？", answer: "Well, you could add some pink roses — people love them.", choices: ["Well, you could add some pink roses — people love them.","Well, you could order even more white flowers.","Well, maybe flowers just do not sell in this town."], choicesZh: ["嗯，你可以加賣一些粉紅玫瑰——大家都很喜歡。","嗯，你可以再多進一些白花。","嗯，也許這個鎮上花本來就賣不動。"], reward: jobReward }
     ]
   },
   schoolClassroom: {
     title: "Help in the School Classroom",
     questions: [
-      { questionType: "sentence-choice", prompt: "We have only ten books but twelve children today. What should we do?", promptZh: "我們今天只有十本書，卻有十二個孩子。我們該怎麼辦？", answer: "OK, two children can share one book.", choices: ["OK, two children can share one book.","OK, we can send two children away.","OK, we can throw two books away."], choicesZh: ["好的，兩個孩子可以共讀一本書。","好的，我們可以叫兩個孩子離開。","好的，我們可以丟掉兩本書。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "There are six children here and four children there. Please count the class.", promptZh: "這裡有六個孩子，那裡有四個孩子。請幫我數全班有幾個孩子。", answer: "OK, let me count! There are ten children.", choices: ["OK, let me count! There are six children.","OK, let me count! There are ten children.","OK, let me count! There are four children."], choicesZh: ["好，我來數數！有六個孩子。","好，我來數數！有十個孩子。","好，我來數數！有四個孩子。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "The class is reading. Please remind everyone softly.", promptZh: "全班正在閱讀。請輕聲提醒大家。", answer: "Sure! Please be quiet.", choices: ["Sure! Run in the classroom.","Sure! Put the boat on the desk.","Sure! Please be quiet."], choicesZh: ["好的！在教室裡跑。","好的！把船放在書桌上。","好的！請保持安靜。"], reward: jobReward }
+      { questionType: "sentence-choice", prompt: "We have only ten books but twelve children today. What should we do?", promptZh: "我們今天只有十本書，卻有十二個孩子。我們該怎麼辦？", answer: "OK — two children can share one book for today.", choices: ["OK — two children can share one book for today.","Well, the class can wait while someone buys two more.","Sure — the fast readers can finish first and pass theirs on."], choicesZh: ["好的——今天先讓兩個孩子共讀一本。","嗯，全班可以先等，請人再去買兩本。","好啊——讀得快的先看完，再把書傳下去。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "There are six children here and four children there. How many children are in class?", promptZh: "這裡有六個孩子，那裡有四個孩子。全班一共有幾個孩子？", answer: "Sure — six and four make ten children.", choices: ["Sure — six and four make ten children.","Sure — I count eight children today.","Sure — that makes twelve children, I think."], choicesZh: ["好的——六加四，一共十個孩子。","好的——我數到八個孩子。","好的——我想應該是十二個孩子。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "The class is reading. Please remind everyone softly.", promptZh: "全班正在閱讀。請輕聲提醒大家。", answer: "Sure — I'll say softly, 'Please read quietly, everyone.'", choices: ["Sure — I'll say softly, 'Please read quietly, everyone.'","OK — I'll clap my hands so everyone hears me.","Well, I can wait outside until they finish reading."], choicesZh: ["好的——我會輕聲說：「請大家安靜閱讀。」","好的——我會拍拍手，讓大家都聽到我。","嗯，我可以在外面等他們讀完。"], reward: jobReward }
     ]
   },
   library: {
     title: "Help in the Library",
     questions: [
-      { questionType: "sentence-choice", prompt: "Should I put this story book on the high shelf or the low shelf for small children?", promptZh: "這本故事書我該放在高的書架，還是給小小孩的矮書架？", answer: "OK, the low shelf is better for small children.", choices: ["OK, the low shelf is better for small children.","OK, let's put it on the highest shelf.","OK, let's leave it on the wet floor."], choicesZh: ["好的，矮書架比較適合小小孩。","好的，我們把它放到最高的架子上。","好的，我們把它留在濕地板上。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "I see two blue books and four green books. Please help me count them.", promptZh: "我看到兩本藍色書和四本綠色書。請幫我數一共有幾本。", answer: "OK, let me count! There are six books.", choices: ["OK, let me count! There are four books.","OK, let me count! There are six books.","OK, let me count! There are two books."], choicesZh: ["好，我來數數！有四本書。","好，我來數數！有六本書。","好，我來數數！有兩本書。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "A child is loud. Please help me remind the child.", promptZh: "有個孩子太大聲了。請幫我提醒他。", answer: "Sure! Please speak softly.", choices: ["Sure! Please run fast.","Sure! Please buy fish.","Sure! Please speak softly."], choicesZh: ["好的！請跑快一點。","好的！請買魚。","好的！請輕聲說話。"], reward: jobReward }
+      { questionType: "sentence-choice", prompt: "Should this story book go on the high shelf or the low shelf for small children?", promptZh: "這本故事書該放在高書架，還是給小小孩的矮書架？", answer: "OK — the low shelf, so small children can reach it.", choices: ["OK — the low shelf, so small children can reach it.","Sure — the high shelf keeps it nice and safe.","Well, the reading table is fine for now."], choicesZh: ["好的——放矮書架，小小孩才拿得到。","好啊——放高書架，書比較不會壞。","嗯，先放在閱讀桌上就好。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "I see two blue books and four green books. How many books is that?", promptZh: "我看到兩本藍色書和四本綠色書。一共是幾本？", answer: "Sure — two and four make six books.", choices: ["Sure — two and four make six books.","Sure — I count five books in all.","Sure — that makes eight books, I think."], choicesZh: ["好的——二加四，一共六本書。","好的——我數起來一共五本。","好的——我想應該是八本。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "A child is being loud. Please help me remind him.", promptZh: "有個孩子太大聲了。請幫我提醒他。", answer: "Of course — I'll ask him gently to use his quiet voice.", choices: ["Of course — I'll ask him gently to use his quiet voice.","OK — I'll tell him to go outside and read there.","Well, the other children can move to another table."], choicesZh: ["當然——我會溫柔地請他小聲說話。","好的——我會叫他去外面讀。","嗯，其他孩子可以換到別桌去。"], reward: jobReward }
     ]
   },
   temple: {
     title: "Help at the Temple",
     questions: [
-      { questionType: "sentence-choice", prompt: "These white flowers look dry. How much water should I give them?", promptZh: "這些白花看起來很乾。我該給它們多少水？", answer: "Well, just a little water is best for them.", choices: ["Well, just a little water is best for them.","Well, let's pour the whole bucket on them.","Well, let's give them no water at all."], choicesZh: ["嗯，給一點點水對它們最好。","嗯，我們把整桶水都倒上去吧。","嗯，我們完全不要給它們水。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "There are two candles here and two candles there. Please help me count them.", promptZh: "這裡有兩支蠟燭，那裡有兩支蠟燭。請幫我數一共有幾支。", answer: "OK, let me count! There are four candles.", choices: ["OK, let me count! There are two candles.","OK, let me count! There are four candles.","OK, let me count! There are six candles."], choicesZh: ["好，我來數數！有兩支蠟燭。","好，我來數數！有四支蠟燭。","好，我來數數！有六支蠟燭。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "Some visitors are getting noisy in the quiet temple. What should I gently ask them to do?", promptZh: "有些訪客在安靜的神殿裡變得吵鬧。我該溫和地請他們做什麼？", answer: "Sure, let's kindly ask them to speak in soft voices.", choices: ["Sure, let's kindly ask them to speak in soft voices.","Sure, let's tell them to shout even louder.","Sure, let's start a drum parade inside."], choicesZh: ["好啊，我們溫和地請他們小聲說話。","好啊，我們叫他們喊得更大聲。","好啊，我們在裡面辦個打鼓遊行。"], reward: jobReward }
+      { questionType: "sentence-choice", prompt: "These white flowers look dry. How much water should I give them?", promptZh: "這些白花看起來很乾。我該給它們多少水？", answer: "Well — just a little each day keeps them happy.", choices: ["Well — just a little each day keeps them happy.","OK — a full bucket now will fix them fast.","Sure — we can wait for the rain to do it."], choicesZh: ["嗯——每天澆一點點，它們就會很開心。","好的——現在整桶倒下去，一次解決。","好啊——我們可以等下雨幫忙澆。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "There are two candles here and two candles there. How many candles is that?", promptZh: "這裡有兩支蠟燭，那裡有兩支蠟燭。一共是幾支？", answer: "OK — two and two make four candles.", choices: ["OK — two and two make four candles.","OK — I count five candles in all.","OK — that makes three candles, I think."], choicesZh: ["好的——二加二，一共四支蠟燭。","好的——我數起來一共五支。","好的——我想應該是三支。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "Some visitors are getting noisy in the quiet temple. What should I ask them to do?", promptZh: "有些訪客在安靜的神殿裡變得吵鬧。我該請他們怎麼做？", answer: "Sure — I'll kindly ask them to use soft voices inside.", choices: ["Sure — I'll kindly ask them to use soft voices inside.","Well, a little noise never hurts a big temple.","OK — we can close the doors until they leave."], choicesZh: ["好啊——我會親切地請他們在裡面小聲說話。","嗯，這麼大的神殿，一點聲音沒關係吧。","好的——我們把門關上，等他們離開。"], reward: jobReward }
     ]
   },
   administration: {
     title: "Help at the Administration Building",
     questions: [
-      { questionType: "sentence-choice", prompt: "These notes are important. Where should I keep them safe?", promptZh: "這些便條很重要。我該放在哪裡才安全？", answer: "OK, let's lock them in the box.", choices: ["OK, let's lock them in the box.","OK, let's leave them on the floor.","OK, let's throw them out the window."], choicesZh: ["好的，我們把它們鎖進盒子裡。","好的，我們把它們留在地上。","好的，我們把它們丟出窗外。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "I have three stamps here and four stamps there. Please help me count them.", promptZh: "我這裡有三張郵票，那裡有四張郵票。請幫我數一共有幾張。", answer: "OK, let me count! There are seven stamps.", choices: ["OK, let me count! There are four stamps.","OK, let me count! There are seven stamps.","OK, let me count! There are three stamps."], choicesZh: ["好，我來數數！有四張郵票。","好，我來數數！有七張郵票。","好，我來數數！有三張郵票。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "I lost the town map. Where should we look for it first?", promptZh: "我把城鎮地圖弄丟了。我們該先找哪裡？", answer: "Sure, let's look on the busy desk first.", choices: ["Sure, let's look on the busy desk first.","Sure, let's look outside in the rain first.","Sure, let's stop looking and go home."], choicesZh: ["好啊，我們先找忙亂的書桌上。","好啊，我們先去外面雨中找。","好啊，我們別找了直接回家吧。"], reward: jobReward }
+      { questionType: "sentence-choice", prompt: "These notes are important. Where should I keep them safe?", promptZh: "這些文件很重要。我該收在哪裡才安全？", answer: "OK — lock them in the drawer, and keep the key with you.", choices: ["OK — lock them in the drawer, and keep the key with you.","Sure — the desk is fine; everyone here is honest.","Well, you could carry them around with you all day."], choicesZh: ["好的——把它們鎖進抽屜，鑰匙隨身帶著。","好啊——放桌上就好，這裡大家都很誠實。","嗯，你可以整天隨身帶著它們。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "I have three stamps here and four stamps there. How many stamps is that?", promptZh: "我這裡有三張郵票，那裡有四張郵票。一共是幾張？", answer: "Sure — three and four make seven stamps.", choices: ["Sure — three and four make seven stamps.","Sure — I count six stamps in all.","Sure — that makes eight stamps, I think."], choicesZh: ["好的——三加四，一共七張郵票。","好的——我數起來一共六張。","好的——我想應該是八張。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "I lost the town map. Where should we search first?", promptZh: "我把城鎮地圖弄丟了。我們該先找哪裡？", answer: "OK — let's check your busy desk first. It is probably there.", choices: ["OK — let's check your busy desk first. It is probably there.","Well, we could draw a new map — that may be faster.","Sure — let's ask at the market if anyone found it."], choicesZh: ["好的——先找你那張忙亂的桌子，八成就在那裡。","嗯，我們可以畫一張新地圖——說不定更快。","好啊——我們去市集問問有沒有人撿到。"], reward: jobReward }
     ]
   },
   market: {
     title: "Help at Market Square",
     questions: [
-      { questionType: "sentence-choice", prompt: "A girl wants bread. Please ask her kindly.", promptZh: "一個女孩想買麵包。請親切地問她。", answer: "Sure! How many do you want?", choices: ["Sure! How many do you want?","Sure! Where is the wet dock?","Sure! Please put the candle on ice."], choicesZh: ["好的！你想要幾個？","好的！濕的碼頭在哪裡？","好的！請把蠟燭放在冰上。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "There are three apples and two pears. Please help me count all the fruits.", promptZh: "有三顆蘋果和兩顆梨子。請幫我數一共有幾個水果。", answer: "OK, let me count! There are five fruits.", choices: ["OK, let me count! There are three fruits.","OK, let me count! There are five fruits.","OK, let me count! There are two fruits."], choicesZh: ["好，我來數數！有三個水果。","好，我來數數！有五個水果。","好，我來數數！有兩個水果。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "A customer is leaving. Please say goodbye kindly.", promptZh: "一位客人要離開了。請親切地道別。", answer: "Thank you! Come again!", choices: ["Thank you! The fish is under the roses.","Thank you! Run in the market.","Thank you! Come again!"], choicesZh: ["謝謝！魚在玫瑰下面。","謝謝！在市集裡跑。","謝謝！歡迎再來！"], reward: jobReward }
+      { questionType: "sentence-choice", prompt: "A girl wants some bread. Please ask her kindly what she needs.", promptZh: "一個女孩想買麵包。請親切地問她需要什麼。", answer: "Sure! Hello — how many would you like today?", choices: ["Sure! Hello — how many would you like today?","OK! It is two coins each — please pay first.","Well, I can just give her the biggest loaf."], choicesZh: ["好的！你好——你今天想要幾個呢？","好的！一個兩枚金幣——請先付錢。","嗯，我直接拿最大的那條給她就好。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "There are three apples and two pears. How many fruits is that?", promptZh: "有三顆蘋果和兩顆梨子。一共是幾個水果？", answer: "OK — three and two make five fruits.", choices: ["OK — three and two make five fruits.","OK — I count six fruits on the table.","OK — that makes four fruits, I think."], choicesZh: ["好的——三加二，一共五個水果。","好的——我數到桌上有六個。","好的——我想應該是四個。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "A customer is leaving. Please say goodbye kindly.", promptZh: "一位客人要離開了。請親切地道別。", answer: "Thank you for coming! See you again soon!", choices: ["Thank you for coming! See you again soon!","OK — next customer, please come up!","Thanks! Do not forget to buy more tomorrow."], choicesZh: ["謝謝光臨！下次再來喔！","好的——下一位客人請上前！","謝謝！別忘了明天再來多買一點。"], reward: jobReward }
     ]
   },
   harbor: {
     title: "Help at the Fish Shop",
     questions: [
-      { questionType: "sentence-choice", prompt: "This box has four fish, and that box has two fish. Please help me count all the fish.", promptZh: "這個箱子有四條魚，那個箱子有兩條魚。請你幫我計算一共有幾條魚。", answer: "Sure thing! I counted six fish for you.", choices: ["Sure thing! I counted six fish for you.","Sure thing! I counted four flowers for you.","Sure thing! I put the fish on the table."], choicesZh: ["沒問題！我幫你算好了，一共有六條魚。","沒問題！我幫你算好了，一共有四朵花。","沒問題！我把魚放在桌上。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "This big fish must stay fresh until lunch. Where should I put it?", promptZh: "這條大魚要保持新鮮到午餐。我該把它放在哪裡？", answer: "OK, let's put it on the cold ice.", choices: ["OK, let's put it on the cold ice.","OK, let's put it in the warm sun.","OK, let's put it on the dry shelf."], choicesZh: ["好的，我們把它放在冰冷的冰上。","好的，我們把它放在溫暖的太陽下。","好的，我們把它放在乾燥的架子上。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "A cook wants the freshest fish. Which one should I show her?", promptZh: "一位廚師想要最新鮮的魚。我該給她看哪一條？", answer: "Sure, show her the fish caught this morning.", choices: ["Sure, show her the fish caught this morning.","Sure, show her the fish from last week.","Sure, show her the plastic toy fish."], choicesZh: ["好啊，給她看今天早上捕到的魚。","好啊，給她看上禮拜的魚。","好啊，給她看塑膠玩具魚。"], reward: jobReward }
+      { questionType: "sentence-choice", prompt: "This box has four fish, and that box has two fish. How many fish do I have?", promptZh: "這箱有四條魚，那箱有兩條魚。我一共有幾條魚？", answer: "Sure thing — four and two make six fish.", choices: ["Sure thing — four and two make six fish.","Sure — I count five fish in the boxes.","Sure — that makes seven fish, I think."], choicesZh: ["沒問題——四加二，一共六條魚。","好的——我數到箱子裡有五條。","好的——我想應該是七條。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "This big fish must stay fresh until lunch. Where should I put it?", promptZh: "這條大魚要保鮮到午餐時間。我該把它放在哪裡？", answer: "OK — set it on the cold ice right away.", choices: ["OK — set it on the cold ice right away.","Well, the shady shelf should keep it cool enough.","Sure — wrap it in a cloth and leave it by the door."], choicesZh: ["好的——馬上把它放到冰塊上。","嗯，陰涼的架子應該夠涼了。","好啊——用布把它包起來，放在門邊。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "A cook wants the freshest fish. Which one should I show her?", promptZh: "一位廚師想要最新鮮的魚。我該給她看哪一條？", answer: "Of course — show her today's catch. It is the freshest.", choices: ["Of course — show her today's catch. It is the freshest.","OK — the big one from yesterday still looks fine.","Well, any fish is fresh if we add enough ice."], choicesZh: ["當然——給她看今天捕的魚，那是最新鮮的。","好的——昨天那條大的看起來還不錯。","嗯，只要冰塊夠多，哪條魚都算新鮮吧。"], reward: jobReward }
     ]
   },
   port: {
     title: "Help at Harbor Port",
     questions: [
-      { questionType: "sentence-choice", prompt: "There are two boats at the left dock and two boats at the right dock. Please help me count them.", promptZh: "左邊碼頭有兩艘船，右邊碼頭有兩艘船。請幫我數一共有幾艘。", answer: "OK, let me count! There are four boats.", choices: ["OK, let me count! There are four boats.","OK, let me count! There are two boats.","OK, let me count! There are six boats."], choicesZh: ["好，我來數數！有四艘船。","好，我來數數！有兩艘船。","好，我來數數！有六艘船。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "The captain's big ship is coming in. Which dock should I send him to?", promptZh: "船長的大船要靠岸了。我該請他停到哪個碼頭？", answer: "Sure, send him to the big empty dock.", choices: ["Sure, send him to the big empty dock.","Sure, send him to the tiny crowded dock.","Sure, send him onto the rocky beach."], choicesZh: ["好啊，請他停到那個又大又空的碼頭。","好啊，請他停到那個又小又擠的碼頭。","好啊，請他直接停到滿是礁石的沙灘上。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "The dock is busy. Please help me remind the children.", promptZh: "碼頭很忙。請幫我提醒孩子們。", answer: "OK! Do not run here.", choices: ["OK! Please jump on the boat.","OK! Please put books in the sea.","OK! Do not run here."], choicesZh: ["好的！請跳上船。","好的！請把書放進海裡。","好的！不要在這裡跑。"], reward: jobReward }
+      { questionType: "sentence-choice", prompt: "There are two boats at the left dock and two at the right dock. How many boats is that?", promptZh: "左邊碼頭有兩艘船，右邊碼頭也有兩艘。一共是幾艘？", answer: "OK — two and two make four boats.", choices: ["OK — two and two make four boats.","OK — I count three boats by the docks.","OK — that makes six boats, I think."], choicesZh: ["好的——二加二，一共四艘船。","好的——我數到碼頭邊有三艘。","好的——我想應該是六艘。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "The captain's big ship is coming in. Which dock should I send him to?", promptZh: "船長的大船要進港了。我該請他停哪個碼頭？", answer: "Sure — send him to the big empty dock. His ship needs room.", choices: ["Sure — send him to the big empty dock. His ship needs room.","Well, the small dock is closer — maybe try that first.","OK — he can wait out at sea until a dock is free."], choicesZh: ["好啊——請他停到那個大的空碼頭，他的船需要空間。","嗯，小碼頭比較近——要不要先試試？","好的——他可以先在海上等，等到有碼頭空出來。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "The dock is busy today. Please help me remind the children to be careful.", promptZh: "今天碼頭很忙。請幫我提醒孩子們要小心。", answer: "Sure — I'll tell them, 'Please walk, do not run here.'", choices: ["Sure — I'll tell them, 'Please walk, do not run here.'","OK — I'll ask them to go play somewhere else.","Well, children never listen — we can only hope."], choicesZh: ["好的——我會告訴他們：「請用走的，不要在這裡跑。」","好的——我會請他們去別的地方玩。","嗯，孩子們從來不聽話——只能碰運氣了。"], reward: jobReward }
     ]
   },
   boutique: {
     title: "Help at the Dress Boutique",
     questions: [
-      { questionType: "sentence-choice", prompt: "Where should I hang this pretty pink dress so customers can see it?", promptZh: "這件漂亮的粉紅洋裝，我該掛在哪裡讓客人看得到？", answer: "OK, let's hang it on the front rail.", choices: ["OK, let's hang it on the front rail.","OK, let's hide it under the table.","OK, let's leave it on the dusty floor."], choicesZh: ["好的，我們把它掛在前面的衣架上。","好的，我們把它藏在桌子底下。","好的，我們把它留在滿是灰塵的地板上。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "There are four dresses here and three dresses there. Please help me count them.", promptZh: "這裡有四件洋裝，那裡有三件洋裝。請幫我數一共有幾件。", answer: "OK, let me count! There are seven dresses.", choices: ["OK, let me count! There are four dresses.","OK, let me count! There are seven dresses.","OK, let me count! There are three dresses."], choicesZh: ["好，我來數數！有四件洋裝。","好，我來數數！有七件洋裝。","好，我來數數！有三件洋裝。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "A girl likes the blue dress. Please help her kindly.", promptZh: "一個女孩喜歡藍色洋裝。請親切地幫她。", answer: "Of course! You can try it on.", choices: ["Of course! The blue dress is a fish.","Of course! Please run in the shop.","Of course! You can try it on."], choicesZh: ["當然！藍色洋裝是一條魚。","當然！請在店裡跑。","當然！你可以試穿看看。"], reward: jobReward }
+      { questionType: "sentence-choice", prompt: "Where should I hang this pretty pink dress so customers can see it?", promptZh: "這件漂亮的粉紅洋裝，我該掛在哪裡讓客人看得到？", answer: "OK — hang it on the front rail, where everyone walks past.", choices: ["OK — hang it on the front rail, where everyone walks past.","Sure — the back room keeps it safe from the sun.","Well, fold it neatly in the drawer with the others."], choicesZh: ["好的——掛在最前面的衣架上，大家經過都看得到。","好啊——放後面房間，才不會被太陽曬到。","嗯，把它折好收進抽屜，跟其他的放一起。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "There are four dresses here and three dresses there. How many dresses is that?", promptZh: "這裡有四件洋裝，那裡有三件。一共是幾件？", answer: "Sure — four and three make seven dresses.", choices: ["Sure — four and three make seven dresses.","Sure — I count six dresses on the rails.","Sure — that makes eight dresses, I think."], choicesZh: ["好的——四加三，一共七件洋裝。","好的——我數到衣架上有六件。","好的——我想應該是八件。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "A girl likes the blue dress. Please help her kindly.", promptZh: "一個女孩喜歡那件藍色洋裝。請親切地幫她。", answer: "Of course! Would you like to try it on?", choices: ["Of course! Would you like to try it on?","OK — I can wrap it up before she changes her mind.","Well, the pink one would suit her better, I think."], choicesZh: ["當然！你想試穿看看嗎？","好的——趁她還沒改變心意，我先包起來。","嗯，我覺得粉紅色那件更適合她。"], reward: jobReward }
     ]
   },
   lighthouse: {
     title: "Help at the Lighthouse",
     questions: [
-      { questionType: "sentence-choice", prompt: "It is getting dark. Please help me with the light.", promptZh: "天快黑了。請幫我處理燈。", answer: "OK! I will turn on the light.", choices: ["OK! I will turn on the light.","OK! I will turn on the fish.","OK! I will put the light under the bread."], choicesZh: ["好的！我會打開燈。","好的！我會打開魚。","好的！我會把燈放在麵包下面。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "There is one ship near the rocks and one ship near the dock. Please help me count them.", promptZh: "礁石附近有一艘船，碼頭附近有一艘船。請幫我數一共有幾艘。", answer: "OK, let me count! There are two ships.", choices: ["OK, let me count! There is one ship.","OK, let me count! There are two ships.","OK, let me count! There are four ships."], choicesZh: ["好，我來數數！有一艘船。","好，我來數數！有兩艘船。","好，我來數數！有四艘船。"], reward: jobReward },
-      { questionType: "sentence-choice", prompt: "The sea is calm now. Please tell the sailors.", promptZh: "現在海面很平靜。請告訴水手們。", answer: "Sure! The sea is calm today.", choices: ["Sure! The shelf is tidy now.","Sure! The shoes are bigger.","Sure! The sea is calm today."], choicesZh: ["好的！架子現在很整齊。","好的！鞋子比較大。","好的！今天海面很平靜。"], reward: jobReward }
+      { questionType: "sentence-choice", prompt: "It is getting dark, and ships are still out there. Please help me with the lamp.", promptZh: "天快黑了，海上還有船。請幫我處理燈。", answer: "Right away — I'll light the lamp before the ships come near.", choices: ["Right away — I'll light the lamp before the ships come near.","OK — we can wait until it is fully dark outside.","Well, the moon is bright — the ships may see fine tonight."], choicesZh: ["馬上來——我在船靠近前把燈點亮。","好的——我們可以等天完全黑了再點。","嗯，今晚月亮很亮——船應該看得清楚吧。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "There is one ship near the rocks and one near the dock. How many ships is that?", promptZh: "礁石附近有一艘船，碼頭附近也有一艘。一共是幾艘？", answer: "OK — one and one make two ships.", choices: ["OK — one and one make two ships.","OK — I only count one ship out there.","OK — that makes three ships, I think."], choicesZh: ["好的——一加一，一共兩艘船。","好的——我只數到外面有一艘。","好的——我想應該是三艘。"], reward: jobReward },
+      { questionType: "sentence-choice", prompt: "The sea is calm now. Please tell the sailors down at the dock.", promptZh: "現在海面很平靜。請告訴碼頭邊的水手們。", answer: "Sure — I'll tell them the sea is calm and safe to sail.", choices: ["Sure — I'll tell them the sea is calm and safe to sail.","OK — I'll tell them to wait until tomorrow anyway.","Well, the sailors can see the sea for themselves."], choicesZh: ["好的——我會告訴他們海面平靜，可以安心出航。","好的——我會叫他們還是等到明天再說。","嗯，水手們自己看海就知道了吧。"], reward: jobReward }
     ]
   }
 });
@@ -163,71 +163,71 @@ const urbanChatLessonBank = Object.freeze({
   garden: {
     title: "Chat in the Castle Garden",
     questions: [
-      { questionType: "sentence-choice", prompt: "Do you like the pink roses in my garden?", promptZh: "你喜歡我花園裡的粉紅玫瑰嗎？", answer: "Yes, I really love these pink roses!", choices: ["Yes, I really love these pink roses!","Sorry, the garden gate is locked."], choicesZh: ["喜歡，我超愛這些粉紅玫瑰！","抱歉，花園的門鎖住了。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "The little cat is sleeping by the flowers.", promptZh: "小貓正在花叢旁邊睡覺。", answer: "Aww, she looks so peaceful!", choices: ["Aww, she looks so peaceful!","Quick, pull up all the flowers!"], choicesZh: ["啊，她看起來好安詳！","快，把所有的花都拔掉！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Do you like the pink roses in my garden?", promptZh: "你喜歡我花園裡的粉紅玫瑰嗎？", answer: "Yes, I really love these pink roses!", choices: ["Yes, I really love these pink roses!","Hmm, the roses next door look prettier to me."], choicesZh: ["喜歡，我超愛這些粉紅玫瑰！","嗯，我覺得隔壁的玫瑰比較漂亮。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Look how the little cat sleeps by the flowers.", promptZh: "你看，小貓在花叢旁邊睡著了。", answer: "Aww, she looks so cosy by the flowers!", choices: ["Aww, she looks so cosy by the flowers!","Careful — cats can squash your flowers."], choicesZh: ["啊，她窩在花旁邊看起來好舒服！","小心——貓咪會把你的花壓壞喔。"], reward: chatReward }
     ]
   },
   schoolClassroom: {
     title: "Chat in the School Classroom",
     questions: [
-      { questionType: "sentence-choice", prompt: "Good morning, Princess.", promptZh: "早安，公主。", answer: "Good morning, Teacher! I am ready.", choices: ["Good morning, Teacher! I am ready.","Sorry, I am not ready for class yet."], choicesZh: ["早安，老師！我準備好了。","抱歉，我還沒準備好上課。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "How do you feel today?", promptZh: "你今天感覺怎麼樣？", answer: "Oh, I am very happy today!", choices: ["Hmm, I do not feel happy today.","Oh, I am very happy today!"], choicesZh: ["嗯，我今天覺得不太開心。","喔，我今天超開心！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Good morning, Princess. Ready for class?", promptZh: "早安，公主。準備好上課了嗎？", answer: "Good morning, Teacher! I am all ready.", choices: ["Good morning, Teacher! I am all ready.","Morning… can class start a little later today?"], choicesZh: ["早安，老師！我全都準備好了。","早……今天可以晚一點上課嗎？"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "How do you feel about school today?", promptZh: "你今天覺得上學怎麼樣？", answer: "I feel great — school is fun today!", choices: ["Honestly, school feels a little long today.","I feel great — school is fun today!"], choicesZh: ["老實說，今天上學感覺有點漫長。","我覺得超棒——今天上學好好玩！"], reward: chatReward }
     ]
   },
   library: {
     title: "Chat in the Library",
     questions: [
-      { questionType: "sentence-choice", prompt: "What books do you like, Princess?", promptZh: "公主，你喜歡什麼書？", answer: "Oh, I love story books!", choices: ["Oh, I love story books!","Sorry, I do not like these books."], choicesZh: ["喔，我超愛故事書！","抱歉，我不喜歡這些書。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "We speak softly in the library.", promptZh: "我們在圖書館裡輕聲說話。", answer: "OK, I will speak softly.", choices: ["No, I want to speak loudly in the library.","OK, I will speak softly."], choicesZh: ["不要，我想在圖書館裡大聲說話。","好的，我會輕聲說話。"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "What books do you like, Princess?", promptZh: "公主，你喜歡什麼書？", answer: "Oh, I love story books best!", choices: ["Oh, I love story books best!","Hmm, books are not really my thing."], choicesZh: ["喔，我最愛故事書了！","嗯，我其實不太愛看書。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "We always speak softly in the library.", promptZh: "在圖書館裡我們都輕聲說話。", answer: "OK, I will speak softly too.", choices: ["But speaking softly is so hard for me!","OK, I will speak softly too."], choicesZh: ["可是輕聲說話對我好難喔！","好的，我也會輕聲說話。"], reward: chatReward }
     ]
   },
   temple: {
     title: "Chat at the Temple",
     questions: [
-      { questionType: "sentence-choice", prompt: "How do you feel here, Princess?", promptZh: "公主，你在這裡感覺如何？", answer: "I feel so calm here.", choices: ["I feel so calm here.","I feel a bit noisy here."], choicesZh: ["我在這裡覺得好平靜。","我在這裡覺得有點吵。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "These flowers smell sweet.", promptZh: "這些花聞起來很香。", answer: "Oh, the flowers are lovely!", choices: ["Sorry, these flowers smell bad.","Oh, the flowers are lovely!"], choicesZh: ["抱歉，這些花聞起來很難聞。","喔，這些花好美！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "How do you feel here, Princess?", promptZh: "公主，你在這裡感覺如何？", answer: "I feel calm and quiet here.", choices: ["I feel calm and quiet here.","I feel a bit sleepy here, to be honest."], choicesZh: ["我在這裡覺得平靜又安寧。","老實說，我在這裡有點想睡。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "These lilies smell sweet, don't they?", promptZh: "這些百合聞起來很香，對吧？", answer: "Yes, the lilies smell lovely!", choices: ["Hmm, the lilies smell a bit strong for me.","Yes, the lilies smell lovely!"], choicesZh: ["嗯，百合的味道對我來說有點濃。","對啊，百合聞起來好香！"], reward: chatReward }
     ]
   },
   administration: {
     title: "Chat at the Administration Building",
     questions: [
-      { questionType: "sentence-choice", prompt: "Nice to meet you, Princess.", promptZh: "很高興見到你，公主。", answer: "Nice to meet you too, Otto!", choices: ["Nice to meet you too, Otto!","Sorry, I do not want to meet you."], choicesZh: ["我也很高興見到你，奧托！","抱歉，我不想見你。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Are you busy now?", promptZh: "你現在忙嗎？", answer: "No, I am free right now!", choices: ["Yes, I am very busy right now.","No, I am free right now!"], choicesZh: ["對，我現在很忙。","不忙，我現在有空！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Nice to meet you, Princess. I am Otto.", promptZh: "很高興見到你，公主。我是奧托。", answer: "Nice to meet you too, Otto!", choices: ["Nice to meet you too, Otto!","Sorry, Otto — I really must be going."], choicesZh: ["我也很高興見到你，奧托！","抱歉，奧托——我真的得走了。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Are you busy today, or do you have time to chat?", promptZh: "你今天忙嗎？還是有時間聊聊天？", answer: "I have time — let's chat a little!", choices: ["Very busy today — maybe another time.","I have time — let's chat a little!"], choicesZh: ["今天很忙——下次再聊吧。","我有時間——我們聊一下吧！"], reward: chatReward }
     ]
   },
   market: {
     title: "Chat at Market Square",
     questions: [
-      { questionType: "sentence-choice", prompt: "Are you hungry, Princess?", promptZh: "公主，你餓了嗎？", answer: "Yes, just a little!", choices: ["Yes, just a little!","No, I am not hungry at all."], choicesZh: ["對啊，有一點點！","不，我一點也不餓。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "This bread smells good.", promptZh: "這個麵包聞起來很香。", answer: "Thank you! It smells so good.", choices: ["Sorry, this bread smells strange.","Thank you! It smells so good."], choicesZh: ["抱歉，這個麵包聞起來怪怪的。","謝謝！聞起來好香。"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Are you hungry, Princess? The bread is still warm.", promptZh: "公主，你餓了嗎？麵包還是溫熱的喔。", answer: "Yes! Warm bread sounds perfect right now.", choices: ["Yes! Warm bread sounds perfect right now.","Not hungry, thanks — I had a big breakfast."], choicesZh: ["要！現在來點溫熱的麵包太棒了。","不餓，謝謝——我早餐吃很多。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "I baked this bread fresh this morning.", promptZh: "這個麵包是我今天早上剛烤的。", answer: "Mmm — fresh bread! It smells wonderful.", choices: ["Hmm, the bread from yesterday was better, I think.","Mmm — fresh bread! It smells wonderful."], choicesZh: ["嗯，我覺得昨天的麵包比較好吃。","嗯——新鮮麵包！聞起來好香。"], reward: chatReward }
     ]
   },
   harbor: {
     title: "Chat at the Fish Shop",
     questions: [
-      { questionType: "sentence-choice", prompt: "Do you like the sea, Princess?", promptZh: "公主，你喜歡大海嗎？", answer: "Yes, I really like the sea.", choices: ["Yes, I really like the sea.","No, I do not like the sea."], choicesZh: ["喜歡，我很喜歡大海。","不，我不喜歡大海。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "The fish are fresh today.", promptZh: "今天的魚很新鮮。", answer: "Wow, your fish look so fresh!", choices: ["Hmm, these fish do not look fresh.","Wow, your fish look so fresh!"], choicesZh: ["嗯，這些魚看起來不太新鮮。","哇，你的魚看起來好新鮮！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Do you like the sea, Princess?", promptZh: "公主，你喜歡大海嗎？", answer: "Yes, I love the sea and the salty air!", choices: ["Yes, I love the sea and the salty air!","Hmm, the sea is a bit too loud for me."], choicesZh: ["喜歡，我愛大海，也愛鹹鹹的海風！","嗯，大海對我來說有點吵。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "My fish came straight off the boat today.", promptZh: "我的魚是今天剛從船上卸下來的。", answer: "Wow, your fish look so fresh!", choices: ["Hmm, fish always smell a bit funny to me.","Wow, your fish look so fresh!"], choicesZh: ["嗯，魚對我來說總是有點怪味。","哇，你的魚看起來好新鮮！"], reward: chatReward }
     ]
   },
   port: {
     title: "Chat at Harbor Port",
     questions: [
-      { questionType: "sentence-choice", prompt: "Do you like the sea, Princess?", promptZh: "公主，你喜歡大海嗎？", answer: "Yes, I love the sea so much!", choices: ["Yes, I love the sea so much!","No, the sea is too cold for me."], choicesZh: ["對啊，我超愛大海！","不，大海對我來說太冷了。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Have a safe trip, Princess.", promptZh: "祝你旅途平安，公主。", answer: "Thank you! Have a good day.", choices: ["Oh no, I am scared of this trip.","Thank you! Have a good day."], choicesZh: ["喔不，我好怕這趟旅程。","謝謝！祝你有美好的一天。"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "Have you ever sailed on a big ship, Princess?", promptZh: "公主，你搭過大船嗎？", answer: "Not yet, but I would love to sail one day!", choices: ["Not yet, but I would love to sail one day!","Big ships rock too much for me, I think."], choicesZh: ["還沒有，但我好想有一天出海航行！","我覺得大船搖來搖去，我會受不了。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "The harbor is busy but happy today.", promptZh: "今天的港口很忙碌，但很熱鬧開心。", answer: "Yes, the harbor feels so lively today!", choices: ["Yes, the harbor feels so lively today!","A bit too busy for me — I like quiet places."], choicesZh: ["對啊，今天港口好有活力！","對我來說有點太忙了——我喜歡安靜的地方。"], reward: chatReward }
     ]
   },
   boutique: {
     title: "Chat at the Dress Boutique",
     questions: [
-      { questionType: "sentence-choice", prompt: "Do you like this pink dress?", promptZh: "你喜歡這件粉紅色洋裝嗎？", answer: "I love this pink dress!", choices: ["I love this pink dress!","Sorry, I do not like this dress."], choicesZh: ["我好愛這件粉紅洋裝！","抱歉，我不喜歡這件洋裝。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Thank you for visiting my shop.", promptZh: "謝謝你來我的店。", answer: "Wow, your shop is so pretty!", choices: ["Sorry, your shop is a bit messy.","Wow, your shop is so pretty!"], choicesZh: ["抱歉，你的店有點亂。","哇，你的店好漂亮！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "This pink dress just came in. What do you think?", promptZh: "這件粉紅洋裝剛到貨。你覺得怎麼樣？", answer: "It is so pretty! I love the pink.", choices: ["It is so pretty! I love the pink.","Hmm, pink is not really my colour."], choicesZh: ["好漂亮！我最愛粉紅色了。","嗯，粉紅色不太是我的菜。"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "Thank you for visiting my little shop.", promptZh: "謝謝你來我的小店。", answer: "I love your shop — it is so pretty!", choices: ["Your shop is nice, but it is a bit small.","I love your shop — it is so pretty!"], choicesZh: ["你的店不錯，只是有點小。","我好喜歡你的店——好漂亮！"], reward: chatReward }
     ]
   },
   lighthouse: {
     title: "Chat at the Lighthouse",
     questions: [
-      { questionType: "sentence-choice", prompt: "Can you see the sea, Princess?", promptZh: "公主，你看得到大海嗎？", answer: "Yes, it is so beautiful!", choices: ["Yes, it is so beautiful!","No, the fog hides the sea today."], choicesZh: ["看得到，它好美！","不，今天的霧把海遮住了。"], reward: chatReward },
-      { questionType: "sentence-choice", prompt: "Good night, Princess.", promptZh: "晚安，公主。", answer: "Good night, Captain!", choices: ["It is too early to say good night.","Good night, Captain!"], choicesZh: ["現在說晚安還太早了。","晚安，船長！"], reward: chatReward }
+      { questionType: "sentence-choice", prompt: "You can see the whole sea from up here, Princess.", promptZh: "公主，從這上面可以看到整片大海喔。", answer: "Wow, the sea looks amazing from here!", choices: ["Wow, the sea looks amazing from here!","The sea is pretty, but it is too high up here for me!"], choicesZh: ["哇，從這裡看大海好壯觀！","海是很美啦，但這裡對我來說太高了！"], reward: chatReward },
+      { questionType: "sentence-choice", prompt: "The sea wind is strong tonight, Princess.", promptZh: "公主，今晚的海風很強。", answer: "I love the sea wind on my face!", choices: ["The wind is too cold — let's go inside.","I love the sea wind on my face!"], choicesZh: ["風太冷了——我們進去吧。","我好喜歡海風吹在臉上的感覺！"], reward: chatReward }
     ]
   }
 });
@@ -243,10 +243,10 @@ export const urbanSceneConfigs = mergeLessons(mergeLessons({
   library: { ...civicSceneArt("library"), scene: "scene-urban-library", npc: "Librarian Nola", npcImage: npcImage("librarian-nola"), npcNaturalHeightCm: 162, travelAction: "Visit", travelLine: "Hello, Princess. Welcome to the quiet library.", travelLineZh: "你好，公主。歡迎來到安靜的圖書館。" },
   temple: { ...civicSceneArt("temple"), scene: "scene-urban-temple", npc: "Sister Luma", npcImage: npcImage("sister-luma"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Good day, Princess. Welcome to the calm temple.", travelLineZh: "日安，公主。歡迎來到平靜的神殿。" },
   administration: { ...civicSceneArt("administration"), scene: "scene-urban-administration", npc: "Clerk Otto", npcImage: npcImage("clerk-otto"), npcNaturalHeightCm: 172, travelAction: "Visit", travelLine: "Hello, Princess. I am sorting town notes.", travelLineZh: "你好，公主。我正在整理城鎮便條。" },
-  market: { ...singleSceneArt("market"), scene: "scene-market", npc: "Auntie Pom", npcImage: npcImage("auntie-pom-market"), npcNaturalHeightCm: 155, travelAction: "Visit", travelLine: "Hello, Princess. Warm bread is ready.", travelLineZh: "你好，公主。溫熱的麵包準備好了。" },
-  harbor: { ...singleSceneArt("harbor"), scene: "scene-harbor", npc: "Nami", npcImage: npcImage("nami"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Hi, Princess. The fresh fish are ready today.", travelLineZh: "嗨，公主。今天的新鮮魚準備好了。" },
-  port: { ...singleSceneArt("harbor"), scene: "scene-port", npc: "Dock Guide", npcImage: npcImage("dock-guide"), npcNaturalHeightCm: 175, travelAction: "Visit", travelLine: "Hello, Princess. Welcome to the harbor.", travelLineZh: "你好，公主。歡迎來到港口。" },
-  boutique: { ...urbanShopArt("dress-boutique"), scene: "scene-urban-dress-boutique", npc: "Rena", npcImage: npcImage("rena"), npcNaturalHeightCm: 165, travelAction: "Shop", travelLine: "Hello, Princess. The town wardrobe is ready today.", travelLineZh: "你好，公主。今天城鎮服飾都準備好了。", shopGreeting: "Pick town hair, a practical outfit, walking shoes, or a clever accessory, Princess.", shopGreetingZh: "公主，選一款城鎮髮型、實用服裝、步行鞋或聰明配件吧。" },
+  market: { ...singleSceneArt("market"), scene: "scene-market", npc: "Auntie Pom", npcImage: npcImage("auntie-pom-market"), npcNaturalHeightCm: 155, travelAction: "Visit", travelLine: "Hello, Princess! The bread is warm, fresh from the oven.", travelLineZh: "你好，公主！麵包剛出爐，還熱呼呼的。" },
+  harbor: { ...singleSceneArt("harbor"), scene: "scene-harbor", npc: "Nami", npcImage: npcImage("nami"), npcNaturalHeightCm: 160, travelAction: "Visit", travelLine: "Hi, Princess! Today's fish came straight off the boat.", travelLineZh: "嗨，公主！今天的魚剛從船上卸下來。" },
+  port: { ...singleSceneArt("harbor"), scene: "scene-port", npc: "Dock Guide", npcImage: npcImage("dock-guide"), npcNaturalHeightCm: 175, travelAction: "Visit", travelLine: "Hello, Princess! The port is busy today — watch your step.", travelLineZh: "你好，公主！今天港口很忙——走路小心喔。" },
+  boutique: { ...urbanShopArt("dress-boutique"), scene: "scene-urban-dress-boutique", npc: "Rena", npcImage: npcImage("rena"), npcNaturalHeightCm: 165, travelAction: "Shop", travelLine: "Welcome back, Princess! New town styles just arrived.", travelLineZh: "歡迎回來，公主！新的城鎮款式剛到貨。", shopGreeting: "Come look around, Princess — town hair, everyday outfits, walking shoes, and clever little accessories.", shopGreetingZh: "公主，來逛逛吧——城鎮髮型、日常服裝、好走的鞋，還有精巧的小配件。" },
   lighthouse: { ...singleSceneArt("lighthouse"), scene: "scene-lighthouse", npc: "Captain Sol", npcImage: npcImage("captain-sol"), npcNaturalHeightCm: 178, travelAction: "Visit", travelLine: "Hello, Princess. Welcome to the lighthouse.", travelLineZh: "你好，公主。歡迎來到燈塔。" }
 }, urbanLessonBank, { area: "urban", vocabProfile: urbanVocabularyProfile.id }),
   urbanChatLessonBank, { area: "urban", vocabProfile: urbanVocabularyProfile.id }, "chatLesson");

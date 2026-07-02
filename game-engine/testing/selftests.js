@@ -2557,9 +2557,12 @@ async function collectCharacterScaleAudit(api, errors, warnings = []) {
         const figureTop = headMetrics?.alphaBBox ? Math.min(metrics.alphaBBox.top, headMetrics.alphaBBox.top) : metrics.alphaBBox.top;
         const figureBottom = metrics.alphaBBox.bottom;
         const figureHeight = figureBottom - figureTop;
-        const baselineGap = contract.groundBaselineY - figureBottom;
+        // issue #295：共用 body 腳掌與下緣預留鞋層空間（playableFootClearancePx），
+        // 可玩公主 base 的腳底 baseline 以「地面 − 預留量」為準；NPC 檢查（上方）不適用此預留。
+        const footClearance = contract.playableFootClearancePx || 0;
+        const baselineGap = contract.groundBaselineY - footClearance - figureBottom;
         if (Math.abs(baselineGap) > contract.baselineTolerancePx) {
-          errors.push(`${ref.id} base baseline gap ${baselineGap}px exceeds ${contract.baselineTolerancePx}px`);
+          errors.push(`${ref.id} base baseline gap ${baselineGap}px (after ${footClearance}px shoe clearance) exceeds ${contract.baselineTolerancePx}px`);
         }
         if (Math.abs(figureHeight - expectedHeight) > contract.assetHeightTolerancePx) {
           errors.push(`${ref.id} body+head figure height ${figureHeight}px differs from ${expectedHeight}px`);
