@@ -23,7 +23,9 @@ import {
   unequipOutfitItem
 } from "./doll.js";
 import { elements, session } from "../core/session.js";
-import { hub } from "../core/hub.js";
+import { addDiary, addUnique, awardBadge, princessName, render, renderHome, updateProgressBadges } from "../render/hud.js";
+import { closeAdv, openAdvBase, openRoomScene, openSceneAdv, scheduleAdvFocus, setAdvLine, showRewardBurst } from "../scene/adv-flow.js";
+import { persist } from "../system/persistence.js";
 export function renderWardrobeTabs() {
   elements.wardrobeTabs.innerHTML = "";
   categories.forEach((category) => {
@@ -35,7 +37,7 @@ export function renderWardrobeTabs() {
     button.textContent = `${category.label} ${ownedCount}`;
     button.addEventListener("click", () => {
       session.wardrobeCategory = session.wardrobeCategory === category.id ? "" : category.id;
-      hub.renderHome();
+      renderHome();
     });
     elements.wardrobeTabs.appendChild(button);
   });
@@ -115,38 +117,38 @@ export function itemPreviewStyle(item) {
 }
 
 export function openShopAdv(hotspot) {
-  hub.openSceneAdv(hotspot);
+  openSceneAdv(hotspot);
 }
 
 export function openShopDetail(hotspot) {
-  hub.openAdvBase(hotspot, "shop");
+  openAdvBase(hotspot, "shop");
   session.activeShopHotspot = hotspot;
-  hub.addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
+  addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
   const firstCategory = hotspot.defaultCategory || hotspot.shopCategories?.[0] || "outfit";
   const stockedCategories = availableShopCategories(hotspot);
   session.shopCategory = stockedCategories.includes(session.shopCategory) ? session.shopCategory : stockedCategories[0] || firstCategory;
   clearTryOnPreview({ renderDoll: false });
   // issue #149：商店招呼由店家第一人稱發話，並支援中文協助（中文鈕播 shopGreetingZh）。
-  hub.setAdvLine(shopGreeting(hotspot), sceneConfigFor(hotspot).shopGreetingZh);
+  setAdvLine(shopGreeting(hotspot), sceneConfigFor(hotspot).shopGreetingZh);
   elements.advPrompt.textContent = "Tap to preview. BUY to keep.";
   elements.shopArea.classList.remove("wardrobe-detail", "refund-detail");
   elements.shopArea.classList.add("show");
   renderAdvShop();
-  hub.scheduleAdvFocus(0);
+  scheduleAdvFocus(0);
   speak(elements.advLine.textContent, npcVoiceFor(hotspot), { source: "npc-shop" });
 }
 
 export function openRefundDetail(hotspot) {
-  hub.openAdvBase(hotspot, "refund");
+  openAdvBase(hotspot, "refund");
   session.activeShopHotspot = hotspot;
-  hub.addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
+  addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
   clearTryOnPreview({ renderDoll: false });
-  hub.setAdvLine(`${sceneConfigFor(hotspot).npc} can help return treasures from this shop.`);
+  setAdvLine(`${sceneConfigFor(hotspot).npc} can help return treasures from this shop.`);
   elements.advPrompt.textContent = "Tap an owned treasure, then Refund.";
   elements.shopArea.classList.remove("wardrobe-detail");
   elements.shopArea.classList.add("show", "refund-detail");
   renderRefundDetail();
-  hub.scheduleAdvFocus(0);
+  scheduleAdvFocus(0);
   speak(elements.advLine.textContent, npcVoiceFor(hotspot), { source: "npc-refund" });
 }
 
@@ -158,10 +160,10 @@ export function openWardrobeDetail(category = "outfit") {
   clearTryOnPreview({ renderDoll: false });
   // issue #244：公主房衣櫃與商店逛店共用同一套版面——以 data-mode="shop" 直接套用商店多欄貨架 CSS（消除舊
   // wardrobe 單欄版型分岔），另加 .adv-closet 標記僅承載 wear-only 差異（深粉紅穿脫鈕）。session.advMode 維持 "wardrobe"
-  // 以走無試穿之焦點與行為（不誤觸購買）。.adv-closet 於 hub.openAdvBase 重設 className 時自動清除、hub.closeAdv 亦清除。
+  // 以走無試穿之焦點與行為（不誤觸購買）。.adv-closet 於 openAdvBase 重設 className 時自動清除、closeAdv 亦清除。
   elements.advScene.dataset.mode = "shop";
   elements.advScene.classList.add("adv-closet");
-  hub.setAdvLine(`Pick what ${hub.princessName()} will wear today.`);
+  setAdvLine(`Pick what ${princessName()} will wear today.`);
   elements.advPrompt.textContent = "Tap to wear; tap again to take off.";
   elements.shopArea.classList.remove("refund-detail");
   elements.shopArea.classList.add("show", "wardrobe-detail");
@@ -318,7 +320,7 @@ export function renderAdvShop(preserveFocus = false, { closet = false } = {}) {
     if (!closet) renderShopSoldOut();
     const backButton = renderItemDetailPanel({ ...panel, items: [] });
     renderItemPanelCommands(backButton);
-    hub.scheduleAdvFocus(0);
+    scheduleAdvFocus(0);
     return;
   }
   renderActiveTryOnDoll();
@@ -329,7 +331,7 @@ export function renderAdvShop(preserveFocus = false, { closet = false } = {}) {
   }));
   const backButton = renderItemDetailPanel({ ...panel, columns });
   renderItemPanelCommands(backButton);
-  hub.scheduleAdvFocus(preserveFocus ? session.advFocusIndex : 0);
+  scheduleAdvFocus(preserveFocus ? session.advFocusIndex : 0);
 }
 
 export function shopItemTriedOn(item) {
@@ -360,11 +362,11 @@ export function toggleShopTryOn(item) {
   if (!item || !isWearableItem(item)) return;
   updateAdvAdjustBtn(item); // issue #272：每次點選面板單品即更新浮動調整按鈕
   // issue #244：公主房衣櫃（session.advMode==="wardrobe"）與商店逛店共用此單一穿脫來源。
-  // 衣櫃＝已擁有衣物之持久穿脫：直接 equip/unequip 至 session.state.outfit 並 hub.persist，再以同一套就地更新
+  // 衣櫃＝已擁有衣物之持久穿脫：直接 equip/unequip 至 session.state.outfit 並 persist，再以同一套就地更新
   // （renderActiveTryOnDoll＋updateShopTileStates，不重建貨架）反映，故面板不跑、與商店行為一致。
   if (session.advMode === "wardrobe") {
     if (isItemEquipped(item)) unequipOutfitItem(item); else equipOutfitItem(item);
-    hub.persist();
+    persist();
     // 與商店 try-on 同一套就地更新：只更新 ADV 娃娃與各方塊狀態，不重建貨架（面板不跑）。
     renderActiveTryOnDoll();
     updateShopTileStates();
@@ -435,21 +437,21 @@ export function backToStoreScene() {
   const hotspot = session.activeShopHotspot;
   clearTryOnPreview({ renderDoll: false });
   if (hotspot) {
-    hub.openSceneAdv(hotspot);
+    openSceneAdv(hotspot);
   } else {
-    hub.closeAdv();
+    closeAdv();
   }
 }
 
 export function backToRoomScene() {
   clearTryOnPreview({ renderDoll: false });
-  hub.openRoomScene(hotspotById("princessRoom"));
+  openRoomScene(hotspotById("princessRoom"));
 }
 
 export function shopActionLabel(item) {
   if (!item) return "Pick a treasure";
   if (session.state.owned.includes(item.id)) {
-    return item.type === "room" ? `Already in ${hub.princessName()}'s room` : "Already in wardrobe";
+    return item.type === "room" ? `Already in ${princessName()}'s room` : "Already in wardrobe";
   }
   if (session.state.coins < item.cost) return `Need ${item.cost - session.state.coins} more coins`;
   return `BUY ${item.cost} coins`;
@@ -461,27 +463,27 @@ export function tryOnFeedbackText(item, source) {
   const affordable = session.state.coins >= item.cost;
   const status = owned ? equipped ? "Equipped now" : "Owned treasure" : affordable ? "Ready to buy" : `Need ${item.cost - session.state.coins} more coins`;
   if (item.type === "room") return `${item.name}: ${status}.`;
-  const action = source === "wardrobe" ? `Trying it on ${hub.princessName()}` : `Trying it on ${hub.princessName()} before buying`;
+  const action = source === "wardrobe" ? `Trying it on ${princessName()}` : `Trying it on ${princessName()} before buying`;
   return `${item.name}: ${action}. ${status}.`;
 }
 
 export function renderShopSoldOut() {
   elements.shopArea.querySelector(".shop-feature")?.remove();
   renderPaperDolls();
-  hub.setAdvLine("You found every treasure in this shop.");
+  setAdvLine("You found every treasure in this shop.");
   elements.advPrompt.textContent = "Visit the wardrobe to wear owned treasures.";
-  elements.advFeedback.textContent = `${sceneConfigFor(session.activeShopHotspot).npc} smiles. ${hub.princessName()} can wear owned treasures from the wardrobe.`;
+  elements.advFeedback.textContent = `${sceneConfigFor(session.activeShopHotspot).npc} smiles. ${princessName()} can wear owned treasures from the wardrobe.`;
 }
 
 export function buyItemInAdv(item) {
   if (!item) return;
   if (session.state.owned.includes(item.id)) {
     elements.advFeedback.textContent = item.type === "room"
-      ? `${item.name} is already in ${hub.princessName()}'s room.`
+      ? `${item.name} is already in ${princessName()}'s room.`
       : `${item.name} is already in the wardrobe.`;
     session.shopPreviewItemId = "";
     renderAdvShop(true);
-    hub.scheduleAdvFocus(session.advFocusIndex);
+    scheduleAdvFocus(session.advFocusIndex);
     return;
   }
   if (session.state.coins < item.cost) {
@@ -495,16 +497,16 @@ export function buyItemInAdv(item) {
   session.state.owned.push(item.id);
   recordPurchaseSources(item);
   if (item.type !== "room") equipOutfitItem(item);
-  hub.awardBadge("First Shopping");
-  hub.updateProgressBadges();
-  hub.addDiary({ type: "shop", title: session.activeShopHotspot?.label || "Shop", body: `Bought ${item.name}.`, result: `-${item.cost} coins` });
-  const feedbackText = item.type === "room" ? `${item.name} is in ${hub.princessName()}'s room now.` : `${item.name} is on ${hub.princessName()} now.`;
-  hub.setAdvLine(`${item.name} is yours now. It looks wonderful.`);
+  awardBadge("First Shopping");
+  updateProgressBadges();
+  addDiary({ type: "shop", title: session.activeShopHotspot?.label || "Shop", body: `Bought ${item.name}.`, result: `-${item.cost} coins` });
+  const feedbackText = item.type === "room" ? `${item.name} is in ${princessName()}'s room now.` : `${item.name} is on ${princessName()} now.`;
+  setAdvLine(`${item.name} is yours now. It looks wonderful.`);
   elements.advFeedback.textContent = feedbackText;
   elements.statusMessage.textContent = feedbackText;
-  hub.showRewardBurst(`${item.name} ✦`);
-  hub.persist();
-  hub.render();
+  showRewardBurst(`${item.name} ✦`);
+  persist();
+  render();
   session.shopPreviewItemId = "";
   // 已買下＝實際穿上，從試穿清單移除（其餘試穿維持）。
   session.shopTryOnIds = session.shopTryOnIds.filter((id) => id !== item.id);
@@ -542,7 +544,7 @@ export function renderRefundDetail(preserveFocus = false) {
   });
   renderItemPanelCommands(backButton);
   const focusIndex = preserveFocus ? Math.max(0, refundableItems.findIndex((item) => item.id === session.shopPreviewItemId)) : 0;
-  hub.scheduleAdvFocus(focusIndex);
+  scheduleAdvFocus(focusIndex);
 }
 
 export function previewRefundItem(item) {
@@ -575,12 +577,12 @@ export function refundItemInAdv(item) {
   clearRemovedEquippedItems(removedOwnedIds);
   session.shopPreviewItemId = "";
   const feedbackText = `Refunded ${item.name} for ${amount} coins.`;
-  hub.setAdvLine(feedbackText);
+  setAdvLine(feedbackText);
   elements.advFeedback.textContent = feedbackText;
   elements.statusMessage.textContent = feedbackText;
-  hub.addDiary({ type: "shop", title: session.activeShopHotspot?.label || "Refund", body: `Refunded ${item.name}.`, result: `+${amount} coins` });
-  hub.persist();
-  hub.render();
+  addDiary({ type: "shop", title: session.activeShopHotspot?.label || "Refund", body: `Refunded ${item.name}.`, result: `+${amount} coins` });
+  persist();
+  render();
   renderRefundDetail(true);
 }
 

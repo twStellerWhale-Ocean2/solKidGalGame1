@@ -1,6 +1,10 @@
 // map/map-runtime.js — 地圖關注點：地區／城堡地圖渲染、移動、hotspot 與視口（issue #298 自 main.js 拆出，行為零變更）。
 // issue #178：鍵盤地圖走動參數——自管連續移動迴圈的步進間隔與各面移速，取代倚賴 OS 按鍵自動重複（消除起步停頓、加快移速）。
-import { hub } from "../core/hub.js";
+import { activeViewName, changeView } from "../app/views.js";
+import { renderAreaNav } from "../render/hud.js";
+import { jobAvailableForPlace, openRoomScene, openSceneAdv } from "../scene/adv-flow.js";
+import { persist } from "../system/persistence.js";
+import { allowedShopCategories } from "../wardrobe/shop-panel.js";
 import {
   areaRegistry,
   castleHotspots,
@@ -92,9 +96,9 @@ export function openArea(areaId) {
   session.state.area = areaId;
   ensureAreaPosition(areaId);
   areaMapViewportController.requestCenter(areaId);
-  hub.persist();
-  hub.changeView(area.view);
-  hub.renderAreaNav();
+  persist();
+  changeView(area.view);
+  renderAreaNav();
 }
 
 export function openWorldMap() {
@@ -103,7 +107,7 @@ export function openWorldMap() {
   session.activeWorldDestinationId = worldDestinationForArea(session.state.area)?.id || session.activeWorldDestinationId || "castle";
   areaMapViewportController.requestCenter("world");
   elements.statusMessage.textContent = "Choose a kingdom area.";
-  hub.changeView("world");
+  changeView("world");
 }
 
 
@@ -214,7 +218,7 @@ export function nearbyAreaHotspot(areaId, defaultRadius = 6.8) {
 
 export function renderCastleMap() {
   if (!elements.castleStage || !elements.castleMarkerLayer) return;
-  if (elements.castleStage.offsetParent === null && hub.activeViewName() !== "home") return;
+  if (elements.castleStage.offsetParent === null && activeViewName() !== "home") return;
   centerAreaMapIfRequested("castle");
   const metrics = castleCoverMetrics();
   syncAreaMapStyles("castle", metrics);
@@ -254,7 +258,7 @@ export function focusCastleHotspot(hotspotId, rerender = true) {
     session.state.playerNode = node.id;
     session.state.player = { x: node.x, y: node.y };
     centerAreaMapOnPoint("castle", node.x, node.y);
-    hub.persist();
+    persist();
   }
   if (rerender) renderCastleMap();
   elements.castleStage.focus({ preventScroll: true });
@@ -299,10 +303,10 @@ export function interactCastleHotspot() {
     return;
   }
   if (hotspot.kind === "room") {
-    hub.openRoomScene(hotspot);
+    openRoomScene(hotspot);
     return;
   }
-  hub.openSceneAdv(hotspot);
+  openSceneAdv(hotspot);
 }
 
 export function updateNearbyCastleHotspot() {
@@ -339,7 +343,7 @@ export function moveOnAreaMap(areaId, dx, dy, options = {}) {
   options.onNearby?.(nearby);
   token?.classList.add("walking");
   window.setTimeout(() => token?.classList.remove("walking"), 180);
-  hub.persist();
+  persist();
   options.render?.();
 }
 
@@ -355,7 +359,7 @@ export function moveOnCastleMap(dx, dy) {
 
 
 export function renderMap() {
-  if (!elements.mapStage || (elements.mapStage.offsetParent === null && hub.activeViewName() !== "map")) return;
+  if (!elements.mapStage || (elements.mapStage.offsetParent === null && activeViewName() !== "map")) return;
   const areaId = activeTravelMapArea();
   ensureAreaPosition(areaId);
   centerAreaMapIfRequested(areaId);
@@ -395,7 +399,7 @@ export function renderDestinationPicker() {
         <strong>${hotspot.label}</strong>
         <small>${destinationActionText(hotspot)}</small>
       </span>
-      <span class="destination-badge">${hub.jobAvailableForPlace(hotspot.id) ? "Practice" : isShop ? "Shop" : "Visit"}</span>
+      <span class="destination-badge">${jobAvailableForPlace(hotspot.id) ? "Practice" : isShop ? "Shop" : "Visit"}</span>
     `;
     button.addEventListener("click", () => chooseDestination(hotspot.id));
     elements.destinationList.appendChild(button);
@@ -403,9 +407,9 @@ export function renderDestinationPicker() {
 }
 
 export function destinationActionText(hotspot) {
-  if (hub.jobAvailableForPlace(hotspot.id)) return `${sceneConfigFor(hotspot).npc} has a local English task.`;
+  if (jobAvailableForPlace(hotspot.id)) return `${sceneConfigFor(hotspot).npc} has a local English task.`;
   if (isShopHotspot(hotspot)) {
-    const categoriesText = hub.allowedShopCategories(hotspot).map(categoryLabel).join(" / ");
+    const categoriesText = allowedShopCategories(hotspot).map(categoryLabel).join(" / ");
     return `Try ${categoriesText.toLowerCase()} rewards.`;
   }
   return hotspot.hint;
@@ -421,7 +425,7 @@ export function chooseDestination(hotspotId) {
     session.state.playerNode = node.id;
     session.state.player = { x: node.x, y: node.y };
   }
-  hub.persist();
+  persist();
   renderMap();
   session.activeHotspot = hotspot;
   updateHotspotFocus();
@@ -429,7 +433,7 @@ export function chooseDestination(hotspotId) {
     enterTravelGate(hotspot);
     return;
   }
-  hub.openSceneAdv(hotspot);
+  openSceneAdv(hotspot);
 }
 
 export function focusTravelHotspot(hotspotId, areaId = activeTravelMapArea()) {
@@ -441,7 +445,7 @@ export function focusTravelHotspot(hotspotId, areaId = activeTravelMapArea()) {
   session.state.player = { x: node.x, y: node.y };
   session.activeHotspot = hotspot;
   centerAreaMapOnPoint(areaId, node.x, node.y);
-  hub.persist();
+  persist();
   renderMap();
   session.activeHotspot = hotspot;
   updateHotspotFocus();
@@ -567,7 +571,7 @@ export function travelActionLabel(hotspot) {
     return sceneConfigFor(hotspot).travelAction || "World Map";
   }
   if (hotspot.kind === "future") return "Soon";
-  if (hub.jobAvailableForPlace(hotspot.id)) return "Practice";
+  if (jobAvailableForPlace(hotspot.id)) return "Practice";
   if (isShopHotspot(hotspot)) return "Shop";
   return sceneConfigFor(hotspot).travelAction || "Visit";
 }
@@ -608,15 +612,15 @@ export function interactNearby() {
     enterTravelGate(hotspot);
     return;
   }
-  hub.openSceneAdv(hotspot);
+  openSceneAdv(hotspot);
 }
 
 export function interactCurrentLocation() {
-  if (hub.activeViewName() === "home") {
+  if (activeViewName() === "home") {
     interactCastleHotspot();
     return;
   }
-  if (hub.activeViewName() === "world") {
+  if (activeViewName() === "world") {
     openWorldDestination(session.activeWorldDestinationId);
     return;
   }

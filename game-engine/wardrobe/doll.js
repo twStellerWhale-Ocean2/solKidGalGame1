@@ -5,7 +5,8 @@ import { paperDollBaseLayer, paperDollLayerOrder, playableCharacterById } from "
 import { outfitSummary as stateOutfitSummary } from "../state/game-state.js";
 import { elements, session } from "../core/session.js";
 import { updateAdvAdjustBtn } from "./shop-panel.js";
-import { hub } from "../core/hub.js";
+import { princessName, render } from "../render/hud.js";
+import { persist } from "../system/persistence.js";
 export const paperDollRenderer = createPaperDollRenderer({
   baseLayer: paperDollBaseLayer,
   getCharacter: activePaperDollCharacter,
@@ -133,9 +134,9 @@ export function normalizeVisibleOutfit(outfit = session.state.outfit) {
 export function toggleEquip(item) {
   if (item.type === "room") {
     session.state.outfit.room = item.id;
-    elements.statusMessage.textContent = `${item.name} is placed in ${hub.princessName()}'s room.`;
-    hub.persist();
-    hub.render();
+    elements.statusMessage.textContent = `${item.name} is placed in ${princessName()}'s room.`;
+    persist();
+    render();
     return;
   }
   if (isItemEquipped(item)) {
@@ -145,7 +146,7 @@ export function toggleEquip(item) {
     equipOutfitItem(item);
     elements.statusMessage.textContent = `${item.name} equipped.`;
   }
-  hub.persist();
-  hub.render();
+  persist();
+  render();
 }
 

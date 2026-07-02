@@ -26,7 +26,10 @@ import {
 } from "../system/play-clock.js";
 import { cssAssetUrl, domAssetUrl } from "../core/asset-url.js";
 import { elements, session } from "../core/session.js";
-import { hub } from "../core/hub.js";
+import { activeViewName, changeView } from "../app/views.js";
+import { addDiary, addUnique, applyEffects, localizeLesson, princessName, render, setExpressions, updateProgressBadges, withPlayerName } from "../render/hud.js";
+import { clockNow } from "../state/play-session.js";
+import { persist } from "../system/persistence.js";
 
 export const REWARD_SECOND_TRY_RATIO = 0.5;    // design paramRewardSecondTryRatio
 export const CHAT_MOOD_REWARD = 1;             // issue #135 design paramChatMoodReward：每次生活聊天答對增加的心情值
@@ -73,7 +76,7 @@ export const advControls = createAdvControls({
 export function openAdvBase(hotspot, mode) {
   const areaId = areaForHotspot(hotspot);
   session.state.area = areaId;
-  hub.changeView(areaRegistry[areaId]?.view || "map");
+  changeView(areaRegistry[areaId]?.view || "map");
   clearRewardBursts();
   const scene = sceneConfigFor(hotspot);
   session.advMode = mode;
@@ -82,7 +85,7 @@ export function openAdvBase(hotspot, mode) {
   clearTryOnPreview({ renderDoll: false });
   session.shopTryOnIds = [];
   session.advFocusIndex = 0;
-  hub.setExpressions("normal", "normal");
+  setExpressions("normal", "normal");
   elements.advScene.dataset.mode = mode;
   elements.shopArea.before(elements.choiceList);
   elements.choiceList.classList.remove("shop-command-list");
@@ -100,8 +103,8 @@ export function openAdvBase(hotspot, mode) {
   // issue#150：場景角落標示——左上公主名、右上地點＋場景角色名。
   // 場景角色即公主本人（如公主房）或無對話對象時，次行留空（CSS :empty 隱藏），避免與左上公主名重複。
   elements.advTitle.textContent = hotspot.label;
-  elements.advPlayerName.textContent = hub.princessName();
-  elements.advNpcName.textContent = scene.npc && scene.npc !== hub.princessName() ? scene.npc : "";
+  elements.advPlayerName.textContent = princessName();
+  elements.advNpcName.textContent = scene.npc && scene.npc !== princessName() ? scene.npc : "";
   const npcClass = scene.npcClass || (scene.npcImage ? "npc-image" : "npc-none");
   elements.advNpcPortrait.className = `portrait-card adv-npc ${npcClass}`;
   elements.advNpcPortrait.style.backgroundImage = scene.npcImage ? `url("${domAssetUrl(scene.npcImage)}")` : "";
@@ -127,7 +130,7 @@ export function openSceneAdv(hotspot) {
     return;
   }
   openAdvBase(hotspot, "scene");
-  hub.addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
+  addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
   const scene = sceneConfigFor(hotspot);
   // issue #149：歡迎詞由角色第一人稱發話，並支援中文協助（中文鈕播 travelLineZh）。
   setAdvLine(scene.travelLine || hotspot.hint, scene.travelLineZh);
@@ -143,7 +146,7 @@ export function openSceneAdv(hotspot) {
 
 export function openRoomScene(hotspot = hotspotById("princessRoom")) {
   openAdvBase(hotspot, "scene");
-  setAdvLine(`${hub.princessName()} is in her room. What should we change today?`);
+  setAdvLine(`${princessName()} is in her room. What should we change today?`);
   elements.advPrompt.textContent = "Choose a room action.";
   renderFirstLayerSceneActions(hotspot);
   scheduleAdvFocus(0);
@@ -219,7 +222,7 @@ export function leaveScene(hotspot) {
 export function backToSceneMenu(hotspot) {
   session.state.activeQuest = null;
   session.activeLesson = null;
-  hub.persist();
+  persist();
   openSceneAdv(hotspot);
 }
 
@@ -278,8 +281,8 @@ export function openQuestAdv(hotspot, opts = {}) {
   session.state.activeQuest = quest;
   session.activeLessonMode = mode;
   openAdvBase(hotspot, "quest");
-  hub.addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
-  session.activeLesson = hub.localizeLesson(lesson);
+  addUnique("metNpcs", [sceneConfigFor(hotspot).npc]);
+  session.activeLesson = localizeLesson(lesson);
   session.advChineseUsed = false;
   session.advWrongAttempts = 0;
   // issue #149：移除題組 opening 旁白；角色第一人稱台詞即 prompt——以 advLine 呈現、由 NPC 音色朗讀，中文鈕播 promptZh。
@@ -315,7 +318,7 @@ export function updatePromptAudioButtons() {
 // 避免切換 ADV 模式（場景／商店／退款／衣櫥／提示／完成）時殘留前一畫面的中文（Codex P2）。
 export function setAdvLine(text, zh = "") {
   elements.advLine.textContent = text;
-  session.activeOpeningZh = zh ? (hub.withPlayerName(zh) || "") : "";
+  session.activeOpeningZh = zh ? (withPlayerName(zh) || "") : "";
   updatePromptAudioButtons();
 }
 
@@ -364,7 +367,7 @@ export function helpRewardTier() {
 
 export function openHintAdv(hotspot, line = hotspot.hint) {
   openAdvBase(hotspot, "hint");
-  hub.setExpressions("thinking", "normal");
+  setExpressions("thinking", "normal");
   setAdvLine(line);
   elements.advPrompt.textContent = jobAvailableForPlace(hotspot?.id)
     ? "Choose Practice to start this place's English."
@@ -427,7 +430,7 @@ export function answerLesson(button, choice) {
     session.advWrongAttempts += 1;
     button.classList.add("wrong");
     button.disabled = true;
-    hub.setExpressions("thinking", "surprised");
+    setExpressions("thinking", "surprised");
     elements.advFeedback.textContent = "Try again.";
     playTone("wrong");
     speak(choice, playerVoiceProfile(), { source: "princess-answer-wrong" }); // issue #93：公主以其音色朗讀玩家所選選項
@@ -446,7 +449,7 @@ export function answerLesson(button, choice) {
     session.state.mood = (Number(session.state.mood) || 0) + CHAT_MOOD_REWARD;
     // issue #165：聊天延長遊玩時間仍生效（其延長量改由 HUD Play time 欄位呈現，sysCase#7.5），
     // 完成回饋僅顯示心情加值、不再帶 "Nice chat!" 招呼語與遊玩時間提示。
-    extendSession(session.state, hub.clockNow(), CHAT_MOOD_REWARD * MOOD_MINUTES_PER_POINT);
+    extendSession(session.state, clockNow(), CHAT_MOOD_REWARD * MOOD_MINUTES_PER_POINT);
     burstText = `+${CHAT_MOOD_REWARD} mood`;
     feedbackText = `+${CHAT_MOOD_REWARD} mood`;
     diaryType = "chat";
@@ -459,7 +462,7 @@ export function answerLesson(button, choice) {
       : rewardTier === "half"
         ? Math.round(baseCoins * REWARD_SECOND_TRY_RATIO)
         : 0;
-    hub.applyEffects({ coins });
+    applyEffects({ coins });
     playTone("correct");
     burstText = coins > 0 ? `+${coins} coins` : "No coins this time";
     feedbackText = coins > 0
@@ -473,18 +476,18 @@ export function answerLesson(button, choice) {
     // 不下架、本週期仍可在該場景再作答賺取 coins；full／half（coins>0）一如既往下架。
     if (coins > 0) markJobDone(session.state, session.activeLesson.place);
   }
-  hub.addUnique("completedLessons", [session.activeLesson.id]);
-  hub.addUnique("learnedWords", session.activeLesson.words);
-  hub.addUnique("metNpcs", [sceneConfigFor(completedHotspot).npc]);
-  hub.updateProgressBadges();
-  hub.setExpressions("happy", "happy");
+  addUnique("completedLessons", [session.activeLesson.id]);
+  addUnique("learnedWords", session.activeLesson.words);
+  addUnique("metNpcs", [sceneConfigFor(completedHotspot).npc]);
+  updateProgressBadges();
+  setExpressions("happy", "happy");
   button.classList.add("correct");
   showRewardBurst(burstText);
   elements.choiceList.querySelectorAll("button").forEach((item) => {
     item.disabled = true;
     if (item.dataset.choice === session.activeLesson.answer) item.classList.add("correct");
   });
-  hub.addDiary({
+  addDiary({
     type: diaryType,
     title: `${quest.title} at ${completedHotspot.label}`,
     body: `Sentence: "${session.activeLesson.answer}"`,
@@ -510,8 +513,8 @@ export function answerLesson(button, choice) {
   // 移除 #100/#138 完成畫面條件式「🎁 Shop」與「🏰 Back to Room」捷徑——兩層導覽一致後不再需要。
   addAdvOption("↩ Back", () => backToSceneMenu(completedHotspot), { navigation: true });
   elements.statusMessage.textContent = `Practice complete at ${completedHotspot.label}.`;
-  hub.persist();
-  hub.render();
+  persist();
+  render();
   scheduleAdvFocus(0);
   // issue #93：公主以其音色朗讀所選正解，結束後再由 NPC 以其音色說結語。
   const endingLine = elements.advLine.textContent;
@@ -534,10 +537,10 @@ export function closeAdv() {
   session.activeLesson = null;
   session.activeShopHotspot = null;
   clearTryOnPreview({ renderDoll: false });
-  hub.setExpressions("normal", "normal");
+  setExpressions("normal", "normal");
   renderPaperDolls();
-  hub.persist();
-  const focusTarget = hub.activeViewName() === "home" ? elements.castleStage : hub.activeViewName() === "world" ? elements.worldStage : elements.mapStage;
+  persist();
+  const focusTarget = activeViewName() === "home" ? elements.castleStage : activeViewName() === "world" ? elements.worldStage : elements.mapStage;
   focusTarget?.focus({ preventScroll: true });
 }
 

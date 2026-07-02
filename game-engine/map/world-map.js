@@ -1,5 +1,6 @@
 // map/world-map.js — 世界地圖：目的地、走到再進入之旅行動線（issue #298 自 main.js 拆出，行為零變更）。
-import { hub } from "../core/hub.js";
+import { activeViewName } from "../app/views.js";
+import { persist } from "../system/persistence.js";
 import { areaRegistry, worldMap } from "../data/game-data.js";
 import { clamp, locationsForArea } from "../core/lookups.js";
 import { updateMarkerEdgeVisibility } from "./marker-visibility.js";
@@ -42,7 +43,7 @@ export function positionWorldElement(element, x, y, metrics = worldMapMetrics())
 
 export function renderWorldMap() {
   if (!elements.worldStage || !elements.worldMarkerLayer) return;
-  if (elements.worldStage.offsetParent === null && hub.activeViewName() !== "world") return;
+  if (elements.worldStage.offsetParent === null && activeViewName() !== "world") return;
   session.activeWorldDestinationId = activeWorldDestination()?.id || "castle";
   centerAreaMapIfRequested("world");
   const metrics = worldMapMetrics();
@@ -134,7 +135,7 @@ export function moveOnWorldMap(dx, dy) {
   }
   elements.worldPlayerToken?.classList.add("walking");
   window.setTimeout(() => elements.worldPlayerToken?.classList.remove("walking"), 180);
-  hub.persist();
+  persist();
   renderWorldMap();
 }
 
@@ -154,7 +155,7 @@ export function requestWorldTravel(destinationId) {
   session.worldTravelTargetId = destination.id;
   session.state.world = { x: destination.x, y: destination.y };
   elements.worldPlayerToken?.classList.add("traveling");
-  hub.persist();
+  persist();
   renderWorldMap();
   session.worldTravelTimer = window.setTimeout(finishWorldTravel, WORLD_TRAVEL_MS);
 }
@@ -200,6 +201,6 @@ export function openWorldDestination(destinationId = session.activeWorldDestinat
   session.activeHotspot = targetArea.id === "castle" ? null : locationsForArea(targetArea.id).find((item) => item.node === targetNode.id) || null;
   session.activeCastleHotspot = targetArea.id === "castle" ? locationsForArea("castle").find((item) => item.node === targetNode.id) || null : null;
   elements.statusMessage.textContent = `${destination.label} area opened.`;
-  hub.persist();
+  persist();
   openArea(targetArea.id);
 }
