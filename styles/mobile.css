@@ -4026,14 +4026,21 @@ body {
   height: 48px;
 }
 
-/* ② 兒童觸控目標下限：窄視口主要互動控件 ≥44px（WCAG 2.5.5／paramLayoutQualityBar）。 */
+/* ② 兒童觸控目標下限：窄視口主要互動控件 ≥44px（WCAG 2.5.5／paramLayoutQualityBar）。
+   含商店/衣櫃實際渲染之 .item-panel-tryon（試穿/穿脫）與 .item-panel-action（購買等），
+   並同步放大貨架列高（原 68–76px 容不下 44px 鈕）。 */
 @media (max-width: 820px) {
   .choice-button,
   .primary-button,
   .character-select-actions button,
   .account-select-overlay button,
-  .item-card .item-action {
+  .adv-scene[data-mode="shop"] .item-panel-tryon,
+  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) .item-panel-action {
     min-height: 44px;
+  }
+
+  .adv-scene:is([data-mode="shop"], [data-mode="wardrobe"], [data-mode="refund"]) {
+    --item-panel-row-height: 92px;
   }
 }
 
