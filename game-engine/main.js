@@ -97,6 +97,57 @@ import {
 import { installTestingHooks } from "./testing/selftests.js?v=20260626-issue267-wardrobe-ssot";
 import { createSaveLoadController } from "./system/save-load.js";
 import { elements, session } from "./core/session.js";
+import { hub } from "./core/hub.js";
+import {
+  activeTravelMapArea,
+  areaMapMetrics,
+  areaMapViewportController,
+  currentPlayerPoint,
+  ensureAreaPosition,
+  ensureCastlePosition,
+  focusCastleHotspot,
+  focusTravelHotspot,
+  interactCastleHotspot,
+  interactCurrentLocation,
+  interactNearby,
+  isWalkable,
+  mapActorRuntime,
+  mapWalkController,
+  moveOnCastleMap,
+  moveOnMap,
+  openArea,
+  openWorldMap,
+  renderCastleMap,
+  renderMap,
+  zoomAreaMapFromKeyboard
+} from "./map/map-runtime.js";
+import {
+  activeWorldDestination,
+  finishWorldTravel,
+  focusWorldDestination,
+  moveOnWorldMap,
+  nearbyWorldDestination,
+  openWorldDestination,
+  renderWorldMap,
+  requestWorldTravel,
+  worldDestinationById,
+  worldDestinationForArea
+} from "./map/world-map.js";
+import {
+  applyAreaMapViewport,
+  beginAreaMapGesture,
+  beginCastleMapDrag,
+  beginMapDrag,
+  beginWorldMapDrag,
+  finishCastleMapDrag,
+  finishMapDrag,
+  finishWorldMapDrag,
+  moveCastleMapDrag,
+  moveMapDrag,
+  moveWorldMapDrag,
+  refreshAreaMapPositions
+} from "./map/map-gestures.js";
+import { cssAssetUrl, domAssetUrl } from "./core/asset-url.js";
 import {
   CHINESE_AUDIO_LANG,
   SPEECH_DEBOUNCE_MS,
@@ -126,10 +177,6 @@ import {
   tick as tickPlayLimit
 } from "./system/play-clock.js";
 
-// issue #178：鍵盤地圖走動參數——自管連續移動迴圈的步進間隔與各面移速，取代倚賴 OS 按鍵自動重複（消除起步停頓、加快移速）。
-const MAP_WALK_STEP_MS = 33;   // 連續走動步進間隔（≈30 步/秒）；首步即時、之後每 33ms 推進，免 OS 自動重複初始延遲。
-const MAP_WALK_SPEED = Object.freeze({ area: 2.0, castle: 1.9, world: 2.2 });   // 每步位移量（座標域 0–100；較前 1.45/1.35/1.6 提速約 ⅓）。
-const mapWalkController = createKeyboardWalkController({ stepMs: MAP_WALK_STEP_MS });
 
 const REWARD_SECOND_TRY_RATIO = 0.5;    // design paramRewardSecondTryRatio
 const CHAT_MOOD_REWARD = 1;             // issue #135 design paramChatMoodReward：每次生活聊天答對增加的心情值
@@ -165,18 +212,7 @@ function pickEnding(isChat) {
   const pool = isChat ? CHAT_ENDINGS : WORK_ENDINGS;
   return pool[Math.floor(Math.random() * pool.length)];
 }
-const mapZoomLimits = { min: 1, max: 2.2, mobileBaseScale: 1.06 };
-const areaMapIds = ["castle", "urban", "rural", "wild", "world"];
-const WORLD_TRAVEL_MS = 620; // 走到目的地時長；與 .world-player.traveling 之 CSS transition 對齊
 
-const areaMapViewportController = createAreaMapViewportController({
-  areaIds: areaMapIds,
-  clamp,
-  getImageSize: areaMapImageSize,
-  getStage: areaMapStage,
-  isMobile: isMobileTravelMap,
-  zoomLimits: mapZoomLimits
-});
 const paperDollRenderer = createPaperDollRenderer({
   baseLayer: paperDollBaseLayer,
   getCharacter: activePaperDollCharacter,
@@ -188,11 +224,6 @@ const advControls = createAdvControls({
   getFocusIndex: () => session.advFocusIndex,
   getMode: () => session.advMode,
   setFocusIndex: (nextIndex) => { session.advFocusIndex = nextIndex; }
-});
-const mapActorRuntime = createMapActorRuntime({
-  assetUrl: domAssetUrl,
-  layer: elements.mapLifeLayer,
-  pointToStage: mapPointToStage
 });
 const saveLoadController = createSaveLoadController({
   buildSaveMarkdown,
@@ -404,79 +435,6 @@ function applyPlayLimitSettings() {
   persist();
   renderSettings();
   elements.statusMessage.textContent = `Play ${session.state.playLimit.playMinutes} min, rest ${session.state.playLimit.restMinutes} min.`;
-}
-
-function ensureUrbanPosition() {
-  if (mapNodes[session.state.playerNode]) return;
-  const node = mapNodes[areaRegistry.urban.defaultNode];
-  session.state.playerNode = node.id;
-  session.state.player = { x: node.x, y: node.y };
-}
-
-function ensureCastlePosition() {
-  if (castleMapNodes[session.state.playerNode]) return;
-  const node = castleMapNodes[areaRegistry.castle.defaultNode];
-  session.state.playerNode = node.id;
-  session.state.player = { x: node.x, y: node.y };
-}
-
-function ensureAreaPosition(areaId = session.state.area) {
-  if (areaId === "castle") {
-    ensureCastlePosition();
-    return;
-  }
-  if (areaId === "urban") {
-    ensureUrbanPosition();
-    return;
-  }
-  const area = areaRegistry[areaId];
-  const nodes = area?.nodes || {};
-  if (nodes[session.state.playerNode]) return;
-  const node = nodes[area?.defaultNode] || Object.values(nodes)[0];
-  if (!node) return;
-  session.state.playerNode = node.id;
-  session.state.player = { x: node.x, y: node.y };
-}
-
-function worldDestinationById(destinationId) {
-  return worldMap.destinations.find((destination) => destination.id === destinationId) || null;
-}
-
-function worldDestinationForArea(areaId) {
-  return worldMap.destinations.find((destination) => destination.area === areaId) || null;
-}
-
-function enabledWorldDestinations() {
-  return worldMap.destinations.filter((destination) => destination.enabled);
-}
-
-function activeWorldDestination() {
-  return worldDestinationById(session.activeWorldDestinationId) || worldDestinationForArea(session.state.area) || enabledWorldDestinations()[0] || worldMap.destinations[0] || null;
-}
-
-function openArea(areaId) {
-  const area = areaRegistry[areaId];
-  if (!area?.enabled) {
-    elements.statusMessage.textContent = `${area?.label || "This area"} is not open yet.`;
-    return;
-  }
-  // issue #164：場景切換亦結束本次造訪——清空歡迎詞旗標，使進入新區地點時重新播放一次歡迎詞。
-  session.sceneVisitWelcomeId = "";
-  session.state.area = areaId;
-  ensureAreaPosition(areaId);
-  areaMapViewportController.requestCenter(areaId);
-  persist();
-  changeView(area.view);
-  renderAreaNav();
-}
-
-function openWorldMap() {
-  session.activeHotspot = null;
-  session.activeCastleHotspot = null;
-  session.activeWorldDestinationId = worldDestinationForArea(session.state.area)?.id || session.activeWorldDestinationId || "castle";
-  areaMapViewportController.requestCenter("world");
-  elements.statusMessage.textContent = "Choose a kingdom area.";
-  changeView("world");
 }
 
 function changeView(viewName) {
@@ -1209,15 +1167,6 @@ function itemPreviewStyle(item) {
   return `--item-img:url('${cssAssetUrl(item.image)}')`;
 }
 
-function cssAssetUrl(src) {
-  const path = src?.startsWith("content-package/") || src?.startsWith("content-base/") ? `../${src}` : src;
-  return path?.replaceAll("'", "%27");
-}
-
-function domAssetUrl(src) {
-  return (src || "").replaceAll('"', "%22");
-}
-
 function isWearableItem(item) {
   return item && item.type !== "room";
 }
@@ -1268,698 +1217,6 @@ function toggleEquip(item) {
   }
   persist();
   render();
-}
-
-function areaMapStage(areaId) {
-  if (areaId === "world") return elements.worldStage;
-  return areaId === "castle" ? elements.castleStage : elements.mapStage;
-}
-
-function areaMapImageSize(areaId) {
-  if (areaId === "world") return worldMap.imageSize;
-  return areaRegistry[areaId]?.imageSize || mapImageSize;
-}
-
-function areaMapViewport(areaId) {
-  return areaMapViewportController.viewport(areaId);
-}
-
-function activeTravelMapArea() {
-  return session.state.area !== "castle" && areaRegistry[session.state.area]?.enabled ? session.state.area : "urban";
-}
-
-function baseAreaMapDisplay(areaId, rect) {
-  return areaMapViewportController.baseDisplay(areaId, rect);
-}
-
-function clampAreaMapViewport(areaId, viewport, rect = null) {
-  return areaMapViewportController.clampViewport(areaId, viewport, rect);
-}
-
-function areaMapMetrics(areaId, viewportOverride = null) {
-  return areaMapViewportController.metrics(areaId, viewportOverride);
-}
-
-function syncAreaMapStyles(areaId, metrics = areaMapMetrics(areaId)) {
-  areaMapViewportController.syncStyles(areaId, metrics);
-}
-
-function centerAreaMapOnPoint(areaId, x, y) {
-  areaMapViewportController.centerOnPoint(areaId, x, y);
-}
-
-function zoomAreaMapAtStagePoint(areaId, stageX, stageY, zoomFactor) {
-  areaMapViewportController.zoomAtStagePoint(areaId, stageX, stageY, zoomFactor);
-  refreshAreaMapPositions(areaId);
-}
-
-function zoomAreaMapFromKeyboard(areaId, direction) {
-  areaMapViewportController.zoomFromKeyboard(areaId, direction);
-  refreshAreaMapPositions(areaId);
-}
-
-function centerAreaMapOnCurrentPlayer(areaId) {
-  const point = currentPlayerPoint(areaId);
-  if (!point) return;
-  centerAreaMapOnPoint(areaId, point.x, point.y);
-}
-
-function centerAreaMapIfRequested(areaId) {
-  areaMapViewportController.centerIfRequested(areaId, currentPlayerPoint(areaId));
-}
-
-function castleCoverMetrics() {
-  return areaMapMetrics("castle");
-}
-
-function castlePointToStage(x, y, metrics = castleCoverMetrics()) {
-  return areaMapViewportController.pointToStage(x, y, metrics);
-}
-
-function positionCastleElement(element, x, y, metrics = castleCoverMetrics()) {
-  areaMapViewportController.positionElement(element, x, y, metrics);
-}
-
-function currentPlayerPoint(areaId) {
-  if (areaId === "world") {
-    if (typeof session.state.world?.x === "number" && typeof session.state.world?.y === "number") return session.state.world;
-    const destination = activeWorldDestination();
-    return destination ? { x: destination.x, y: destination.y } : null;
-  }
-  const nodes = nodeMapForArea(areaId);
-  const fallback = nodes[session.state.playerNode] || nodes[areaRegistry[areaId]?.defaultNode];
-  if (
-    session.state.area === areaId &&
-    typeof session.state.player?.x === "number" &&
-    typeof session.state.player?.y === "number"
-  ) {
-    return session.state.player;
-  }
-  return fallback || null;
-}
-
-function nearbyAreaHotspot(areaId, defaultRadius = 6.8) {
-  const nodes = nodeMapForArea(areaId);
-  const player = currentPlayerPoint(areaId);
-  if (!player) return null;
-  const candidates = (areaRegistry[areaId]?.locations || []).map((hotspot) => {
-    const node = nodes[hotspot.node];
-    if (!node) return null;
-    const radius = hotspot.focusRadius || defaultRadius;
-    const distance = Math.hypot(node.x - player.x, (node.y - player.y) * 1.18);
-    const score = distance / radius;
-    return { hotspot, distance, score, radius };
-  }).filter((candidate) => candidate && candidate.distance <= candidate.radius);
-  if (!candidates.length) return null;
-  candidates.sort((a, b) => a.score - b.score || a.distance - b.distance);
-  return candidates[0].hotspot;
-}
-
-function renderCastleMap() {
-  if (!elements.castleStage || !elements.castleMarkerLayer) return;
-  if (elements.castleStage.offsetParent === null && activeViewName() !== "home") return;
-  centerAreaMapIfRequested("castle");
-  const metrics = castleCoverMetrics();
-  syncAreaMapStyles("castle", metrics);
-  // issue #226：城堡固定比例地圖之視口 letterbox 留白模糊鋪底來源（同地圖機制 --map-backdrop-image）。
-  if (areaRegistry.castle?.mapImage) {
-    elements.castleStage.style.setProperty("--map-backdrop-image", `url("${cssAssetUrl(areaRegistry.castle.mapImage)}")`);
-  }
-  elements.castleMarkerLayer.innerHTML = "";
-  castleHotspots.forEach((hotspot) => {
-    const node = castleMapNodes[hotspot.node];
-    if (!node) return;
-    const marker = document.createElement("button");
-    const isPortal = hotspot.kind === "gate" || hotspot.markerStyle === "portal";
-    marker.type = "button";
-    marker.className = `map-marker hotspot castle-marker${isShopHotspot(hotspot) ? " shop" : ""}${session.activeCastleHotspot?.id === hotspot.id ? " nearby" : ""}${hotspot.kind === "future" ? " disabled" : ""}${isPortal ? " portal" : ""}`;
-    marker.dataset.hotspotId = hotspot.id;
-    marker.dataset.label = hotspot.label;
-    marker.setAttribute("aria-label", `${hotspot.label}. ${travelActionLabel(hotspot)}.`);
-    positionCastleElement(marker, node.x, node.y, metrics);
-    marker.innerHTML = `<span class="hotspot-icon" aria-hidden="true">${hotspot.icon}</span>`;
-    marker.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      handleCastleHotspotClick(hotspot.id);
-    });
-    elements.castleMarkerLayer.appendChild(marker);
-    updateMarkerEdgeVisibility(marker, elements.castleStage);
-  });
-  updateCastlePlayerPosition(metrics);
-  updateNearbyCastleHotspot();
-}
-
-function focusCastleHotspot(hotspotId, rerender = true) {
-  session.activeCastleHotspot = castleHotspots.find((hotspot) => hotspot.id === hotspotId) || castleHotspots[0];
-  const node = castleMapNodes[session.activeCastleHotspot?.node];
-  if (node) {
-    session.state.playerNode = node.id;
-    session.state.player = { x: node.x, y: node.y };
-    centerAreaMapOnPoint("castle", node.x, node.y);
-    persist();
-  }
-  if (rerender) renderCastleMap();
-  elements.castleStage.focus({ preventScroll: true });
-}
-
-function handleCastleHotspotClick(hotspotId) {
-  if (session.activeCastleHotspot?.id === hotspotId) {
-    interactCastleHotspot();
-    return;
-  }
-  focusCastleHotspot(hotspotId);
-}
-
-function updateCastlePlayerPosition(metrics = castleCoverMetrics()) {
-  if (!elements.castlePlayerToken) return;
-  const point = currentPlayerPoint("castle");
-  if (!point) return;
-  positionCastleElement(elements.castlePlayerToken, point.x, point.y, metrics);
-}
-
-function refreshCastleMapPositions() {
-  const metrics = castleCoverMetrics();
-  syncAreaMapStyles("castle", metrics);
-  castleHotspots.forEach((hotspot) => {
-    const marker = elements.castleMarkerLayer?.querySelector(`[data-hotspot-id="${hotspot.id}"]`);
-    const node = castleMapNodes[hotspot.node];
-    if (marker && node) {
-      positionCastleElement(marker, node.x, node.y, metrics);
-      updateMarkerEdgeVisibility(marker, elements.castleStage);
-    }
-  });
-  updateCastlePlayerPosition(metrics);
-  updateCastleHotspotFocus();
-}
-
-function interactCastleHotspot() {
-  const hotspot = session.activeCastleHotspot || nearbyCastleHotspot();
-  if (!hotspot) return;
-  session.activeCastleHotspot = hotspot;
-  if (hotspot.kind === "gate") {
-    enterTravelGate(hotspot);
-    return;
-  }
-  if (hotspot.kind === "room") {
-    openRoomScene(hotspot);
-    return;
-  }
-  openSceneAdv(hotspot);
-}
-
-function updateNearbyCastleHotspot() {
-  session.activeCastleHotspot = nearbyCastleHotspot();
-  updateCastleHotspotFocus();
-}
-
-function updateCastleHotspotFocus() {
-  elements.castleMarkerLayer?.querySelectorAll(".hotspot").forEach((marker) => {
-    marker.classList.toggle("nearby", session.activeCastleHotspot?.id === marker.dataset.hotspotId);
-  });
-}
-
-function nearbyCastleHotspot() {
-  return nearbyAreaHotspot("castle", 5.8);
-}
-
-function moveOnAreaMap(areaId, dx, dy, options = {}) {
-  const speed = options.speed || MAP_WALK_SPEED.area;
-  const token = options.token || elements.playerToken;
-  const current = currentPlayerPoint(areaId) || nodeMapForArea(areaId)[areaRegistry[areaId]?.defaultNode];
-  if (!current) return;
-  const next = {
-    x: clamp(current.x + dx * speed, 0, 100),
-    y: clamp(current.y + dy * speed, 0, 100)
-  };
-  session.state.area = areaId;
-  session.state.player = next;
-  session.state.playerNode = closestNodeFromLegacy(session.state.player, areaId);
-  const nearby = nearbyAreaHotspot(areaId, options.nearbyRadius || 6.8);
-  if (nearby) {
-    elements.statusMessage.textContent = `${nearby.label}: ${travelActionLabel(nearby)}.`;
-  }
-  options.onNearby?.(nearby);
-  token?.classList.add("walking");
-  window.setTimeout(() => token?.classList.remove("walking"), 180);
-  persist();
-  options.render?.();
-}
-
-function moveOnCastleMap(dx, dy) {
-  moveOnAreaMap("castle", dx, dy, {
-    speed: MAP_WALK_SPEED.castle,
-    nearbyRadius: 5.8,
-    token: elements.castlePlayerToken,
-    onNearby: (hotspot) => { session.activeCastleHotspot = hotspot; },
-    render: renderCastleMap
-  });
-}
-
-function worldMapMetrics() {
-  return areaMapMetrics("world");
-}
-
-function positionWorldElement(element, x, y, metrics = worldMapMetrics()) {
-  areaMapViewportController.positionElement(element, x, y, metrics);
-}
-
-function renderWorldMap() {
-  if (!elements.worldStage || !elements.worldMarkerLayer) return;
-  if (elements.worldStage.offsetParent === null && activeViewName() !== "world") return;
-  session.activeWorldDestinationId = activeWorldDestination()?.id || "castle";
-  centerAreaMapIfRequested("world");
-  const metrics = worldMapMetrics();
-  syncAreaMapStyles("world", metrics);
-  elements.worldStage.style.setProperty("--map-backdrop-image", `url("${cssAssetUrl(worldMap.mapImage)}")`);
-  if (elements.worldImage && worldMap.mapImage && !elements.worldImage.src.endsWith(worldMap.mapImage)) {
-    elements.worldImage.src = domAssetUrl(worldMap.mapImage);
-    elements.worldImage.alt = worldMap.label;
-  }
-  elements.worldMarkerLayer.innerHTML = "";
-  worldMap.destinations.forEach((destination) => {
-    const marker = document.createElement("button");
-    const active = destination.id === session.activeWorldDestinationId;
-    marker.type = "button";
-    marker.className = `map-marker hotspot world-marker portal${active ? " nearby" : ""}${destination.enabled ? "" : " disabled"}`;
-    marker.dataset.destinationId = destination.id;
-    marker.dataset.label = destination.label;
-    marker.disabled = !destination.enabled;
-    marker.setAttribute("aria-label", destination.enabled ? `${destination.label}. Enter area.` : `${destination.label}. Not open yet.`);
-    marker.setAttribute("aria-current", active ? "location" : "false");
-    marker.innerHTML = `<span class="hotspot-icon" aria-hidden="true">${destination.icon}</span>`;
-    positionWorldElement(marker, destination.x, destination.y, metrics);
-    marker.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      requestWorldTravel(destination.id);
-    });
-    elements.worldMarkerLayer.appendChild(marker);
-    updateMarkerEdgeVisibility(marker, elements.worldStage);
-  });
-  updateWorldPlayerPosition(metrics);
-  renderWorldDestinationList();
-}
-
-function renderWorldDestinationList() {
-  if (!elements.worldDestinationList) return;
-  const active = activeWorldDestination();
-  elements.worldDestinationHint.textContent = active?.hint || "Choose an area.";
-  if (elements.worldDestinationPanel) elements.worldDestinationPanel.hidden = true;
-  elements.worldDestinationList.innerHTML = "";
-  elements.worldDestinationList.hidden = true;
-}
-
-function focusWorldDestination(destinationId, rerender = true) {
-  const destination = worldDestinationById(destinationId);
-  if (!destination) return;
-  session.activeWorldDestinationId = destination.id;
-  centerAreaMapOnPoint("world", destination.x, destination.y);
-  if (rerender) renderWorldMap();
-  elements.worldStage?.focus({ preventScroll: true });
-}
-
-function updateWorldPlayerPosition(metrics = worldMapMetrics()) {
-  if (!elements.worldPlayerToken) return;
-  const point = currentPlayerPoint("world");
-  if (!point) return;
-  positionWorldElement(elements.worldPlayerToken, point.x, point.y, metrics);
-}
-
-// issue #99：世界地圖鄰近目的地偵測（比照地區地圖 nearbyAreaHotspot），供鍵盤走近後 Enter 進入與狀態提示。
-function nearbyWorldDestination(radius = 9) {
-  const player = currentPlayerPoint("world");
-  if (!player) return null;
-  const candidates = worldMap.destinations
-    .map((destination) => ({
-      destination,
-      distance: Math.hypot(destination.x - player.x, (destination.y - player.y) * 1.18)
-    }))
-    .filter((candidate) => candidate.distance <= radius);
-  if (!candidates.length) return null;
-  candidates.sort((a, b) => a.distance - b.distance);
-  return candidates[0].destination;
-}
-
-// issue #99：世界地圖鍵盤自由走動（比照地區地圖 moveOnAreaMap）。
-function moveOnWorldMap(dx, dy) {
-  const speed = MAP_WALK_SPEED.world;
-  const current = currentPlayerPoint("world") || { x: 51, y: 32 };
-  session.state.world = {
-    x: clamp(current.x + dx * speed, 0, 100),
-    y: clamp(current.y + dy * speed, 0, 100)
-  };
-  const nearby = nearbyWorldDestination();
-  if (nearby) {
-    session.activeWorldDestinationId = nearby.id;
-    elements.statusMessage.textContent = nearby.enabled
-      ? `${nearby.label}: press Enter to visit.`
-      : `${nearby.label} is not open yet.`;
-  }
-  elements.worldPlayerToken?.classList.add("walking");
-  window.setTimeout(() => elements.worldPlayerToken?.classList.remove("walking"), 180);
-  persist();
-  renderWorldMap();
-}
-
-// issue #99：點選目的地 → 公主先走到該座標再進入；移動途中再次點選即略過、立即進入。
-function requestWorldTravel(destinationId) {
-  const destination = worldDestinationById(destinationId);
-  if (!destination) return;
-  if (!destination.enabled) {
-    openWorldDestination(destination.id);
-    return;
-  }
-  if (session.worldTravelTargetId) {
-    finishWorldTravel();
-    return;
-  }
-  session.activeWorldDestinationId = destination.id;
-  session.worldTravelTargetId = destination.id;
-  session.state.world = { x: destination.x, y: destination.y };
-  elements.worldPlayerToken?.classList.add("traveling");
-  persist();
-  renderWorldMap();
-  session.worldTravelTimer = window.setTimeout(finishWorldTravel, WORLD_TRAVEL_MS);
-}
-
-function finishWorldTravel() {
-  if (session.worldTravelTimer) {
-    window.clearTimeout(session.worldTravelTimer);
-    session.worldTravelTimer = null;
-  }
-  elements.worldPlayerToken?.classList.remove("traveling");
-  const id = session.worldTravelTargetId;
-  session.worldTravelTargetId = null;
-  if (id) openWorldDestination(id);
-}
-
-function openWorldDestination(destinationId = session.activeWorldDestinationId) {
-  const destination = worldDestinationById(destinationId);
-  if (!destination) return;
-  // 取消任何進行中的「走到再進入」，避免計時器於已進入後再次觸發（issue #99）。
-  if (session.worldTravelTimer) {
-    window.clearTimeout(session.worldTravelTimer);
-    session.worldTravelTimer = null;
-  }
-  session.worldTravelTargetId = null;
-  elements.worldPlayerToken?.classList.remove("traveling");
-  if (!destination.enabled) {
-    elements.statusMessage.textContent = `${destination.label} is not open yet.`;
-    session.activeWorldDestinationId = destination.id;
-    renderWorldMap();
-    return;
-  }
-  const targetArea = areaRegistry[destination.area];
-  const targetNode = targetArea?.nodes?.[destination.entryNode] || targetArea?.nodes?.[targetArea.defaultNode] || Object.values(targetArea?.nodes || {})[0];
-  if (!targetArea?.enabled || !targetNode) {
-    elements.statusMessage.textContent = `${destination.label} is not open yet.`;
-    return;
-  }
-  session.state.area = targetArea.id;
-  session.state.playerNode = targetNode.id;
-  session.state.player = { x: targetNode.x, y: targetNode.y };
-  session.activeWorldDestinationId = destination.id;
-  session.state.world = { x: destination.x, y: destination.y };
-  session.activeHotspot = targetArea.id === "castle" ? null : locationsForArea(targetArea.id).find((item) => item.node === targetNode.id) || null;
-  session.activeCastleHotspot = targetArea.id === "castle" ? locationsForArea("castle").find((item) => item.node === targetNode.id) || null : null;
-  elements.statusMessage.textContent = `${destination.label} area opened.`;
-  persist();
-  openArea(targetArea.id);
-}
-
-function renderMap() {
-  if (!elements.mapStage || (elements.mapStage.offsetParent === null && activeViewName() !== "map")) return;
-  const areaId = activeTravelMapArea();
-  ensureAreaPosition(areaId);
-  centerAreaMapIfRequested(areaId);
-  if (elements.destinationHint) elements.destinationHint.textContent = "Choose any place to help.";
-  const area = areaRegistry[areaId];
-  elements.mapStage.style.setProperty("--map-backdrop-image", `url("${cssAssetUrl(area?.mapImage || "")}")`);
-  if (elements.mapImage && area?.mapImage && !elements.mapImage.src.endsWith(area.mapImage)) {
-    elements.mapImage.src = area.mapImage;
-    elements.mapImage.alt = `${area.label} travel map`;
-  }
-  if (elements.mapTitle) elements.mapTitle.textContent = `${area?.label || "Area"} Map`;
-  elements.mapStage.setAttribute("aria-label", `${area?.label || "Area"} travel map. Drag to look around, tap a place, or use keyboard arrows.`);
-  elements.routeLayer.innerHTML = "";
-  elements.nodeLayer.innerHTML = "";
-  const metrics = mapCoverMetrics(areaId);
-  syncMapPanStyles(metrics, areaId);
-  renderMapActors(metrics, areaId);
-  renderHotspots(metrics, areaId);
-  updatePlayerPosition(metrics, areaId);
-  updateNearbyHotspot();
-  startMapLife();
-}
-
-function renderDestinationPicker() {
-  if (!elements.destinationList) return;
-  const areaId = activeTravelMapArea();
-  elements.destinationList.innerHTML = "";
-  locationsForArea(areaId).filter((hotspot) => hotspot.kind !== "room").forEach((hotspot) => {
-    const isShop = isShopHotspot(hotspot);
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `destination-card${isShop ? " shop" : ""}`;
-    button.dataset.destinationId = hotspot.id;
-    button.innerHTML = `
-      <span class="destination-icon" aria-hidden="true">${hotspot.icon}</span>
-      <span class="destination-copy">
-        <strong>${hotspot.label}</strong>
-        <small>${destinationActionText(hotspot)}</small>
-      </span>
-      <span class="destination-badge">${jobAvailableForPlace(hotspot.id) ? "Practice" : isShop ? "Shop" : "Visit"}</span>
-    `;
-    button.addEventListener("click", () => chooseDestination(hotspot.id));
-    elements.destinationList.appendChild(button);
-  });
-}
-
-function destinationActionText(hotspot) {
-  if (jobAvailableForPlace(hotspot.id)) return `${sceneConfigFor(hotspot).npc} has a local English task.`;
-  if (isShopHotspot(hotspot)) {
-    const categoriesText = allowedShopCategories(hotspot).map(categoryLabel).join(" / ");
-    return `Try ${categoriesText.toLowerCase()} rewards.`;
-  }
-  return hotspot.hint;
-}
-
-function chooseDestination(hotspotId) {
-  const areaId = activeTravelMapArea();
-  const hotspot = locationsForArea(areaId).find((item) => item.id === hotspotId);
-  if (!hotspot) return;
-  const node = nodeMapForArea(areaId)[hotspot.node];
-  if (node) {
-    session.state.area = areaId;
-    session.state.playerNode = node.id;
-    session.state.player = { x: node.x, y: node.y };
-  }
-  persist();
-  renderMap();
-  session.activeHotspot = hotspot;
-  updateHotspotFocus();
-  if (hotspot.kind === "gate") {
-    enterTravelGate(hotspot);
-    return;
-  }
-  openSceneAdv(hotspot);
-}
-
-function focusTravelHotspot(hotspotId, areaId = activeTravelMapArea()) {
-  const hotspot = locationsForArea(areaId).find((item) => item.id === hotspotId);
-  const node = nodeMapForArea(areaId)[hotspot?.node];
-  if (!hotspot || !node) return;
-  session.state.area = areaId;
-  session.state.playerNode = node.id;
-  session.state.player = { x: node.x, y: node.y };
-  session.activeHotspot = hotspot;
-  centerAreaMapOnPoint(areaId, node.x, node.y);
-  persist();
-  renderMap();
-  session.activeHotspot = hotspot;
-  updateHotspotFocus();
-  elements.mapStage.focus({ preventScroll: true });
-}
-
-function handleTravelHotspotClick(hotspotId) {
-  if (session.activeHotspot?.id === hotspotId) {
-    interactNearby();
-    return;
-  }
-  focusTravelHotspot(hotspotId);
-}
-
-function isMobileTravelMap() {
-  return window.matchMedia("(max-width: 820px)").matches;
-}
-
-function syncMapPanStyles(metrics = mapCoverMetrics()) {
-  syncAreaMapStyles(activeTravelMapArea(), metrics);
-}
-
-function mapCoverMetrics(areaId = activeTravelMapArea()) {
-  return areaMapMetrics(areaId);
-}
-
-function mapPointToStage(x, y, metrics = mapCoverMetrics()) {
-  return areaMapViewportController.pointToStage(x, y, metrics);
-}
-
-function positionMapElement(element, x, y, metrics = mapCoverMetrics()) {
-  areaMapViewportController.positionElement(element, x, y, metrics);
-}
-
-function renderMapActors(metrics = mapCoverMetrics(), areaId = activeTravelMapArea()) {
-  mapActorRuntime.render(areaRegistry[areaId]?.actors || [], metrics);
-}
-
-function startMapLife() {
-  mapActorRuntime.start();
-}
-
-function renderRoutes() {
-  const drawn = new Set();
-  const nodes = nodeMapForArea(activeTravelMapArea());
-  elements.routeLayer.innerHTML = "";
-  Object.values(nodes).forEach((node) => {
-    (node.links || []).forEach((linkId) => {
-      const key = [node.id, linkId].sort().join("-");
-      if (drawn.has(key)) return;
-      drawn.add(key);
-      const other = nodes[linkId];
-      if (!other) return;
-      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      line.setAttribute("x1", node.x);
-      line.setAttribute("y1", node.y);
-      line.setAttribute("x2", other.x);
-      line.setAttribute("y2", other.y);
-      elements.routeLayer.appendChild(line);
-    });
-  });
-}
-
-function renderNodes() {
-  const areaId = activeTravelMapArea();
-  const nodes = nodeMapForArea(areaId);
-  const metrics = mapCoverMetrics();
-  elements.nodeLayer.innerHTML = "";
-  Object.values(nodes).forEach((node) => {
-    const marker = document.createElement("div");
-    const currentLinks = nodes[session.state.playerNode]?.links || [];
-    marker.className = `road-node${node.id === session.state.playerNode ? " current" : ""}${currentLinks.includes(node.id) ? " reachable" : ""}`;
-    positionMapElement(marker, node.x, node.y, metrics);
-    elements.nodeLayer.appendChild(marker);
-  });
-}
-
-function renderHotspots(metrics = mapCoverMetrics(), areaId = activeTravelMapArea()) {
-  const nodes = nodeMapForArea(areaId);
-  elements.hotspotLayer.innerHTML = "";
-  locationsForArea(areaId).forEach((hotspot) => {
-    const node = nodes[hotspot.node];
-    if (!node) return;
-    const marker = document.createElement("button");
-    const isPortal = hotspot.kind === "gate" || hotspot.markerStyle === "portal";
-    marker.type = "button";
-    marker.className = `map-marker hotspot${isShopHotspot(hotspot) ? " shop" : ""}${isPortal ? " portal" : ""}`;
-    marker.dataset.hotspotId = hotspot.id;
-    marker.dataset.label = hotspot.label;
-    marker.setAttribute("aria-label", `${hotspot.label}. ${travelActionLabel(hotspot)}.`);
-    positionMapElement(marker, node.x, node.y, metrics);
-    marker.innerHTML = `<span class="hotspot-icon" aria-hidden="true">${hotspot.icon}</span>`;
-    marker.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      handleTravelHotspotClick(hotspot.id);
-    });
-    elements.hotspotLayer.appendChild(marker);
-    updateMarkerEdgeVisibility(marker, elements.mapStage);
-  });
-}
-
-function updatePlayerPosition(metrics = mapCoverMetrics(), areaId = activeTravelMapArea()) {
-  const point = currentPlayerPoint(areaId);
-  if (!point) return;
-  positionMapElement(elements.playerToken, point.x, point.y, metrics);
-}
-
-function refreshMapPositions() {
-  const areaId = activeTravelMapArea();
-  const metrics = mapCoverMetrics(areaId);
-  syncMapPanStyles(metrics);
-  renderMapActors(metrics, areaId);
-  renderHotspots(metrics, areaId);
-  updatePlayerPosition(metrics, areaId);
-  updateHotspotFocus();
-}
-
-function travelActionLabel(hotspot) {
-  if (!hotspot) return "Visit";
-  if (hotspot.kind === "room") return "Enter";
-  if (hotspot.kind === "gate") {
-    return sceneConfigFor(hotspot).travelAction || "World Map";
-  }
-  if (hotspot.kind === "future") return "Soon";
-  if (jobAvailableForPlace(hotspot.id)) return "Practice";
-  if (isShopHotspot(hotspot)) return "Shop";
-  return sceneConfigFor(hotspot).travelAction || "Visit";
-}
-
-function updateNearbyHotspot() {
-  session.activeHotspot = nearbyHotspot();
-  updateHotspotFocus();
-}
-
-function updateHotspotFocus() {
-  elements.hotspotLayer?.querySelectorAll(".hotspot").forEach((marker) => {
-    marker.classList.toggle("nearby", session.activeHotspot?.id === marker.dataset.hotspotId);
-  });
-}
-
-function nearbyHotspot() {
-  return nearbyAreaHotspot(activeTravelMapArea(), 6.8);
-}
-
-function moveOnMap(dx, dy) {
-  const areaId = activeTravelMapArea();
-  moveOnAreaMap(areaId, dx, dy, {
-    token: elements.playerToken,
-    onNearby: (hotspot) => { session.activeHotspot = hotspot; },
-    render: renderMap
-  });
-}
-
-function isWalkable(x, y) {
-  return x >= 0 && x <= 100 && y >= 0 && y <= 100;
-}
-
-function interactNearby() {
-  const hotspot = session.activeHotspot || nearbyHotspot();
-  if (!hotspot) return;
-  session.activeHotspot = hotspot;
-  if (hotspot.kind === "gate") {
-    enterTravelGate(hotspot);
-    return;
-  }
-  openSceneAdv(hotspot);
-}
-
-function interactCurrentLocation() {
-  if (activeViewName() === "home") {
-    interactCastleHotspot();
-    return;
-  }
-  if (activeViewName() === "world") {
-    openWorldDestination(session.activeWorldDestinationId);
-    return;
-  }
-  interactNearby();
-}
-
-function enterTravelGate(hotspot) {
-  session.activeWorldDestinationId = worldDestinationForArea(areaForHotspot(hotspot))?.id || session.activeWorldDestinationId;
-  openWorldMap();
 }
 
 function openAdvBase(hotspot, mode) {
@@ -2991,180 +2248,6 @@ function resetProgress() {
   render();
 }
 
-function relativeStagePoint(stage, pointer) {
-  const rect = stage.getBoundingClientRect();
-  return {
-    x: pointer.clientX - rect.left,
-    y: pointer.clientY - rect.top
-  };
-}
-
-function pointerDistance(a, b) {
-  return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-}
-
-function pointerCenter(a, b) {
-  return {
-    clientX: (a.clientX + b.clientX) / 2,
-    clientY: (a.clientY + b.clientY) / 2
-  };
-}
-
-function resetMapGestureStart() {
-  if (!session.mapGesture) return;
-  const viewport = areaMapViewport(session.mapGesture.areaId);
-  const metrics = areaMapMetrics(session.mapGesture.areaId);
-  const pointers = [...session.mapGesture.pointers.values()];
-  session.mapGesture.startPan = { ...viewport.pan };
-  session.mapGesture.startZoom = viewport.zoom;
-  session.mapGesture.startPoints = pointers.map((pointer) => ({ ...pointer }));
-  if (pointers.length >= 2) {
-    const center = pointerCenter(pointers[0], pointers[1]);
-    const centerStage = relativeStagePoint(session.mapGesture.stage, center);
-    session.mapGesture.startDistance = Math.max(1, pointerDistance(pointers[0], pointers[1]));
-    session.mapGesture.startCenterStage = centerStage;
-    session.mapGesture.startMapFocus = {
-      x: clamp((centerStage.x - metrics.offsetX) / metrics.displayWidth, 0, 1),
-      y: clamp((centerStage.y - metrics.offsetY) / metrics.displayHeight, 0, 1)
-    };
-  } else if (pointers.length === 1) {
-    session.mapGesture.startCenterStage = relativeStagePoint(session.mapGesture.stage, pointers[0]);
-  }
-}
-
-function applyAreaMapViewport(areaId, viewport) {
-  areaMapViewportController.applyViewport(areaId, viewport);
-}
-
-function refreshAreaMapPositions(areaId) {
-  if (areaId === "castle") {
-    refreshCastleMapPositions();
-  } else if (areaId === "world") {
-    renderWorldMap();
-  } else {
-    refreshMapPositions();
-  }
-}
-
-function scheduleAreaMapPositionRefresh(areaId) {
-  session.pendingMapRefreshArea = areaId;
-  if (session.pendingMapPositionFrame) return;
-  session.pendingMapPositionFrame = requestAnimationFrame(() => {
-    const areaToRefresh = session.pendingMapRefreshArea || session.state.area || "urban";
-    session.pendingMapPositionFrame = 0;
-    session.pendingMapRefreshArea = "";
-    refreshAreaMapPositions(areaToRefresh);
-  });
-}
-
-function mapGestureBlocked(event) {
-  return Boolean(event.target.closest("button, .nearby-card, .destination-panel, .area-nav"));
-}
-
-function beginAreaMapGesture(areaId, event) {
-  if (!isMobileTravelMap()) return;
-  if (mapGestureBlocked(event)) return;
-  const stage = areaMapStage(areaId);
-  if (!session.mapGesture || session.mapGesture.areaId !== areaId) {
-    session.mapGesture = {
-      areaId,
-      stage,
-      pointers: new Map(),
-      moved: false
-    };
-  }
-  session.mapGesture.pointers.set(event.pointerId, { pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY });
-  resetMapGestureStart();
-  stage.classList.add("is-dragging");
-  stage.setPointerCapture?.(event.pointerId);
-}
-
-function moveAreaMapGesture(areaId, event) {
-  if (!session.mapGesture || session.mapGesture.areaId !== areaId || !session.mapGesture.pointers.has(event.pointerId)) return;
-  session.mapGesture.pointers.set(event.pointerId, { pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY });
-  const pointers = [...session.mapGesture.pointers.values()];
-  if (pointers.length >= 2) {
-    const center = pointerCenter(pointers[0], pointers[1]);
-    const centerStage = relativeStagePoint(session.mapGesture.stage, center);
-    const distance = Math.max(1, pointerDistance(pointers[0], pointers[1]));
-    const zoom = clamp(
-      session.mapGesture.startZoom * (distance / session.mapGesture.startDistance),
-      areaMapViewportController.zoomLimits.min,
-      areaMapViewportController.zoomLimits.max
-    );
-    const stageRect = session.mapGesture.stage.getBoundingClientRect();
-    const baseDisplay = baseAreaMapDisplay(areaId, stageRect);
-    const displayWidth = baseDisplay.width * zoom;
-    const displayHeight = baseDisplay.height * zoom;
-    const pan = {
-      x: centerStage.x - session.mapGesture.startMapFocus.x * displayWidth - (stageRect.width - displayWidth) / 2,
-      y: centerStage.y - session.mapGesture.startMapFocus.y * displayHeight - (stageRect.height - displayHeight) / 2
-    };
-    applyAreaMapViewport(areaId, { pan, zoom });
-  } else if (pointers.length === 1) {
-    const pointer = pointers[0];
-    const startPoint = session.mapGesture.startPoints[0];
-    const dx = pointer.clientX - startPoint.clientX;
-    const dy = pointer.clientY - startPoint.clientY;
-    if (Math.abs(dx) + Math.abs(dy) > 4) session.mapGesture.moved = true;
-    applyAreaMapViewport(areaId, {
-      pan: { x: session.mapGesture.startPan.x + dx, y: session.mapGesture.startPan.y + dy },
-      zoom: session.mapGesture.startZoom
-    });
-  }
-  event.preventDefault();
-  scheduleAreaMapPositionRefresh(areaId);
-}
-
-function finishAreaMapGesture(areaId, event) {
-  if (!session.mapGesture || session.mapGesture.areaId !== areaId || !session.mapGesture.pointers.has(event.pointerId)) return;
-  const stage = areaMapStage(areaId);
-  session.mapGesture.pointers.delete(event.pointerId);
-  stage.releasePointerCapture?.(event.pointerId);
-  if (session.mapGesture.pointers.size) {
-    resetMapGestureStart();
-    return;
-  }
-  stage.classList.remove("is-dragging");
-  session.mapGesture = null;
-}
-
-function beginMapDrag(event) {
-  beginAreaMapGesture(activeTravelMapArea(), event);
-}
-
-function moveMapDrag(event) {
-  moveAreaMapGesture(activeTravelMapArea(), event);
-}
-
-function finishMapDrag(event) {
-  finishAreaMapGesture(activeTravelMapArea(), event);
-}
-
-function beginCastleMapDrag(event) {
-  beginAreaMapGesture("castle", event);
-}
-
-function moveCastleMapDrag(event) {
-  moveAreaMapGesture("castle", event);
-}
-
-function finishCastleMapDrag(event) {
-  finishAreaMapGesture("castle", event);
-}
-
-function beginWorldMapDrag(event) {
-  beginAreaMapGesture("world", event);
-}
-
-function moveWorldMapDrag(event) {
-  moveAreaMapGesture("world", event);
-}
-
-function finishWorldMapDrag(event) {
-  finishAreaMapGesture("world", event);
-}
-
 function bindEvents() {
   elements.tabs.forEach((tab) => tab.addEventListener("click", () => changeView(tab.dataset.view)));
   window.addEventListener("hashchange", () => changeView(location.hash ? location.hash.slice(1) : "home"));
@@ -3454,6 +2537,19 @@ Object.defineProperty(window, "__luminaraTest", {
       };
     }
   }
+});
+
+
+// issue #298 過渡：向 hub 註冊仍居 main 之跨模組函式（bootstrap 前；拆解完成後應清空改直接 import）。
+Object.assign(hub, {
+  activeViewName,
+  allowedShopCategories,
+  changeView,
+  jobAvailableForPlace,
+  openRoomScene,
+  openSceneAdv,
+  persist,
+  renderAreaNav
 });
 
 const hasSelftest = new URLSearchParams(location.search).has("selftest");
