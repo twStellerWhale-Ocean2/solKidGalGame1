@@ -6,9 +6,9 @@
   "icon": "Acc",
   "prompt": "front-view chest-neck accessory layer: ornate jewel brooch for court clothing, brooch only, no body, no dress, no skin",
   "targetBox": {
-    "left": 222,
-    "top": 475,
-    "right": 292,
-    "bottom": 509
+    "left": 221.9999741028352,
+    "top": 470.2725219695206,
+    "right": 291.9999741028352,
+    "bottom": 504.2725219695206
   }
 }
