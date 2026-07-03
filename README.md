@@ -13,6 +13,8 @@
 
 ## A. 這是什麼
 
+> ▶ **立即遊玩（免安裝，手機／桌機瀏覽器直接開）：** <https://twstellerwhale-ocean2.github.io/solKidGalGame1/>
+
 - 一個給**年幼英文學習者**玩的靜態網頁、日式 ADV 風格英文練習遊戲。
 - 主要在**手機瀏覽器直向**遊玩，桌機也可用。
 - 以 **GitHub Pages 純靜態**部署，無需後端、無 build step。
@@ -29,7 +31,9 @@
 
 ### (B) 遊玩
 
-線上：開啟你部署的 GitHub Pages 網址即可遊玩。
+線上（免安裝，點開即玩）：<https://twstellerwhale-ocean2.github.io/solKidGalGame1/>
+
+（若你自行 fork／部署，則改開你自己的 GitHub Pages 網址。）
 
 本機（任一種靜態伺服器皆可）：
 
