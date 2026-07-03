@@ -161,11 +161,12 @@
 
   <!-- ===== 公主預設 ===== -->
   <section id="panel-defaults" class="editor-panel" data-panel="defaults" hidden>
-  <main class="tool-shell">
-    <aside class="catalog-pane">
+  <main class="defaults-shell">
+    <!-- 左：已有——金錢＋擁有清單（依「素材包-名稱」排序、可捲） -->
+    <aside class="defaults-own-pane">
       <header class="tool-header">
         <h1>公主預設</h1>
-        <div id="defaultsSummary" class="summary-line">設定新遊戲公主的起始外觀、金錢與擁有清單。</div>
+        <div id="defaultsSummary" class="summary-line">左＝已有金錢與衣物、中＝衣物配置、右＝人物資訊與照片；各欄可拖曳調寬。</div>
       </header>
 
       <section class="control-section">
@@ -173,13 +174,7 @@
         <label class="defaults-coins">起始金幣 (coins)<input id="defaultsCoins" type="number" min="0" step="10"></label>
       </section>
 
-      <section class="control-section">
-        <h2>預設穿著 (outfit)</h2>
-        <div id="defaultsOutfit" class="defaults-outfit"></div>
-        <p class="control-help">選洋裝會自動清空上衣／下身（與遊戲規則一致）。所選單品會自動加入下方「擁有清單」。</p>
-      </section>
-
-      <section class="control-section">
+      <section class="control-section defaults-owned-section">
         <h2>擁有清單 (owned)</h2>
         <div class="defaults-owned-actions">
           <button id="defaultsOwnAll" type="button">全選</button>
@@ -191,24 +186,35 @@
 
     <div class="col-resizer" aria-hidden="true" title="拖曳調整欄寬"></div>
 
-    <section class="preview-pane">
-      <div class="preview-stage">
-        <div class="figure-frame" aria-hidden="true"></div>
-        <div id="defaultsPreviewLabel" class="preview-label"></div>
-        <span id="defaultsDoll" class="paper-doll adv-doll tuner-doll" data-doll="defaults"></span>
-      </div>
-      <p class="stage-hint">即時預覽（以 Lumi 的 base 為例）· 滾輪／雙指縮放 · 空白處拖曳平移</p>
+    <!-- 中：衣物配置（預設穿著，下拉僅列已擁有） -->
+    <section class="defaults-outfit-pane">
+      <section class="control-section">
+        <h2>預設穿著 (outfit)</h2>
+        <div id="defaultsOutfit" class="defaults-outfit"></div>
+        <p class="control-help">只能挑左側「已擁有」的衣物；若在左側取消擁有，正穿的該件會自動脫下（避免穿著未擁有的矛盾）。</p>
+      </section>
     </section>
 
     <div class="col-resizer col-resizer-right" aria-hidden="true" title="拖曳調整欄寬"></div>
 
-    <aside class="control-pane">
-      <div id="defaultsInfo" class="selected-info"></div>
+    <!-- 右：上＝人物資訊＋儲存、下＝人物照片 -->
+    <aside class="defaults-side-pane">
+      <div class="defaults-side-top">
+        <div id="defaultsInfo" class="selected-info"></div>
+        <section class="control-section apply-section">
+          <button id="defaultsApply" type="button" class="apply-button">✓ 套用到檔案 (Apply)</button>
+          <div id="defaultsStatus" class="apply-status"></div>
+          <p class="control-help">寫回 <code>game-engine/state/default-state.js</code> 的 <code>coins</code>／<code>owned</code>／<code>outfit</code>；需 dev server（<code>node server.mjs</code>）。僅影響<strong>新帳號</strong>起始值。</p>
+        </section>
+      </div>
 
-      <section class="control-section apply-section">
-        <button id="defaultsApply" type="button" class="apply-button">✓ 套用到檔案 (Apply)</button>
-        <div id="defaultsStatus" class="apply-status"></div>
-        <p class="control-help">寫回 <code>game-engine/state/default-state.js</code> 的 <code>coins</code>／<code>owned</code>／<code>outfit</code>；需 dev server（<code>node server.mjs</code>）。僅影響<strong>新帳號</strong>的起始值。</p>
+      <section class="defaults-preview defaults-side-bottom">
+        <div class="preview-stage">
+          <div class="figure-frame" aria-hidden="true"></div>
+          <div id="defaultsPreviewLabel" class="preview-label"></div>
+          <span id="defaultsDoll" class="paper-doll adv-doll tuner-doll" data-doll="defaults"></span>
+        </div>
+        <p class="stage-hint">人物照片（Lumi base）· 滾輪／雙指縮放 · 拖曳平移</p>
       </section>
     </aside>
   </main>

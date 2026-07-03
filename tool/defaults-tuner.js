@@ -1,6 +1,7 @@
 // 「👑 公主預設」分頁：編輯新遊戲公主的起始 coins／owned／outfit，即時預覽紙娃娃，
 // 按「套用」由 dev server 寫回 game-engine/state/default-state.js（白名單 /tool/save-defaults）。
-// 規則對齊遊戲 normalizeOutfit：洋裝與上衣/下身互斥；裝備中的單品自動視為已擁有。
+// issue #297：版面左右併排（左＝金錢＋擁有清單、依「素材包-名稱」排序；右＝穿著下拉＋小預覽）；
+// 維持「穿著⊆擁有」不變式——穿著下拉僅列已擁有，取消擁有時自動脫下正穿之該件。
 import {
   categories,
   outfitSlots,
@@ -66,6 +67,7 @@ function initDefaultsTab() {
   });
 
   bindEvents();
+  ensureEquippedOwned(); // 初始確保「穿著⊆擁有」不變式（default-state 若不一致亦收斂）
   dom.coins.value = state.coins;
   renderOutfitSelects();
   renderOwned();
@@ -85,12 +87,25 @@ function initDefaultsTab() {
     dom.owned.addEventListener("change", (e) => {
       const id = e.target?.value;
       if (!id) return;
-      if (e.target.checked) state.owned.add(id); else state.owned.delete(id);
+      if (e.target.checked) {
+        state.owned.add(id);
+      } else {
+        state.owned.delete(id);
+        // 連動：取消擁有→脫下正穿之該件（避免穿著未擁有的矛盾）
+        outfitSlots.forEach((slot) => { if (state.outfit[slot] === id) state.outfit[slot] = "none"; });
+      }
       markDirty();
+      renderOutfitSelects(); // 擁有變動 → 穿著下拉選項連動
+      renderOwned();         // equipped 標示連動
+      renderPreview();
       renderInfo();
     });
-    dom.ownAll.addEventListener("click", () => { shopItems.forEach((i) => state.owned.add(i.id)); markDirty(); renderOwned(); renderInfo(); });
-    dom.ownNone.addEventListener("click", () => { state.owned = new Set(); ensureEquippedOwned(); markDirty(); renderOwned(); renderInfo(); });
+    dom.ownAll.addEventListener("click", () => { shopItems.forEach((i) => state.owned.add(i.id)); markDirty(); renderOutfitSelects(); renderOwned(); renderInfo(); });
+    dom.ownNone.addEventListener("click", () => {
+      state.owned = new Set();
+      outfitSlots.forEach((slot) => { state.outfit[slot] = "none"; }); // 沒擁有就不能穿：一併脫下
+      markDirty(); renderOutfitSelects(); renderOwned(); renderPreview(); renderInfo();
+    });
     dom.apply.addEventListener("click", apply);
     setupStagePanZoom(dom.previewStage, view, applyStageTransform); // 滾輪／雙指縮放＋空白處拖曳平移
     window.addEventListener("resize", () => renderer.applyLayerTransforms(dom.doll));
@@ -99,8 +114,8 @@ function initDefaultsTab() {
   }
 
   function onSlotChange(slot, value) {
+    // 下拉選項已限「已擁有」，選取即穿上（不需自動加入擁有）；「（無）」＝脫下。
     state.outfit[slot] = value;
-    if (value !== "none") state.owned.add(value); // 裝備中的單品自動視為已擁有
     markDirty();
     renderOutfitSelects();
     renderOwned();
@@ -111,8 +126,12 @@ function initDefaultsTab() {
   function renderOutfitSelects() {
     dom.outfit.innerHTML = "";
     slotOrder.forEach((slot) => {
-      const opts = wearableItems.filter((i) => i.type === slot);
-      if (!opts.length) return;
+      const allOfSlot = wearableItems.filter((i) => i.type === slot);
+      if (!allOfSlot.length) return; // 該 slot 無任何可穿衣物 → 不顯示此列
+      // 下拉僅列「已擁有」之該類（避免設出穿著未擁有的矛盾）；依「素材包-名稱」排序。
+      const opts = allOfSlot
+        .filter((i) => state.owned.has(i.id))
+        .sort((a, b) => ownedLabel(a).localeCompare(ownedLabel(b), "en"));
       const row = document.createElement("label");
       row.className = "defaults-slot";
       const cur = state.outfit[slot];
@@ -121,7 +140,8 @@ function initDefaultsTab() {
       const sel = document.createElement("select");
       sel.dataset.slot = slot;
       sel.innerHTML = `<option value="none">（無）</option>`
-        + opts.map((i) => `<option value="${escapeHtml(i.id)}"${i.id === value ? " selected" : ""}>${escapeHtml(i.name)}</option>`).join("");
+        + (opts.length ? "" : `<option value="none" disabled>（需先於左側擁有此類）</option>`)
+        + opts.map((i) => `<option value="${escapeHtml(i.id)}"${i.id === value ? " selected" : ""}>${escapeHtml(ownedLabel(i))}</option>`).join("");
       row.append(sel);
       dom.outfit.append(row);
     });
@@ -129,24 +149,16 @@ function initDefaultsTab() {
 
   function renderOwned() {
     dom.owned.innerHTML = "";
-    categories.forEach((cat) => {
-      const items = shopItems.filter((i) => cat.types.includes(i.type));
-      if (!items.length) return;
-      const ownedCount = items.filter((i) => state.owned.has(i.id)).length;
-      const group = document.createElement("div");
-      group.className = "defaults-own-group";
-      group.innerHTML = `<div class="defaults-own-head">${escapeHtml(cat.label)} <em>${ownedCount}/${items.length}</em></div>`;
-      const body = document.createElement("div");
-      body.className = "defaults-own-body";
-      items.forEach((i) => {
-        const equipped = isEquipped(i.id);
-        const lab = document.createElement("label");
-        lab.className = `defaults-own-check${equipped ? " equipped" : ""}`;
-        lab.innerHTML = `<input type="checkbox" value="${escapeHtml(i.id)}"${state.owned.has(i.id) ? " checked" : ""}${equipped ? " disabled" : ""}><span>${escapeHtml(i.name)}</span>`;
-        body.append(lab);
-      });
-      group.append(body);
-      dom.owned.append(group);
+    // 攤平為單一清單，依「素材包-名稱」排序（同素材包自然相鄰）；正穿之件標 equipped，
+    // 仍可取消勾選（取消時由 change handler 連動脫下），不再 disabled。
+    const items = shopItems.slice().sort((a, b) => ownedLabel(a).localeCompare(ownedLabel(b), "en"));
+    items.forEach((i) => {
+      const equipped = isEquipped(i.id);
+      const lab = document.createElement("label");
+      lab.className = `defaults-own-check${equipped ? " equipped" : ""}`;
+      lab.innerHTML = `<input type="checkbox" value="${escapeHtml(i.id)}"${state.owned.has(i.id) ? " checked" : ""}>`
+        + `<span><span class="defaults-own-pack">${escapeHtml(packOf(i))}-</span>${escapeHtml(i.name)}</span>`;
+      dom.owned.append(lab);
     });
   }
 
@@ -202,3 +214,11 @@ function q(sel) { return document.querySelector(sel); }
 function escapeHtml(value = "") {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 }
+// 素材包名（優先 item.pack；starter 等無 layer 者由 image 解析、再退回 "starter"）。
+function packOf(item) {
+  if (item?.pack) return item.pack;
+  const m = /wardrobe\/([^/]+)\/assets\//.exec(item?.image || "");
+  return m ? m[1] : "starter";
+}
+// 擁有清單／穿著下拉之顯示與排序鍵：「素材包-名稱」。
+function ownedLabel(item) { return `${packOf(item)}-${item?.name || item?.id || ""}`; }

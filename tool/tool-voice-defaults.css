@@ -1,11 +1,47 @@
 /* 管理設定工具：公主預設與聲音管理分頁樣式（issue #297 自 wardrobe-tuner.css 解體，域內保序）。 */
 
-/* ===== 公主預設分頁 ===== */
-/* issue #297：本頁左欄為金錢／預設穿著／擁有清單（62 件）三段垂直堆疊，需整欄可捲；
-   不能沿用衣物頁 catalog-pane 的 overflow:hidden（那靠內部衣櫃自捲），否則超出視窗的擁有清單被裁、無法管理。 */
-#panel-defaults .catalog-pane {
+/* ===== 公主預設分頁（issue #297：左右併排——左金錢＋擁有清單、右穿著＋小預覽）===== */
+.defaults-shell {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) minmax(340px, 1.15fr);
+  height: calc(100vh - var(--tabbar-h));
+}
+
+/* 左欄：金錢＋擁有清單，整欄可捲（清單長） */
+.defaults-own-pane {
   overflow-y: auto;
-  padding-bottom: 32px;
+  padding: 18px 18px 32px;
+  background: var(--md-sys-color-surface-container-low);
+  border-right: 1px solid var(--md-sys-color-outline-variant);
+}
+
+/* 右欄：穿著下拉＋小預覽＋套用 */
+.defaults-edit-pane {
+  overflow-y: auto;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--md-sys-color-surface-container-low);
+}
+
+/* 小預覽（公主不用太大）：512:768 比例、限高 */
+.defaults-preview {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: var(--md-radius-md, 12px);
+  overflow: hidden;
+  background:
+    linear-gradient(var(--tool-stage-veil), var(--tool-stage-veil)),
+    url("../content-package/areas/castle/assets/scenes/bedroom-1024.webp") center / cover no-repeat;
+}
+
+.defaults-preview .preview-stage {
+  height: min(42vh, 380px);
+  aspect-ratio: 512 / 768;
 }
 
 .defaults-coins {
@@ -31,7 +67,7 @@
 
 .defaults-slot {
   display: grid;
-  grid-template-columns: 96px 1fr;
+  grid-template-columns: 110px 1fr;
   gap: 8px;
   align-items: center;
   font-size: 12px;
@@ -61,36 +97,19 @@
   font-size: 12px;
 }
 
+/* 擁有清單攤平為單欄捲動清單（依「素材包-名稱」排序，同素材包自然相鄰） */
 .defaults-owned {
   display: grid;
-  gap: 10px;
-}
-
-.defaults-own-head {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--md-sys-color-on-surface-variant);
-  margin-bottom: 3px;
-}
-
-.defaults-own-head em {
-  font-style: normal;
-  font-weight: 400;
-  color: var(--md-sys-color-on-surface-variant);
-}
-
-.defaults-own-body {
-  display: grid;
-  gap: 1px;
+  gap: 2px;
 }
 
 .defaults-own-check {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 7px;
+  gap: 8px;
   align-items: center;
-  padding: 3px 6px;
-  border-radius: 5px;
+  padding: 5px 8px;
+  border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
 }
@@ -102,6 +121,23 @@
 .defaults-own-check.equipped {
   color: var(--tool-ok);
   font-weight: 600;
+}
+
+/* 素材包前綴以較淡色標示、衣物名為主色 */
+.defaults-own-pack {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+@media (max-width: 980px) {
+  .defaults-shell {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .defaults-own-pane {
+    border-right: none;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  }
 }
 
 /* issue #246：聲音管理頁籤——角色語音指定列（沿用 render/settings.js 的 .voice-assign-* 結構，於工具自帶樣式）。 */
