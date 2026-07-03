@@ -161,16 +161,32 @@ function initDefaultsTab() {
 
   function renderOwned() {
     dom.owned.innerHTML = "";
-    // 攤平為單一清單，依「素材包-名稱」排序（同素材包自然相鄰）；正穿之件標 equipped，
-    // 仍可取消勾選（取消時由 change handler 連動脫下），不再 disabled。
-    const items = shopItems.slice().sort((a, b) => ownedLabel(a).localeCompare(ownedLabel(b), "en"));
-    items.forEach((i) => {
-      const equipped = isEquipped(i.id);
-      const lab = document.createElement("label");
-      lab.className = `defaults-own-check${equipped ? " equipped" : ""}`;
-      lab.innerHTML = `<input type="checkbox" value="${escapeHtml(i.id)}"${state.owned.has(i.id) ? " checked" : ""}>`
-        + `<span><span class="defaults-own-pack">${escapeHtml(packOf(i))}-</span>${escapeHtml(i.name)}</span>`;
-      dom.owned.append(lab);
+    // 依類別（髮型/整件/鞋…，順序同衣物分類）分組，每組加標題（含件數）；組內仍依「素材包-名稱」排序。
+    // 正穿之件標 equipped，仍可取消勾選（取消時由 change handler 連動脫下），不 disabled。
+    const groupOrder = categories.flatMap((cat) => cat.types);
+    const byType = new Map();
+    shopItems.forEach((i) => {
+      if (!byType.has(i.type)) byType.set(i.type, []);
+      byType.get(i.type).push(i);
+    });
+    const orderedTypes = [
+      ...groupOrder.filter((t) => byType.has(t)),
+      ...[...byType.keys()].filter((t) => !groupOrder.includes(t)) // 未列入分類者殿後
+    ];
+    orderedTypes.forEach((slot) => {
+      const group = byType.get(slot).sort((a, b) => ownedLabel(a).localeCompare(ownedLabel(b), "en"));
+      const head = document.createElement("div");
+      head.className = "defaults-own-group";
+      head.textContent = `${slotLabel[slot] || slot}（${group.length}）`;
+      dom.owned.append(head);
+      group.forEach((i) => {
+        const equipped = isEquipped(i.id);
+        const lab = document.createElement("label");
+        lab.className = `defaults-own-check${equipped ? " equipped" : ""}`;
+        lab.innerHTML = `<input type="checkbox" value="${escapeHtml(i.id)}"${state.owned.has(i.id) ? " checked" : ""}>`
+          + `<span><span class="defaults-own-pack">${escapeHtml(packOf(i))}-</span>${escapeHtml(i.name)}</span>`;
+        dom.owned.append(lab);
+      });
     });
   }
 
