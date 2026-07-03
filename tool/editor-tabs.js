@@ -77,6 +77,9 @@ function renderSubNav(group) {
     b.addEventListener("click", () => selectPanel(p.panel));
     subNavEl.appendChild(b);
   }
+  // 子導覽移到「作用中資料包」按鈕正下方；否則固定停在整份主導覽之後，
+  // 會顯示在最後一個資料包（聲音）之下，看起來像聲音的子頁。
+  groupBtns.get(group.id)?.after(subNavEl);
 }
 
 function selectPanel(name) {
