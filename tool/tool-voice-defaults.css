@@ -69,6 +69,11 @@
   aspect-ratio: 512 / 768;
 }
 
+/* 公主預設是預覽、非對位編輯，移除圖框中央對位虛線（#176 的 .figure-frame::before 中線）。 */
+.defaults-preview .figure-frame::before {
+  display: none;
+}
+
 .defaults-coins {
   display: grid;
   gap: 4px;
