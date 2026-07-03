@@ -4,9 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Luminara Editor</title>
+  <!-- issue #297：宣告 favicon（data URI），消除瀏覽器自動請求 /favicon.ico 之 404 console error -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%AA%84%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="../styles/paper-doll.css">
   <link rel="stylesheet" href="./theme-md3.css">
-  <link rel="stylesheet" href="./wardrobe-tuner.css">
+  <!-- issue #297：工具樣式依分頁解體為分層檔（≤800 行、硬寫色歸零；structureLint 豁免移除） -->
+  <link rel="stylesheet" href="./tool-shell.css">
+  <link rel="stylesheet" href="./tool-wardrobe.css">
+  <link rel="stylesheet" href="./tool-stage.css">
+  <link rel="stylesheet" href="./tool-map-scene.css">
+  <link rel="stylesheet" href="./tool-voice-defaults.css">
 </head>
 <body>
   <!-- 管理網站版面（issue #260 / spec#13；依 [hmiIntf通用視覺規範] 管理網站規範）：
@@ -22,7 +29,7 @@
     </aside>
     <div class="admin-main">
       <header class="admin-topbar">
-        <button type="button" class="topbar-menu" id="appMenuBtn" aria-label="收合／展開導覽">☰</button>
+        <button type="button" class="topbar-menu" id="appMenuBtn" aria-label="收合／展開導覽" data-tip="收合／展開導覽">☰</button>
         <div class="topbar-titles">
           <div class="topbar-crumb" id="appBreadcrumb"></div>
           <h1 class="topbar-title" id="appTitle"></h1>
@@ -51,7 +58,10 @@
       <div class="add-item">
         <button id="addItemToggle" type="button" class="add-toggle">➕ 新增單品</button>
         <form id="addItemForm" class="add-form" hidden>
-          <p class="control-help">選了<strong>圖檔上傳</strong> → 自動轉 webp、置中到 512×768、產縮圖並登記；不選檔 → 先用 <strong>📁</strong> 把 <code>asset</code> 的 webp 放進 <code>assets/layers/</code> 與 <code>assets/thumbs/</code> 再登記。</p>
+          <details class="tool-help">
+            <summary>怎麼填？</summary>
+            <p class="control-help">選了<strong>圖檔上傳</strong> → 自動轉 webp、置中到 512×768、產縮圖並登記；不選檔 → 先用 <strong>📁</strong> 把 <code>asset</code> 的 webp 放進 <code>assets/layers/</code> 與 <code>assets/thumbs/</code> 再登記。</p>
+          </details>
           <label>素材包<select id="addPack"></select></label>
           <label>類型<select id="addType"></select></label>
           <label>id<input id="addId" type="text" placeholder="myNewItem" autocomplete="off"></label>
@@ -106,7 +116,25 @@
           <button type="button" data-mode="item">② 單品框<span>僅此件</span></button>
         </div>
         <p id="modeHelp" class="control-help"></p>
-        <p class="control-help">在左側預覽圖上直接拖拉所選的框：中央 ✛ 方塊移動、四邊四角 8 點縮放（非等比）。選「無選擇」可隱藏所有框，純看衣物。</p>
+        <details class="tool-help">
+          <summary>拖拉與鍵盤操作</summary>
+          <p class="control-help">在預覽圖上直接拖拉所選的框：中央 ✛ 方塊移動、四邊四角 8 點縮放（非等比）。選「無選擇」可隱藏所有框，純看衣物。也可用<strong>方向鍵</strong>微調位置（1px；Shift＝10px），或直接在下方數值欄輸入。</p>
+        </details>
+      </section>
+
+      <section class="control-section" id="boxSection">
+        <h2>框數值 <span class="hint">left / top / right / bottom</span></h2>
+        <div class="bound-grid box-input-grid">
+          <label>left<input id="boxL" type="number" min="0" max="512" step="1"></label>
+          <label>top<input id="boxT" type="number" min="0" max="768" step="1"></label>
+          <label>right<input id="boxR" type="number" min="0" max="512" step="1"></label>
+          <label>bottom<input id="boxB" type="number" min="0" max="768" step="1"></label>
+        </div>
+        <div class="restore-grid">
+          <button type="button" id="restoreItem">還原此框</button>
+          <button type="button" id="restoreAll">還原全部</button>
+        </div>
+        <p class="control-help">數值、拖曳與預覽三向同步；還原＝回到未調整前（未套用的變更才可還原）。</p>
       </section>
 
       <section class="control-section" id="rotationSection">
@@ -198,6 +226,8 @@
         <section id="mapNodeList" class="map-node-list" aria-label="場景節點"></section>
       </aside>
 
+      <div class="col-resizer" aria-hidden="true" title="拖曳調整欄寬"></div>
+
       <section class="map-stage-pane">
         <div class="map-stage" id="mapStage">
           <img id="mapImage" class="map-image" alt="map" draggable="false">
@@ -205,6 +235,8 @@
         </div>
         <p class="stage-hint">在地圖上直接拖拉標記調整位置（x／y 為地圖寬高百分比）。</p>
       </section>
+
+      <div class="col-resizer col-resizer-right" aria-hidden="true" title="拖曳調整欄寬"></div>
 
       <aside class="map-control-pane">
         <div id="mapSelectedInfo" class="selected-info">（未選節點）</div>
@@ -246,10 +278,14 @@
         <section id="sceneList" class="map-node-list" aria-label="場景清單"></section>
       </aside>
 
+      <div class="col-resizer" aria-hidden="true" title="拖曳調整欄寬"></div>
+
       <section class="scene-stage-pane">
         <div id="sceneMetaCard" class="scene-meta-card">（未選場景）</div>
         <div id="sceneDialogEditor" class="scene-dialog-editor"></div>
       </section>
+
+      <div class="col-resizer col-resizer-right" aria-hidden="true" title="拖曳調整欄寬"></div>
 
       <aside class="map-control-pane">
         <div id="sceneSelectedInfo" class="selected-info">（未選場景）</div>
@@ -272,6 +308,8 @@
             <textarea id="sceneGenPaste" rows="4" placeholder="貼上 AI 回應的 JSON…" aria-label="貼回 AI 回應"></textarea>
             <button id="sceneGenParseBtn" type="button">解析貼回</button>
           </div>
+          <!-- issue #297 C17：生成→對照→採納三步；未採納不覆寫題庫 -->
+          <div id="sceneGenPreview" class="scene-gen-preview" hidden></div>
         </section>
 
         <section class="control-section apply-section">
@@ -285,15 +323,21 @@
 
   <!-- ===== 聲音管理（issue #246：角色語音指定由玩家設定移入維護者工具） ===== -->
   <section id="panel-voice" class="editor-panel" data-panel="voice" hidden>
-    <main class="map-shell">
+    <main class="map-shell voice-shell">
       <aside class="map-list-pane">
         <header class="tool-header">
           <h1 id="voiceTitle">聲音管理</h1>
           <div id="voiceSummary" class="summary-line"></div>
         </header>
-        <p class="control-help">為各角色類型（依<strong>性別與性格</strong>）指定要使用的瀏覽器語音，讓不同人物聲線可被真正區分。每個性別有「預設」一列，性格類型未指定時沿用同性別預設；留在 Auto 的類型由系統依語言自動挑選。此設定為<strong>整台裝置共用</strong>（device-wide），與遊戲共用同一份指定（<code>localStorage</code>）；公開 GitHub Pages 不提供此入口。</p>
+        <p class="control-help">為各角色類型（依<strong>性別與性格</strong>）指定要使用的瀏覽器語音，讓不同人物聲線可被真正區分。</p>
+        <details class="tool-help">
+          <summary>指定與繼承規則</summary>
+          <p class="control-help">每個性別有「預設」一列，性格類型未指定時沿用同性別預設；留在 Auto 的類型由系統依語言自動挑選。此設定為<strong>整台裝置共用</strong>（device-wide），與遊戲共用同一份指定（<code>localStorage</code>）；公開 GitHub Pages 不提供此入口。</p>
+        </details>
         <div class="voice-assign-list" id="voiceAssignList"></div>
       </aside>
+
+      <div class="col-resizer" aria-hidden="true" title="拖曳調整欄寬"></div>
 
       <aside class="map-control-pane">
         <section class="control-section">

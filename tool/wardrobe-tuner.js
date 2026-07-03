@@ -7,15 +7,24 @@ import {
   shopItems,
   wardrobeLayerBoundsByType
 } from "../content-package/wardrobe/manifest.js";
+import { buildWardrobeItem } from "../content-package/wardrobe/_shared/item-helpers.js";
 import { createPaperDollRenderer } from "../game-engine/render/paper-doll.js";
 import { cornerOffsets, hasWarp } from "../game-engine/render/warp.js";
+import {
+  uiConfirm, uiAlert, uiFormDialog, snack, status, postJson, readFileAsDataUrl,
+  setDirty, setHashSub, hashParts
+} from "./ui-helpers.js";
+import { setupStagePanZoom, setupBoxDrag, setupColumnResize, setupClosetDragScroll } from "./wardrobe-gestures.js";
 
 // 主畫面契約（characterScaleContract）。所有框以此 512x768 畫布座標表示（#176）。
 const CANVAS = { W: 512, H: 768 };
 
-const itemMap = new Map(shopItems.map((item) => [item.id, item]));
+// issue #297：寫回成功不整頁重載——工具持有 manifest 衣物之「本地可變工作模型」，
+// metadata／新增／刪除／重生成功後原地更新此模型並重繪，不再 window.location.reload()。
+const items = shopItems.map(cloneItem);
+const itemMap = new Map(items.map((item) => [item.id, item]));
 // 素材包（content pack）清單與篩選集（預設全選；模組層級，避免 state 初始化前的 TDZ）。
-const allPacks = [...new Set(shopItems.map(packOfItem).filter(Boolean))].sort();
+let allPacks = [...new Set(items.map(packOfItem).filter(Boolean))].sort();
 let selectedPacks = new Set(allPacks);
 // 左欄單品搜尋字串（依名稱／id 即時過濾，與素材包多選＋衣櫃並用）。
 let searchText = "";
@@ -23,11 +32,13 @@ let searchText = "";
 const workingSafeBox = Object.fromEntries(
   Object.entries(wardrobeLayerBoundsByType).map(([type, b]) => [type, b.safeBox ? { ...b.safeBox } : fullCanvas()])
 );
+// 未寫回前的基準（dirty 判定與「還原」對照）；apply 成功後重釘。
+let originalSafeBox = deepCopyBoxes(workingSafeBox);
 const workingItemBox = {}; // key `<pack>/<name>` → { left, top, right, bottom }（lazy seed）
 const workingRotation = {}; // key → number degrees（lazy seed；未觸碰的 key 不在此 map）
 const baseOutfit = Object.fromEntries(Object.keys(wardrobeLayerBoundsByType).map((type) => [type, "none"]));
 const state = {
-  selectedItemId: firstShownItem()?.id || "",
+  selectedItemId: initialSelectedId(),
   editMode: "item", // "none"（不顯示框）／"type"（① 類型框/safeBox）／"item"（② 單品框/targetBox）
   zoom: 1,
   pan: { x: 0, y: 0 }, // 預覽舞台平移量（px，畫面座標）
@@ -45,7 +56,10 @@ const dom = {
   addName: q("#addName"), addAsset: q("#addAsset"), addCost: q("#addCost"),
   addFile: q("#addFile"), addOverwrite: q("#addOverwrite"), addStatus: q("#addStatus"),
   itemSearch: q("#itemSearch"),
-  rotationSlider: q("#rotationSlider"), rotationNumber: q("#rotationNumber"), rotationReset: q("#rotationReset")
+  rotationSlider: q("#rotationSlider"), rotationNumber: q("#rotationNumber"), rotationReset: q("#rotationReset"),
+  boxL: q("#boxL"), boxT: q("#boxT"), boxR: q("#boxR"), boxB: q("#boxB"),
+  restoreItem: q("#restoreItem"), restoreAll: q("#restoreAll"),
+  panel: q("#panel-wardrobe")
 };
 
 const paperDollRenderer = createPaperDollRenderer({
@@ -63,8 +77,27 @@ populateAddSelects();
 equipSelectedItem();
 renderAll();
 
+function cloneItem(item) {
+  return {
+    ...item,
+    layers: (item.layers || []).map((layer) => ({
+      ...layer,
+      bounds: layer.bounds
+        ? { ...layer.bounds, targetBox: layer.bounds.targetBox ? { ...layer.bounds.targetBox } : layer.bounds.targetBox }
+        : layer.bounds
+    }))
+  };
+}
+
+// 深連結（#wardrobe/<itemId>）優先，否則第一件可見單品。
+function initialSelectedId() {
+  const parts = hashParts();
+  if (parts[0] === "wardrobe" && parts[1] && items.some((i) => i.id === parts[1])) return parts[1];
+  return firstShownItem()?.id || "";
+}
+
 function bindEvents() {
-  setupClosetDragScroll();
+  setupClosetDragScroll(dom.closets);
   dom.modeTabs.addEventListener("click", (e) => {
     const mode = e.target.closest("button")?.dataset.mode;
     if (mode) { state.editMode = mode; renderAll(); }
@@ -80,65 +113,31 @@ function bindEvents() {
   dom.rotationSlider?.addEventListener("input", () => { setRotation(selectedKey(), Number(dom.rotationSlider.value)); syncRotationNumber(); });
   dom.rotationNumber?.addEventListener("change", () => { const v = clampN(Number(dom.rotationNumber.value) || 0, -180, 180); setRotation(selectedKey(), v); syncRotationSlider(); });
   dom.rotationReset?.addEventListener("click", () => { setRotation(selectedKey(), 0); syncRotationInputs(); });
+  bindBoxInputs();
+  dom.restoreItem?.addEventListener("click", restoreActive);
+  dom.restoreAll?.addEventListener("click", restoreAll);
+  document.addEventListener("keydown", onArrowNudge);
   setupDrag(dom.typeOverlay);
   setupDrag(dom.itemOverlay);
-  setupColumnResize();
+  setupColumnResize(
+    document.querySelector("#panel-wardrobe .tool-shell"),
+    document.querySelector("#panel-wardrobe .col-resizer:not(.col-resizer-right)"),
+    document.querySelector("#panel-wardrobe .col-resizer-right")
+  );
   window.addEventListener("resize", () => paperDollRenderer.applyLayerTransforms(dom.previewDoll));
   // 切回衣物分頁時（panel 由 hidden→顯示）重算 layer transforms，避免隱藏期間量到 0 尺寸。
   window.addEventListener("editor-tab-change", (e) => {
-    if (e.detail?.tab === "wardrobe") paperDollRenderer.applyLayerTransforms(dom.previewDoll);
+    if (e.detail?.tab === "wardrobe") {
+      paperDollRenderer.applyLayerTransforms(dom.previewDoll);
+      setHashSub("wardrobe", state.selectedItemId);
+    }
   });
-  // 中央試穿畫面：滑鼠滾輪縮放（以 stage transform；drag 用 getBoundingClientRect 故不受影響）。
-  dom.previewStage?.addEventListener("wheel", (e) => {
-    e.preventDefault();
-    state.zoom = clampN(state.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1), 0.4, 4);
-    applyStageTransform();
-  }, { passive: false });
-  setupStagePan();
+  // 中央試穿畫面：滾輪／單指平移／雙指縮放（接線見 wardrobe-gestures.js；#297 D20）。
+  setupStagePanZoom(dom.previewStage, state, applyStageTransform);
 }
 
-// 預覽舞台平移：在空白處（非框控制點）按住拖曳即平移；框的拖拉仍由 overlay 自行處理。
-function setupStagePan() {
-  if (!dom.previewStage) return;
-  let active = null;
-  dom.previewStage.addEventListener("pointerdown", (e) => {
-    if (e.target.closest(".box-overlay")) return; // 在框/控制點上 → 讓 overlay 處理，不平移
-    active = { sx: e.clientX, sy: e.clientY, px: state.pan.x, py: state.pan.y };
-    dom.previewStage.classList.add("panning");
-    try { dom.previewStage.setPointerCapture(e.pointerId); } catch { /* noop */ }
-  });
-  dom.previewStage.addEventListener("pointermove", (e) => {
-    if (!active) return;
-    state.pan = { x: active.px + (e.clientX - active.sx), y: active.py + (e.clientY - active.sy) };
-    applyStageTransform();
-  });
-  const end = () => { active = null; dom.previewStage.classList.remove("panning"); };
-  dom.previewStage.addEventListener("pointerup", end);
-  dom.previewStage.addEventListener("pointercancel", end);
-}
 function applyStageTransform() {
   dom.previewStage.style.transform = `translate(${Math.round(state.pan.x)}px, ${Math.round(state.pan.y)}px) scale(${Math.round(state.zoom * 1000) / 1000})`;
-}
-
-// 左右欄皆可拖曳調寬：左分隔條改 --left-w（=clientX）、右分隔條改 --right-w（=innerWidth-clientX）。
-function setupColumnResize() {
-  const shell = document.querySelector(".tool-shell");
-  if (!shell) return;
-  const bind = (resizer, side) => {
-    if (!resizer) return;
-    let active = false;
-    resizer.addEventListener("pointerdown", (e) => { active = true; try { resizer.setPointerCapture(e.pointerId); } catch { /* noop */ } e.preventDefault(); });
-    resizer.addEventListener("pointermove", (e) => {
-      if (!active) return;
-      if (side === "left") shell.style.setProperty("--left-w", `${clampN(e.clientX, 220, 680)}px`);
-      else shell.style.setProperty("--right-w", `${clampN(window.innerWidth - e.clientX, 240, 640)}px`);
-    });
-    const end = () => { active = false; };
-    resizer.addEventListener("pointerup", end);
-    resizer.addEventListener("pointercancel", end);
-  };
-  bind(document.querySelector(".col-resizer:not(.col-resizer-right)"), "left");
-  bind(document.querySelector(".col-resizer-right"), "right");
 }
 
 function renderAll() {
@@ -148,6 +147,7 @@ function renderAll() {
   renderSelectedInfo();
   renderPreview();
   syncRotationInputs();
+  syncBoxInputs();
 }
 
 function renderModeTabs() {
@@ -160,7 +160,7 @@ function renderModeTabs() {
 }
 
 function renderSummary() {
-  dom.summaryLine.textContent = `${itemsShown().length}/${shopItems.length} items · 素材包多選＋衣櫃依類型（可水平拖動）· 拖綠框（角＝自由變形）· 滾輪縮放 · canvas ${CANVAS.W}×${CANVAS.H}`;
+  dom.summaryLine.textContent = `${itemsShown().length}/${items.length} items · 素材包多選＋衣櫃依類型（可水平拖動）· 拖綠框（角＝自由變形）· 滾輪／雙指縮放 · canvas ${CANVAS.W}×${CANVAS.H}`;
 }
 
 // 類型衣櫃：每個 UI category 一個衣櫃，依 selectedPacks 過濾後水平並列（空衣櫃略過）。
@@ -168,16 +168,16 @@ function renderClosets() {
   dom.closets.innerHTML = "";
   const shown = itemsShown();
   categories.forEach((category) => {
-    const items = shown.filter((item) => catOfItem(item) === category.id);
-    if (!items.length) return;
+    const catItems = shown.filter((item) => catOfItem(item) === category.id);
+    if (!catItems.length) return;
     const closet = document.createElement("section");
     closet.className = "closet";
     const head = document.createElement("div");
     head.className = "closet-head";
-    head.innerHTML = `<strong>${escapeHtml(category.label)}</strong><em>${items.length}</em>`;
+    head.innerHTML = `<strong>${escapeHtml(category.label)}</strong><em>${catItems.length}</em>`;
     const body = document.createElement("div");
     body.className = "closet-items";
-    items.forEach((item) => body.append(buildItemRow(item)));
+    catItems.forEach((item) => body.append(buildItemRow(item)));
     closet.append(head, body);
     dom.closets.append(closet);
   });
@@ -195,11 +195,16 @@ function buildItemRow(item) {
       <span class="item-name"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.type)} / ${escapeHtml(item.id)}</span></span>
       <span class="item-price">${priceText(item)}</span>
     </button>
-    <button type="button" class="item-act" data-act="meta" title="編輯 metadata（名稱／價錢／描述詞）">📝</button>
-    <button type="button" class="item-act" data-act="regen" title="以目前描述詞重生此單品">♻</button>
-    <button type="button" class="item-act" data-act="open" title="開啟素材資料夾">📁</button>
-    <button type="button" class="item-act" data-act="del" title="刪除此單品">🗑</button>`;
-  row.querySelector(".item-main").addEventListener("click", () => { state.selectedItemId = item.id; equipSelectedItem(); renderAll(); });
+    <button type="button" class="item-act" data-act="meta" data-tip="編輯 metadata（名稱／價錢／描述詞）" aria-label="編輯 metadata">📝</button>
+    <button type="button" class="item-act" data-act="regen" data-tip="以目前描述詞重生此單品" aria-label="重生此單品">♻</button>
+    <button type="button" class="item-act" data-act="open" data-tip="開啟素材資料夾" aria-label="開啟素材資料夾">📁</button>
+    <button type="button" class="item-act item-act-danger" data-act="del" data-tip="刪除此單品" aria-label="刪除此單品">🗑</button>`;
+  row.querySelector(".item-main").addEventListener("click", () => {
+    state.selectedItemId = item.id;
+    setHashSub("wardrobe", item.id);
+    equipSelectedItem();
+    renderAll();
+  });
   row.querySelector('[data-act="meta"]').addEventListener("click", () => editItemMeta(item));
   row.querySelector('[data-act="regen"]').addEventListener("click", () => regenItem(item));
   row.querySelector('[data-act="open"]').addEventListener("click", () => openItemFolder(item));
@@ -207,125 +212,94 @@ function buildItemRow(item) {
   return row;
 }
 
-// 衣櫃列水平拖曳捲動：在空白或卡片上按住左右拖即可移動到其他衣櫃；越過門檻才算拖曳，
-// 並在拖曳後抑制該次 click，避免誤觸選取單品。容器持久存在（只換 innerHTML），故只綁一次。
-function setupClosetDragScroll() {
-  const el = dom.closets;
-  if (!el) return;
-  let down = null;
-  let moved = false;
-  let suppressClick = false;
-  el.addEventListener("pointerdown", (e) => {
-    if (e.button !== 0) return;
-    down = { x: e.clientX, scroll: el.scrollLeft, id: e.pointerId };
-    moved = false;
-  });
-  el.addEventListener("pointermove", (e) => {
-    if (!down) return;
-    const dx = e.clientX - down.x;
-    if (!moved && Math.abs(dx) > 6) {
-      moved = true;
-      el.classList.add("dragging");
-      try { el.setPointerCapture(down.id); } catch { /* noop */ }
-    }
-    if (moved) { el.scrollLeft = down.scroll - dx; e.preventDefault(); }
-  });
-  const end = () => {
-    if (!down) return;
-    try { el.releasePointerCapture(down.id); } catch { /* noop */ }
-    el.classList.remove("dragging");
-    suppressClick = moved;
-    down = null;
-    moved = false;
-  };
-  el.addEventListener("pointerup", end);
-  el.addEventListener("pointercancel", end);
-  el.addEventListener("click", (e) => {
-    if (suppressClick) { e.stopPropagation(); e.preventDefault(); suppressClick = false; }
-  }, true);
-}
-
 function assetOfItem(item) { const m = /assets\/(?:layers|thumbs)\/([^/]+)\.webp/.exec(item?.image || item?.layers?.[0]?.src || ""); return m ? m[1] : ""; }
 
 async function openItemFolder(item) {
   try {
     const d = await postJson("/tool/open-folder", { pack: packOfItem(item) });
-    if (!d.ok) window.alert(`開啟資料夾失敗：${d.error}`);
-  } catch (e) { window.alert(`開啟資料夾失敗：${e.message}`); }
+    if (!d.ok) snack(`開啟資料夾失敗：${d.error}`, "err");
+  } catch (e) { snack(`開啟資料夾失敗：${e.message}`, "err"); }
 }
 
+// issue #297：刪除改 MD3 危險確認（error 色）；成功後原地移除本地模型並重繪，不整頁重載。
 async function deleteItem(item) {
-  if (!window.confirm(`刪除「${item.name}」？\n會移除 manifest 該行＋layer/thumb webp＋其覆寫，無法復原。`)) return;
+  const ok = await uiConfirm({
+    title: `刪除「${item.name}」？`,
+    bodyHtml: `<p>會移除該件 sidecar＋layer webp＋其覆寫，<strong>無法復原</strong>（可用 git 找回）。</p>`,
+    confirmText: "刪除",
+    danger: true
+  });
+  if (!ok) return;
   try {
     const d = await postJson("/tool/delete-item", { pack: packOfItem(item), asset: assetOfItem(item), itemId: item.id });
-    if (!d.ok) { window.alert(`刪除失敗：${d.error}`); return; }
-    window.location.reload();
-  } catch (e) { window.alert(`刪除失敗：${e.message}`); }
+    if (!d.ok) { snack(`刪除失敗：${d.error}`, "err"); return; }
+    const key = keyFromSrc(item.layers?.[0]?.src);
+    if (key) { delete workingItemBox[key]; delete workingRotation[key]; }
+    const idx = items.findIndex((i) => i.id === item.id);
+    if (idx >= 0) items.splice(idx, 1);
+    itemMap.delete(item.id);
+    refreshPacks();
+    ensureValidSelection();
+    recomputeDirty();
+    renderPackButtons();
+    renderAll();
+    snack(`已刪除「${item.name}」。`, "ok");
+  } catch (e) { snack(`刪除失敗：${e.message}`, "err"); }
 }
 
-// issue #218：把舊「描述詞」按鈕改成可設定 metadata 的編輯器（名稱／價錢／描述詞）。
-// 讀取失敗（缺 style.json／asset）不再中止，改以空值起始；儲存就地改 manifest 名稱／價錢與 style.json 描述詞。
+// issue #218／#297：metadata 編輯改共用表單對話框；儲存成功後原地更新本地模型（名稱／價錢），
+// 不再整頁重載——選取、捲動、篩選與其他分頁未儲存工作全數保留。
 async function editItemMeta(item) {
   let meta = { name: item.name || "", cost: Number.isFinite(item.cost) ? item.cost : 0, desc: "" };
   try {
     const cur = await postJson("/tool/get-item-meta", { pack: packOfItem(item), asset: assetOfItem(item), itemId: item.id });
     if (cur.ok) meta = { name: cur.name ?? meta.name, cost: cur.cost ?? meta.cost, desc: cur.desc ?? "" };
-  } catch { /* 讀取失敗：用 manifest 既有 name/cost、描述詞留空 */ }
-  const next = await openMetaDialog(item, meta);
+  } catch { /* 讀取失敗：用本地既有 name/cost、描述詞留空 */ }
+  const next = await uiFormDialog({
+    title: "編輯 metadata",
+    noteHtml: `<p class="control-help"><code>${escapeHtml(packOfItem(item))}/${escapeHtml(assetOfItem(item))}</code> · id <code>${escapeHtml(item.id)}</code>；名稱／價錢寫回 sidecar，描述詞供 ♻ 重生使用。</p>`,
+    fields: [
+      { key: "name", label: "名稱", value: meta.name, required: true },
+      { key: "cost", label: "價錢 (coins)", type: "number", min: 0, value: meta.cost },
+      { key: "desc", label: "描述詞 (itemDesc)", type: "textarea", rows: 4, value: meta.desc }
+    ]
+  });
   if (!next) return;
   try {
     const d = await postJson("/tool/save-item-meta", {
       pack: packOfItem(item), asset: assetOfItem(item), itemId: item.id,
       name: next.name, cost: next.cost, desc: next.desc
     });
-    if (!d.ok) { window.alert(`儲存失敗：${d.error}`); return; }
-    window.location.reload();
-  } catch (e) { window.alert(`儲存 metadata 失敗：${e.message}`); }
+    if (!d.ok) { snack(`儲存失敗：${d.error}`, "err"); return; }
+    item.name = next.name;
+    item.cost = next.cost;
+    renderAll();
+    snack(`已儲存「${next.name}」metadata。`, "ok");
+  } catch (e) { snack(`儲存 metadata 失敗：${e.message}`, "err"); }
 }
 
-// 輕量 metadata 對話框：回傳 { name, cost, desc } 或 null（取消）。
-function openMetaDialog(item, meta) {
-  return new Promise((resolve) => {
-    const back = document.createElement("div");
-    back.className = "meta-modal-back";
-    back.innerHTML = `
-      <div class="meta-modal" role="dialog" aria-modal="true">
-        <h3>編輯 metadata</h3>
-        <p class="control-help"><code>${escapeHtml(packOfItem(item))}/${escapeHtml(assetOfItem(item))}</code> · id <code>${escapeHtml(item.id)}</code></p>
-        <label>名稱<input class="meta-name" type="text"></label>
-        <label>價錢 (coins)<input class="meta-cost" type="number" min="0"></label>
-        <label>描述詞 (itemDesc)<textarea class="meta-desc" rows="4"></textarea></label>
-        <p class="control-help">名稱／價錢寫回該包 <code>manifest.js</code>；描述詞寫回 <code>style.json</code>（按 ♻ 重生套用）。儲存後會重新整理。</p>
-        <div class="meta-actions">
-          <button type="button" class="meta-cancel">取消</button>
-          <button type="button" class="meta-save add-submit">儲存</button>
-        </div>
-      </div>`;
-    document.body.append(back);
-    const nameEl = back.querySelector(".meta-name");
-    const costEl = back.querySelector(".meta-cost");
-    const descEl = back.querySelector(".meta-desc");
-    nameEl.value = meta.name; costEl.value = meta.cost; descEl.value = meta.desc;
-    nameEl.focus();
-    const close = (val) => { back.remove(); resolve(val); };
-    back.querySelector(".meta-cancel").addEventListener("click", () => close(null));
-    back.addEventListener("click", (e) => { if (e.target === back) close(null); });
-    back.querySelector(".meta-save").addEventListener("click", () => {
-      const name = nameEl.value.trim();
-      if (!name) { window.alert("名稱不可為空"); return; }
-      close({ name, cost: Number(costEl.value) || 0, desc: descEl.value.trim() });
-    });
-  });
-}
-
-// issue #196：以目前三層描述詞呼叫影像模型重生此單品並覆蓋素材（dev only）。
+// issue #196／#297：重生成功後 cache-bust 該件素材原地重繪，不整頁重載。
 async function regenItem(item) {
-  if (!window.confirm(`重生「${item.name}」？\n以目前描述詞呼叫影像模型生成 512×512 並覆蓋素材（約 30–60 秒）。`)) return;
+  const ok = await uiConfirm({
+    title: `重生「${item.name}」？`,
+    bodyHtml: `<p>以目前描述詞呼叫影像模型生成 512×512 並覆蓋素材（約 30–60 秒）。</p>`,
+    confirmText: "重生"
+  });
+  if (!ok) return;
+  status(dom.applyStatus, "重生中（約 30–60 秒）…", "");
   try {
     const d = await postJson("/tool/regenerate-wardrobe", { pack: packOfItem(item), asset: assetOfItem(item) });
-    if (!d.ok) { window.alert(`重生失敗：${d.error}`); return; }
-    window.location.reload();
-  } catch (e) { window.alert(`重生失敗：${e.message}`); }
+    if (!d.ok) { snack(`重生失敗：${d.error}`, "err"); return; }
+    bustItemImage(item);
+    renderAll();
+    snack(`已重生「${item.name}」並更新預覽。`, "ok");
+  } catch (e) { snack(`重生失敗：${e.message}`, "err"); }
+}
+
+function bustItemImage(item) {
+  const bust = (src) => src ? `${src.split("?")[0]}?t=${Date.now()}` : src;
+  item.image = bust(item.image);
+  (item.layers || []).forEach((layer) => { layer.src = bust(layer.src); });
 }
 
 function populateAddSelects() {
@@ -333,6 +307,7 @@ function populateAddSelects() {
   dom.addType.innerHTML = Object.keys(wardrobeLayerBoundsByType).map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
 }
 
+// issue #297：新增成功後以回傳 contentBox 原地建構本地模型項並選取，不整頁重載。
 async function submitAddItem(e) {
   e.preventDefault();
   const body = {
@@ -340,7 +315,7 @@ async function submitAddItem(e) {
     name: dom.addName.value.trim(), asset: dom.addAsset.value.trim(), cost: Number(dom.addCost.value) || 0
   };
   const file = dom.addFile.files?.[0];
-  setStatus(dom.addStatus, file ? "上傳轉檔中…" : "新增中…", "");
+  status(dom.addStatus, file ? "上傳轉檔中…" : "新增中…", "");
   try {
     let d;
     if (file) {
@@ -349,26 +324,36 @@ async function submitAddItem(e) {
     } else {
       d = await postJson("/tool/add-item", body);
     }
-    if (!d.ok) { setStatus(dom.addStatus, `失敗：${d.error}`, "err"); return; }
-    setStatus(dom.addStatus, "已新增，重新整理…", "ok");
-    window.setTimeout(() => window.location.reload(), 700);
-  } catch (e2) { setStatus(dom.addStatus, `失敗：${e2.message}`, "err"); }
+    if (!d.ok) { status(dom.addStatus, `失敗：${d.error}`, "err"); return; }
+    const newItem = cloneItem(buildWardrobeItem({
+      pack: body.pack, id: body.id, storeId: body.pack, type: body.type,
+      name: body.name, cost: body.cost, icon: body.type, asset: body.asset,
+      targetBox: d.contentBox || null
+    }));
+    bustItemImage(newItem); // 素材剛落地，避免舊快取
+    itemMap.set(newItem.id, newItem);
+    items.push(newItem);
+    refreshPacks();
+    state.selectedItemId = newItem.id;
+    setHashSub("wardrobe", newItem.id);
+    equipSelectedItem();
+    renderPackButtons();
+    renderAll();
+    dom.addItemForm.reset();
+    dom.addItemForm.hidden = true;
+    status(dom.addStatus, "", "");
+    snack(`已新增「${newItem.name}」。`, "ok");
+  } catch (e2) { status(dom.addStatus, `失敗：${e2.message}`, "err"); }
 }
 
-function readFileAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.addEventListener("load", () => resolve(reader.result));
-    reader.addEventListener("error", () => reject(new Error("讀取圖檔失敗")));
-    reader.readAsDataURL(file);
-  });
+function refreshPacks() {
+  const known = new Set(allPacks);
+  allPacks = [...new Set(items.map(packOfItem).filter(Boolean))].sort();
+  selectedPacks = new Set([...selectedPacks].filter((p) => allPacks.includes(p)));
+  // 新出現的 pack 預設納入篩選，避免剛新增的單品被藏起來。
+  for (const p of allPacks) if (!known.has(p)) selectedPacks.add(p);
+  populateAddSelects();
 }
-
-async function postJson(url, body) {
-  const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  return res.json();
-}
-function setStatus(el, text, kind) { el.textContent = text; el.className = `apply-status${kind ? ` apply-status-${kind}` : ""}`; }
 
 // 素材包水平多選按鈕：點按切換包含/排除（.active＝包含）；首顆「全部」一鍵全選/全不選。
 function renderPackButtons() {
@@ -381,7 +366,7 @@ function renderPackButtons() {
   allBtn.addEventListener("click", () => { selectedPacks = new Set(allOn ? [] : allPacks); afterPackChange(); });
   dom.packButtons.append(allBtn);
   allPacks.forEach((pack) => {
-    const count = shopItems.filter((i) => packOfItem(i) === pack).length;
+    const count = items.filter((i) => packOfItem(i) === pack).length;
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = `pack-btn${selectedPacks.has(pack) ? " active" : ""}`;
@@ -401,9 +386,10 @@ function afterPackChange() {
 }
 
 function ensureValidSelection() {
-  const items = itemsShown();
-  if (!items.some((i) => i.id === state.selectedItemId)) {
-    state.selectedItemId = (items.find((i) => i.storeId !== "starter") || items[0])?.id || "";
+  const shown = itemsShown();
+  if (!shown.some((i) => i.id === state.selectedItemId)) {
+    state.selectedItemId = (shown.find((i) => i.storeId !== "starter") || shown[0])?.id || "";
+    setHashSub("wardrobe", state.selectedItemId);
   }
   equipSelectedItem();
 }
@@ -411,11 +397,11 @@ function ensureValidSelection() {
 function renderSelectedInfo() {
   const item = selectedItem();
   const key = selectedKey();
-  const overridden = key && key in workingItemBox && !sameBox(workingItemBox[key], seedItemBox(key));
-  const rotOverridden = key && key in workingRotation && workingRotation[key] !== seedRotation(key);
-  const tags = [overridden && "框已覆寫", rotOverridden && `旋轉 ${workingRotation[key]}°`].filter(Boolean).join(" · ");
+  const overridden = key && boxDirty(key);
+  const rotOverridden = key && rotDirty(key);
+  const tags = [overridden && "框已改", rotOverridden && `旋轉 ${workingRotation[key]}°`].filter(Boolean).join(" · ");
   dom.selectedInfo.innerHTML = item
-    ? `<strong>${escapeHtml(item.name)}</strong><span>type <code>${escapeHtml(selectedType() || "—")}</code> · ${key ? `<code>${escapeHtml(key)}</code>` : "（無單一 layer）"}${tags ? ` · <em>${tags}</em>` : ""}</span>`
+    ? `<strong>${escapeHtml(item.name)}</strong><span>type <code>${escapeHtml(selectedType() || "—")}</code> · ${key ? `<code>${escapeHtml(key)}</code>` : "（無單一 layer）"}${tags ? ` · <em>${tags}（未套用）</em>` : ""}</span>`
     : "（未選單品）";
 }
 
@@ -457,73 +443,119 @@ function positionCorner(el, cls, left, top) {
 // ===== active box（依 editMode 指向類型框或單品框） =====
 function activeBox() {
   if (state.editMode === "type") { const t = selectedType(); return t ? workingSafeBox[t] : null; }
-  const k = selectedKey(); return k ? itemBoxFor(k) : null;
+  if (state.editMode === "item") { const k = selectedKey(); return k ? itemBoxFor(k) : null; }
+  return null;
 }
 function commitActiveBox(box) {
   const b = { left: Math.round(box.left), top: Math.round(box.top), right: Math.round(box.right), bottom: Math.round(box.bottom) };
-  if (state.editMode === "type") { const t = selectedType(); if (t) workingSafeBox[t] = b; return; }
+  if (state.editMode === "type") { const t = selectedType(); if (t) workingSafeBox[t] = b; recomputeDirty(); return; }
   if (hasWarp(box)) {
     const o = cornerOffsets(box);
     b.corners = { nw: roundPair(o.nw), ne: roundPair(o.ne), sw: roundPair(o.sw), se: roundPair(o.se) };
   }
   const k = selectedKey(); if (k) workingItemBox[k] = b;
-}
-// 取得 box 正規化後的四角偏移副本（含舊 inset 一律轉成 corners），供拖拉與提交使用。
-function cornersOf(box) {
-  const o = cornerOffsets(box);
-  return { nw: [...o.nw], ne: [...o.ne], sw: [...o.sw], se: [...o.se] };
+  recomputeDirty();
 }
 function roundPair(p) { return [Math.round(p[0]), Math.round(p[1])]; }
-function afterBoxChange() { renderPreview(); renderSelectedInfo(); }
+function afterBoxChange() { renderPreview(); renderSelectedInfo(); syncBoxInputs(); }
 
-// ② 圖上拖拉：中央移動、四邊中點非等比縮放；四角在單品框＝自由變形、在類型框＝角落縮放。
+// ② 圖上拖拉：接線見 wardrobe-gestures.js setupBoxDrag（移動／縮放／四角形變，行為同前）。
 function setupDrag(overlay) {
-  let active = null;
-  overlay.addEventListener("pointerdown", (e) => {
-    const handle = e.target?.dataset?.h;
-    const box = activeBox();
-    if (!handle || !box) return;
-    e.preventDefault();
-    try { overlay.setPointerCapture(e.pointerId); } catch { /* noop */ }
-    const p = pointerCanvas(e);
-    active = { handle, start: { ...box }, sx: p.x, sy: p.y };
+  setupBoxDrag(overlay, {
+    doll: dom.previewDoll,
+    canvas: CANVAS,
+    getBox: activeBox,
+    isItemMode: () => state.editMode === "item",
+    commit: (b) => { commitActiveBox(b); afterBoxChange(); }
   });
-  overlay.addEventListener("pointermove", (e) => { if (active) applyDrag(active, pointerCanvas(e)); });
-  const end = () => { active = null; };
-  overlay.addEventListener("pointerup", end);
-  overlay.addEventListener("pointercancel", end);
 }
-function pointerCanvas(e) {
-  const rect = dom.previewDoll.getBoundingClientRect();
-  return {
-    x: clampN(((e.clientX - rect.left) / rect.width) * CANVAS.W, 0, CANVAS.W),
-    y: clampN(((e.clientY - rect.top) / rect.height) * CANVAS.H, 0, CANVAS.H)
+
+// ===== 框數值輸入與鍵盤微調（#297 C13／C14）=====
+function bindBoxInputs() {
+  const inputs = [dom.boxL, dom.boxT, dom.boxR, dom.boxB];
+  if (inputs.some((el) => !el)) return;
+  const onChange = () => {
+    const box = activeBox();
+    if (!box) return;
+    let left = Math.round(Number(dom.boxL.value));
+    let top = Math.round(Number(dom.boxT.value));
+    let right = Math.round(Number(dom.boxR.value));
+    let bottom = Math.round(Number(dom.boxB.value));
+    if (![left, top, right, bottom].every(Number.isFinite)) { syncBoxInputs(); return; }
+    left = clampN(left, 0, CANVAS.W - 4);
+    top = clampN(top, 0, CANVAS.H - 4);
+    right = clampN(right, left + 4, CANVAS.W);
+    bottom = clampN(bottom, top + 4, CANVAS.H);
+    commitActiveBox({ ...box, left, top, right, bottom });
+    afterBoxChange();
   };
+  inputs.forEach((el) => el.addEventListener("change", onChange));
 }
-function applyDrag(active, p) {
-  const { handle, start, sx, sy } = active;
-  let b = { ...start };
-  const corner = handle.length === 2; // nw/ne/sw/se
-  if (handle === "move") {
-    const w = start.right - start.left; const h = start.bottom - start.top;
-    const left = clampN(start.left + (p.x - sx), 0, CANVAS.W - w); const top = clampN(start.top + (p.y - sy), 0, CANVAS.H - h);
-    b = { ...start, left, top, right: left + w, bottom: top + h };
-  } else if (corner && state.editMode === "item") {
-    // 四角形變：角落控制點可各自往任意方向拖拉，成任意四邊形（不改 bounding box）。
-    const c = cornersOf(start);
-    const ox = handle.includes("e") ? p.x - start.right : p.x - start.left;
-    const oy = handle.includes("s") ? p.y - start.bottom : p.y - start.top;
-    c[handle] = [ox, oy];
-    delete b.topInset; delete b.bottomInset;
-    b.corners = c;
-  } else {
-    if (handle.includes("w")) b.left = clampN(p.x, 0, b.right - 4);
-    if (handle.includes("e")) b.right = clampN(p.x, b.left + 4, CANVAS.W);
-    if (handle.includes("n")) b.top = clampN(p.y, 0, b.bottom - 4);
-    if (handle.includes("s")) b.bottom = clampN(p.y, b.top + 4, CANVAS.H);
-  }
-  commitActiveBox(b);
+
+function syncBoxInputs() {
+  const inputs = [dom.boxL, dom.boxT, dom.boxR, dom.boxB];
+  if (inputs.some((el) => !el)) return;
+  const box = activeBox();
+  inputs.forEach((el) => { el.disabled = !box; });
+  if (dom.restoreItem) dom.restoreItem.disabled = !box;
+  if (!box) { inputs.forEach((el) => { el.value = ""; }); return; }
+  dom.boxL.value = Math.round(box.left);
+  dom.boxT.value = Math.round(box.top);
+  dom.boxR.value = Math.round(box.right);
+  dom.boxB.value = Math.round(box.bottom);
+}
+
+// 方向鍵微調：1px、Shift＝10px 平移目前所選框；輸入框聚焦時不攔截。
+function onArrowNudge(e) {
+  if (dom.panel?.hidden) return;
+  if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) return;
+  const t = e.target;
+  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+  const box = activeBox();
+  if (!box) return;
+  e.preventDefault();
+  const step = e.shiftKey ? 10 : 1;
+  const dx = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
+  const dy = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
+  const w = box.right - box.left; const h = box.bottom - box.top;
+  const left = clampN(box.left + dx, 0, CANVAS.W - w);
+  const top = clampN(box.top + dy, 0, CANVAS.H - h);
+  commitActiveBox({ ...box, left, top, right: left + w, bottom: top + h });
   afterBoxChange();
+}
+
+// ===== 還原（#297 C15）=====
+function restoreActive() {
+  if (state.editMode === "none") return;
+  if (state.editMode === "type") {
+    const t = selectedType();
+    if (t) workingSafeBox[t] = { ...originalSafeBox[t] };
+  } else {
+    const k = selectedKey();
+    if (k) { delete workingItemBox[k]; delete workingRotation[k]; }
+  }
+  recomputeDirty();
+  renderAll();
+  snack("已還原目前選取的框。", "ok");
+}
+
+async function restoreAll() {
+  const p = pendingChanges();
+  const total = p.boxes.length + p.rots.length + p.safe.length;
+  if (!total) { snack("目前沒有未套用的調整。", "info"); return; }
+  const ok = await uiConfirm({
+    title: "還原全部未套用的調整？",
+    bodyHtml: `<p>將丟棄 ${p.boxes.length} 件單品框、${p.rots.length} 件旋轉、${p.safe.length} 個類型框的未套用調整。</p>`,
+    confirmText: "全部還原",
+    danger: true
+  });
+  if (!ok) return;
+  for (const k of Object.keys(workingItemBox)) delete workingItemBox[k];
+  for (const k of Object.keys(workingRotation)) delete workingRotation[k];
+  Object.assign(workingSafeBox, deepCopyBoxes(originalSafeBox));
+  recomputeDirty();
+  renderAll();
+  snack("已還原全部未套用調整。", "ok");
 }
 
 // ===== selection / model =====
@@ -551,7 +583,7 @@ function selectedKey() { const it = selectedItem(); const src = it?.layers?.[0]?
 // issue #267：targetBox 來源改自記憶體中該件 layer.bounds.targetBox（由 sidecar 經衍生 index 帶入）；
 // 與類別 safeBox 相同視為無 per-item 覆寫，改 seed 可編輯的 workingSafeBox。
 function currentItemBox(key) {
-  for (const item of shopItems) for (const layer of item.layers || []) {
+  for (const item of items) for (const layer of item.layers || []) {
     if (keyFromSrc(layer.src) !== key) continue;
     const tb = layer.bounds?.targetBox || null;
     const safe = wardrobeLayerBoundsByType[layer.type || item.type]?.safeBox || null;
@@ -562,8 +594,24 @@ function currentItemBox(key) {
 function seedItemBox(key) { return currentItemBox(key) || workingSafeBox[typeOfKey(key)] || fullCanvas(); }
 function itemBoxFor(key) { if (!(key in workingItemBox)) workingItemBox[key] = { ...seedItemBox(key) }; return workingItemBox[key]; }
 function typeOfKey(key) {
-  for (const item of shopItems) for (const layer of item.layers || []) if (keyFromSrc(layer.src) === key) return layer.type || item.type;
+  for (const item of items) for (const layer of item.layers || []) if (keyFromSrc(layer.src) === key) return layer.type || item.type;
   return "";
+}
+
+// ===== dirty 判定（#297 A5：與 seed 比對，lazy-seed 不誤報）=====
+function boxDirty(key) { return key in workingItemBox && !sameBox(workingItemBox[key], seedItemBox(key)); }
+function rotDirty(key) { return key in workingRotation && workingRotation[key] !== seedRotation(key); }
+function pendingChanges() {
+  return {
+    boxes: Object.keys(workingItemBox).filter(boxDirty),
+    rots: Object.keys(workingRotation).filter(rotDirty),
+    safe: Object.keys(workingSafeBox).filter((t) => !sameBox(workingSafeBox[t], originalSafeBox[t]))
+  };
+}
+function recomputeDirty() {
+  const p = pendingChanges();
+  setDirty("wardrobe", p.boxes.length + p.rots.length + p.safe.length > 0, "衣物框／旋轉調整");
+  return p;
 }
 
 // ===== export snippets + apply =====
@@ -598,7 +646,7 @@ function buildItemBoxes() {
 }
 
 function seedRotation(key) {
-  for (const item of shopItems) for (const layer of item.layers || []) {
+  for (const item of items) for (const layer of item.layers || []) {
     if (keyFromSrc(layer.src) === key) return layer.rotation ?? 0;
   }
   return 0;
@@ -607,34 +655,81 @@ function rotationFor(key) { return key in workingRotation ? workingRotation[key]
 function setRotation(key, deg) {
   if (!key) return;
   workingRotation[key] = Math.round(clampN(deg, -180, 180));
+  recomputeDirty();
   renderPreview();
   renderSelectedInfo();
 }
 function syncRotationSlider() { if (dom.rotationSlider) dom.rotationSlider.value = String(rotationFor(selectedKey())); }
 function syncRotationNumber() { if (dom.rotationNumber) dom.rotationNumber.value = String(rotationFor(selectedKey())); }
 function syncRotationInputs() { syncRotationSlider(); syncRotationNumber(); }
+
+// 套用寫回：先呈現待寫回變更清單（#297 C16），確認後 POST；成功後把寫回值
+// 同步進本地模型並重釘 dirty 基準（保留畫面工作狀態、不整頁重載）。
 async function applyToFiles() {
+  const p = pendingChanges();
+  const total = p.boxes.length + p.rots.length + p.safe.length;
+  if (!total) { await uiAlert("沒有待寫回的變更", "<p>先在預覽圖上調整框或旋轉，再按套用。</p>"); return; }
+  const listOf = (keys) => keys.slice(0, 8).map((k) => `<code>${escapeHtml(k)}</code>`).join("、") + (keys.length > 8 ? ` …共 ${keys.length} 件` : "");
+  const ok = await uiConfirm({
+    title: "套用到檔案？",
+    bodyHtml: `
+      <ul class="ui-change-list">
+        ${p.boxes.length ? `<li>單品框 ${p.boxes.length} 件：${listOf(p.boxes)}</li>` : ""}
+        ${p.rots.length ? `<li>旋轉 ${p.rots.length} 件：${listOf(p.rots)}</li>` : ""}
+        ${p.safe.length ? `<li>類型框（rules.js）${p.safe.length} 類：${listOf(p.safe)}</li>` : `<li>rules.js 不變動</li>`}
+      </ul>
+      <p class="control-help">寫回各件 sidecar 與 <code>rules.js</code>；重新整理遊戲即可看到。</p>`,
+    confirmText: "套用寫回"
+  });
+  if (!ok) return;
   dom.applyAll.disabled = true;
-  setApplyStatus("套用中…", "");
+  status(dom.applyStatus, "套用中…", "");
   try {
+    const boxes = buildItemBoxes();
     const res = await fetch("/tool/apply-wardrobe", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rules: buildRulesSnippet(), boxes: buildItemBoxes() })
+      body: JSON.stringify({ rules: buildRulesSnippet(), boxes })
     });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
-    setApplyStatus(`已套用 → ${data.written.join("、")}。重新整理遊戲即可看到。`, "ok");
+    persistLocal(boxes);
+    status(dom.applyStatus, `已套用 → ${data.written.join("、")}。重新整理遊戲即可看到。`, "ok");
   } catch (error) {
-    setApplyStatus(`套用失敗：${error.message}（請確認 dev server 為 server.mjs）`, "err");
+    status(dom.applyStatus, `套用失敗：${error.message}（請確認 dev server 為 server.mjs）`, "err");
   } finally {
     dom.applyAll.disabled = false;
   }
 }
-function setApplyStatus(text, kind) { dom.applyStatus.textContent = text; dom.applyStatus.className = `apply-status${kind ? ` apply-status-${kind}` : ""}`; }
+
+// 寫回成功後同步本地模型：sidecar 現值＝剛送出的值；dirty 基準重釘、工作副本清空。
+function persistLocal(boxes) {
+  for (const [key, val] of Object.entries(boxes)) {
+    for (const item of items) for (const layer of item.layers || []) {
+      if (keyFromSrc(layer.src) !== key) continue;
+      const type = layer.type || item.type;
+      const safe = workingSafeBox[type] || null;
+      if (!val) {
+        layer.bounds = { ...(layer.bounds || {}), targetBox: safe ? { ...safe } : null };
+        delete layer.rotation;
+      } else {
+        const { rotation, ...box } = val;
+        layer.bounds = { ...(layer.bounds || {}), targetBox: Object.keys(box).length ? box : (safe ? { ...safe } : null) };
+        if (rotation) layer.rotation = rotation; else delete layer.rotation;
+      }
+    }
+  }
+  // rules.js 已寫回 → 目前 workingSafeBox 即新基準；工作副本清空、dirty 歸零。
+  originalSafeBox = deepCopyBoxes(workingSafeBox);
+  for (const k of Object.keys(workingItemBox)) delete workingItemBox[k];
+  for (const k of Object.keys(workingRotation)) delete workingRotation[k];
+  recomputeDirty();
+  renderAll();
+}
 
 // ===== helpers =====
 function q(sel) { return document.querySelector(sel); }
 function fullCanvas() { return { left: 0, top: 0, right: CANVAS.W, bottom: CANVAS.H }; }
+function deepCopyBoxes(byType) { return Object.fromEntries(Object.entries(byType).map(([t, b]) => [t, { ...b }])); }
 function keyFromSrc(src) { const m = /wardrobe\/([^/]+)\/assets\/layers\/([^/]+)\.webp/.exec(src || ""); return m ? `${m[1]}/${m[2]}` : ""; }
 function clampN(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 function insetPct(box) {
@@ -664,13 +759,13 @@ function r3(v) { return Math.round(v * 1000) / 1000; }
 function packOfItem(item) { const m = /wardrobe\/([^/]+)\/assets\//.exec(item?.image || ""); return m ? m[1] : ""; }
 function catOfItem(item) { const c = categories.find((cat) => cat.types.includes(item.type)); return c ? c.id : ""; }
 function itemsShown() {
-  return shopItems.filter((item) => selectedPacks.has(packOfItem(item)) && matchesSearch(item));
+  return items.filter((item) => selectedPacks.has(packOfItem(item)) && matchesSearch(item));
 }
 function matchesSearch(item) {
   if (!searchText) return true;
   return `${item.name} ${item.id}`.toLowerCase().includes(searchText);
 }
-function firstShownItem() { const items = itemsShown(); return items.find((item) => item.storeId !== "starter") || items[0]; }
+function firstShownItem() { const shown = itemsShown(); return shown.find((item) => item.storeId !== "starter") || shown[0]; }
 function assetUrl(src) { if (!src) return ""; return src.startsWith("content-package/") || src.startsWith("content-base/") ? `../${src}` : src; }
 function priceText(item) { return Number.isFinite(item.cost) && item.cost > 0 ? `${item.cost} coins` : "Free"; }
 function escapeHtml(value = "") { return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;"); }

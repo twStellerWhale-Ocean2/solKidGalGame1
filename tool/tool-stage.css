@@ -1,0 +1,246 @@
+/* 管理設定工具：預覽舞台樣式（issue #297 自 wardrobe-tuner.css 解體，域內保序）。
+   內容：中央試穿預覽（preview-pane／stage／hint）、人物畫布圖框、兩層框 overlay 與
+   拖拉控制點、預覽標籤、旋轉角度控件。顏色一律引 theme-md3.css tokens。 */
+
+.preview-pane {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  overflow: hidden;
+  background:
+    linear-gradient(var(--tool-stage-veil), var(--tool-stage-veil)),
+    url("../content-package/areas/castle/assets/scenes/bedroom-1024.webp") center / cover no-repeat;
+}
+
+/* 兩層框 overlay（#176）：以 stage 百分比定位，與 paper-doll layer 的 canvas 相對 inset 對齊。
+   依編輯模式，所選的框為 .active（實線＋可拖拉控制點），另一框為參考（faint 虛線）。 */
+.box-overlay {
+  position: absolute;
+  z-index: 14;
+  border-radius: 3px;
+  border-style: dashed;
+  border-width: 1.5px;
+  pointer-events: none;
+}
+
+.box-overlay.active {
+  z-index: 16;
+  border-style: solid;
+  border-width: 2px;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+/* ① 類型框＝藍、② 單品框＝綠；active 實線＋較深底，inactive 虛線參考。 */
+#typeOverlay {
+  border-color: color-mix(in srgb, var(--tool-box-type) 55%, transparent);
+  background: color-mix(in srgb, var(--tool-box-type) 6%, transparent);
+}
+
+#typeOverlay.active {
+  border-color: var(--tool-box-type);
+  background: color-mix(in srgb, var(--tool-box-type) 10%, transparent);
+}
+
+#itemOverlay {
+  border-color: color-mix(in srgb, var(--tool-box-item) 60%, transparent);
+  background: color-mix(in srgb, var(--tool-box-item) 7%, transparent);
+}
+
+#itemOverlay.active {
+  border-color: var(--tool-box-item);
+  background: color-mix(in srgb, var(--tool-box-item) 12%, transparent);
+}
+
+/* 人物畫布圖框：512:768 圖框 + 中線，幫助對位（#176）。 */
+.figure-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 13;
+  border: 1.5px solid var(--md-sys-color-outline);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.figure-frame::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  border-left: 1px dashed var(--md-sys-color-outline-variant);
+}
+
+.figure-frame::after {
+  content: "人物畫布 512×768";
+  position: absolute;
+  right: 4px;
+  bottom: 3px;
+  font-size: 10px;
+  color: color-mix(in srgb, var(--md-sys-color-on-surface-variant) 55%, transparent);
+}
+
+/* 拖拉控制點：空心方塊；中央移動、四邊四角共 8 點縮放；僅 .active 框顯示。 */
+.drag-handle {
+  position: absolute;
+  display: none;
+  width: 13px;
+  height: 13px;
+  background: transparent;
+  border: 2px solid var(--md-sys-color-outline);
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--md-sys-color-surface) 65%, transparent);
+  touch-action: none;
+}
+
+.box-overlay.active .drag-handle { display: block; }
+#typeOverlay .drag-handle { border-color: var(--tool-box-type); }
+#itemOverlay .drag-handle { border-color: var(--tool-box-item); }
+
+.drag-handle.move { left: 50%; top: 50%; width: 18px; height: 18px; transform: translate(-50%, -50%); border-radius: 4px; cursor: move; }
+.drag-handle.move::after { content: "✛"; display: block; text-align: center; color: var(--md-sys-color-outline); font-size: 12px; line-height: 14px; }
+#typeOverlay .drag-handle.move::after { color: var(--tool-box-type); }
+#itemOverlay .drag-handle.move::after { color: var(--tool-box-item); }
+.drag-handle.n { left: 50%; top: 0; transform: translate(-50%, -50%); cursor: ns-resize; }
+.drag-handle.s { left: 50%; bottom: 0; transform: translate(-50%, 50%); cursor: ns-resize; }
+.drag-handle.w { left: 0; top: 50%; transform: translate(-50%, -50%); cursor: ew-resize; }
+.drag-handle.e { right: 0; top: 50%; transform: translate(50%, -50%); cursor: ew-resize; }
+.drag-handle.nw { left: 0; top: 0; transform: translate(-50%, -50%); cursor: nwse-resize; }
+.drag-handle.ne { right: 0; top: 0; transform: translate(50%, -50%); cursor: nesw-resize; }
+.drag-handle.sw { left: 0; bottom: 0; transform: translate(-50%, 50%); cursor: nesw-resize; }
+.drag-handle.se { right: 0; bottom: 0; transform: translate(50%, 50%); cursor: nwse-resize; }
+
+.box-overlay::after {
+  content: attr(data-label);
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  margin-bottom: 3px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--tool-glass-ink);
+  background: var(--md-sys-color-primary);
+}
+
+#typeOverlay::after { background: var(--tool-box-type); color: var(--md-sys-color-surface); }
+#itemOverlay::after { background: var(--tool-box-item); color: var(--md-sys-color-surface); }
+
+.preview-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 20;
+  display: grid;
+  gap: 4px;
+  min-width: 220px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: var(--tool-glass-ink);
+  background: var(--tool-glass);
+  box-shadow: 0 8px 20px var(--tool-shadow);
+}
+
+.preview-label strong {
+  font-size: 15px;
+}
+
+.preview-label span {
+  color: color-mix(in srgb, var(--tool-glass-ink) 82%, transparent);
+  font-size: 13px;
+}
+
+.tuner-doll {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* 預覽舞台：平移＋縮放（滾輪／雙指）共用 transform，置中為原點；空白處顯示可抓手游標。 */
+.preview-stage {
+  position: relative;
+  height: min(88vh, 768px);
+  aspect-ratio: 512 / 768;
+
+  transform-origin: center center;
+  cursor: grab;
+  touch-action: none; /* #297 D20：pinch 縮放由工具自管，不交給瀏覽器捲動 */
+}
+
+.preview-stage.panning {
+  cursor: grabbing;
+}
+
+.stage-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--tool-glass-ink);
+  background: var(--tool-glass);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 980px) {
+  .preview-stage {
+    height: min(70vh, 680px);
+    aspect-ratio: 512 / 768;
+  }
+}
+
+/* ===== 旋轉角度控件（issue #270）===== */
+.rotation-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rotation-controls input[type="range"] {
+  width: 100%;
+  accent-color: var(--md-sys-color-primary);
+}
+
+.rotation-value-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rotation-value-row input[type="number"] {
+  width: 72px;
+  padding: 6px 8px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 6px;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font-size: 14px;
+  text-align: right;
+}
+
+.rotation-value-row span {
+  font-size: 14px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.rotation-reset {
+  margin-left: auto;
+  padding: 5px 12px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 6px;
+  background: var(--md-sys-color-surface);
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.rotation-reset:hover {
+  background: var(--md-sys-color-surface-variant);
+}

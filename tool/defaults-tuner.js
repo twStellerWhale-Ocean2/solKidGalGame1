@@ -12,6 +12,8 @@ import {
 } from "../content-package/wardrobe/manifest.js";
 import { defaultState } from "../game-engine/state/default-state.js";
 import { createPaperDollRenderer } from "../game-engine/render/paper-doll.js";
+// issue #297：未儲存編修登記 dirty（離頁防護）；回饋走統一出口（行內＋snackbar）。
+import { status as sharedStatus, setDirty } from "./ui-helpers.js";
 
 const panel = document.getElementById("panel-defaults");
 if (panel) initDefaultsTab();
@@ -61,6 +63,7 @@ function initDefaultsTab() {
   function bindEvents() {
     dom.coins.addEventListener("input", () => {
       state.coins = Math.max(0, Math.floor(Number(dom.coins.value) || 0));
+      markDirty();
       renderInfo();
     });
     dom.outfit.addEventListener("change", (e) => {
@@ -71,10 +74,11 @@ function initDefaultsTab() {
       const id = e.target?.value;
       if (!id) return;
       if (e.target.checked) state.owned.add(id); else state.owned.delete(id);
+      markDirty();
       renderInfo();
     });
-    dom.ownAll.addEventListener("click", () => { shopItems.forEach((i) => state.owned.add(i.id)); renderOwned(); renderInfo(); });
-    dom.ownNone.addEventListener("click", () => { state.owned = new Set(); ensureEquippedOwned(); renderOwned(); renderInfo(); });
+    dom.ownAll.addEventListener("click", () => { shopItems.forEach((i) => state.owned.add(i.id)); markDirty(); renderOwned(); renderInfo(); });
+    dom.ownNone.addEventListener("click", () => { state.owned = new Set(); ensureEquippedOwned(); markDirty(); renderOwned(); renderInfo(); });
     dom.apply.addEventListener("click", apply);
     window.addEventListener("resize", () => renderer.applyLayerTransforms(dom.doll));
     // 切到本分頁時（panel 由 hidden→顯示）重算 layer transforms，避免隱藏期間量到 0 尺寸。
@@ -84,6 +88,7 @@ function initDefaultsTab() {
   function onSlotChange(slot, value) {
     state.outfit[slot] = value;
     if (value !== "none") state.owned.add(value); // 裝備中的單品自動視為已擁有
+    markDirty();
     renderOutfitSelects();
     renderOwned();
     renderPreview();
@@ -166,13 +171,15 @@ function initDefaultsTab() {
       });
       const data = await res.json();
       if (!data.ok) { setStatus(`儲存失敗：${data.error}`, "err"); return; }
+      setDirty("defaults", false);
       setStatus("已寫回 default-state.js（重整、用新帳號即可看到）。", "ok");
     } catch (e) {
       setStatus(`儲存失敗：${e.message}（需 node server.mjs）`, "err");
     }
   }
 
-  function setStatus(text, kind) { dom.status.textContent = text; dom.status.className = `apply-status${kind ? ` apply-status-${kind}` : ""}`; }
+  function markDirty() { setDirty("defaults", true, "公主預設編修"); }
+  function setStatus(text, kind) { sharedStatus(dom.status, text, kind); }
   function pickOutfit(src = {}) {
     return Object.fromEntries(outfitSlots.filter((slot) => typeof src[slot] === "string").map((slot) => [slot, src[slot]]));
   }
