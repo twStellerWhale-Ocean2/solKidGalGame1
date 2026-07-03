@@ -12,8 +12,10 @@ import {
 } from "../content-package/wardrobe/manifest.js";
 import { defaultState } from "../game-engine/state/default-state.js";
 import { createPaperDollRenderer } from "../game-engine/render/paper-doll.js";
-// issue #297：未儲存編修登記 dirty（離頁防護）；回饋走統一出口（行內＋snackbar）。
+// issue #297：未儲存編修登記 dirty（離頁防護）；回饋走統一出口（行內＋snackbar）；
+// 預覽舞台縮放／位移與衣物頁一致（滾輪／雙指／拖曳）。
 import { status as sharedStatus, setDirty } from "./ui-helpers.js";
+import { setupStagePanZoom } from "./wardrobe-gestures.js";
 
 const panel = document.getElementById("panel-defaults");
 if (panel) initDefaultsTab();
@@ -41,8 +43,18 @@ function initDefaultsTab() {
     coins: q("#defaultsCoins"), outfit: q("#defaultsOutfit"), owned: q("#defaultsOwned"),
     ownAll: q("#defaultsOwnAll"), ownNone: q("#defaultsOwnNone"),
     doll: q("#defaultsDoll"), apply: q("#defaultsApply"), status: q("#defaultsStatus"),
-    info: q("#defaultsInfo"), label: q("#defaultsPreviewLabel")
+    info: q("#defaultsInfo"), label: q("#defaultsPreviewLabel"),
+    previewStage: q("#panel-defaults .preview-stage")
   };
+
+  // 預覽舞台平移＋縮放狀態（與衣物頁同一套接線；#297 預覽一致性）。
+  const view = { zoom: 1, pan: { x: 0, y: 0 } };
+  function applyStageTransform() {
+    if (dom.previewStage) {
+      dom.previewStage.style.transform =
+        `translate(${Math.round(view.pan.x)}px, ${Math.round(view.pan.y)}px) scale(${Math.round(view.zoom * 1000) / 1000})`;
+    }
+  }
 
   const renderer = createPaperDollRenderer({
     baseLayer: paperDollBaseLayer,
@@ -80,6 +92,7 @@ function initDefaultsTab() {
     dom.ownAll.addEventListener("click", () => { shopItems.forEach((i) => state.owned.add(i.id)); markDirty(); renderOwned(); renderInfo(); });
     dom.ownNone.addEventListener("click", () => { state.owned = new Set(); ensureEquippedOwned(); markDirty(); renderOwned(); renderInfo(); });
     dom.apply.addEventListener("click", apply);
+    setupStagePanZoom(dom.previewStage, view, applyStageTransform); // 滾輪／雙指縮放＋空白處拖曳平移
     window.addEventListener("resize", () => renderer.applyLayerTransforms(dom.doll));
     // 切到本分頁時（panel 由 hidden→顯示）重算 layer transforms，避免隱藏期間量到 0 尺寸。
     window.addEventListener("editor-tab-change", (e) => { if (e.detail?.tab === "defaults") renderPreview(); });

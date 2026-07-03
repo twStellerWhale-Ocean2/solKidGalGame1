@@ -1,6 +1,13 @@
 /* 管理設定工具：公主預設與聲音管理分頁樣式（issue #297 自 wardrobe-tuner.css 解體，域內保序）。 */
 
 /* ===== 公主預設分頁 ===== */
+/* issue #297：本頁左欄為金錢／預設穿著／擁有清單（62 件）三段垂直堆疊，需整欄可捲；
+   不能沿用衣物頁 catalog-pane 的 overflow:hidden（那靠內部衣櫃自捲），否則超出視窗的擁有清單被裁、無法管理。 */
+#panel-defaults .catalog-pane {
+  overflow-y: auto;
+  padding-bottom: 32px;
+}
+
 .defaults-coins {
   display: grid;
   gap: 4px;

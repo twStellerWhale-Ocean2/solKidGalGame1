@@ -531,12 +531,13 @@ function restoreActive() {
     const t = selectedType();
     if (t) workingSafeBox[t] = { ...originalSafeBox[t] };
   } else {
+    // 「還原此框」只還原框位置／變形；旋轉屬另一控制項（旋轉區「歸零」），保留未存旋轉不誤刪。
     const k = selectedKey();
-    if (k) { delete workingItemBox[k]; delete workingRotation[k]; }
+    if (k) delete workingItemBox[k];
   }
   recomputeDirty();
   renderAll();
-  snack("已還原目前選取的框。", "ok");
+  snack("已還原目前選取的框（旋轉不變）。", "ok");
 }
 
 async function restoreAll() {

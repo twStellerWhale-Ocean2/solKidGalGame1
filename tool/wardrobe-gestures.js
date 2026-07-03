@@ -120,8 +120,11 @@ export function setupColumnResize(shell, leftResizer, rightResizer) {
     resizer.addEventListener("pointerdown", (e) => { active = true; try { resizer.setPointerCapture(e.pointerId); } catch { /* noop */ } e.preventDefault(); });
     resizer.addEventListener("pointermove", (e) => {
       if (!active) return;
-      if (side === "left") shell.style.setProperty("--left-w", `${clampN(e.clientX, 220, 680)}px`);
-      else shell.style.setProperty("--right-w", `${clampN(window.innerWidth - e.clientX, 240, 640)}px`);
+      // 用 shell 相對座標：admin 版面 shell 起始於左側 Navigation Drawer 右緣，
+      // 直接用 viewport clientX 會多算 drawer 寬度，使左欄被高估、拖曳跳動。
+      const rect = shell.getBoundingClientRect();
+      if (side === "left") shell.style.setProperty("--left-w", `${clampN(e.clientX - rect.left, 220, 680)}px`);
+      else shell.style.setProperty("--right-w", `${clampN(rect.right - e.clientX, 240, 640)}px`);
     });
     const end = () => { active = false; };
     resizer.addEventListener("pointerup", end);
