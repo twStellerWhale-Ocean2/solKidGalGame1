@@ -36,6 +36,7 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件。
 * **spec#19-可玩角色 roster 精簡為三位（Lumi、Yumi、Rosa）**：可玩公主 roster 不含 sol（Mary）；選角介面、語音 profile 與初始衣物均不再呈現 sol 相關選項；既有存檔帶 `activeCharacterId: "sol"` 者，於讀取時 `normalizeState` 自動 fallback 為 `defaultActiveCharacterId`（`"lumi"`），使舊存檔可無縫升級至新三角色 roster 而不 crash 或顯示殘留選項。
 * **spec#20-可於對話場景即時看見金錢並順暢瀏覽換裝面板**：方案須讓兒童於進入對話場景（含打工任務、生活聊天、逛店、衣櫃換裝）時，於場景畫面內即時看見目前 coins 數量，不因全屏對話覆蓋而看不見獎勵，使「答對得幣」之所得於當下可感（與 spec#4 正向閉環一致）；換裝與商店共用之衣櫃面板（spec#3）須提供足夠寬之瀏覽區，於桌機寬視口一次完整呈現所有可選品項而非以捲動藏起，且選衣時公主立繪維持完整可見、不被面板遮擋。換裝面板版面與金錢呈現之合格須含手機直向與桌機寬視口、實際穿上代表性衣物後之視覺檢查（與 spec#3 完成判定一致）。
 * **spec#21-可讓新局公主以得體入門造型起步並保留換裝成長空間**：方案須使新建帳號之公主以一套得體（不華麗但不寒酸）之初始造型起步，且新局僅預先擁有身上所穿之品項、其餘外觀一律須以 coins 購得，使「答對得幣→換裝」之成長動機自第一次遊玩即成立（呼應 spec#4 正向閉環），避免新局即擁有過多（含華麗）品項而失去蒐集與獎勵意義；新局初始造型與起始擁有之具體品項屬可由維護者於起始組態調整之內容設定（呼應 spec#13）。
+* **spec#22-可高效且不誤失工作地使用管理設定工具**：方案須讓維護者於桌機與家庭區網行動裝置（手機、平板，呼應 spec#17）上高效、安全地使用 [管理設定工具] 完成內容維護——(a) 工作保護：任何未儲存之編修（衣物框對位、旋轉、對話文本、公主預設等）在重新整理、關閉或切換頁面前均須獲得明確警示，寫回成功後不得以整頁重載丟棄其他未儲存工作與畫面狀態（選取、捲動、篩選、縮放平移）；(b) 導覽動線：左側導覽於收合狀態仍可辨識各資料包、麵包屑可點擊回上層，deep link 涵蓋分頁內工作點（子分頁、所選地區／場景／單品），使維護中斷後可回到原工作點；(c) 操作回饋：確認、錯誤與成功提示採與工具視覺一致之 MD3 dialog／snackbar（不使用原生阻塞式 alert／confirm），危險操作（刪除單品、清除全部語音指定）具 error 色視覺區隔與明確確認、成功訊息自動消散；(d) 編輯效率：框對位提供數值輸入與鍵盤微調、可單件還原與檢視本次待寫回變更清單，AI 生成對話採「生成→對照→採納」而不直接覆寫既有題庫；(e) 小螢幕可用：導覽抽屜於窄視口採 overlay 模式、觸控目標 ≥44px、預覽支援雙指縮放，觸控裝置可見必要操作說明。上述體驗以 paramToolUxQualityBar 之 20 項問題清單（issue #297 盤點）全數修正為完成判定；本工具仍為 dev-only（本機與區網），公開遊玩端不受影響。
 
 # II. 設計分析
 
@@ -150,6 +151,12 @@ HOST -->|"🎚️paramDeployBranch=`main`"| SYS
   * **solCase#21.2**：[sysGame系統]執行[runAct自訂系統渲染換裝面板]，於換裝與商店共用之衣櫃面板加寬瀏覽區，並於桌機寬視口一次完整呈現所有可選品項（窄屏維持精簡欄數與必要捲動），且將面板置於公主立繪圖層之後，使選衣時公主維持完整可見、不被面板遮擋。
 * **solStory#22-新局得體入門造型與精簡起始擁有**：
   * **solCase#22.1**：[sysGame系統]執行[runAct自訂系統初始化新局造型]，新建帳號時以得體入門造型起步（預設穿著為城堡裁縫店之珍珠白舞會裙、髮型與鞋維持既有簡約款），且僅預先擁有身上所穿之品項（髮型、整件 outfit、鞋三件），其餘外觀一律未擁有、須以 coins 購得；新局初始造型與起始擁有清單屬維護者可於起始組態（princessStart）調整之內容設定。
+* **solStory#23-管理工具高效安全使用體驗**：
+  * **solCase#23.1**：[etyCfg通用家長維護者]執行[setAct自訂維護者依資料包管理組態]，於任何編修未儲存時重新整理、關閉頁面或切換分頁，先獲得未儲存變更警示、可取消返回；寫回成功後維持原工作點（選取、捲動、篩選、縮放平移），不被整頁重載丟棄其他分頁未儲存工作。
+  * **solCase#23.2**：[etyCfg通用家長維護者]執行[setAct自訂維護者依資料包管理組態]，經收合狀態仍可辨識之左側導覽、可點擊之麵包屑與含頁內工作點之 deep link（子分頁、所選地區／場景／單品），於維護中斷後直接回到原工作點續作。
+  * **solCase#23.3**：[etyCfg通用家長維護者]執行[setAct自訂維護者依資料包管理組態]，所有確認、錯誤與成功回饋以工具內一致之 MD3 dialog／snackbar 呈現（成功自動消散、失敗持留並說明原因）；刪除單品、清除全部語音指定等危險操作具 error 色視覺區隔與明確確認，取消不執行。
+  * **solCase#23.4**：[etyCfg通用家長維護者]執行[setAct自訂維護者調整衣物旋轉]（含框對位編修），以數值輸入與鍵盤微調精修框位、可單件還原或全部還原、套用前檢視待寫回變更清單；於場景對話編修時 AI 生成採「生成→對照→採納」三步，未採納前原題庫不被覆寫。
+  * **solCase#23.5**：[etyCfg通用家長維護者]執行[setAct自訂維護者依資料包管理組態]，於區網手機／平板開啟工具時導覽抽屜採 overlay 模式（不常駐佔用內容寬度）、觸控目標 ≥44px、預覽可雙指縮放，觸控裝置可見必要操作說明（不依賴 hover title）。
 
 ### (D) 重點組態
 
@@ -165,7 +172,8 @@ HOST -->|"🎚️paramDeployBranch=`main`"| SYS
     * paramExperienceQualityGate=`體驗品質雙人工查核（會話語感 QA intTest#64、版型視覺 QA intTest#65）為釋出必要條件；機械守門（lint／selftest）綠 ≠ 可收——機械守門驗「有沒有」、體驗查核驗「好不好」，兩者缺一不得宣稱完成`
     * paramLayoutQualityBar=`版型品質準則：手機直向（390×844 級）與桌機寬視口（1280×800 以上）逐畫面走查——無溢位、裁切、錯位或擠壓；間距遵循 8px 節奏、字級遵循一致型階；觸控目標 ≥44px；文字對比達 WCAG AA；同類元件跨畫面樣式一致（樣式收斂為 design token 與共用類別，禁單點 magic 補丁）；查核清單見 intTest#65`
     * paramCodeQualityBar=`工程品質準則：模組單一職責、邊界清楚；無死碼、殘留相容碼與重複實作；樣式與常數收斂為具名 token；函式短小具名、錯誤處理明確；任何重寫後全部既有守門（tsc／selftest／data-audit／assetLint／docLint／repoLint／genVersion --check）須維持綠`
-    * paramStructureQualityBar=`結構品質準則（issue #298 重構收斂條件、防巨石長回之長期結構守門）：(a) 單檔行數上限——JS 與 CSS 單檔 ≤800 行，其中 main.js 收斂為組裝與調度 ≤500 行；(b) 樣式疊層歸零——同一 CSS 檔內同一 media 範圍之同一選擇器重複規則塊為 0；styles/mobile.css 依畫面歸位解體（含 #295 append-only 品質總修段之歸位），樣式常數收斂為 base.css :root design token 與依畫面分層樣式檔，禁 append-only 補丁段；(c) 超標須具名豁免並登記於 lint 內豁免清單（現行豁免：game-engine/testing/selftests.js 為行為層守門檔、拆分另案；tool/wardrobe-tuner.css 為 dev-only 維護工具樣式、收斂另案）；由 node scripts/structureLint.mjs 機檢、納入 ＜IV.A＞ 測試指令常備守門（intTest#66）`
+    * paramToolUxQualityBar=`管理設定工具體驗品質準則（spec#22 完成判定＝issue #297 盤點之 20 項問題全數修正，分四類：A 導覽動線 1–5——收合導覽可辨識（tooltip）、麵包屑可點、deep link 含頁內工作點、寫回成功不整頁重載、未儲存變更防護（dirty＋beforeunload）；B 版面回饋 6–12——原生 alert/confirm 歸零改 MD3 dialog、icon 具觸控可見說明、危險操作 error 色與確認、回饋統一 snackbar 且成功自動消散、操作區長說明收斂為漸進揭示、五分頁版面骨架與欄寬調整一致、深色模式硬寫色歸零；C 編輯效率 13–18——框數值輸入欄、方向鍵微調（1px／Shift 10px）、單件與全部還原、套用前變更清單、AI 生成「生成→對照→採納」三步、儲存回饋標明實際寫回範圍；D 小螢幕 19–20——窄視口 drawer overlay 模式、pinch 縮放與觸控目標 ≥44px；查核方式見 intTest#67–#69，查核紀錄納入 test-summary）`
+    * paramStructureQualityBar=`結構品質準則（issue #298 重構收斂條件、防巨石長回之長期結構守門）：(a) 單檔行數上限——JS 與 CSS 單檔 ≤800 行，其中 main.js 收斂為組裝與調度 ≤500 行；(b) 樣式疊層歸零——同一 CSS 檔內同一 media 範圍之同一選擇器重複規則塊為 0；styles/mobile.css 依畫面歸位解體（含 #295 append-only 品質總修段之歸位），樣式常數收斂為 base.css :root design token 與依畫面分層樣式檔，禁 append-only 補丁段；(c) 超標須具名豁免並登記於 lint 內豁免清單（現行豁免：game-engine/testing/selftests.js 為行為層守門檔、拆分另案；tool/wardrobe-tuner.css 之豁免由 issue #297 收斂移除——工具樣式依分頁解體為 ≤800 行分層檔、硬寫色收斂為 theme-md3 token，見 sysCase#15.5）；由 node scripts/structureLint.mjs 機檢、納入 ＜IV.A＞ 測試指令常備守門（intTest#66）`
   * [etyCfg通用靜態主機平台]
     * paramDeployBranch=`main`
 
@@ -301,6 +309,12 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
   * **sysCase#13.1**：[modContent模組]承接[setAct自訂維護者依資料包管理組態]，[管理設定工具] 依 [modContent模組] 之內容資料包結構（公主、衣物、地圖與場景、聲音、遊戲規則等資料包）組織兩層導覽——頂層為各內容資料包、包內再依含蓋關係分層（地圖與場景依世界→地區→地點/場景→對話），各既有管理頁（衣物單品與投影、地圖座標、場景對話、角色語音、新局起始等）依其所屬資料包歸入對應節點；新增管理頁沿資料包結構掛入而不需重排頂層導覽，工具僅於本機開發環境提供、寫回經 dev server 白名單，公開 GitHub Pages 不提供此入口。
 * **sysStory#14-承接角色 roster 精簡與舊存檔升級**：
   * **sysCase#14.1**：[modState模組]承接[runAct自訂玩家選角命名]，`normalizeState` 讀取存檔時，若 `activeCharacterId` 不存在於 `characterRegistry`（如已移除之 `sol`），則 fallback 為 `defaultActiveCharacterId`（`lumi`）；移除後 `characterRegistry` 不含 `sol` 鍵、`playableVoiceById` 不含 `sol`、starter wardrobe 不含 `solStarterHair`，使 roster 精簡完整且無殘留。
+* **sysStory#15-承接管理工具使用體驗**：
+  * **sysCase#15.1**：[modContent模組]承接[setAct自訂維護者依資料包管理組態]，[管理設定工具] 前端建立五分頁共用之 UI 基礎（[tool/ui-helpers]：MD3 風格 dialog／snackbar／tooltip／dirty-guard，沿用 [tool/theme-md3.css] token、不引入外部框架、不動 [server.mjs] 寫回端點與檔案格式契約）；各分頁之 `window.alert`／`window.confirm` 全數改走共用 dialog、狀態回饋統一 snackbar（成功自動消散、失敗持留並可重試），共用 `setStatus`／`postJson` 等重複實作收斂至 [tool/ui-helpers]；危險操作（刪除單品、清除全部語音指定）採 error 色按鈕與確認對話框。
+  * **sysCase#15.2**：[modContent模組]承接[setAct自訂維護者依資料包管理組態]，工具維護統一 dirty 註冊表——各分頁把未儲存工作副本（衣物框／旋轉、場景題庫、公主預設）登記為 dirty 來源，任一 dirty 時 `beforeunload` 攔截警示；新增／刪除／metadata 儲存／重生等寫回成功後改「局部重載資料模型＋原地重繪」，不再 `window.location.reload()` 整頁重載，保留選取、捲動、篩選、縮放平移與其他分頁未儲存工作。
+  * **sysCase#15.3**：[modContent模組]承接[setAct自訂維護者依資料包管理組態]，導覽補強：收合抽屜各資料包鈕帶 tooltip（觸控長按／點擊可見）、麵包屑資料包段可點擊跳回該包首頁、hash deep link 自 `#panel` 擴充為含頁內工作點（地圖子分頁、場景地區與所選場景、衣物所選單品）且重載後還原；窄視口（≤980px）導覽抽屜改 overlay 模式（開啟時遮罩、選定後自動收合、不常駐佔寬），觸控目標 ≥44px、預覽舞台以 pointer events 支援 pinch 縮放（與既有滾輪縮放並存）。
+  * **sysCase#15.4**：[modWardrobe模組]承接[setAct自訂維護者調整衣物旋轉]（含框對位編修），[wardrobe-tuner] 框對位增設數值輸入欄（與拖曳、預覽三向同步）與方向鍵微調（1px、Shift＝10px）、「還原此件」（回 seed）與「還原全部」；「套用到檔案」前呈現待寫回變更清單（單品框／旋轉異動件數與 `rules.js` 是否變動），寫回後回報實際寫入檔案；[scene-tuner] AI 生成改「生成→對照預覽→採納」三步，未採納前工作副本題庫不被覆寫。
+  * **sysCase#15.5**：[modContent模組]承接[setAct自訂維護者依資料包管理組態]，工具樣式收斂：[tool/wardrobe-tuner.css] 依分頁解體為 ≤800 行分層樣式檔（共用 admin shell／衣物／地圖與場景／聲音與公主預設），硬寫色歸零改引 [tool/theme-md3.css] token 使深色模式一致，並自 structureLint 豁免清單移除（paramStructureQualityBar (c)）；解體採域內保序、每步視覺回歸（沿 #298 mobile.css 工法）。
 
 ### (D) 重點組態
 
@@ -1297,6 +1311,48 @@ erDiagram
   2. 全部既有守門綠、0 console error；既有存檔載入相容、玩家無感。
   3. structureLint 納入 ＜IV.A＞ 測試指令清單，成為後續每個增量之常備結構守門。
 
+#### intTest#67-驗證 管理設定工具回饋基礎與工作保護（spec#22）
+
+* 既有基底：intTest#53。
+* 新增項目：[tool/ui-helpers] 共用 dialog／snackbar／dirty-guard 與寫回不整頁重載（paramToolUxQualityBar A5、B6–B9）。
+* 步驟：
+  1. 靜態掃描 [tool/] 各分頁模組，確認 `window.alert`／`window.confirm` 呼叫殘留為 0（皆改共用 dialog）、成功寫回路徑無 `window.location.reload()`。
+  2. 於本機開發環境開啟 [管理設定工具]，調整任一單品框位（不套用）後觸發頁面卸載，確認 `beforeunload` 攔截警示；套用或還原後攔截解除。
+  3. 儲存單品 metadata 後，確認左欄選取與捲動位置保留、名稱原地更新、其他分頁未儲存工作不受影響。
+  4. 觸發刪除單品與「清除所有指定」，確認出現 error 色確認對話框、取消不執行。
+  5. 觸發任一寫回成功與失敗，確認 snackbar 成功自動消散、失敗持留並顯示原因。
+* 預期結果：
+  1. alert／confirm 與成功路徑整頁重載殘留均為 0；危險操作均有確認且取消安全。
+  2. dirty 攔截與解除行為正確；寫回後工作點與其他分頁工作保留。
+  3. 回饋統一經 dialog／snackbar 呈現、樣式引 [tool/theme-md3.css] token。
+
+#### intTest#68-驗證 管理設定工具編輯效率（spec#22）
+
+* 既有基底：intTest#40、intTest#53。
+* 新增項目：框數值輸入／鍵盤微調／單件還原／套用前變更清單／AI 生成三步（paramToolUxQualityBar C13–C18）。
+* 步驟：
+  1. 於衣物分頁選一單品，以數值欄輸入框位、再以方向鍵微調（1px、Shift＝10px），確認數值欄、拖曳框與預覽三向同步。
+  2. 按「還原此件」確認回 seed；改動多件後開「套用到檔案」，確認變更清單列出將寫回之單品框／旋轉件數與 `rules.js` 是否變動，且與實際寫回一致。
+  3. 於場景分頁執行 AI 生成（或貼回解析），確認呈現生成前後對照、按「採納」才覆寫工作副本、未採納原題庫不變。
+* 預期結果：
+  1. 數值欄、鍵盤微調與預覽三向同步；單件／全部還原正確。
+  2. 套用前變更清單與實際寫回內容一致，寫回後回報實際寫入檔案。
+  3. 生成三步流程成立、未採納不覆寫。
+
+#### intTest#69-驗證 管理設定工具導覽與小螢幕（spec#22）
+
+* 既有基底：intTest#53、intTest#65。
+* 新增項目：deep link 含頁內工作點、收合導覽可辨識、窄視口 drawer overlay 與觸控可用（paramToolUxQualityBar A1–A4、D19–D20）。
+* 步驟：
+  1. 於地圖分頁選定子地圖、場景分頁選定地區與場景、衣物分頁選定單品後分別重新整理，確認 hash deep link 還原至原工作點。
+  2. 收合抽屜確認各資料包鈕具 tooltip 可辨識；點麵包屑資料包段可跳回該包首頁。
+  3. 以手機直向視口（390×844 級）開啟，確認抽屜為 overlay 模式（不常駐佔寬、選定後自動收合）、觸控目標 ≥44px、預覽可 pinch 縮放。
+  4. 依 paramLayoutQualityBar 於雙視口走查工具五分頁，並逐項核對 paramToolUxQualityBar 20 項清單。
+* 預期結果：
+  1. deep link 還原工作點正確；收合導覽可辨識、麵包屑可點。
+  2. 窄視口 overlay 模式生效、觸控走查全項通過。
+  3. paramToolUxQualityBar 20 項全數修正，查核紀錄納入 test-summary。
+
 ## E. 方案層級：文件程式化測試
 
 #### docProgTest#01-productReadme 承接 [solStory#1-短回合英文練習]
@@ -1475,6 +1531,15 @@ erDiagram
 * 通過判定：
   1. 讀者可依 productReadme 預期新局造型得體、且一開始只擁有所穿。
   2. 讀者可依 productReadme 理解其餘外觀需賺 coins 購得。
+
+#### docProgTest#23-productReadme 承接 [solStory#23-管理工具高效安全使用體驗]
+
+* productReadme 要求：
+  1. 說明管理設定工具之未儲存變更防護（離開前警示）、統一回饋（dialog／snackbar）與危險操作確認行為。
+  2. 說明 deep link 可回到分頁內工作點，以及區網手機／平板之 overlay 導覽與 pinch 縮放操作方式。
+* 通過判定：
+  1. 讀者可依 productReadme 預期未儲存工作不會無警示丟失、寫回成功後不整頁重載。
+  2. 讀者可依 productReadme 於行動裝置操作工具並回到中斷前的工作點。
 
 ## F. 方案層級：文件端對端測試
 
@@ -1716,6 +1781,17 @@ erDiagram
   1. 新局公主穿著得體（珍珠白舞會裙），髮型與鞋為既有簡約款。
   2. 衣櫃已擁有僅所穿三件；其餘品項為未購買狀態，須以 coins 購得。
 
+#### e2eTest#23-依 productReadme 驗測管理設定工具使用體驗（spec#22）
+
+* 依據：docProgTest#23、[solCase#23.1]～[solCase#23.5]。
+* 步驟：
+  1. 依 productReadme 啟動 `node server.mjs` 並開啟 [管理設定工具]，以數值欄＋拖曳調整一件衣物框位後嘗試重新整理，確認未儲存警示；套用時確認變更清單，寫回成功且不整頁重載、工作點保留。
+  2. 編修一場景對話並以 AI 生成三步（生成→對照→採納）後儲存，重新整理遊戲確認生效。
+  3. 以區網手機開啟工具，於 overlay 導覽切換分頁、完成一次語音指定與試聽，並確認觸控目標與 pinch 縮放可用。
+* 預期結果：
+  1. 工作保護、變更清單與寫回行為如 productReadme 所述。
+  2. 生成三步與儲存生效；行動裝置可完成完整維護動線。
+
 # IV. 部署成效
 
 ## A. 部署組態
@@ -1801,3 +1877,6 @@ erDiagram
 * **spec#21-可讓新局公主以得體入門造型起步並保留換裝成長空間**
   * 評估方式：以全新帳號新局進入，檢視公主初始造型是否得體（非寒酸亦非過度華麗）、起始 `owned` 是否僅含所穿品項，並觀察玩家是否需透過答題賺 coins 才能擴充外觀（spec#4 閉環有效）。
   * 觀察項目：新局預設穿著為指定得體造型之正確率（應 100%）、新局 `owned` 等於所穿三件之正確率（應 100%）、`owned` 殘留已移除角色品項（如 `solStarterHair`）檢出率（應 0%）、新局可購買外觀品項數（應遠多於 0、保留成長空間）、既有帳號 owned 不受新局組態影響之正確率。
+* **spec#22-可高效且不誤失工作地使用管理設定工具**
+  * 評估方式：於桌機與區網行動裝置實際完成一輪維護（衣物對位、場景對話、語音指定、公主預設），觀察未儲存防護、寫回後工作點保留、回饋一致性、編輯效率與觸控可用性；並依 paramToolUxQualityBar 之 20 項問題清單逐項查核（intTest#67–#69），查核紀錄納入 test-summary。
+  * 觀察項目：未儲存變更攔截生效率（應 100%）、成功寫回整頁重載發生率（應 0%）、原生 alert／confirm 殘留數（應 0）、危險操作確認覆蓋率（應 100%）、成功訊息自動消散率、deep link 回到工作點正確率、收合導覽可辨識率、麵包屑可點跳轉正確率、框數值輸入與鍵盤微調三向同步正確率、單件／全部還原正確率、套用前變更清單與實際寫回一致率、AI 生成未採納不覆寫正確率、窄視口 drawer overlay 生效率、觸控目標 ≥44px 合格率、pinch 縮放可用率、工具樣式檔行數上限與硬寫色歸零合格率（structureLint 豁免移除後 0 違規）、20 項問題清單修正完成率（應 100%）。
