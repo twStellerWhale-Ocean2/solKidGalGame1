@@ -215,6 +215,9 @@ function renderSelected() {
   dom.genBtn.disabled = !(hasJob || hasChat);
 }
 
+// 每個地區各自一個 dirty 來源（工作副本獨立、分開儲存），只存目前這區不得清掉其他區的未存警示。
+function markAreaDirty() { setDirty(`scene:${state.areaKey}`, true, `場景對話編修（${currentArea().label}）`); }
+
 // ===== 編修欄位事件（直接寫入工作副本，維持 answer ∈ choices 不變式）=====
 function onEditorInput(e) {
   const t = e.target;
@@ -231,13 +234,13 @@ function onEditorInput(e) {
     q.choices[ci] = t.value;
     if (wasAnswer) q.answer = t.value; // 正解選項改文字 → answer 同步，維持 answer∈choices
   }
-  setDirty("scene", true, "場景對話編修");
+  markAreaDirty();
 }
 function onEditorChange(e) {
   const t = e.target;
   if (t.dataset?.f !== "answer") return;
   const q = bankFor(t.dataset.kind)?.[state.place]?.questions?.[+t.dataset.qi];
-  if (q) { q.answer = q.choices[+t.dataset.ci]; setDirty("scene", true, "場景對話編修"); }
+  if (q) { q.answer = q.choices[+t.dataset.ci]; markAreaDirty(); }
 }
 
 // ===== AI 生成（三步：生成 → 對照預覽 → 採納；#297 C17）=====
@@ -331,7 +334,7 @@ function adoptPending() {
   pendingGen = null;
   renderGenPreview();
   renderDialogEditor();
-  setDirty("scene", true, "場景對話編修");
+  markAreaDirty();
   snack("已採納生成內容至編修區；按「儲存對話到檔案」才會寫回。", "ok");
 }
 
@@ -355,7 +358,7 @@ async function saveDialog() {
     if (chats) results.push(await postJson("/tool/save-scene-dialog", { area: a.key, kind: "chat", bank: a.chatBank }));
     const bad = results.find((r) => !r.ok);
     if (bad) throw new Error(bad.error);
-    setDirty("scene", false);
+    setDirty(`scene:${a.key}`, false); // 僅清這區的 dirty，其他區未存仍受離頁保護
     status(dom.saveStatus, `已寫回 ${a.label} 對話題庫（${results.length} 個區塊）。重新整理遊戲即可看到。`, "ok");
   } catch (e) {
     status(dom.saveStatus, `儲存失敗：${e.message}（請確認 dev server 為 node server.mjs）`, "err");

@@ -147,7 +147,8 @@ function updateSelectedXY(x, y) {
   if (!it) return;
   if (x != null && Number.isFinite(x)) it.x = clampPct(x);
   if (y != null && Number.isFinite(y)) it.y = clampPct(y);
-  setDirty("map", true, "地圖座標調整");
+  // 每張地圖各自一個 dirty 來源（工作副本獨立、分開儲存），只存目前這張不得清掉其他張的未存警示。
+  setDirty(`map:${state.mapKey}`, true, `地圖座標調整（${currentMap().label}）`);
   renderMarkers();
   renderNodeList();
 }
@@ -187,7 +188,7 @@ async function savePositions() {
     const positions = map.items.map((it) => ({ id: it.id, x: fmt(it.x), y: fmt(it.y) }));
     const d = await postJson("/tool/save-map-positions", { file: map.file, positions });
     if (!d.ok) throw new Error(d.error);
-    setDirty("map", false);
+    setDirty(`map:${map.key}`, false); // 僅清這張地圖的 dirty，其他張未存仍受離頁保護
     setStatus(dom.saveStatus, `已儲存 ${d.updated} 個座標 → ${map.file}。重新整理遊戲即可看到。`, "ok");
   } catch (e) {
     setStatus(dom.saveStatus, `儲存失敗：${e.message}（請確認 dev server 為 node server.mjs）`, "err");
