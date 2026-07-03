@@ -1,8 +1,16 @@
 {
-  "version": "0.60.1",
+  "version": "0.61.0",
   "date": "2026-07-03",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.61.0",
+      "date": "2026-07-03",
+      "type": "feat",
+      "playerVisible": false,
+      "issue": "#297",
+      "summaryZh": "管理設定工具（dev-only）使用體驗優化：未儲存變更離頁防護、寫回成功不整頁重載並保留工作點、原生 alert/confirm 全面改 MD3 dialog/snackbar、危險操作 error 色確認、衣物框數值輸入與方向鍵微調、單件/全部還原、套用前變更清單、AI 生成改「生成→對照→採納」、深連結記住分頁內工作點、窄視口導覽 overlay 化與觸控目標放大、工具樣式解體為五個分層檔並移除 structureLint 豁免（issue #297 盤點 20 項全數修正）"
+    },
     {
       "version": "0.60.1",
       "date": "2026-07-03",

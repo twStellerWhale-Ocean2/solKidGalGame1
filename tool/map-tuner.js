@@ -1,5 +1,8 @@
 // 地圖設定分頁（issue #218）：檢視各地圖、在大地圖上拖拉調整各場景節點位置、上傳更換地圖。
 // 來源為 world.js（destinations）與各區 manifest（area.nodes）；座標／換圖儲存走 server.mjs dev 端點。
+// issue #297：未儲存座標調整登記 dirty（離頁防護）；深連結 #map/<mapKey>/<nodeId> 回到原工作點。
+import { status as sharedStatus, readFileAsDataUrl, setDirty, setHashSub, hashParts } from "./ui-helpers.js";
+import { setupColumnResize } from "./wardrobe-gestures.js";
 import { worldMap } from "../content-package/areas/world.js";
 import { castleArea } from "../content-package/areas/castle/manifest.js";
 import { urbanArea } from "../content-package/areas/urban/manifest.js";
@@ -32,6 +35,14 @@ const maps = {
 const mapOrder = ["world", "castle", "urban", "rural", "wild"];
 
 const state = { mapKey: "world", selectedId: "", rendered: false };
+// 深連結：#map/<mapKey>/<nodeId>
+{
+  const parts = hashParts();
+  if (parts[0] === "map" && maps[parts[1]]) {
+    state.mapKey = parts[1];
+    if (parts[2] && maps[parts[1]].items.some((it) => it.id === parts[2])) state.selectedId = parts[2];
+  }
+}
 
 const dom = {
   subtabs: document.querySelector("#mapSubtabs"),
@@ -51,7 +62,9 @@ renderSubtabs();
 bindEvents();
 // 地圖分頁初始為 hidden；待切到此分頁再首次 render，確保圖片量得到尺寸。
 window.addEventListener("editor-tab-change", (e) => {
-  if (e.detail?.tab === "map" && !state.rendered) { state.rendered = true; renderMap(); }
+  if (e.detail?.tab !== "map") return;
+  if (!state.rendered) { state.rendered = true; renderMap(); }
+  setHashSub("map", state.mapKey, state.selectedId);
 });
 
 function currentMap() { return maps[state.mapKey]; }
@@ -64,7 +77,7 @@ function renderSubtabs() {
     b.type = "button";
     b.className = `map-subtab${key === state.mapKey ? " active" : ""}`;
     b.textContent = maps[key].label;
-    b.addEventListener("click", () => { state.mapKey = key; state.selectedId = ""; renderSubtabs(); renderMap(); });
+    b.addEventListener("click", () => { state.mapKey = key; state.selectedId = ""; setHashSub("map", key); renderSubtabs(); renderMap(); });
     dom.subtabs.append(b);
   });
 }
@@ -75,6 +88,12 @@ function bindEvents() {
   dom.save.addEventListener("click", savePositions);
   dom.uploadFile.addEventListener("change", uploadMap);
   setupMarkerDrag();
+  // 欄寬拖曳（#297 B11：與衣物分頁一致）
+  setupColumnResize(
+    document.querySelector("#panel-map .map-shell"),
+    document.querySelector("#panel-map .col-resizer:not(.col-resizer-right)"),
+    document.querySelector("#panel-map .col-resizer-right")
+  );
 }
 
 function renderMap() {
@@ -95,7 +114,7 @@ function renderNodeList() {
     row.type = "button";
     row.className = `map-node-row${it.id === state.selectedId ? " active" : ""}`;
     row.innerHTML = `<span class="map-node-icon">${escapeHtml(it.icon)}</span><span class="map-node-name"><strong>${escapeHtml(it.label)}</strong><span>${escapeHtml(it.id)} · ${fmt(it.x)}, ${fmt(it.y)}</span></span>`;
-    row.addEventListener("click", () => { state.selectedId = it.id; renderNodeList(); renderMarkers(); renderSelected(); });
+    row.addEventListener("click", () => { state.selectedId = it.id; setHashSub("map", state.mapKey, it.id); renderNodeList(); renderMarkers(); renderSelected(); });
     dom.nodeList.append(row);
   });
 }
@@ -128,6 +147,8 @@ function updateSelectedXY(x, y) {
   if (!it) return;
   if (x != null && Number.isFinite(x)) it.x = clampPct(x);
   if (y != null && Number.isFinite(y)) it.y = clampPct(y);
+  // 每張地圖各自一個 dirty 來源（工作副本獨立、分開儲存），只存目前這張不得清掉其他張的未存警示。
+  setDirty(`map:${state.mapKey}`, true, `地圖座標調整（${currentMap().label}）`);
   renderMarkers();
   renderNodeList();
 }
@@ -167,6 +188,7 @@ async function savePositions() {
     const positions = map.items.map((it) => ({ id: it.id, x: fmt(it.x), y: fmt(it.y) }));
     const d = await postJson("/tool/save-map-positions", { file: map.file, positions });
     if (!d.ok) throw new Error(d.error);
+    setDirty(`map:${map.key}`, false); // 僅清這張地圖的 dirty，其他張未存仍受離頁保護
     setStatus(dom.saveStatus, `已儲存 ${d.updated} 個座標 → ${map.file}。重新整理遊戲即可看到。`, "ok");
   } catch (e) {
     setStatus(dom.saveStatus, `儲存失敗：${e.message}（請確認 dev server 為 node server.mjs）`, "err");
@@ -198,15 +220,7 @@ function assetUrl(src) { if (!src) return ""; return src.startsWith("content-pac
 function clampPct(v) { return Math.max(0, Math.min(100, v)); }
 function fmt(v) { return Math.round(v * 10) / 10; }
 function escapeHtml(value = "") { return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;"); }
-function setStatus(el, text, kind) { el.textContent = text; el.className = `apply-status${kind ? ` apply-status-${kind}` : ""}`; }
-function readFileAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.addEventListener("load", () => resolve(reader.result));
-    reader.addEventListener("error", () => reject(new Error("讀取圖檔失敗")));
-    reader.readAsDataURL(file);
-  });
-}
+const setStatus = sharedStatus; // 統一回饋出口（行內＋snackbar；#297 B9）
 async function postJson(url, body) {
   const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   return res.json();

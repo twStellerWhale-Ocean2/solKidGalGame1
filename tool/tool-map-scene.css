@@ -1,0 +1,410 @@
+/* 管理設定工具：地圖與場景分頁樣式（issue #297 自 wardrobe-tuner.css 解體，域內保序）。
+   內容：地圖／場景共用之 map-shell 三欄與子分頁列、節點清單、地圖舞台與可拖標記、
+   場景 meta 卡、對話題庫編修欄、AI 生成（含 #297 生成→對照→採納三步之對照區）。 */
+
+/* ===== 地圖設定分頁 ===== */
+.map-subtabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 14px;
+  background: var(--md-sys-color-secondary-container);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.map-subtab {
+  padding: 6px 14px;
+}
+
+.map-subtab.active {
+  border-color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.map-shell {
+  display: grid;
+  grid-template-columns: var(--left-w, 300px) 6px minmax(320px, 1fr) 6px var(--right-w, 320px);
+  min-height: calc(100vh - var(--tabbar-h) - 53px);
+}
+
+.map-shell .col-resizer {
+  height: calc(100vh - var(--tabbar-h) - 53px);
+}
+
+/* 聲音管理：無子分頁列、僅左右兩欄（#297 B11：欄寬拖曳一致補齊） */
+.voice-shell {
+  grid-template-columns: var(--left-w, 420px) 6px minmax(280px, 1fr);
+  min-height: calc(100vh - var(--tabbar-h));
+}
+
+.voice-shell .map-list-pane,
+.voice-shell .map-control-pane,
+.voice-shell .col-resizer {
+  height: calc(100vh - var(--tabbar-h));
+}
+
+.map-list-pane,
+.map-control-pane {
+  height: calc(100vh - var(--tabbar-h) - 53px);
+  overflow: auto;
+  padding: 18px;
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.map-list-pane {
+  border-right: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.map-control-pane {
+  border-left: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.map-node-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.map-node-row {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  text-align: left;
+}
+
+.map-node-row.active {
+  border-color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-secondary-container);
+}
+
+.map-node-icon {
+  font-size: 18px;
+  text-align: center;
+}
+
+.map-node-name {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.map-node-name strong {
+  font-size: 13px;
+}
+
+.map-node-name span {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 11px;
+}
+
+.map-stage-pane {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow: auto;
+  background:
+    linear-gradient(color-mix(in srgb, var(--md-sys-color-surface) 40%, transparent), color-mix(in srgb, var(--md-sys-color-surface) 40%, transparent)),
+    repeating-conic-gradient(var(--tool-checker-a) 0% 25%, var(--tool-checker-b) 0% 50%) 0 / 28px 28px;
+}
+
+.map-stage {
+  position: relative;
+  max-width: 100%;
+  max-height: calc(100vh - var(--tabbar-h) - 120px);
+  line-height: 0;
+  box-shadow: 0 10px 30px var(--tool-shadow);
+}
+
+.map-image {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - var(--tabbar-h) - 120px);
+  width: auto;
+  height: auto;
+}
+
+.map-markers {
+  position: absolute;
+  inset: 0;
+  touch-action: none;
+}
+
+.map-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.map-marker-dot {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+  line-height: 1;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--md-sys-color-surface) 92%, transparent);
+  border: 2px solid var(--md-sys-color-primary);
+  box-shadow: 0 2px 6px var(--tool-shadow);
+}
+
+.map-marker.active .map-marker-dot {
+  border-color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-surface);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--md-sys-color-primary) 30%, transparent);
+}
+
+.map-marker-label {
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: var(--tool-glass-ink);
+  background: var(--tool-glass);
+}
+
+.map-marker.active .map-marker-label {
+  background: var(--md-sys-color-primary);
+}
+
+@media (max-width: 980px) {
+  .map-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .map-list-pane,
+  .map-control-pane {
+    height: auto;
+  }
+}
+
+/* ===== 場景設定分頁（issue #245）===== */
+.scene-stage-pane {
+  height: calc(100vh - var(--tabbar-h) - 53px);
+  overflow: auto;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.scene-badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  margin-left: 4px;
+}
+
+.scene-badge.job { background: var(--tool-badge-job-bg); color: var(--tool-badge-job-ink); }
+.scene-badge.chat { background: var(--tool-badge-chat-bg); color: var(--tool-badge-chat-ink); }
+.scene-badge.none { background: var(--tool-badge-none-bg); color: var(--tool-badge-none-ink); }
+
+.scene-meta-card {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 14px;
+  align-items: start;
+  padding: 14px;
+  background: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 10px;
+}
+
+.scene-meta-art {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--md-sys-color-surface-variant);
+}
+
+.scene-meta-fields {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.scene-meta-fields > div {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.scene-meta-k {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 11px;
+}
+
+.scene-meta-card > .control-help {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.scene-bank {
+  background: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.scene-bank-chat { background: var(--md-sys-color-surface-container-low); }
+
+.scene-bank h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.scene-bank-title {
+  color: var(--md-sys-color-on-surface-variant);
+  font-weight: 400;
+}
+
+.scene-q {
+  padding: 10px 0;
+  border-top: 1px dashed var(--md-sys-color-outline-variant);
+}
+
+.scene-q:first-of-type { border-top: none; }
+
+.scene-q-head,
+.scene-choices-head {
+  font-size: 11px;
+  color: var(--md-sys-color-on-surface-variant);
+  margin: 6px 0 4px;
+}
+
+.scene-in {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 6px;
+  margin-bottom: 4px;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+}
+
+.scene-in.zh { background: var(--md-sys-color-surface-container-low); }
+
+.scene-choice {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.scene-ans {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: var(--md-sys-color-on-surface-variant);
+  white-space: nowrap;
+}
+
+.scene-ans input { margin: 0; }
+
+.scene-gen-kind {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-bottom: 8px;
+}
+
+#sceneGenKind,
+#sceneGenHint,
+#sceneGenPrompt,
+#sceneGenPaste {
+  width: 100%;
+  padding: 7px 8px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  resize: vertical;
+  margin-bottom: 6px;
+}
+
+.scene-gen-fallback { margin-top: 8px; }
+.scene-gen-fallback button { margin-bottom: 8px; width: 100%; }
+
+/* 生成→對照→採納（#297 C17）：現行 vs 生成結果左右對照，採納才進編修區 */
+.scene-gen-preview {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 8px;
+  background: var(--md-sys-color-surface);
+}
+
+.scene-gen-preview[hidden] { display: none; }
+
+.scene-gen-preview h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+.gen-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.gen-col {
+  min-width: 0;
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--md-sys-color-surface-container-low);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.gen-col-new {
+  background: color-mix(in srgb, var(--tool-box-item) 8%, transparent);
+}
+
+.gen-col h4 {
+  margin: 0 0 6px;
+  font-size: 11px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.gen-q {
+  padding: 4px 0;
+  border-top: 1px dashed var(--md-sys-color-outline-variant);
+}
+
+.gen-q:first-of-type { border-top: none; }
+
+.gen-c { color: var(--md-sys-color-on-surface-variant); }
+.gen-c.ans { color: var(--tool-box-item-deep); font-weight: 600; }
+.gen-zh { color: var(--md-sys-color-on-surface-variant); }
+
+.gen-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 8px 0 4px;
+}
+
+@media (max-width: 980px) {
+  .scene-stage-pane { height: auto; }
+
+  .gen-cols { grid-template-columns: 1fr; }
+}

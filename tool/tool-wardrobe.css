@@ -1,0 +1,409 @@
+/* 管理設定工具：衣物分頁樣式（issue #297 自 wardrobe-tuner.css 解體，域內保序）。
+   內容：tool-shell 三欄版面與欄寬分隔條、左欄（素材包多選／搜尋／新增表單／類型衣櫃）、
+   單品列與操作鈕、編輯對象 mode-tabs、框數值與還原。共用元件見 tool-shell.css。 */
+
+.tool-shell {
+  display: grid;
+  grid-template-columns: var(--left-w, 360px) 6px minmax(320px, 1fr) 6px var(--right-w, 340px);
+  min-height: 100vh;
+}
+
+/* 左欄與預覽欄之間的可拖曳分隔條（樣式共用見 tool-shell.css），拖動改 --left-w 調整左欄寬。 */
+.tool-shell .col-resizer {
+  height: 100vh;
+}
+
+.catalog-pane,
+.control-pane {
+  height: 100vh;
+  overflow: auto;
+  padding: 18px;
+  background: var(--md-sys-color-surface-container-low);
+  border-color: var(--md-sys-color-outline-variant);
+}
+
+.catalog-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  border-right: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.control-pane {
+  border-left: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.item-row {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.item-main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 54px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 70px;
+  padding: 8px;
+  text-align: left;
+}
+
+.item-row.active .item-main {
+  border-color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-secondary-container);
+}
+
+.item-act {
+  width: 36px;
+  padding: 0;
+  font-size: 15px;
+}
+
+.item-main img {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.item-name {
+  display: grid;
+  gap: 4px;
+}
+
+.item-name strong {
+  font-size: 14px;
+}
+
+.item-name span,
+.item-price {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 12px;
+}
+
+@media (max-width: 980px) {
+  .tool-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .col-resizer {
+    display: none;
+  }
+
+  .catalog-pane,
+  .control-pane {
+    height: auto;
+    max-height: none;
+  }
+
+  /* 窄螢幕：左欄改為自然高度，衣櫃列給足夠垂直空間並維持水平拖曳。 */
+  .catalog-pane {
+    overflow: visible;
+  }
+
+  .closets {
+    min-height: 64vh;
+  }
+}
+
+.mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.mode-tabs button {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  text-align: center;
+}
+
+.mode-tabs button span {
+  font-size: 11px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+#modeTabs button[data-mode="type"].active {
+  border-color: var(--tool-box-type);
+  background: color-mix(in srgb, var(--tool-box-type) 12%, transparent);
+  color: var(--tool-box-type-deep);
+}
+
+#modeTabs button[data-mode="type"].active span { color: var(--tool-box-type); }
+
+#modeTabs button[data-mode="item"].active {
+  border-color: var(--tool-box-item);
+  background: color-mix(in srgb, var(--tool-box-item) 12%, transparent);
+  color: var(--tool-box-item-deep);
+}
+
+#modeTabs button[data-mode="item"].active span { color: var(--tool-box-item); }
+
+.mode-tabs-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+#modeTabs button[data-mode="none"].active {
+  border-color: var(--md-sys-color-primary);
+  background: color-mix(in srgb, var(--md-sys-color-primary) 14%, transparent);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+#modeTabs button[data-mode="none"].active span {
+  color: var(--md-sys-color-primary);
+}
+
+/* 框數值與還原（#297 C13／C15） */
+.restore-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.restore-grid button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ===== 素材包：水平多選按鈕（取代下拉選單） ===== */
+.tool-header,
+.pack-bar,
+.item-search,
+.add-item {
+  flex: 0 0 auto;
+}
+
+.pack-bar {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 12px 0 6px;
+}
+
+.pack-bar-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface-variant);
+  white-space: nowrap;
+}
+
+.pack-buttons {
+  flex: 1 1 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pack-btn {
+  min-height: 30px;
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+}
+
+.pack-btn em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.pack-btn.active {
+  border-color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.pack-btn.active em {
+  color: var(--md-sys-color-primary);
+}
+
+.pack-btn-all {
+  font-weight: 700;
+}
+
+/* ===== 類型衣櫃：每類型一個衣櫃，水平並列、可拖曳捲動 ===== */
+.closets {
+  flex: 1 1 auto;
+  min-height: 280px;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 2px 8px;
+  cursor: grab;
+}
+
+.closets.dragging {
+  cursor: grabbing;
+  user-select: none;
+  scroll-behavior: auto;
+}
+
+.closet {
+  flex: 0 0 296px;
+  width: 296px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 100%;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 10px;
+  background: var(--md-sys-color-surface);
+  box-shadow: 0 2px 8px var(--tool-shadow);
+}
+
+.closet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 10px 10px 0 0;
+  background: var(--md-sys-color-secondary-container);
+}
+
+.closet-head strong {
+  font-size: 14px;
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.closet-head em {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.closet-items {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.closet-empty {
+  margin: auto;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* 衣櫃內欄寬較窄：收斂操作鈕寬度、放大圖縮圖留給名稱空間。 */
+.closet .item-act {
+  width: 32px;
+  font-size: 14px;
+}
+
+.closet .item-main {
+  grid-template-columns: 48px 1fr auto;
+  gap: 8px;
+  padding: 7px;
+}
+
+.closet .item-main img {
+  width: 48px;
+  height: 48px;
+}
+
+.item-search {
+  margin: 12px 0 2px;
+}
+
+.item-search input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  box-sizing: border-box;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+}
+
+.item-search input:focus {
+  outline: none;
+  border-color: var(--md-sys-color-primary);
+}
+
+.add-item {
+  margin: 6px 0 10px;
+}
+
+.add-toggle {
+  width: 100%;
+}
+
+.add-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 8px;
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.add-form[hidden] {
+  display: none;
+}
+
+.add-form label {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.add-form input,
+.add-form select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 6px;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font: inherit;
+}
+
+.add-submit {
+  min-height: 36px;
+  border-color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  font-weight: 600;
+}
+
+/* 扣掉頁籤列高度，讓三欄不超出視窗。 */
+.editor-panel .tool-shell {
+  min-height: calc(100vh - var(--tabbar-h));
+}
+
+.editor-panel .catalog-pane,
+.editor-panel .control-pane {
+  height: calc(100vh - var(--tabbar-h));
+}
+
+.editor-panel .col-resizer {
+  height: calc(100vh - var(--tabbar-h));
+}
+
+.editor-panel .preview-pane {
+  min-height: calc(100vh - var(--tabbar-h));
+}

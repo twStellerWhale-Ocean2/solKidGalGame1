@@ -6,6 +6,10 @@
 import { renderVoiceSettings } from "../game-engine/render/settings.js";
 import { usedVoiceBuckets, recommendedVoiceNamesForGender } from "../game-engine/data/game-data.js";
 import { createVoiceAssignmentStore } from "../game-engine/state/voice-assignments.js";
+// issue #297：「清除所有指定」屬危險整批操作，改 MD3 error 色確認對話框（B8）；回饋加 snackbar；
+// 欄寬拖曳與其他分頁一致（B11）。
+import { uiConfirm, snack } from "./ui-helpers.js";
+import { setupColumnResize } from "./wardrobe-gestures.js";
 
 const list = document.getElementById("voiceAssignList");
 const summary = document.getElementById("voiceSummary");
@@ -82,7 +86,26 @@ if (list) {
   });
 
   reloadBtn?.addEventListener("click", () => { render(); setStatus("已重新載入裝置語音清單。"); });
-  clearBtn?.addEventListener("click", () => { store.clear(); render(); setStatus("已清除所有指定，全部回到 Auto。"); });
+  clearBtn?.addEventListener("click", async () => {
+    const ok = await uiConfirm({
+      title: "清除所有語音指定？",
+      bodyHtml: "<p>整台裝置（device-wide）所有角色類型的語音指定將全部回到 Auto，<strong>無法復原</strong>。</p>",
+      confirmText: "全部清除",
+      danger: true
+    });
+    if (!ok) return;
+    store.clear();
+    render();
+    setStatus("已清除所有指定，全部回到 Auto。");
+    snack("已清除所有語音指定（回到 Auto）。", "ok");
+  });
+
+  // 欄寬拖曳（#297 B11：與其他分頁一致；本頁僅左欄分隔條）
+  setupColumnResize(
+    document.querySelector("#panel-voice .map-shell"),
+    document.querySelector("#panel-voice .col-resizer"),
+    null
+  );
 
   // 初次渲染（即使尚在其他頁籤，先把清單建好；voiceschanged／切頁會再刷新）。
   render();

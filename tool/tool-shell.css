@@ -1,0 +1,694 @@
+/* 管理設定工具：共用 shell 樣式（issue #297 自 wardrobe-tuner.css 解體，域內保序）。
+   內容：基礎 reset、admin 版面（Top App Bar＋Navigation Drawer＋Main）、跨分頁共用元件
+   （control-section／selected-info／apply-*／file-button／bound-grid／tool-help）、
+   共用 UI 基礎（ui-dialog／ui-snack／[data-tip] tooltip／drawer overlay）、互動回饋與觸控目標。
+   顏色一律引 theme-md3.css tokens（含 --tool-*），不硬寫色。 */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  min-height: 36px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 6px;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  cursor: pointer;
+}
+
+button.active {
+  border-color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+/* ===== issue #260：管理網站版面（Top App Bar ＋ 左側 Navigation Drawer ＋ Main Content）=====
+   依 [hmiIntf通用視覺規範] 管理網站規範 ＋ MD3 token（theme-md3.css）。 */
+:root {
+  color: var(--md-sys-color-on-background, var(--md-sys-color-on-surface));
+  background: var(--md-sys-color-background);
+  font-family: var(--md-font-sans, system-ui, sans-serif);
+
+  --tabbar-h: var(--admin-topbar-h, 64px); /* 沿用既有 panel 高度計算鍵；現＝Top App Bar 高 */
+}
+
+.admin-shell {
+  display: grid;
+  grid-template-columns: var(--admin-drawer-w, 280px) 1fr;
+  height: 100vh;
+  background: var(--md-sys-color-background);
+  color: var(--md-sys-color-on-background);
+}
+
+.admin-shell.collapsed {
+  grid-template-columns: var(--admin-drawer-collapsed-w, 80px) 1fr;
+}
+
+/* ── 左側 Navigation Drawer ── */
+.admin-drawer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sp-1, 4px);
+  height: 100vh;
+  padding: var(--md-sp-3, 12px) var(--md-sp-2, 8px);
+  background: var(--md-sys-color-surface-container-low);
+  border-right: 1px solid var(--md-sys-color-outline-variant);
+  overflow: hidden;
+}
+
+.drawer-logo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--md-sp-2, 8px) var(--md-sp-3, 12px) var(--md-sp-4, 16px);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface);
+  white-space: nowrap;
+}
+
+.drawer-logo-sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.drawer-nav,
+.drawer-subnav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sp-1, 4px);
+}
+
+.drawer-subnav {
+  margin: var(--md-sp-1, 4px) 0 0 var(--md-sp-4, 16px);
+  padding-left: var(--md-sp-2, 8px);
+  border-left: 1px solid var(--md-sys-color-outline-variant);
+}
+
+/* Drawer 導覽項（MD3 nav item：full-pill、active＝secondary-container） */
+.nav-item,
+.nav-subitem {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sp-3, 12px);
+  min-height: 0;
+  height: 48px;
+  padding: 0 var(--md-sp-4, 16px);
+  border: 1px solid transparent;
+  border-radius: var(--md-radius-lg, 16px);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.nav-subitem {
+  height: 40px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.nav-ico {
+  flex: none;
+  width: 24px;
+  text-align: center;
+}
+
+.nav-txt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-item:hover,
+.nav-subitem:hover {
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+}
+
+.nav-item.active,
+.nav-subitem.active {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  border-color: transparent;
+}
+
+.drawer-spacer {
+  flex: 1;
+}
+
+.drawer-user {
+  padding: var(--md-sp-3, 12px);
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 收合（80dp）：只留 logo emoji 與主導覽 icon，隱藏文字與子導覽；icon 鈕以 [data-tip] 提示辨識（#297 A1） */
+.admin-shell.collapsed .drawer-logo-sub,
+.admin-shell.collapsed .drawer-user,
+.admin-shell.collapsed .nav-txt,
+.admin-shell.collapsed .drawer-subnav {
+  display: none;
+}
+
+.admin-shell.collapsed .nav-item {
+  justify-content: center;
+  padding: 0;
+}
+
+/* ── Main（Top App Bar ＋ Content）── */
+.admin-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100vh;
+}
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sp-3, 12px);
+  height: var(--admin-topbar-h, 64px);
+  padding: 0 var(--md-sp-4, 16px);
+  background: var(--md-sys-color-surface);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.topbar-menu {
+  min-height: 0;
+  width: 40px;
+  height: 40px;
+  border: 1px solid transparent;
+  border-radius: var(--md-radius-md, 12px);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 18px;
+}
+
+.topbar-menu:hover {
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+}
+
+.topbar-titles {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.topbar-crumb {
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* 麵包屑資料包段可點回該包首頁（#297 A2） */
+.crumb-link {
+  min-height: 0;
+  padding: 0 2px;
+  border: none;
+  background: none;
+  color: var(--md-sys-color-primary);
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.topbar-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface);
+}
+
+.admin-content {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  background: var(--md-sys-color-background);
+}
+
+.editor-panel[hidden] {
+  display: none;
+}
+
+/* ── 窄視口（≤980px）：抽屜改 overlay 模式（#297 D19）──
+   不常駐佔寬；.drawer-open 時滑入並鋪 scrim，選定後由 editor-tabs 自動收合。 */
+.drawer-scrim {
+  display: none;
+}
+
+@media (max-width: 980px) {
+  .admin-shell,
+  .admin-shell.collapsed {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-drawer {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 70;
+    width: min(80vw, var(--admin-drawer-w, 280px));
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    box-shadow: 0 0 32px var(--tool-shadow);
+  }
+
+  .admin-shell.drawer-open .admin-drawer {
+    transform: translateX(0);
+  }
+
+  /* overlay 模式下收合狀態不適用：文字照常顯示 */
+  .admin-shell.collapsed .drawer-logo-sub,
+  .admin-shell.collapsed .drawer-user,
+  .admin-shell.collapsed .nav-txt,
+  .admin-shell.collapsed .drawer-subnav {
+    display: revert;
+  }
+
+  .admin-shell.collapsed .nav-item {
+    justify-content: flex-start;
+    padding: 0 var(--md-sp-4, 16px);
+  }
+
+  .admin-shell.drawer-open .drawer-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: var(--tool-scrim);
+  }
+}
+
+/* ===== 跨分頁共用元件 ===== */
+/* 欄寬拖曳分隔條（#297 B11：五分頁一致；高度由各 shell 版面自訂） */
+.col-resizer {
+  cursor: col-resize;
+  background: var(--md-sys-color-outline-variant);
+  touch-action: none;
+}
+
+.col-resizer:hover,
+.col-resizer:active {
+  background: var(--md-sys-color-primary);
+}
+
+.tool-header h1 {
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+
+.summary-line {
+  min-height: 22px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 13px;
+}
+
+.control-section {
+  margin-bottom: 22px;
+}
+
+.control-section h2 {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.control-section h2 .hint {
+  margin-left: 6px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.control-help {
+  margin: 0 0 10px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* 長說明收斂為漸進揭示（#297 B10） */
+.tool-help {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.tool-help summary {
+  cursor: pointer;
+  color: var(--md-sys-color-primary);
+  font-weight: 600;
+}
+
+.tool-help[open] summary {
+  margin-bottom: 4px;
+}
+
+.bound-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.bound-grid label {
+  display: grid;
+  gap: 5px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 13px;
+}
+
+.bound-grid input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 6px;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+}
+
+.bound-grid input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.file-button {
+  display: grid;
+  place-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 6px;
+  background: var(--md-sys-color-surface);
+  cursor: pointer;
+}
+
+.file-button input {
+  display: none;
+}
+
+.selected-info {
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--md-sys-color-secondary-container);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  display: grid;
+  gap: 3px;
+  font-size: 13px;
+}
+
+.selected-info strong {
+  font-size: 14px;
+}
+
+.selected-info span {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 12px;
+}
+
+.selected-info code {
+  font-size: 11px;
+  background: var(--md-sys-color-surface-container-high);
+  padding: 0 4px;
+  border-radius: 3px;
+}
+
+.selected-info em {
+  color: var(--md-sys-color-primary);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.apply-section {
+  margin-bottom: 18px;
+}
+
+.apply-button {
+  width: 100%;
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  border-color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+
+.apply-button:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.apply-status {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--md-sys-color-on-surface-variant);
+  min-height: 18px;
+}
+
+.apply-status-ok {
+  color: var(--tool-ok);
+}
+
+.apply-status-err {
+  color: var(--md-sys-color-error);
+}
+
+/* ===== 共用 dialog（#297 B6：取代原生 alert／confirm）===== */
+.ui-dialog {
+  width: min(440px, 92vw);
+  padding: 20px;
+  border: none;
+  border-radius: var(--md-radius-md, 12px);
+  background: var(--md-sys-color-surface-container-low);
+  color: var(--md-sys-color-on-surface);
+  box-shadow: 0 18px 48px var(--tool-shadow);
+}
+
+.ui-dialog::backdrop {
+  background: var(--tool-scrim);
+}
+
+.ui-dialog-title {
+  margin: 0 0 10px;
+  font-size: 17px;
+}
+
+.ui-dialog-body {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.ui-dialog-body p {
+  margin: 0;
+}
+
+.ui-change-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+
+.ui-form-row {
+  display: grid;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.ui-form-row input,
+.ui-form-row textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 6px;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  resize: vertical;
+}
+
+.ui-field-invalid {
+  border-color: var(--md-sys-color-error) !important;
+}
+
+.ui-dialog-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.ui-dialog-actions button:only-child {
+  grid-column: span 2;
+}
+
+.ui-btn-primary {
+  border-color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  font-weight: 600;
+}
+
+/* 危險操作視覺區隔（#297 B8） */
+.ui-btn-danger {
+  border-color: var(--md-sys-color-error);
+  background: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error);
+  font-weight: 600;
+}
+
+.item-act-danger {
+  color: var(--md-sys-color-error);
+  border-color: color-mix(in srgb, var(--md-sys-color-error) 45%, transparent);
+}
+
+.item-act-danger:hover {
+  border-color: var(--md-sys-color-error);
+  background: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+}
+
+/* ===== snackbar（#297 B9：成功自動消散、失敗持留可關）===== */
+.ui-snack-host {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  z-index: 90;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 8px;
+  width: min(520px, 92vw);
+  pointer-events: none;
+}
+
+.ui-snack {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--md-radius-sm, 8px);
+  background: var(--tool-glass);
+  color: var(--tool-glass-ink);
+  font-size: 13px;
+  line-height: 1.5;
+  box-shadow: var(--md-elev-1);
+  pointer-events: auto;
+}
+
+.ui-snack-ok {
+  border-left: 4px solid var(--tool-ok);
+}
+
+.ui-snack-err {
+  border-left: 4px solid var(--md-sys-color-error);
+}
+
+.ui-snack-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.ui-snack-close {
+  min-height: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+}
+
+/* ===== [data-tip] tooltip（#297 B7：hover 與 focus 皆可見；觸控 tap 聚焦即顯示）===== */
+[data-tip] {
+  position: relative;
+}
+
+[data-tip]:hover::after,
+[data-tip]:focus-visible::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  z-index: 80;
+  transform: translateX(-50%);
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--tool-glass-ink);
+  background: var(--tool-glass);
+  pointer-events: none;
+}
+
+/* ===== issue #260 §5C：互動回饋與無障礙（通用性規範 §D 無障礙／§E 互動回饋）===== */
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+.pack-btn:hover,
+.file-button:hover,
+.add-toggle:hover,
+.mode-tabs button:hover,
+.scene-gen-fallback button:hover {
+  background: var(--md-sys-color-surface-container-high);
+}
+
+.apply-button:hover:not(:disabled),
+.add-submit:hover:not(:disabled),
+.voice-assign-preview:hover {
+  filter: brightness(0.96);
+}
+
+/* ===== 觸控目標 ≥44px（#297 D20；paramLayoutQualityBar）=====
+   選擇器特異度須壓過各分頁常態尺寸（如 .closet .item-act 32px），故多帶一層。 */
+@media (pointer: coarse) {
+  button {
+    min-height: 44px;
+  }
+
+  .item-row .item-act,
+  .closet .closet-items .item-act {
+    width: 44px;
+    min-height: 44px;
+    font-size: 17px;
+  }
+
+  .admin-topbar .topbar-menu {
+    width: 44px;
+    height: 44px;
+  }
+
+  .box-overlay .drag-handle {
+    width: 22px;
+    height: 22px;
+  }
+
+  .box-overlay .drag-handle.move {
+    width: 30px;
+    height: 30px;
+  }
+}

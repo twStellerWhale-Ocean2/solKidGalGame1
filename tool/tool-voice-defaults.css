@@ -1,0 +1,253 @@
+/* 管理設定工具：公主預設與聲音管理分頁樣式（issue #297 自 wardrobe-tuner.css 解體，域內保序）。 */
+
+/* ===== 公主預設分頁（issue #297：三欄——左已有｜中衣物配置｜右上資訊＋按鈕／右下人物照片，各欄可拖寬）===== */
+.defaults-shell {
+  display: grid;
+  grid-template-columns: var(--left-w, 300px) 6px minmax(240px, 1fr) 6px var(--right-w, 400px);
+  height: calc(100vh - var(--tabbar-h));
+}
+
+/* 欄間可拖曳分隔條（樣式共用見 tool-shell.css），拖動改 --left-w／--right-w 調欄寬。 */
+.defaults-shell .col-resizer {
+  height: calc(100vh - var(--tabbar-h));
+}
+
+/* 左欄：已有金錢＋擁有清單，整欄可捲（清單長） */
+.defaults-own-pane {
+  overflow-y: auto;
+  padding: 18px 18px 32px;
+  background: var(--md-sys-color-surface-container-low);
+}
+
+/* 中欄：衣物配置（預設穿著下拉），可捲 */
+.defaults-outfit-pane {
+  overflow-y: auto;
+  padding: 18px;
+  background: var(--md-sys-color-surface-container-low);
+}
+
+/* 右欄：上＝人物資訊＋儲存、下＝人物照片（上下分區） */
+.defaults-side-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: calc(100vh - var(--tabbar-h));
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.defaults-side-top {
+  flex: 0 0 auto;
+  padding: 18px 18px 0;
+  overflow-y: auto;
+}
+
+/* 右下人物照片：填滿右欄剩餘高度、512:768 置中 */
+.defaults-side-bottom {
+  flex: 1 1 auto;
+  min-height: 160px;
+  margin: 12px 18px 18px;
+}
+
+.defaults-preview {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  border-radius: var(--md-radius-md, 12px);
+  overflow: hidden;
+  container-type: size; /* 讓 .preview-stage 能以容器尺寸做 contain 佈局 */
+  background:
+    linear-gradient(var(--tool-stage-veil), var(--tool-stage-veil)),
+    url("../content-package/areas/castle/assets/scenes/bedroom-1024.webp") center / cover no-repeat;
+}
+
+/* 預覽以容器尺寸 contain 立繪：高取「填滿高 100cqh」與「填滿寬對應之高 150cqw（=100cqw×768/512）」較小者，
+   任何欄寬（含拖曳調寬）都完整不裁切、不溢位。 */
+.defaults-preview .preview-stage {
+  height: min(100cqh, 150cqw);
+  width: auto;
+  aspect-ratio: 512 / 768;
+}
+
+/* 公主預設是預覽、非對位編輯，移除圖框中央對位虛線（#176 的 .figure-frame::before 中線）。 */
+.defaults-preview .figure-frame::before {
+  display: none;
+}
+
+.defaults-coins {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.defaults-coins input {
+  padding: 8px 10px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 8px;
+  font: inherit;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+}
+
+.defaults-outfit {
+  display: grid;
+  gap: 8px;
+}
+
+.defaults-slot {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.defaults-slot select {
+  width: 100%;
+  padding: 7px 8px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+}
+
+.defaults-owned-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.defaults-owned-actions button {
+  min-height: 30px;
+  font-size: 12px;
+}
+
+/* 擁有清單攤平為單欄捲動清單（依「素材包-名稱」排序，同素材包自然相鄰） */
+.defaults-owned {
+  display: grid;
+  gap: 2px;
+}
+
+.defaults-own-check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.defaults-own-check:hover {
+  background: var(--md-sys-color-secondary-container);
+}
+
+.defaults-own-check.equipped {
+  color: var(--tool-ok);
+  font-weight: 600;
+}
+
+/* 素材包前綴以較淡色標示、衣物名為主色 */
+.defaults-own-pack {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* 擁有清單類別標題（髮型/整件/鞋…）：捲動時吸頂，快速定位所在類別 */
+.defaults-own-group {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin-top: 12px;
+  padding: 4px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-surface-container-low);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.defaults-own-group:first-child {
+  margin-top: 0;
+}
+
+@media (max-width: 980px) {
+  .defaults-shell {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .defaults-shell .col-resizer {
+    display: none;
+  }
+
+  .defaults-own-pane,
+  .defaults-outfit-pane {
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  }
+
+  .defaults-side-pane {
+    height: auto;
+  }
+
+  .defaults-side-bottom {
+    height: 60vh;
+  }
+}
+
+/* issue #246：聲音管理頁籤——角色語音指定列（沿用 render/settings.js 的 .voice-assign-* 結構，於工具自帶樣式）。 */
+.voice-assign-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.voice-assign-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface);
+}
+
+.voice-assign-default {
+  background: var(--md-sys-color-secondary-container);
+  border-color: var(--md-sys-color-outline-variant);
+}
+
+.voice-assign-name {
+  font-weight: 800;
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.voice-assign-select {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 6px;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  padding: 4px 8px;
+}
+
+.voice-assign-preview {
+  align-self: flex-start;
+  min-height: 30px;
+  padding: 2px 12px;
+  font-size: 0.86rem;
+}
+
+.voice-assign-empty {
+  color: var(--md-sys-color-on-surface-variant);
+  font-weight: 700;
+}
