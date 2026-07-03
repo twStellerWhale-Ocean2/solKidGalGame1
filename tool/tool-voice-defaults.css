@@ -3,7 +3,7 @@
 /* ===== 公主預設分頁（issue #297：三欄——左已有｜中衣物配置｜右上資訊＋按鈕／右下人物照片，各欄可拖寬）===== */
 .defaults-shell {
   display: grid;
-  grid-template-columns: var(--left-w, 300px) 6px minmax(240px, 1fr) 6px var(--right-w, 340px);
+  grid-template-columns: var(--left-w, 300px) 6px minmax(240px, 1fr) 6px var(--right-w, 400px);
   height: calc(100vh - var(--tabbar-h));
 }
 
@@ -55,14 +55,17 @@
   padding: 12px;
   border-radius: var(--md-radius-md, 12px);
   overflow: hidden;
+  container-type: size; /* 讓 .preview-stage 能以容器尺寸做 contain 佈局 */
   background:
     linear-gradient(var(--tool-stage-veil), var(--tool-stage-veil)),
     url("../content-package/areas/castle/assets/scenes/bedroom-1024.webp") center / cover no-repeat;
 }
 
+/* 預覽以容器尺寸 contain 立繪：高取「填滿高 100cqh」與「填滿寬對應之高 150cqw（=100cqw×768/512）」較小者，
+   任何欄寬（含拖曳調寬）都完整不裁切、不溢位。 */
 .defaults-preview .preview-stage {
-  height: 100%;
-  max-width: 100%;
+  height: min(100cqh, 150cqw);
+  width: auto;
   aspect-ratio: 512 / 768;
 }
 
