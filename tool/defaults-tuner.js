@@ -1,7 +1,7 @@
 // 「👑 公主預設」分頁：編輯新遊戲公主的起始 coins／owned／outfit，即時預覽紙娃娃，
 // 按「套用」由 dev server 寫回 game-engine/state/default-state.js（白名單 /tool/save-defaults）。
-// issue #297：版面左右併排（左＝金錢＋擁有清單、依「素材包-名稱」排序；右＝穿著下拉＋小預覽）；
-// 維持「穿著⊆擁有」不變式——穿著下拉僅列已擁有，取消擁有時自動脫下正穿之該件。
+// issue #297：三欄版面（左＝已有金錢＋擁有清單、依「素材包-名稱」排序；中＝衣物配置下拉；右上＝資訊＋套用、右下＝人物照片），各欄可拖寬。
+// 維持「穿著⊆擁有」不變式——穿著下拉僅列已擁有、取消擁有自動脫下正穿之該件；勾選擁有時該部位若空著則預設直接穿上。
 import {
   categories,
   outfitSlots,
@@ -16,7 +16,7 @@ import { createPaperDollRenderer } from "../game-engine/render/paper-doll.js";
 // issue #297：未儲存編修登記 dirty（離頁防護）；回饋走統一出口（行內＋snackbar）；
 // 預覽舞台縮放／位移與衣物頁一致（滾輪／雙指／拖曳）。
 import { status as sharedStatus, setDirty } from "./ui-helpers.js";
-import { setupStagePanZoom } from "./wardrobe-gestures.js";
+import { setupStagePanZoom, setupColumnResize } from "./wardrobe-gestures.js";
 
 const panel = document.getElementById("panel-defaults");
 if (panel) initDefaultsTab();
@@ -89,6 +89,13 @@ function initDefaultsTab() {
       if (!id) return;
       if (e.target.checked) {
         state.owned.add(id);
+        // 勾選擁有時，若該部位目前空著（沒穿同類），預設直接穿上；已穿同類則只加入擁有、不搶穿。
+        const item = itemMap.get(id);
+        const slot = item?.type;
+        const wearable = Array.isArray(item?.layers) && item.layers.length > 0;
+        if (wearable && slot && outfitSlots.includes(slot) && (!state.outfit[slot] || state.outfit[slot] === "none")) {
+          state.outfit[slot] = id;
+        }
       } else {
         state.owned.delete(id);
         // 連動：取消擁有→脫下正穿之該件（避免穿著未擁有的矛盾）
@@ -108,6 +115,11 @@ function initDefaultsTab() {
     });
     dom.apply.addEventListener("click", apply);
     setupStagePanZoom(dom.previewStage, view, applyStageTransform); // 滾輪／雙指縮放＋空白處拖曳平移
+    setupColumnResize( // 三欄各自可拖寬（左分隔條改 --left-w、右分隔條改 --right-w）
+      q("#panel-defaults .defaults-shell"),
+      q("#panel-defaults .col-resizer:not(.col-resizer-right)"),
+      q("#panel-defaults .col-resizer-right")
+    );
     window.addEventListener("resize", () => renderer.applyLayerTransforms(dom.doll));
     // 切到本分頁時（panel 由 hidden→顯示）重算 layer transforms，避免隱藏期間量到 0 尺寸。
     window.addEventListener("editor-tab-change", (e) => { if (e.detail?.tab === "defaults") renderPreview(); });

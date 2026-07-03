@@ -1,36 +1,57 @@
 /* 管理設定工具：公主預設與聲音管理分頁樣式（issue #297 自 wardrobe-tuner.css 解體，域內保序）。 */
 
-/* ===== 公主預設分頁（issue #297：左右併排——左金錢＋擁有清單、右穿著＋小預覽）===== */
+/* ===== 公主預設分頁（issue #297：三欄——左已有｜中衣物配置｜右上資訊＋按鈕／右下人物照片，各欄可拖寬）===== */
 .defaults-shell {
   display: grid;
-  grid-template-columns: minmax(300px, 1fr) minmax(340px, 1.15fr);
+  grid-template-columns: var(--left-w, 300px) 6px minmax(240px, 1fr) 6px var(--right-w, 340px);
   height: calc(100vh - var(--tabbar-h));
 }
 
-/* 左欄：金錢＋擁有清單，整欄可捲（清單長） */
+/* 欄間可拖曳分隔條（樣式共用見 tool-shell.css），拖動改 --left-w／--right-w 調欄寬。 */
+.defaults-shell .col-resizer {
+  height: calc(100vh - var(--tabbar-h));
+}
+
+/* 左欄：已有金錢＋擁有清單，整欄可捲（清單長） */
 .defaults-own-pane {
   overflow-y: auto;
   padding: 18px 18px 32px;
   background: var(--md-sys-color-surface-container-low);
-  border-right: 1px solid var(--md-sys-color-outline-variant);
 }
 
-/* 右欄：穿著下拉＋小預覽＋套用 */
-.defaults-edit-pane {
+/* 中欄：衣物配置（預設穿著下拉），可捲 */
+.defaults-outfit-pane {
   overflow-y: auto;
   padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
   background: var(--md-sys-color-surface-container-low);
 }
 
-/* 小預覽（公主不用太大）：512:768 比例、限高 */
+/* 右欄：上＝人物資訊＋儲存、下＝人物照片（上下分區） */
+.defaults-side-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: calc(100vh - var(--tabbar-h));
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.defaults-side-top {
+  flex: 0 0 auto;
+  padding: 18px 18px 0;
+  overflow-y: auto;
+}
+
+/* 右下人物照片：填滿右欄剩餘高度、512:768 置中 */
+.defaults-side-bottom {
+  flex: 1 1 auto;
+  min-height: 160px;
+  margin: 12px 18px 18px;
+}
+
 .defaults-preview {
   position: relative;
   display: grid;
   place-items: center;
-  margin-bottom: 16px;
   padding: 12px;
   border-radius: var(--md-radius-md, 12px);
   overflow: hidden;
@@ -40,7 +61,8 @@
 }
 
 .defaults-preview .preview-stage {
-  height: min(42vh, 380px);
+  height: 100%;
+  max-width: 100%;
   aspect-ratio: 512 / 768;
 }
 
@@ -134,9 +156,21 @@
     height: auto;
   }
 
-  .defaults-own-pane {
-    border-right: none;
+  .defaults-shell .col-resizer {
+    display: none;
+  }
+
+  .defaults-own-pane,
+  .defaults-outfit-pane {
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  }
+
+  .defaults-side-pane {
+    height: auto;
+  }
+
+  .defaults-side-bottom {
+    height: 60vh;
   }
 }
 
