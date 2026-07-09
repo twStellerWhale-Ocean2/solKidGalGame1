@@ -2,6 +2,7 @@ import { saveMarkerEnd, saveMarkerStart } from "../state/storage.js";
 
 export function createSaveLoadController({
   buildSaveMarkdown,
+  confirmImport = () => true,
   elements,
   normalizeState,
   onStateLoaded,
@@ -39,6 +40,11 @@ export function createSaveLoadController({
   }
 
   function loadMarkdownText(text) {
+    // issue #309（sysCase#4.2）：匯入屬使用者明示之覆蓋操作；雲端帳號已有進度時先警示覆蓋方向並確認。
+    if (!confirmImport()) {
+      elements.statusMessage.textContent = "Import cancelled.";
+      return;
+    }
     const start = text.indexOf(saveMarkerStart);
     const end = text.indexOf(saveMarkerEnd);
     if (start === -1 || end === -1 || end <= start) throw new Error("Luminara save data block was not found.");

@@ -1,8 +1,16 @@
 {
-  "version": "0.61.0",
-  "date": "2026-07-03",
+  "version": "0.62.0",
+  "date": "2026-07-09",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.62.0",
+      "date": "2026-07-09",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#309",
+      "summaryZh": "遊戲轉為家庭自架伺服器形態：玩家以小寫英文帳號＋至少 6 位密碼註冊登入（家長可協助、密碼可切換顯示），進度以帳號為單位自動存到伺服器（PostgreSQL 雲端存檔）、跨裝置登入即還原；登入畫面沿用帳號卡（點卡輸入密碼，最後登入帳號可免密續玩、可登出），並提供本機舊進度一鍵匯入與 Markdown 匯入遷移；伺服器暫時連不上時可續玩並自動重試補存、他裝置較新進度以提示重載保護不被覆蓋；新增 sysApi 後端（註冊／登入／session／存檔 API 同站服務遊戲網頁）與 docker compose 資料庫部署，原 GitHub Pages 版凍結於 v0.61.0（pages-legacy）待 #311 退場"
+    },
     {
       "version": "0.61.0",
       "date": "2026-07-03",

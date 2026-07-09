@@ -11,6 +11,15 @@ export function installTestingHooks(api) {
     getState: () => JSON.parse(JSON.stringify(api.state)),
     accounts: api.accounts,
     playClock: api.playClock,
+    // issue #309：雲端帳號／存檔 e2e 驗證鉤（真堆疊端對端腳本與 ?selftest=auth 共用）。
+    cloudAuth: api.cloudAuth,
+    setCoins: (value) => {
+      api.state.coins = Math.max(0, Number(value) || 0);
+      api.persist();
+      api.render();
+    },
+    getCoins: () => api.state.coins,
+    openSettings: () => api.openSystemMenu("settings"),
     setDifficulty: () => {
       api.persist();
       api.render();
@@ -50,6 +59,7 @@ export function installTestingHooks(api) {
     openWorldMap: api.openWorldMap
   };
 
+  runCloudAuthSelfTest(api);
   runSaveLoadSelfTest(api);
   runDefaultStateSelfTest(api);
   runDataAudit(api);
@@ -72,6 +82,194 @@ export function installTestingHooks(api) {
   runDevToolsSelfTest(api);
   runSceneCoinsSelfTest(api);
   runStarterOutfitSelfTest(api);
+}
+
+
+// issue #309（spec#23/#24）：雲端帳號與存檔路徑驗證——以注入之 in-memory fake server 驗
+// 註冊/登入/登出、session 快取、存檔 round-trip、409 樂觀鎖、離線降級與本機舊帳號遷移資料流。
+function runCloudAuthSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "auth") return;
+  const errors = [];
+  const cloudAuth = api.cloudAuth;
+
+  // in-memory fake server（同 [apiIntf自訂帳號存檔服務] 契約）
+  function makeFakeServer() {
+    const accounts = new Map(); // username -> {password, createdAt}
+    const sessions = new Map(); // token -> {username, revoked}
+    const saves = new Map(); // username -> {state, updatedAt}
+    let clock = 1000;
+    let offline = false;
+    function json(status, body) {
+      return { status, ok: status < 400, json: async () => body };
+    }
+    async function handler(pathname, init = {}) {
+      if (offline) throw new TypeError("network down");
+      const body = init.body ? JSON.parse(init.body) : {};
+      const auth = (init.headers || {})["Authorization"] || "";
+      const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+      const sessionRec = sessions.get(token);
+      const username = sessionRec && !sessionRec.revoked ? sessionRec.username : "";
+      clock += 7;
+      if (pathname === "/api/auth/register" && init.method === "POST") {
+        if (!/^[a-z][a-z0-9]{2,15}$/.test(body.username || "")) return json(422, { error: { code: "invalid-username" } });
+        if (typeof body.password !== "string" || body.password.length < 6) return json(422, { error: { code: "password-too-short" } });
+        if (accounts.has(body.username)) return json(409, { error: { code: "username-taken" } });
+        accounts.set(body.username, { password: body.password, createdAt: clock });
+        const newToken = "tok-" + body.username + "-" + clock;
+        sessions.set(newToken, { username: body.username, revoked: false });
+        return json(201, { token: newToken, account: { username: body.username, createdAt: clock } });
+      }
+      if (pathname === "/api/auth/login" && init.method === "POST") {
+        const record = accounts.get(body.username);
+        if (!record || record.password !== body.password) return json(401, { error: { code: "invalid-credentials" } });
+        const newToken = "tok-" + body.username + "-" + clock;
+        sessions.set(newToken, { username: body.username, revoked: false });
+        return json(200, { token: newToken, account: { username: body.username, createdAt: record.createdAt } });
+      }
+      if (!username) return json(401, { error: { code: "unauthorized" } });
+      if (pathname === "/api/auth/logout" && init.method === "POST") {
+        sessionRec.revoked = true;
+        return json(204, null);
+      }
+      if (pathname === "/api/save" && (init.method || "GET") === "GET") {
+        const save = saves.get(username);
+        return json(200, {
+          state: save ? save.state : null,
+          schemaVersion: save ? "1" : null,
+          updatedAt: save ? save.updatedAt : null,
+          serverTime: clock
+        });
+      }
+      if (pathname === "/api/save" && init.method === "PUT") {
+        const save = saves.get(username) || null;
+        const base = body.baseUpdatedAt === undefined ? null : body.baseUpdatedAt;
+        if (base !== (save ? save.updatedAt : null)) return json(409, { error: { code: "save-conflict" } });
+        const updatedAt = clock;
+        saves.set(username, { state: body.state, updatedAt });
+        return json(200, { updatedAt, serverTime: clock });
+      }
+      return json(404, { error: { code: "not-found" } });
+    }
+    return { handler, saves, sessions, setOffline: (value) => { offline = value; } };
+  }
+
+  (async () => {
+    const fake = makeFakeServer();
+    cloudAuth.setApiFetch(fake.handler);
+    try {
+      localStorage.removeItem(cloudAuth.sessionCacheKey);
+      localStorage.removeItem(cloudAuth.recentAccountsKey);
+      localStorage.removeItem(cloudAuth.migratedFlagKey);
+
+      // 1) 前端規則同源驗證（intTest#14 前端層）
+      if (cloudAuth.validateUsernameInput("BAD")) errors.push("front-end accepted uppercase username");
+      if (cloudAuth.validateUsernameInput("ab")) errors.push("front-end accepted 2-char username");
+      if (!cloudAuth.validateUsernameInput("mimi2018")) errors.push("front-end rejected valid username");
+      if (cloudAuth.validatePasswordInput("12345") !== "password-too-short") errors.push("front-end accepted short password");
+
+      // 2) 註冊即登入＋session 快取（spec#23）
+      const reg = await cloudAuth.register("mimi", "secret6");
+      if (!reg.ok) errors.push("register failed: " + reg.code);
+      if (!cloudAuth.isActive()) errors.push("cloud not active after register");
+      const cached = cloudAuth.loadCachedSession();
+      if (!cached || cached.username !== "mimi") errors.push("session cache not bound to last login");
+
+      // 3) 首寫與 round-trip（intTest#11/#71）
+      api.state = api.freshState();
+      api.state.coins = 321;
+      api.state.playerName = "CloudMimi";
+      cloudAuth.adoptServerBase(null);
+      await cloudAuth.flushSave();
+      const serverSave = fake.saves.get("mimi");
+      if (!serverSave || serverSave.state.coins !== 321) errors.push("cloud save did not reach server");
+      const recents = cloudAuth.loadRecentAccounts();
+      if (!recents.some((entry) => entry.username === "mimi" && entry.coins === 321)) errors.push("recent account card summary not updated");
+
+      // 4) 409 樂觀鎖：以過期基準寫 → conflict、不覆蓋（spec#24）
+      const conflictSeen = { value: false };
+      cloudAuth.cloud.onConflict = () => { conflictSeen.value = true; };
+      const goodBase = serverSave.updatedAt;
+      fake.saves.set("mimi", { state: Object.assign({}, serverSave.state, { coins: 900 }), updatedAt: goodBase + 50 }); // 模擬他裝置較新寫入
+      cloudAuth.adoptServerBase(goodBase); // 本機持過期基準
+      api.state.coins = 111;
+      await cloudAuth.flushSave();
+      if (!conflictSeen.value) errors.push("save-conflict (409) not surfaced");
+      if (fake.saves.get("mimi").state.coins !== 900) errors.push("stale write overwrote newer save");
+      cloudAuth.cloud.onConflict = null;
+
+      // 5) 離線降級：網路失敗 → status offline、資料不丟；恢復後補存（intTest#73）
+      cloudAuth.adoptServerBase(fake.saves.get("mimi").updatedAt);
+      fake.setOffline(true);
+      api.state.coins = 555;
+      await cloudAuth.flushSave();
+      if (cloudAuth.cloud.status !== "offline") errors.push("offline status expected, got " + cloudAuth.cloud.status);
+      fake.setOffline(false);
+      await cloudAuth.flushSave();
+      if (fake.saves.get("mimi").state.coins !== 555) errors.push("recovered flush did not persist state");
+      if (cloudAuth.cloud.status !== "idle") errors.push("idle status expected after recovery, got " + cloudAuth.cloud.status);
+
+      // 6) 登出撤銷＋快取清除；錯誤密碼統一 401（intTest#13/#15/#70）
+      await cloudAuth.logout();
+      if (cloudAuth.isActive()) errors.push("cloud still active after logout");
+      if (cloudAuth.loadCachedSession()) errors.push("session cache not cleared on logout");
+      const badLogin = await cloudAuth.login("mimi", "wrong66");
+      if (badLogin.ok || badLogin.code !== "invalid-credentials") errors.push("wrong password not rejected with invalid-credentials");
+      const relogin = await cloudAuth.login("mimi", "secret6");
+      if (!relogin.ok || !relogin.state || relogin.state.coins !== 555) errors.push("re-login did not restore latest cloud state");
+
+      // 7) 本機舊帳號遷移資料流（intTest#74 核心）：normalizeState（含 sol→lumi）→ 上傳成功後才標記
+      const legacy = api.accounts.create();
+      localStorage.setItem("luminara-princess-english-adv:" + legacy.id, JSON.stringify({ activeCharacterId: "sol", playerName: "Legacy", coins: 77 }));
+      const migratedBefore = cloudAuth.loadMigratedLocalIds();
+      if (migratedBefore.includes(legacy.id)) errors.push("legacy account pre-marked as migrated");
+      const legacyState = api.accounts.loadState(legacy.id);
+      const normalized = api.normalizeState(legacyState);
+      if (normalized.activeCharacterId !== "lumi") errors.push("sol legacy save did not fallback to lumi");
+      api.state = normalized;
+      cloudAuth.adoptServerBase(fake.saves.get("mimi").updatedAt);
+      await cloudAuth.flushSave();
+      if (fake.saves.get("mimi").state.coins !== 77) errors.push("migrated state not uploaded");
+      if (cloudAuth.cloud.status !== "idle") errors.push("migration upload not clean");
+      localStorage.setItem(cloudAuth.migratedFlagKey, JSON.stringify([legacy.id])); // 先上傳成功、後標記
+      if (!cloudAuth.loadMigratedLocalIds().includes(legacy.id)) errors.push("migration flag not recorded after successful upload");
+      api.accounts.remove(legacy.id);
+
+      // 8) 登入畫面 UI 煙霧：卡片渲染含 username 副標、點卡展開密碼欄（[hmiIntf自訂登入註冊頁]）
+      await cloudAuth.logout(); // 先登出：無有效 session 之卡片點選應展開密碼欄（有 session 則為 Continue，見步驟 2）
+      cloudAuth.upsertRecentAccount("mimi", { playerName: "CloudMimi", characterId: "lumi", coins: 555, outfit: api.state.outfit, playLimit: api.state.playLimit, lastPlayedAt: Date.now() });
+      cloudAuth.openLoginScreen({ mustChoose: false });
+      const card = document.querySelector("#accountList .account-pick[data-username=\"mimi\"]");
+      if (!card) errors.push("login card for mimi not rendered");
+      if (card && !card.textContent.includes("mimi")) errors.push("login card missing username subtitle");
+      if (card) card.click();
+      const passwordInput = document.getElementById("loginPassword-mimi");
+      if (!passwordInput) errors.push("clicking card did not expand password field");
+      const toggle = document.querySelector(".login-show-toggle");
+      if (!toggle) errors.push("password show/hide toggle missing");
+      const overlay = document.getElementById("accountSelect");
+      if (overlay) {
+        overlay.classList.remove("show");
+        overlay.setAttribute("aria-hidden", "true");
+      }
+      document.body.classList.remove("account-select-open");
+    } catch (error) {
+      errors.push("unexpected error: " + ((error && error.message) || error));
+    } finally {
+      cloudAuth.setApiFetch(null);
+      localStorage.removeItem(cloudAuth.sessionCacheKey);
+      localStorage.removeItem(cloudAuth.recentAccountsKey);
+      localStorage.removeItem(cloudAuth.migratedFlagKey);
+    }
+    const result = document.createElement("pre");
+    result.id = "cloudAuthTestResult";
+    result.textContent = JSON.stringify({
+      test: "auth",
+      passed: errors.length === 0,
+      errors: errors.slice(0, 12)
+    });
+    document.body.prepend(result);
+  })();
 }
 
 // issue #212：本機開發環境 dev 入口（衣物調整工具）閘門驗證。

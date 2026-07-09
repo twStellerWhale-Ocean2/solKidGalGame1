@@ -66,6 +66,7 @@ export const session = {
 
   // ── 遊玩時鐘／護眼休息 ──
   testClockOffset: 0,   // 測試用合成時鐘偏移（ms）；正式遊玩恆為 0，由 selftest hook 注入。
+  serverClockOffsetMs: 0, // issue #309（spec#24）：伺服器時間校時偏移（serverTime - Date.now()），由 cloud-sync 於每次 API 回應更新。
   playClockTimer: 0,    // setInterval id（0 = 未啟動）
   playBreakShown: false // 結算／休息 overlay 是否顯示中
 };

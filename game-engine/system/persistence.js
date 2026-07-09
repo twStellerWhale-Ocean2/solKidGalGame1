@@ -7,9 +7,15 @@ import {
   persistState
 } from "../state/game-state.js";
 import { render, syncActiveAccountMeta } from "../render/hud.js";
+import { cloud, cloudActive, scheduleCloudSave } from "./cloud-sync.js";
+
+function cloudBaseUpdatedAt() { return cloud.baseUpdatedAt; }
 import { elements, session } from "../core/session.js";
 export const saveLoadController = createSaveLoadController({
   buildSaveMarkdown,
+  // issue #309：雲端帳號已有雲端進度時，匯入前明確警示覆蓋方向（Markdown 遷移路徑，spec#24 (a)）。
+  confirmImport: () => !cloudActive() || cloudBaseUpdatedAt() === null
+    || window.confirm("Importing will OVERWRITE this account's cloud progress with the file. Continue?"),
   elements,
   normalizeState,
   onStateLoaded(nextState) { session.state = nextState; },
@@ -18,6 +24,13 @@ export const saveLoadController = createSaveLoadController({
 });
 
 export function persist() {
+  // issue #309（spec#24）：雲端模式（已登入伺服器帳號）進度寫往 sysApi 雲端存檔（leading＋trailing 節流）；
+  // 本機 localStorage 僅於本機模式（selftest 測試替身／未登入）寫入，正式遊玩不再為進度寫入目標。
+  if (cloudActive()) {
+    scheduleCloudSave();
+    syncActiveAccountMeta({ touched: true });
+    return;
+  }
   persistState(session.state);
   syncActiveAccountMeta({ touched: true });
 }

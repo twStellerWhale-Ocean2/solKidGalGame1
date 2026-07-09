@@ -1,4 +1,6 @@
 // app/bind-events.js — 全域事件接線：按鍵、點擊、拖曳與表單（issue #298 自 main.js 拆出，行為零變更）。
+import { CLOUD_MODE } from "./env.js";
+import { loginScreenSetMode } from "./login-screen.js";
 import { CHINESE_AUDIO_LANG, playLessonAudio, speechManager } from "../scene/speech.js";
 import { WARDROBE_TUNER_DEV_PATH, isLocalDevEnv } from "./env.js";
 import { _positionAdjustBtn, buyItemInAdv, patchWardrobeItem } from "../wardrobe/shop-panel.js";
@@ -94,7 +96,14 @@ export function bindEvents() {
     event.preventDefault();
     confirmCharacterSelect();
   });
-  elements.accountNewButton?.addEventListener("click", createNewAccount);
+  // issue #309：雲端模式下「建立新帳號」走登入畫面之註冊表單；本機模式（selftest 替身）維持原新增帳號。
+  elements.accountNewButton?.addEventListener("click", () => {
+    if (CLOUD_MODE) {
+      loginScreenSetMode("register");
+      return;
+    }
+    createNewAccount();
+  });
   elements.accountBack?.addEventListener("click", closeAccountSelect);
   elements.accountSelect?.addEventListener("click", (event) => {
     if (event.target.matches("[data-account-cancel]")) closeAccountSelect();
