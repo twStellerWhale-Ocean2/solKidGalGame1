@@ -504,6 +504,21 @@ export function buildLoginScreen() {
   }
   if (uiMode === "register") {
     els.list.appendChild(buildRegisterForm());
+    if (recents.length === 0) {
+      // 空狀態（#309 審查 C2）：register 模式仍保留「其他帳號登入」與遷移入口——
+      // 含 config 查詢完成後之重建（#310），不因 rebuild 而消失。
+      const emptyActions = document.createElement("div");
+      emptyActions.className = "login-actions";
+      const otherEntry = document.createElement("button");
+      otherEntry.type = "button";
+      otherEntry.className = "soft-button";
+      otherEntry.textContent = "Other account";
+      otherEntry.addEventListener("click", () => loginScreenSetMode("login"));
+      emptyActions.appendChild(otherEntry);
+      els.list.appendChild(emptyActions);
+      const emptyMigrate = buildMigrationEntry();
+      if (emptyMigrate) els.list.appendChild(emptyMigrate);
+    }
     return;
   }
   recents.forEach((entry) => els.list.appendChild(buildAccountCard(entry, cached?.username || "")));
