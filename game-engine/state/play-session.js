@@ -12,7 +12,8 @@ import { persist } from "../system/persistence.js";
 import { renderSettings } from "../render/hud.js";
 import { elements, session } from "../core/session.js";
 export function clockNow() {
-  return Date.now() + session.testClockOffset;
+  // issue #309（spec#24）：加入伺服器校時偏移，使遊玩／休息計時以伺服器時間為準（跨裝置一致、不受裝置時鐘偏差影響）。
+  return Date.now() + session.testClockOffset + (session.serverClockOffsetMs || 0);
 }
 
 // 僅在已選定帳號且帳號／選角 overlay 未開啟時計時（共用裝置以各帳號各自計算）。

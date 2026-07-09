@@ -159,3 +159,108 @@
   grid-auto-columns: minmax(0, 1fr);
   gap: 10px;
 }
+
+/* ── issue #309：伺服器帳號登入／註冊（[hmiIntf自訂登入註冊頁]）──
+   沿用帳號卡視覺；所有可點入口觸控目標 ≥44px、錯誤就地紅字、密碼顯示切換。 */
+.login-expand {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 12px 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 6px 2px;
+}
+.login-form h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+.login-hint {
+  margin: 0;
+  font-size: 0.82rem;
+  opacity: 0.8;
+}
+.login-input {
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(140, 100, 130, 0.4);
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+.login-password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.login-password-wrap .login-input {
+  padding-right: 52px;
+}
+.login-show-toggle {
+  position: absolute;
+  right: 2px;
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.05rem;
+}
+.login-error {
+  margin: 0;
+  color: #c0325a;
+  font-size: 0.86rem;
+}
+.login-enter,
+.login-continue,
+.login-logout {
+  min-height: 44px;
+}
+.login-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.login-actions .soft-button {
+  min-height: 44px;
+}
+.login-migrate {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.login-migrate-button,
+.login-migrate-item {
+  min-height: 44px;
+}
+.settings-account-line {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+body.cloud-offline #statusMessage {
+  color: #a05a20;
+}
+
+/* #309 審查 C4：登入卡展開（密碼欄／續玩）改直向堆疊，避免卡片被擠壓、狀態 pill 疊字 */
+.account-row.login-card {
+  flex-direction: column;
+  align-items: stretch;
+}
+.account-row.login-card .account-pick {
+  width: 100%;
+}
+.login-expand .login-continue,
+.login-expand .login-logout,
+.login-expand .login-enter {
+  width: 100%;
+}

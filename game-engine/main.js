@@ -1,5 +1,9 @@
 import { $$ } from "./app/elements.js";
-import { isLocalDevEnv, isLocalDevHost, WARDROBE_TUNER_DEV_PATH } from "./app/env.js";
+import { CLOUD_MODE, isLocalDevEnv, isLocalDevHost, WARDROBE_TUNER_DEV_PATH } from "./app/env.js";
+import { setApiFetch, USERNAME_PATTERN, PASSWORD_MIN_LENGTH, validateUsernameInput, validatePasswordInput } from "./system/api-client.js";
+import { adoptServerBase, cloud, cloudActive, cloudLogin, cloudLogout, cloudRegister, cloudResume, flushCloudSave, installCloudLifecycleFlush, scheduleCloudSave, syncRecentSummary } from "./system/cloud-sync.js";
+import { buildLoginScreen, loginScreenSetMode, migrateLocalAccount, openLoginScreen } from "./app/login-screen.js";
+import { loadCachedSession, loadMigratedLocalIds, loadRecentAccounts, MIGRATED_FLAG_KEY, RECENT_ACCOUNTS_KEY, SESSION_CACHE_KEY, upsertRecentAccount } from "./state/cloud-session.js";
 import { areaForHotspot, categoryForType, itemMatchesCategory, hotspotById, itemById, nodeMapForArea, sceneConfigFor } from "./core/lookups.js";
 import { areaRegistry, castleMapNodes, categories, characterScaleContract, characterRegistry, defaultActiveCharacterId, defaultProfileColorFor, difficultyConfig, playableCharacterById, normalizeProfileColor, randomProfileColor, backgroundPatternIds, normalizeBackgroundPattern, randomBackgroundPattern, mapNodes, paperDollBaseLayer, wardrobeLayerBoundsByType, wardrobeLayerBoundsForType, playableVoiceById, profileColorPalette, shopItems, worldMap, composeVoiceProfile, resolveVoiceProfile, DEFAULT_VOICE_PROFILE, recommendedVoiceNamesForGender, usedVoiceBuckets } from "./data/game-data.js";
 import { firstLayerActionsFor } from "./flow/scene-actions.js";
@@ -29,13 +33,74 @@ const hasSelftest = new URLSearchParams(location.search).has("selftest");
 bindEvents();
 render();
 changeView(location.hash ? location.hash.slice(1) : "home");
-// 本機多帳號 gate（issue #63 / spec#8）：每次進入都先選帳號，即使已有使用中帳號亦不自動沿用（共用裝置須每次選玩家）。
-if (!hasSelftest) openAccountSelect({ mustChoose: true });
+// 伺服器帳號登入 gate（issue #309 / spec#8、#23）：每次進入先到登入畫面（帳號卡＋密碼；最後登入帳號有有效 session 可免密續玩）。
+// selftest 模式沿用本機帳號後端為測試替身、不開登入 gate（?selftest=auth 以注入 fake fetch 驗雲端路徑）。
+if (CLOUD_MODE) {
+  cloud.onStatusChange = (status) => {
+    document.body.classList.toggle("cloud-offline", status === "offline");
+    if (status === "offline") {
+      elements.statusMessage.textContent = "Cloud sync is offline — you can keep playing, we will retry saving.";
+    } else if (status === "idle" && document.body.dataset.cloudWasOffline === "1") {
+      elements.statusMessage.textContent = "Progress synced to the server.";
+    }
+    document.body.dataset.cloudWasOffline = status === "offline" ? "1" : "0";
+  };
+  cloud.onSessionExpired = () => {
+    elements.statusMessage.textContent = "Your sign-in expired. Please sign in again to keep saving.";
+    openLoginScreen({ mustChoose: true });
+  };
+  cloud.onConflict = (serverSave) => {
+    // spec#24 並發保護：他裝置有較新進度時提示重載，不靜默覆蓋。
+    const loadNewer = window.confirm("A newer save from another device was found. Load it now? (Cancel keeps this device's progress and overwrites the server.)");
+    if (serverSave && loadNewer && serverSave.state) {
+      session.state = normalizeState(serverSave.state);
+      adoptServerBase(serverSave.updatedAt);
+      render();
+      elements.statusMessage.textContent = "Loaded the newer save from the server.";
+      return;
+    }
+    if (serverSave) {
+      adoptServerBase(serverSave.updatedAt);
+      scheduleCloudSave(); // 使用者明示以本機進度覆蓋
+    }
+  };
+  installCloudLifecycleFlush();
+  openLoginScreen({ mustChoose: true });
+}
 if (!hasSelftest) startPlayClock(); // selftest 模式由測試以注入時鐘自行驅動，不啟動真實 ticker。
 
 installTestingHooks({
   get state() { return session.state; },
   set state(nextState) { session.state = nextState; },
+  // issue #309：雲端帳號／存檔測試介面（?selftest=auth 以 setApiFetch 注入 in-memory fake server 驗雲端路徑）。
+  cloudAuth: {
+    setApiFetch,
+    usernamePattern: USERNAME_PATTERN,
+    passwordMinLength: PASSWORD_MIN_LENGTH,
+    validateUsernameInput,
+    validatePasswordInput,
+    login: cloudLogin,
+    register: cloudRegister,
+    logout: cloudLogout,
+    resume: cloudResume,
+    scheduleSave: scheduleCloudSave,
+    flushSave: flushCloudSave,
+    adoptServerBase,
+    syncRecentSummary,
+    migrateLocalAccount,
+    openLoginScreen,
+    buildLoginScreen,
+    setLoginMode: loginScreenSetMode,
+    isActive: cloudActive,
+    get cloud() { return cloud; },
+    sessionCacheKey: SESSION_CACHE_KEY,
+    recentAccountsKey: RECENT_ACCOUNTS_KEY,
+    migratedFlagKey: MIGRATED_FLAG_KEY,
+    loadCachedSession,
+    loadRecentAccounts,
+    loadMigratedLocalIds,
+    upsertRecentAccount
+  },
   accounts: {
     list: listAccounts,
     activeId: getActiveAccountId,

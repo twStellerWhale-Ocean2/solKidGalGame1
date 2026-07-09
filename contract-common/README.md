@@ -11,5 +11,8 @@
 | 契約 | 用途 |
 |---|---|
 | [comIntf通用HTTPS連線](comIntf通用HTTPS連線.md) | 玩家、瀏覽器與外部服務之 TLS 連線承載 |
-| [apiIntf標準HTTP網站服務](apiIntf標準HTTP網站服務.md) | 靜態主機平台以 HTTP 交付網站包 |
-| [techStackStaticWeb](techStackStaticWeb.md) | 靜態類技術選型 Profile（無框架 HTML+JS+CSS） |
+| [apiIntf標準HTTP網站服務](apiIntf標準HTTP網站服務.md) | 自架服務以 HTTP 交付遊戲殼靜態檔 |
+| [apiIntf標準Postgres連線](apiIntf標準Postgres連線.md) | [sysApi系統] 至 PostgreSQL 之連線介面（issue #309） |
+| [techStackStaticWeb](techStackStaticWeb.md) | 靜態類技術選型 Profile（無框架 HTML+JS+CSS，遊戲殼建置單元） |
+| [techStackNodeSvr](techStackNodeSvr.md) | 伺服器類技術選型 Profile（Node.js+TypeScript，[sysApi系統] 建置單元，issue #309） |
+| [techItem資料庫](techItem資料庫.md) | 元件層選型：持久化資料庫統一 PostgreSQL（issue #309） |

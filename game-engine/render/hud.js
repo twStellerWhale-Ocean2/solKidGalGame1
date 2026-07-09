@@ -20,6 +20,9 @@ import { renderWorldMap } from "../map/world-map.js";
 import { renderAbout, renderBuildInfo } from "./settings.js";
 import { renderPlayClock } from "../state/play-session.js";
 import { elements, session } from "../core/session.js";
+import { cloud, cloudActive, syncRecentSummary } from "../system/cloud-sync.js";
+
+function cloudUsername() { return cloud.username || ""; }
 export function profileColorFor(characterId = session.state.activeCharacterId, color = session.state.profileColor) {
   return normalizeProfileColor(color, characterId);
 }
@@ -59,6 +62,11 @@ export function updateProfileColorChrome() {
 }
 
 export function syncActiveAccountMeta({ touched = false } = {}) {
+  // issue #309：雲端模式下帳號摘要改寫入「最近帳號卡快取」（登入畫面離線可渲染），不再動本機帳號索引。
+  if (cloudActive()) {
+    if (touched) syncRecentSummary();
+    return;
+  }
   const activeAccountId = getActiveAccountId();
   if (!activeAccountId) return;
   updateAccountMeta(activeAccountId, {
@@ -222,6 +230,14 @@ export function renderCollectionSummary() {
 
 export function renderSettings() {
   elements.speakToggleButton.textContent = `Voice: ${session.state.speechEnabled ? "On" : "Off"}`;
+  // issue #309（spec#8）：登入後於設定顯示目前帳號 username（帳號資訊呈現；本機模式隱藏）。
+  if (elements.settingsAccountLine) {
+    const username = cloudUsername();
+    elements.settingsAccountLine.hidden = !username;
+    if (username) elements.settingsAccountLine.textContent = `Signed in as: ${username}`;
+  }
+  if (elements.signOutButton) elements.signOutButton.hidden = !cloudUsername(); // #309 審查 C14：遊戲內登出入口
+
   if (elements.playMinutesInput) elements.playMinutesInput.value = String(session.state.playLimit.playMinutes);
   if (elements.restMinutesInput) elements.restMinutesInput.value = String(session.state.playLimit.restMinutes);
   renderBuildInfo(elements, buildInfo);

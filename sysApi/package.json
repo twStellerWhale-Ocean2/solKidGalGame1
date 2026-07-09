@@ -1,0 +1,31 @@
+{
+  "name": "luminara-sysapi",
+  "private": true,
+  "version": "0.0.0",
+  "description": "solKidGalGame sysApi — 帳號、session 與雲端存檔 API，並同站服務遊戲殼靜態檔（issue #309）",
+  "type": "commonjs",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc -p .",
+    "start": "node dist/server.js",
+    "test": "vitest run --coverage",
+    "reset-password": "node dist/cli-reset-password.js",
+    "integration": "node tests/integration.mjs"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "express": "^4.21.2",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^4.17.23",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.15.4",
+    "@types/supertest": "^6.0.3",
+    "@vitest/coverage-v8": "^3.2.4",
+    "supertest": "^7.1.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}

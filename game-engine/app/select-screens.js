@@ -26,6 +26,9 @@ import {
 } from "../state/game-state.js";
 import { deleteAccount, getActiveAccountId, listAccounts, setActiveAccountId } from "../state/accounts.js";
 import { itemById } from "../core/lookups.js";
+import { CLOUD_MODE } from "./env.js";
+import { flushCloudSave } from "../system/cloud-sync.js";
+import { openLoginScreen } from "./login-screen.js";
 import { persist } from "../system/persistence.js";
 import { playStatus } from "../system/play-clock.js";
 import { elements, session } from "../core/session.js";
@@ -34,6 +37,12 @@ export function returnToInitialSelect() {
   persist();
   hidePlayBreak();
   closeSystemMenu();
+  // issue #309：雲端模式返回登入／帳號選擇畫面（返回前已保存並同步雲端；不重置進度、不解除休息鎖）。
+  if (CLOUD_MODE) {
+    void flushCloudSave();
+    openLoginScreen({ mustChoose: true });
+    return;
+  }
   openAccountSelect({ mustChoose: false });
 }
 
