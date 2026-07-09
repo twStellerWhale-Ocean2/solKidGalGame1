@@ -82,6 +82,11 @@ async function main() {
     check("ES modules served without 404", engine.status === 200);
     const blocked = await fetch(`${BASE}/sysApi/package.json`);
     check("sysApi source tree not served", blocked.status === 404);
+    // #309 業界審查 B1：allowlist 靜態子樹——內部文件與維護工具頁不對外
+    for (const forbidden of ["/docs/design.md", "/server.mjs", "/deploy/compose.yaml", "/tool/wardrobe-tuner.html", "/AGENTS.md"]) {
+      const res = await fetch(`${BASE}${forbidden}`);
+      check(`internal path not served: ${forbidden}`, res.status === 404);
+    }
     const noSession = await api("/api/save");
     check("protected endpoint without session → 401", noSession.status === 401);
 

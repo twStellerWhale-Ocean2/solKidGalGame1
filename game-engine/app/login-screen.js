@@ -316,6 +316,9 @@ function buildOtherLoginForm() {
   userInput.autocomplete = "off";
   userInput.placeholder = "Username (lowercase letters, digits)";
   const { wrap, input } = passwordField({ id: "loginOtherPassword" });
+  userInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") input.focus();
+  });
   const error = errorLine();
   const enter = document.createElement("button");
   enter.type = "button";
@@ -349,6 +352,9 @@ function buildRegisterForm() {
   userInput.autocomplete = "off";
   userInput.placeholder = "Username (e.g. mimi2018)";
   const { wrap, input } = passwordField({ id: "registerPassword", placeholder: "Password (6+ characters)" });
+  userInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") input.focus();
+  });
   const error = errorLine();
   const create = document.createElement("button");
   create.type = "button";
@@ -438,6 +444,7 @@ export function buildLoginScreen() {
   if (els.back) els.back.hidden = true; // 登入 gate：不可關閉
   const cached = loadCachedSession();
   const recents = loadRecentAccounts();
+  if (els.newButton) els.newButton.hidden = uiMode === "register" || (uiMode === "cards" && recents.length === 0);
   if (els.empty) {
     els.empty.hidden = recents.length > 0 || uiMode !== "cards";
     els.empty.textContent = "No players on this device yet. Create a new account to start your adventure!";

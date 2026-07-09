@@ -1,6 +1,8 @@
 // app/bind-events.js — 全域事件接線：按鍵、點擊、拖曳與表單（issue #298 自 main.js 拆出，行為零變更）。
 import { CLOUD_MODE } from "./env.js";
-import { loginScreenSetMode } from "./login-screen.js";
+import { loginScreenSetMode, openLoginScreen as openLoginScreenForSignOut } from "./login-screen.js";
+import { cloudLogout } from "../system/cloud-sync.js";
+import { hidePlayBreak as hidePlayBreakForSignOut } from "../state/play-session.js";
 import { CHINESE_AUDIO_LANG, playLessonAudio, speechManager } from "../scene/speech.js";
 import { WARDROBE_TUNER_DEV_PATH, isLocalDevEnv } from "./env.js";
 import { _positionAdjustBtn, buyItemInAdv, patchWardrobeItem } from "../wardrobe/shop-panel.js";
@@ -159,8 +161,15 @@ export function bindEvents() {
     persist();
     render();
   });
+  // #309 審查 C14：設定頁登出（先保存、撤銷 session、回登入畫面）。
+  elements.signOutButton?.addEventListener("click", async () => {
+    await cloudLogout();
+    hidePlayBreakForSignOut();
+    closeSystemMenu();
+    openLoginScreenForSignOut({ mustChoose: true });
+  });
   elements.resetButton.addEventListener("click", () => {
-    if (!window.confirm(`Reset ${princessName()}'s coins, clothes, quests, and diary?`)) return;
+    if (!window.confirm(`Reset ${princessName()}'s coins, clothes, quests, and diary? This also overwrites the saved progress on the family server for this account (all devices) and cannot be undone.`)) return;
     resetProgress();
   });
   window.addEventListener("resize", () => {

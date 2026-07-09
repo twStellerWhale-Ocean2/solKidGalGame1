@@ -43,7 +43,7 @@
 
 4. 瀏覽器開 `http://<主機IP>:4180/` 即可遊玩；`/healthz` 可作服務健康檢查。
 - 正式對外散佈（容器 image＋helm chart 整包）於增量 #311 提供；本階段以本機／家庭區網自架為主（家庭內網走 HTTP，TLS 於 #311 隨整包交代）。
-- **備份你的資料庫**：全家的帳號與進度都存在 PostgreSQL 裡，請定期備份：`docker exec deploy-db-1 pg_dump -U luminara luminara > backup.sql`；玩家也可各自在遊戲內匯出 Markdown 備份。
+- **備份你的資料庫**：全家的帳號與進度都存在 PostgreSQL 裡，請定期備份：`docker exec deploy-db-1 pg_dump -U luminara luminara > backup.sql`；還原：`docker exec -i deploy-db-1 psql -U luminara luminara < backup.sql`（容器名依 compose 專案目錄推導，換目錄部署時以 `docker ps` 確認）；玩家也可各自在遊戲內匯出 Markdown 備份。
 - **重設密碼（過渡）**：孩子忘記密碼時，由維護者在伺服器端執行 `cd sysApi && npm run reset-password -- <帳號> <新密碼>`（線上管理於增量 #310 提供）。
 - `server.mjs` 仍是**維護者專用 dev 工具**（管理設定工具的寫回），與遊玩用服務無關。
 

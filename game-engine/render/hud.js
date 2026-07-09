@@ -236,6 +236,8 @@ export function renderSettings() {
     elements.settingsAccountLine.hidden = !username;
     if (username) elements.settingsAccountLine.textContent = `Signed in as: ${username}`;
   }
+  if (elements.signOutButton) elements.signOutButton.hidden = !cloudUsername(); // #309 審查 C14：遊戲內登出入口
+
   if (elements.playMinutesInput) elements.playMinutesInput.value = String(session.state.playLimit.playMinutes);
   if (elements.restMinutesInput) elements.restMinutesInput.value = String(session.state.playLimit.restMinutes);
   renderBuildInfo(elements, buildInfo);

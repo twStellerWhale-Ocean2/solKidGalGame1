@@ -6,9 +6,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 const pkg = await import("file:///C:/Users/User/Documents/Github/solKidGalGame1/.codex/tools/pw/node_modules/playwright-core/index.js");
 const { chromium } = pkg.default || pkg;
-const repoRoot = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."); // 本檔位於 tests/，repo 根在上一層
 const PORT = 4182;
-const BASE = `http://127.0.0.1:${PORT}`;
+const BASE = `http://127.0.0.2:${PORT}`; // 127.0.0.2：非 dev-host 白名單，證據截圖不混入 dev-only 管理工具鈕（#309 審查 B2）
 const SHOTS = path.join(repoRoot, "docs", "manual-assets");
 fs.mkdirSync(SHOTS, { recursive: true });
 const suffix = Date.now().toString(36);

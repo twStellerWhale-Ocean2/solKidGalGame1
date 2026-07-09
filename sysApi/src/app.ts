@@ -1,4 +1,5 @@
 import express, { type NextFunction, type Request, type Response } from "express";
+import path from "node:path";
 import bcrypt from "bcryptjs";
 import { generateToken, hashToken } from "./tokens";
 import { createRateLimiter, type RateLimiter } from "./rate-limit";
@@ -187,9 +188,18 @@ export function createApp(options: AppOptions) {
   app.all("/api/*", (_req, res) => fail(res, 404, "not-found", "Unknown API endpoint."));
 
   if (staticRoot) {
-    // 遊戲殼同站服務（sysCase#3.1）；sysApi 原始碼樹不對外（.env 等；express.static 亦預設忽略 dotfiles）。
-    app.use("/sysApi", (_req, res) => fail(res, 404, "not-found", "Not served."));
-    app.use(express.static(staticRoot, { index: "index.html" }));
+    // 遊戲殼同站服務（sysCase#3.1）——**allowlist 靜態子樹**：只對外提供遊戲殼所需資產，
+    // 內部文件（docs/、deploy/、contract-*、scripts/、tool/、server.mjs、sysApi/ 原始碼樹等）一律不服務
+    // （#309 業界審查 B1：正式自架端不得外洩原始碼樹與維護工具頁）。
+    const GAME_SHELL_DIRS = ["game-engine", "content-package", "content-base", "styles"];
+    const indexFile = path.resolve(staticRoot, "index.html");
+    app.get(["/", "/index.html"], (_req, res) => res.sendFile(indexFile, (error) => {
+      if (error) fail(res, 404, "not-found", "Game shell not found.");
+    }));
+    GAME_SHELL_DIRS.forEach((dir) => {
+      app.use(`/${dir}`, express.static(path.resolve(staticRoot, dir)));
+    });
+    app.use((_req, res) => fail(res, 404, "not-found", "Not served."));
   }
 
   // 統一錯誤處理：JSON 解析失敗／payload 超限 → 4xx；其餘 → 500（不外洩內部細節）。

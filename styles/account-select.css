@@ -248,3 +248,21 @@
 body.cloud-offline #statusMessage {
   color: #a05a20;
 }
+
+/* #309 審查 C4：登入卡展開（密碼欄／續玩）改直向堆疊，避免卡片被擠壓、狀態 pill 疊字 */
+.account-row.login-card {
+  flex-direction: column;
+  align-items: stretch;
+}
+.account-row.login-card .account-pick {
+  width: 100%;
+}
+.login-expand {
+  width: 100%;
+  box-sizing: border-box;
+}
+.login-expand .login-continue,
+.login-expand .login-logout,
+.login-expand .login-enter {
+  width: 100%;
+}
