@@ -36,7 +36,7 @@ const server = spawn(process.execPath, [path.join(repoRoot, "sysApi", "dist", "s
   env: {
     ...process.env,
     PORT: String(PORT),
-    DATABASE_URL: process.env.DATABASE_URL || "postgres://luminara:luminara@127.0.0.1:5433/luminara",
+    DATABASE_URL: process.env.DATABASE_URL || "postgres://luminara:luminara@127.0.0.1:5433/luminara_test",
     SESSION_SECRET: "e2e-pepper",
     STATIC_ROOT: repoRoot
   },

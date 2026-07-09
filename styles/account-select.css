@@ -185,6 +185,15 @@
   font-size: 0.82rem;
   opacity: 0.8;
 }
+/* issue #310（spec#26）：註冊關閉之友善說明（登入畫面不提供建立新帳號時顯示）。 */
+.login-registration-closed {
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 214, 165, 0.45);
+  opacity: 1;
+  font-weight: 700;
+  text-align: center;
+}
 .login-input {
   min-height: 44px;
   padding: 8px 12px;

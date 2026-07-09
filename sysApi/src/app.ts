@@ -4,9 +4,11 @@ import bcrypt from "bcryptjs";
 import { generateToken, hashToken } from "./tokens";
 import { createRateLimiter, type RateLimiter } from "./rate-limit";
 import { validateRegistration, validateUsername, validatePassword } from "./validation";
-import type { Store } from "./store";
+import { derivePlayStatus, resolveSettings, UNLOCKED_POLICY, validatePlayLimitInput, validateSettingsInput } from "./admin";
+import type { AccountRecord, PlayLimitPolicy, Store } from "./store";
 
-// [apiIntf自訂帳號存檔服務]：同站 `/api/*` HTTP JSON 介面＋遊戲殼靜態服務（design.md ＜II.D＞）。
+// [apiIntf自訂帳號存檔服務]＋[apiIntf自訂線上管理服務]：同站 `/api/*`／`/api/admin/*` HTTP JSON 介面
+// ＋遊戲殼與 `/admin/` 管理頁靜態服務（design.md ＜II.D＞）。
 // 錯誤體統一 {error:{code,message}}；登入失敗統一 invalid-credentials（不洩漏帳號存在性，spec#23）。
 export const BCRYPT_COST = 10;
 export const SAVE_SCHEMA_VERSION = "1";
@@ -23,7 +25,7 @@ export interface AppOptions {
 }
 
 interface AuthedRequest extends Request {
-  accountId?: string;
+  account?: AccountRecord;
   tokenHash?: string;
 }
 
@@ -61,15 +63,40 @@ export function createApp(options: AppOptions) {
     return token;
   }
 
-  function accountPayload(username: string, createdAt: number) {
-    return { username, createdAt };
+  function accountPayload(account: AccountRecord) {
+    return { id: account.accountId, username: account.username, role: account.role, createdAt: account.createdAt };
   }
+
+  async function playLimitPolicyFor(accountId: string): Promise<PlayLimitPolicy> {
+    return (await store.getPlayLimit(accountId)) || UNLOCKED_POLICY;
+  }
+
+  // 公開設定最小子集（spec#26／sysCase#4.4）：登入畫面之註冊開關＋新帳號預設時長；不含任何帳號資料。
+  app.get("/api/config", async (_req, res, nextFn) => {
+    try {
+      const settings = resolveSettings(await store.getSettings());
+      res.json({
+        registrationOpen: settings.registrationOpen,
+        defaultPlayLimit: {
+          playMinutes: settings.defaultPlayMinutes,
+          restMinutes: settings.defaultRestMinutes,
+          playMaxMinutes: settings.defaultPlayMaxMinutes
+        }
+      });
+    } catch (error) {
+      nextFn(error);
+    }
+  });
 
   app.post("/api/auth/register", async (req, res, nextFn) => {
     try {
       const ip = req.ip || "unknown";
       if (rateLimiter.isLimited(`register:${ip}`, now())) {
         return fail(res, 429, "rate-limited", "Too many attempts. Please wait and try again.");
+      }
+      const settings = resolveSettings(await store.getSettings());
+      if (!settings.registrationOpen) {
+        return fail(res, 403, "registration-closed", "This server is not accepting new accounts right now.");
       }
       const { username, password } = req.body || {};
       const validationError = validateRegistration(username, password);
@@ -83,8 +110,9 @@ export function createApp(options: AppOptions) {
         rateLimiter.recordFailure(`register:${ip}`, now());
         return fail(res, 409, "username-taken", "This username is already taken.");
       }
+      await store.touchLastLogin(account.accountId, now());
       const token = await issueSession(account.accountId);
-      res.status(201).json({ token, account: accountPayload(account.username, account.createdAt) });
+      res.status(201).json({ token, account: accountPayload(account) });
     } catch (error) {
       nextFn(error);
     }
@@ -106,12 +134,16 @@ export function createApp(options: AppOptions) {
         ? bcrypt.compareSync(password, account.passwordHash)
         : (bcrypt.compareSync("invalid-password", FAKE_HASH), false);
       if (!account || !passwordOk) {
+        // 速率限制僅累計失敗嘗試、成功即清零（#309 審查 A5：防第三者定向鎖死他人帳號）。
         rateLimiter.recordFailure(limiterKey, now());
         return fail(res, 401, "invalid-credentials", "Username or password is incorrect.");
       }
       rateLimiter.reset(limiterKey);
+      await store.touchLastLogin(account.accountId, now());
+      // 逾期／已撤銷 session 資料列惰性清理（#309 審查 A7：登入寫入時機順掃，不常駐排程）。
+      await store.cleanupSessions(now());
       const token = await issueSession(account.accountId);
-      res.json({ token, account: accountPayload(account.username, account.createdAt) });
+      res.json({ token, account: accountPayload(account) });
     } catch (error) {
       nextFn(error);
     }
@@ -128,12 +160,22 @@ export function createApp(options: AppOptions) {
       if (!session || session.revokedAt !== null || session.expiresAt <= now()) {
         return fail(res, 401, "unauthorized", "A valid session is required.");
       }
-      req.accountId = session.accountId;
+      const account = await store.getAccountById(session.accountId);
+      if (!account) return fail(res, 401, "unauthorized", "A valid session is required.");
+      req.account = account;
       req.tokenHash = tokenHash;
       nextFn();
     } catch (error) {
       nextFn(error);
     }
+  }
+
+  // 管理 API 一律驗「有效 session 且 role=admin」（solCase#25.2）：玩家 session 一律 403。
+  function requireAdmin(req: AuthedRequest, res: Response, nextFn: NextFunction) {
+    if (req.account?.role !== "admin") {
+      return fail(res, 403, "admin-only", "This endpoint requires an admin account.");
+    }
+    nextFn();
   }
 
   app.post("/api/auth/logout", requireSession, async (req: AuthedRequest, res, nextFn) => {
@@ -147,12 +189,14 @@ export function createApp(options: AppOptions) {
 
   app.get("/api/save", requireSession, async (req: AuthedRequest, res, nextFn) => {
     try {
-      const save = await store.getSave(req.accountId as string);
+      const accountId = (req.account as AccountRecord).accountId;
+      const save = await store.getSave(accountId);
       res.json({
         state: save ? save.state : null,
         schemaVersion: save ? save.schemaVersion : null,
         updatedAt: save ? save.updatedAt : null,
-        serverTime: now()
+        serverTime: now(),
+        playLimitPolicy: await playLimitPolicyFor(accountId)
       });
     } catch (error) {
       nextFn(error);
@@ -161,16 +205,16 @@ export function createApp(options: AppOptions) {
 
   app.put("/api/save", requireSession, async (req: AuthedRequest, res, nextFn) => {
     try {
+      const accountId = (req.account as AccountRecord).accountId;
       const { state, schemaVersion, baseUpdatedAt } = req.body || {};
-      if (!state || typeof state !== "object" || Array.isArray(state)) {
-        return fail(res, 422, "invalid-state", "Save state must be a JSON object.");
-      }
+      const shapeError = validateStateShape(state);
+      if (shapeError) return fail(res, 422, "invalid-state", shapeError);
       const base = baseUpdatedAt === null || baseUpdatedAt === undefined ? null : Number(baseUpdatedAt);
       if (base !== null && !Number.isFinite(base)) {
         return fail(res, 422, "invalid-state", "baseUpdatedAt must be a number or null.");
       }
       const result = await store.putSave(
-        req.accountId as string,
+        accountId,
         state,
         typeof schemaVersion === "string" && schemaVersion ? schemaVersion : SAVE_SCHEMA_VERSION,
         base,
@@ -179,7 +223,108 @@ export function createApp(options: AppOptions) {
       if (!result.ok) {
         return fail(res, 409, "save-conflict", "A newer save exists. Reload before saving again.");
       }
-      res.json({ updatedAt: result.updatedAt, serverTime: now() });
+      // 保存回應搭載最新政策（sysCase#2.2）：admin 變更對遊玩中裝置隨下一次保存即時生效。
+      res.json({ updatedAt: result.updatedAt, serverTime: now(), playLimitPolicy: await playLimitPolicyFor(accountId) });
+    } catch (error) {
+      nextFn(error);
+    }
+  });
+
+  // ── [apiIntf自訂線上管理服務] `/api/admin/*`（sysStory#4）──
+  app.get("/api/admin/accounts", requireSession, requireAdmin, async (_req, res, nextFn) => {
+    try {
+      const accounts = await store.listAccounts();
+      res.json({
+        accounts: accounts.map((row) => ({
+          id: row.accountId,
+          username: row.username,
+          role: row.role,
+          createdAt: row.createdAt,
+          lastLoginAt: row.lastLoginAt,
+          saveUpdatedAt: row.saveUpdatedAt,
+          playLimitPolicy: row.playLimit,
+          // 鎖定帳號之休息窗以政策 restMinutes 推導（與遊戲端 effectivePlayLimit 同語意）。
+          playStatus: derivePlayStatus(
+            row.savePlayLimit && row.playLimit.locked && row.playLimit.restMinutes !== null
+              ? { ...row.savePlayLimit, restMinutes: row.playLimit.restMinutes }
+              : row.savePlayLimit,
+            now()
+          )
+        }))
+      });
+    } catch (error) {
+      nextFn(error);
+    }
+  });
+
+  app.post("/api/admin/accounts/:id/reset-password", requireSession, requireAdmin, async (req: AuthedRequest, res, nextFn) => {
+    try {
+      const { newPassword } = req.body || {};
+      const passwordError = validatePassword(newPassword);
+      if (passwordError) return fail(res, 422, passwordError, validationMessage(passwordError));
+      const target = await store.getAccountById(req.params.id);
+      if (!target) return fail(res, 404, "not-found", "Account not found.");
+      await store.updatePasswordById(target.accountId, bcrypt.hashSync(newPassword, bcryptCost));
+      // 撤銷全部既有 session；操作者重設自身密碼時保留當前管理 session（sysCase#4.2）。
+      const self = target.accountId === (req.account as AccountRecord).accountId;
+      await store.revokeAccountSessions(target.accountId, now(), self ? (req.tokenHash as string) : null);
+      res.status(204).end();
+    } catch (error) {
+      nextFn(error);
+    }
+  });
+
+  app.post("/api/admin/accounts/:id/revoke-sessions", requireSession, requireAdmin, async (req, res, nextFn) => {
+    try {
+      const target = await store.getAccountById(req.params.id);
+      if (!target) return fail(res, 404, "not-found", "Account not found.");
+      await store.revokeAccountSessions(target.accountId, now());
+      res.status(204).end();
+    } catch (error) {
+      nextFn(error);
+    }
+  });
+
+  app.delete("/api/admin/accounts/:id", requireSession, requireAdmin, async (req: AuthedRequest, res, nextFn) => {
+    try {
+      if (req.params.id === (req.account as AccountRecord).accountId) {
+        return fail(res, 409, "cannot-delete-self", "Admins cannot delete their own account.");
+      }
+      const deleted = await store.deleteAccount(req.params.id);
+      if (!deleted) return fail(res, 404, "not-found", "Account not found.");
+      res.status(204).end();
+    } catch (error) {
+      nextFn(error);
+    }
+  });
+
+  app.put("/api/admin/accounts/:id/play-limit", requireSession, requireAdmin, async (req, res, nextFn) => {
+    try {
+      const validated = validatePlayLimitInput(req.body);
+      if (!validated.ok) return fail(res, 422, "invalid-play-limit", validated.message);
+      const updated = await store.setPlayLimit(req.params.id, validated.value);
+      if (!updated) return fail(res, 404, "not-found", "Account not found.");
+      res.json({ playLimitPolicy: validated.value });
+    } catch (error) {
+      nextFn(error);
+    }
+  });
+
+  app.get("/api/admin/settings", requireSession, requireAdmin, async (_req, res, nextFn) => {
+    try {
+      res.json(resolveSettings(await store.getSettings()));
+    } catch (error) {
+      nextFn(error);
+    }
+  });
+
+  app.put("/api/admin/settings", requireSession, requireAdmin, async (req, res, nextFn) => {
+    try {
+      const validated = validateSettingsInput(req.body);
+      if (!validated.ok) return fail(res, 422, "invalid-settings", validated.message);
+      // 單一 admin 情境：寫入採後寫勝、不設基準比對（sysCase#4.3）；寫入即生效。
+      await store.putSettings(validated.value, now());
+      res.json(resolveSettings(validated.value));
     } catch (error) {
       nextFn(error);
     }
@@ -188,7 +333,7 @@ export function createApp(options: AppOptions) {
   app.all("/api/*", (_req, res) => fail(res, 404, "not-found", "Unknown API endpoint."));
 
   if (staticRoot) {
-    // 遊戲殼同站服務（sysCase#3.1）——**allowlist 靜態子樹**：只對外提供遊戲殼所需資產，
+    // 遊戲殼同站服務（sysCase#3.1）——**allowlist 靜態子樹**：只對外提供遊戲殼所需資產與 `/admin/` 管理頁，
     // 內部文件（docs/、deploy/、contract-*、scripts/、tool/、server.mjs、sysApi/ 原始碼樹等）一律不服務
     // （#309 業界審查 B1：正式自架端不得外洩原始碼樹與維護工具頁）。
     const GAME_SHELL_DIRS = ["game-engine", "content-package", "content-base", "styles"];
@@ -199,6 +344,8 @@ export function createApp(options: AppOptions) {
     GAME_SHELL_DIRS.forEach((dir) => {
       app.use(`/${dir}`, express.static(path.resolve(staticRoot, dir)));
     });
+    // `/admin/` 線上管理頁（spec#25；頁面本身可公開取得、資料一律經受 admin 保護之 `/api/admin/*`）。
+    app.use("/admin", express.static(path.resolve(staticRoot, "admin-console")));
     app.use((_req, res) => fail(res, 404, "not-found", "Not served."));
   }
 
@@ -214,6 +361,21 @@ export function createApp(options: AppOptions) {
 }
 
 const FAKE_HASH = bcrypt.hashSync("timing-equalizer", BCRYPT_COST);
+
+// 存檔形狀校驗（#309 審查 B9／sysCase#2.1）：頂層須為 JSON 物件、已知欄位存在時型別須合法；非法即 422 不落庫。
+function validateStateShape(state: unknown): string | null {
+  if (!state || typeof state !== "object" || Array.isArray(state)) return "Save state must be a JSON object.";
+  const record = state as Record<string, unknown>;
+  if (record.coins !== undefined && !Number.isFinite(Number(record.coins))) return "Save state field 'coins' must be a number.";
+  if (record.playerName !== undefined && typeof record.playerName !== "string") return "Save state field 'playerName' must be a string.";
+  if (record.playLimit !== undefined && (typeof record.playLimit !== "object" || record.playLimit === null || Array.isArray(record.playLimit))) {
+    return "Save state field 'playLimit' must be an object.";
+  }
+  if (record.outfit !== undefined && (typeof record.outfit !== "object" || record.outfit === null || Array.isArray(record.outfit))) {
+    return "Save state field 'outfit' must be an object.";
+  }
+  return null;
+}
 
 function validationMessage(code: string): string {
   switch (code) {

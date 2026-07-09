@@ -53,7 +53,7 @@ describe("register", () => {
     const res = await register(makeApp());
     expect(res.status).toBe(201);
     expect(res.body.token).toMatch(/^[0-9a-f]{64}$/);
-    expect(res.body.account).toEqual({ username: "mimi", createdAt: clock.value });
+    expect(res.body.account).toEqual({ id: expect.any(String), username: "mimi", role: "player", createdAt: clock.value });
   });
 
   it("rejects invalid username / short password / long password with 422 codes", async () => {
@@ -147,7 +147,13 @@ describe("cloud save", () => {
     const { app, auth } = await authed();
     const res = await request(app).get("/api/save").set(auth);
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ state: null, schemaVersion: null, updatedAt: null, serverTime: clock.value });
+    expect(res.body).toEqual({
+      state: null,
+      schemaVersion: null,
+      updatedAt: null,
+      serverTime: clock.value,
+      playLimitPolicy: { locked: false, playMinutes: null, restMinutes: null, playMaxMinutes: null }
+    });
   });
 
   it("upserts and reads back a save (full state round-trip)", async () => {

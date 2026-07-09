@@ -20,6 +20,21 @@
   font-size: 0.9em;
 }
 
+/* issue #310（spec#26）：維護者鎖定時長時之唯讀提示；欄位 disabled 樣式沿用瀏覽器預設＋降透明。 */
+.play-limit-managed {
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  background: rgba(255, 214, 165, 0.4);
+  color: var(--rose-dark);
+  font-size: 0.9em;
+  font-weight: 700;
+}
+
+.play-limit-form input:disabled {
+  opacity: 0.55;
+}
+
 .play-limit-fields {
   display: flex;
   gap: 12px;

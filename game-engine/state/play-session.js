@@ -2,7 +2,9 @@
 import {
   MAX_LIMIT_MINUTES,
   MIN_LIMIT_MINUTES,
+  effectivePlayLimit,
   playAllowance,
+  playLimitLocked,
   playStatus,
   resumeFromRest,
   tick as tickPlayLimit
@@ -47,7 +49,7 @@ export function updateEnergyHudFromStatus(status, now = clockNow()) {
   } else if (status.phase === "play") {
     elements.timeLeftValue.textContent = formatClock(status.playRemainingMs);
   } else {
-    elements.timeLeftValue.textContent = formatClock((session.state.playLimit?.playMinutes || 15) * 60000);
+    elements.timeLeftValue.textContent = formatClock(effectivePlayLimit(session.state.playLimit).playMinutes * 60000);
   }
 }
 
@@ -138,6 +140,12 @@ export function resumePlayFromBreak() {
 }
 
 export function applyPlayLimitSettings() {
+  // issue #310（spec#26／sysCase#7.4）：受維護者鎖定時不承接玩家調整（欄位已唯讀，此為雙保險）。
+  if (playLimitLocked()) {
+    renderSettings();
+    elements.statusMessage.textContent = "Play time is managed by your grown-up.";
+    return;
+  }
   const toMinutes = (value) => {
     const n = Math.round(Number(value));
     if (!Number.isFinite(n)) return MIN_LIMIT_MINUTES;

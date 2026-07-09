@@ -1,0 +1,120 @@
+/* AUTO-COPIED 單向複本：正本為 tool/theme-md3.css（issue #310 線上管理頁沿用同一 MD3 token、不重造主題）。
+   修訂請改正本後重新複製；勿在本檔各自演化。 */
+/* MD3 主題 token 定本（issue #260 / spec#13）——維護者管理設定工具。
+   依 [hmiIntf通用視覺規範]（MD3 基座、管理網站規範）。
+   品牌種子：遊戲低飽和粉彩識別色（primary=lavender、secondary=sky），見 docs/design-visual/。
+   做法 (a) 務實 MD3-aligned：手寫核心色彩角色＋8dp 節奏＋一致 radius；commit 為定本、唯讀引用、不逐元件硬寫色。
+   日後可改以 Material Theme Builder 由種子生成全量 tonal palette 換定本。 */
+:root {
+  /* primary（lavender 種子） */
+  --md-sys-color-primary: #6b5fb5;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #e7deff;
+  --md-sys-color-on-primary-container: #22005d;
+  /* secondary（sky 種子） */
+  --md-sys-color-secondary: #4a6098;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #dae2ff;
+  --md-sys-color-on-secondary-container: #001b3f;
+  /* surface / background */
+  --md-sys-color-background: #fdfbff;
+  --md-sys-color-on-background: #1b1b1f;
+  --md-sys-color-surface: #fdfbff;
+  --md-sys-color-on-surface: #1b1b1f;
+  --md-sys-color-surface-variant: #e5e0ec;
+  --md-sys-color-on-surface-variant: #47464f;
+  --md-sys-color-surface-container-low: #f7f2fa;
+  --md-sys-color-surface-container: #f1ecf4;
+  --md-sys-color-surface-container-high: #ebe6ee;
+  --md-sys-color-surface-container-highest: #e5e0e9;
+  /* outline */
+  --md-sys-color-outline: #787680;
+  --md-sys-color-outline-variant: #c9c5d0;
+  /* semantic */
+  --md-sys-color-error: #ba1a1a;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-error-container: #ffdad6;
+  --md-sys-color-on-error-container: #410002;
+  /* 8dp 節奏 */
+  --md-sp-1: 4px;
+  --md-sp-2: 8px;
+  --md-sp-3: 12px;
+  --md-sp-4: 16px;
+  --md-sp-5: 24px;
+  --md-sp-6: 32px;
+  /* 一致 radius / elevation */
+  --md-radius-sm: 8px;
+  --md-radius-md: 12px;
+  --md-radius-lg: 16px;
+  --md-elev-1: 0 1px 2px rgba(0, 0, 0, .06), 0 1px 3px rgba(0, 0, 0, .10);
+  /* 管理網站版度（管理網站規範 §III.A） */
+  --admin-drawer-w: 280px;
+  --admin-drawer-collapsed-w: 80px;
+  --admin-topbar-h: 64px;
+  /* 字體（通用性規範 §III.C：sans，禁 serif/藝術字） */
+  --md-font-sans: "Noto Sans TC", "Inter", "Roboto", "Segoe UI", system-ui, sans-serif;
+
+  /* issue #297：工具元件 tokens（分層樣式檔硬寫色歸零、深色模式一致；唯讀引用） */
+  --tool-box-type: #2f6fd0;              /* ① 類型框（藍） */
+  --tool-box-type-deep: #1f4f8f;
+  --tool-box-item: #2e9e54;              /* ② 單品框（綠） */
+  --tool-box-item-deep: #1c6e3a;
+  --tool-ok: #1f7a4d;                    /* 成功狀態文字 */
+  --tool-glass: rgba(48, 35, 54, 0.8);   /* 深色玻璃底（預覽標籤／提示膠囊／標記名） */
+  --tool-glass-ink: rgba(255, 255, 255, 0.92);
+  --tool-scrim: rgba(27, 27, 31, 0.45);  /* dialog／overlay 抽屜遮罩 */
+  --tool-shadow: rgba(40, 28, 48, 0.22); /* 陰影基色 */
+  --tool-stage-veil: rgba(255, 255, 255, 0.68); /* 預覽背景圖之亮化罩 */
+  --tool-checker-a: #eeeeee;             /* 地圖舞台棋盤格 */
+  --tool-checker-b: #f8f2f5;
+  --tool-badge-job-bg: #ffe3b3;  --tool-badge-job-ink: #7a4a00;
+  --tool-badge-chat-bg: #d9ecff; --tool-badge-chat-ink: #10456e;
+  --tool-badge-none-bg: #ececec; --tool-badge-none-ink: #8b8b8b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --md-sys-color-primary: #cdbdff;
+    --md-sys-color-on-primary: #371e73;
+    --md-sys-color-primary-container: #4f378b;
+    --md-sys-color-on-primary-container: #e7deff;
+    --md-sys-color-secondary: #b3c5ff;
+    --md-sys-color-on-secondary: #15294f;
+    --md-sys-color-secondary-container: #2f4677;
+    --md-sys-color-on-secondary-container: #dae2ff;
+    --md-sys-color-background: #1b1b1f;
+    --md-sys-color-on-background: #e5e1e6;
+    --md-sys-color-surface: #1b1b1f;
+    --md-sys-color-on-surface: #e5e1e6;
+    --md-sys-color-surface-variant: #47464f;
+    --md-sys-color-on-surface-variant: #c9c5d0;
+    --md-sys-color-surface-container-low: #1f1f23;
+    --md-sys-color-surface-container: #232328;
+    --md-sys-color-surface-container-high: #2d2d32;
+    --md-sys-color-surface-container-highest: #38383d;
+    --md-sys-color-outline: #928f99;
+    --md-sys-color-outline-variant: #47464f;
+    /* semantic（issue #297 補齊 dark error roles，MD3 標準值） */
+    --md-sys-color-error: #ffb4ab;
+    --md-sys-color-on-error: #690005;
+    --md-sys-color-error-container: #93000a;
+    --md-sys-color-on-error-container: #ffdad6;
+
+    /* issue #297：工具元件 tokens 深色值 */
+    --tool-box-type: #8ab4f8;
+    --tool-box-type-deep: #b6ccff;
+    --tool-box-item: #6fd096;
+    --tool-box-item-deep: #97e2b6;
+    --tool-ok: #7adb9e;
+    --tool-glass: rgba(0, 0, 0, 0.72);
+    --tool-glass-ink: rgba(255, 255, 255, 0.92);
+    --tool-scrim: rgba(0, 0, 0, 0.6);
+    --tool-shadow: rgba(0, 0, 0, 0.5);
+    --tool-stage-veil: rgba(27, 27, 31, 0.6);
+    --tool-checker-a: #26262b;
+    --tool-checker-b: #1f1f23;
+    --tool-badge-job-bg: #4a3814;  --tool-badge-job-ink: #ffd9a0;
+    --tool-badge-chat-bg: #14324a; --tool-badge-chat-ink: #b7dcff;
+    --tool-badge-none-bg: #3a3a3f; --tool-badge-none-ink: #b5b5be;
+  }
+}

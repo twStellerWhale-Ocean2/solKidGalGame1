@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Luminara 管理</title>
+  <link rel="stylesheet" href="./theme-md3.css" />
+  <link rel="stylesheet" href="./admin.css" />
+</head>
+<body>
+  <!-- [hmiIntf自訂線上管理頁]（spec#25／spec#26）：MD3 管理網站基座；資料一律經 /api/admin/*（admin session）。 -->
+  <header class="topbar">
+    <div class="topbar-brand"><span class="topbar-crown" aria-hidden="true">👑</span>Luminara 管理</div>
+    <div class="topbar-account" id="topbarAccount" hidden>
+      <span id="topbarUsername"></span>
+      <button type="button" class="btn btn-tonal-inverse" id="logoutButton">登出</button>
+    </div>
+  </header>
+
+  <!-- 管理登入頁 -->
+  <main class="view" id="viewLogin" hidden>
+    <form class="login-card" id="loginForm" novalidate>
+      <h1>維護者登入</h1>
+      <p class="login-hint">僅限管理帳號（admin）</p>
+      <label class="field">
+        <span>帳號</span>
+        <input type="text" id="loginUsername" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required />
+      </label>
+      <label class="field">
+        <span>密碼</span>
+        <span class="password-wrap">
+          <input type="password" id="loginPassword" name="password" autocomplete="current-password" required />
+          <button type="button" class="password-toggle" id="loginPasswordToggle" aria-pressed="false">顯示</button>
+        </span>
+      </label>
+      <p class="field-error" id="loginError" role="alert" hidden></p>
+      <button type="submit" class="btn btn-filled btn-block" id="loginSubmit">登入</button>
+      <p class="login-footnote">維護者忘記密碼？離線重設方式見產品手冊。</p>
+    </form>
+  </main>
+
+  <!-- 管理內容（帳號／設定雙分頁） -->
+  <main class="view" id="viewApp" hidden>
+    <nav class="tabs" role="tablist" aria-label="管理分頁">
+      <button type="button" class="tab" id="tabAccounts" role="tab" aria-selected="true" aria-controls="panelAccounts">帳號</button>
+      <button type="button" class="tab" id="tabSettings" role="tab" aria-selected="false" aria-controls="panelSettings">設定</button>
+    </nav>
+
+    <!-- 管理帳號頁 -->
+    <section class="panel" id="panelAccounts" role="tabpanel" aria-labelledby="tabAccounts">
+      <h2 class="panel-title" id="accountsTitle">玩家帳號</h2>
+      <div class="accounts" id="accountsList" aria-live="polite"></div>
+    </section>
+
+    <!-- 管理設定頁 -->
+    <section class="panel" id="panelSettings" role="tabpanel" aria-labelledby="tabSettings" hidden>
+      <form id="settingsForm" novalidate>
+        <div class="card">
+          <div class="card-row">
+            <div class="card-row-text">
+              <h3>開放新帳號註冊</h3>
+              <p>關閉後遊戲登入畫面不再提供「建立新帳號」，既有帳號登入不受影響。</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="settingRegistrationOpen" />
+              <span class="switch-track" aria-hidden="true"></span>
+            </label>
+          </div>
+        </div>
+        <div class="card">
+          <h3>新帳號預設遊玩／休息時長</h3>
+          <p class="card-note">套用於之後註冊的新帳號；每項限 1–120 分鐘，遊玩時長不可大於單回合上限。</p>
+          <div class="minute-grid">
+            <label class="field">
+              <span>每次遊玩（分鐘）</span>
+              <input type="number" id="settingPlayMinutes" min="1" max="120" step="1" inputmode="numeric" />
+            </label>
+            <label class="field">
+              <span>每次休息（分鐘）</span>
+              <input type="number" id="settingRestMinutes" min="1" max="120" step="1" inputmode="numeric" />
+            </label>
+            <label class="field">
+              <span>單回合上限（分鐘）</span>
+              <input type="number" id="settingPlayMaxMinutes" min="1" max="120" step="1" inputmode="numeric" />
+            </label>
+          </div>
+          <p class="field-error" id="settingsError" role="alert" hidden></p>
+        </div>
+        <div class="settings-actions">
+          <button type="submit" class="btn btn-filled" id="settingsSave">儲存設定</button>
+        </div>
+      </form>
+      <footer class="page-footer">
+        <span id="footerVersion"></span> ・
+        <a href="https://github.com/twStellerWhale-Ocean2/solKidGalGame1#readme" target="_blank" rel="noopener">使用說明（產品手冊）</a> ・
+        內容編修（題庫、衣物對位、語音）請於開發環境使用管理設定工具
+      </footer>
+    </section>
+  </main>
+
+  <dialog id="dialog" class="dialog"></dialog>
+  <div class="snackbar" id="snackbar" role="status" hidden></div>
+
+  <script type="module" src="./admin.js"></script>
+</body>
+</html>
