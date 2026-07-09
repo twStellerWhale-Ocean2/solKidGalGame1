@@ -167,6 +167,8 @@
   flex-direction: column;
   gap: 10px;
   padding: 10px 12px 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
 .login-form {
   display: flex;
@@ -256,10 +258,6 @@ body.cloud-offline #statusMessage {
 }
 .account-row.login-card .account-pick {
   width: 100%;
-}
-.login-expand {
-  width: 100%;
-  box-sizing: border-box;
 }
 .login-expand .login-continue,
 .login-expand .login-logout,
