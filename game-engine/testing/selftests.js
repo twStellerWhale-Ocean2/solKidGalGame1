@@ -98,10 +98,15 @@ function runCloudAuthSelfTest(api) {
     const accounts = new Map(); // username -> {password, createdAt}
     const sessions = new Map(); // token -> {username, revoked}
     const saves = new Map(); // username -> {state, updatedAt}
+    const policies = new Map(); // username -> playLimitPolicy（issue #310 spec#26）
+    let registrationOpen = true;
     let clock = 1000;
     let offline = false;
     function json(status, body) {
       return { status, ok: status < 400, json: async () => body };
+    }
+    function policyFor(username) {
+      return policies.get(username) || { locked: false, playMinutes: null, restMinutes: null, playMaxMinutes: null };
     }
     async function handler(pathname, init = {}) {
       if (offline) throw new TypeError("network down");
@@ -111,7 +116,11 @@ function runCloudAuthSelfTest(api) {
       const sessionRec = sessions.get(token);
       const username = sessionRec && !sessionRec.revoked ? sessionRec.username : "";
       clock += 7;
+      if (pathname === "/api/config") {
+        return json(200, { registrationOpen, defaultPlayLimit: { playMinutes: 15, restMinutes: 15, playMaxMinutes: 20 } });
+      }
       if (pathname === "/api/auth/register" && init.method === "POST") {
+        if (!registrationOpen) return json(403, { error: { code: "registration-closed" } });
         if (!/^[a-z][a-z0-9]{2,15}$/.test(body.username || "")) return json(422, { error: { code: "invalid-username" } });
         if (typeof body.password !== "string" || body.password.length < 6) return json(422, { error: { code: "password-too-short" } });
         if (accounts.has(body.username)) return json(409, { error: { code: "username-taken" } });
@@ -138,7 +147,8 @@ function runCloudAuthSelfTest(api) {
           state: save ? save.state : null,
           schemaVersion: save ? "1" : null,
           updatedAt: save ? save.updatedAt : null,
-          serverTime: clock
+          serverTime: clock,
+          playLimitPolicy: policyFor(username)
         });
       }
       if (pathname === "/api/save" && init.method === "PUT") {
@@ -147,11 +157,18 @@ function runCloudAuthSelfTest(api) {
         if (base !== (save ? save.updatedAt : null)) return json(409, { error: { code: "save-conflict" } });
         const updatedAt = clock;
         saves.set(username, { state: body.state, updatedAt });
-        return json(200, { updatedAt, serverTime: clock });
+        return json(200, { updatedAt, serverTime: clock, playLimitPolicy: policyFor(username) });
       }
       return json(404, { error: { code: "not-found" } });
     }
-    return { handler, saves, sessions, setOffline: (value) => { offline = value; } };
+    return {
+      handler,
+      saves,
+      sessions,
+      policies,
+      setOffline: (value) => { offline = value; },
+      setRegistrationOpen: (value) => { registrationOpen = value; }
+    };
   }
 
   (async () => {
@@ -253,10 +270,54 @@ function runCloudAuthSelfTest(api) {
         overlay.setAttribute("aria-hidden", "true");
       }
       document.body.classList.remove("account-select-open");
+
+      // 9) 時長政策（issue #310 spec#26／sysCase#16.1）：鎖定→執行值取政策、欄位唯讀、state 不被改寫；PUT 回應解除即回復。
+      fake.policies.set("mimi", { locked: true, playMinutes: 10, restMinutes: 20, playMaxMinutes: 12 });
+      const lockedLogin = await cloudAuth.login("mimi", "secret6");
+      if (!lockedLogin.ok) errors.push("locked login failed: " + lockedLogin.code);
+      api.state = api.normalizeState(lockedLogin.state || {});
+      if (!cloudAuth.playLimitLocked()) errors.push("play-limit policy not applied on login");
+      const eff = cloudAuth.effectivePlayLimit(api.state.playLimit);
+      if (eff.playMinutes !== 10 || eff.restMinutes !== 20 || eff.playMaxMinutes !== 12) {
+        errors.push("effective play limit not taken from policy: " + JSON.stringify(eff));
+      }
+      if (api.state.playLimit.playMinutes === 10) errors.push("policy overwrote state.playLimit (should stay separate)");
+      api.renderSettings();
+      if (!document.getElementById("playMinutesInput")?.disabled) errors.push("locked play-minutes input not readonly");
+      if (!document.getElementById("restMinutesInput")?.disabled) errors.push("locked rest-minutes input not readonly");
+      if (document.getElementById("playLimitManagedNote")?.hidden !== false) errors.push("managed-by-guardian note not shown while locked");
+      // 解除鎖定：政策隨下一次保存（PUT 回應）即時套用、玩家自調值回復。
+      fake.policies.delete("mimi");
+      cloudAuth.adoptServerBase(fake.saves.get("mimi").updatedAt);
+      await cloudAuth.flushSave();
+      if (cloudAuth.playLimitLocked()) errors.push("unlock via PUT response not applied");
+      api.renderSettings();
+      if (document.getElementById("playMinutesInput")?.disabled) errors.push("inputs still readonly after unlock");
+      if (document.getElementById("playLimitManagedNote")?.hidden === false) errors.push("managed note still shown after unlock");
+      await cloudAuth.logout();
+
+      // 10) 註冊開關（spec#26 (c)／sysCase#16.2）：關閉→register 403、登入畫面無建立入口＋友善說明。
+      fake.setRegistrationOpen(false);
+      const closedReg = await cloudAuth.register("newkid1", "secret6");
+      if (closedReg.ok || closedReg.code !== "registration-closed") errors.push("closed registration not rejected with registration-closed");
+      cloudAuth.upsertRecentAccount("mimi", { playerName: "CloudMimi", characterId: "lumi", coins: 555, outfit: api.state.outfit, playLimit: api.state.playLimit, lastPlayedAt: Date.now() });
+      cloudAuth.openLoginScreen({ mustChoose: false });
+      await new Promise((resolve) => setTimeout(resolve, 0)); // 等 /api/config 查詢與重建
+      const newButton = document.getElementById("accountNewButton");
+      if (newButton && !newButton.hidden) errors.push("create-account entry visible while registration closed");
+      if (!document.querySelector(".login-registration-closed")) errors.push("registration-closed notice missing");
+      if (document.getElementById("registerUsername")) errors.push("register form rendered while registration closed");
+      fake.setRegistrationOpen(true);
+      if (overlay) {
+        overlay.classList.remove("show");
+        overlay.setAttribute("aria-hidden", "true");
+      }
+      document.body.classList.remove("account-select-open");
     } catch (error) {
       errors.push("unexpected error: " + ((error && error.message) || error));
     } finally {
       cloudAuth.setApiFetch(null);
+      cloudAuth.setPlayLimitPolicy(null);
       localStorage.removeItem(cloudAuth.sessionCacheKey);
       localStorage.removeItem(cloudAuth.recentAccountsKey);
       localStorage.removeItem(cloudAuth.migratedFlagKey);

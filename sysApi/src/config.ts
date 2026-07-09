@@ -10,6 +10,9 @@ export interface Config {
   staticRoot: string;
   rateLimitMax: number;
   rateLimitWindowMs: number;
+  /** paramAdminBootstrap（#310）：兩者皆設才啟用 admin 起始帳號建立；未設僅告警（管理頁將無法登入）。 */
+  adminUsername: string;
+  adminPassword: string;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -25,6 +28,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     // 遊戲殼靜態檔根目錄＝repo 根（sysApi 之上一層）；同站服務、免 CORS。
     staticRoot: env.STATIC_ROOT || path.resolve(__dirname, "..", ".."),
     rateLimitMax: Number(env.RATE_LIMIT_MAX) || 10,
-    rateLimitWindowMs: Number(env.RATE_LIMIT_WINDOW_MS) || 10 * 60 * 1000
+    rateLimitWindowMs: Number(env.RATE_LIMIT_WINDOW_MS) || 10 * 60 * 1000,
+    adminUsername: env.ADMIN_USERNAME || "",
+    adminPassword: env.ADMIN_PASSWORD || ""
   };
 }

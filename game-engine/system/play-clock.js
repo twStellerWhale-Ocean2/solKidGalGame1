@@ -11,6 +11,37 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+// issue #310（spec#26）：維護者時長政策——政策與存檔資料分離：鎖定時本模組一律以政策值為
+// 遊玩／休息計時之「執行值」，不改寫、不回寫 state.playLimit 之玩家自調值（解除鎖定即回復）。
+// 政策由 cloud-sync 自登入／存檔回應（GET／PUT /api/save 之 playLimitPolicy）注入；預設 null＝未鎖定。
+let activePolicy = null;
+
+export function setPlayLimitPolicy(policy) {
+  activePolicy = policy && policy.locked
+    ? {
+        playMinutes: clamp(Math.round(Number(policy.playMinutes)) || 15, MIN_LIMIT_MINUTES, MAX_LIMIT_MINUTES),
+        restMinutes: clamp(Math.round(Number(policy.restMinutes)) || 15, MIN_LIMIT_MINUTES, MAX_LIMIT_MINUTES),
+        playMaxMinutes: clamp(Math.round(Number(policy.playMaxMinutes)) || 20, MIN_LIMIT_MINUTES, MAX_LIMIT_MINUTES)
+      }
+    : null;
+}
+
+export function playLimitLocked() {
+  return activePolicy !== null;
+}
+
+/** 目前生效之時長（顯示與計時共用）：鎖定＝政策值、未鎖定＝帳號自調值。 */
+export function effectivePlayLimit(pl = {}) {
+  if (activePolicy) return { ...activePolicy, locked: true };
+  const base = defaultPlayLimit();
+  return {
+    playMinutes: toMinutes(pl.playMinutes, base.playMinutes),
+    restMinutes: toMinutes(pl.restMinutes, base.restMinutes),
+    playMaxMinutes: toMinutes(pl.playMaxMinutes, base.playMaxMinutes),
+    locked: false
+  };
+}
+
 function emptyCycle() {
   // jobsDone（issue #177）：本遊玩週期已答對之打工場景 id；使同場景打工於本週期下架、下一週期由 startSession 重置。
   return { coinsAtStart: 0, answered: 0, correct: 0, jobsDone: [] };
@@ -57,6 +88,7 @@ export function normalizePlayLimit(candidate = {}) {
 // 讀取目前狀態（不改 state）。phase: "rest" | "play" | "idle"。
 export function playStatus(state, now) {
   const pl = state.playLimit || defaultPlayLimit();
+  const eff = effectivePlayLimit(pl);
   if (pl.restEndsAt > 0) {
     const restRemainingMs = Math.max(0, pl.restEndsAt - now);
     return { phase: "rest", restRemainingMs, restDone: pl.restEndsAt - now <= 0, energyPercent: 0 };
@@ -69,11 +101,11 @@ export function playStatus(state, now) {
     // 遊玩時間已用完但尚未進入休息（如於帳號選單離開、ticker 未運作，restEndsAt 仍 0）：
     // 休息自「遊玩結束時戳」起算、離開（未遊玩）時間計入休息——離開達休息時長即視為休息已足、
     // 回到 idle 可重新開始；否則回報休息剩餘，使帳號卡與 tick() 一致、不再誤顯示「Play 0:00」（issue #169）。
-    const restEnd = pl.sessionEndsAt + pl.restMinutes * MINUTE_MS;
+    const restEnd = pl.sessionEndsAt + eff.restMinutes * MINUTE_MS;
     if (now >= restEnd) return { phase: "idle", energyPercent: 100 };
     return { phase: "rest", restRemainingMs: restEnd - now, restDone: false, energyPercent: 0 };
   }
-  const totalMs = pl.playMinutes * MINUTE_MS;
+  const totalMs = eff.playMinutes * MINUTE_MS;
   return {
     phase: "play",
     playRemainingMs,
@@ -84,9 +116,10 @@ export function playStatus(state, now) {
 // 開始（或重新開始）一個遊玩回合：重置本回合統計與遊玩結束時戳。
 export function startSession(state, now) {
   const pl = state.playLimit;
-  pl.sessionEndsAt = now + pl.playMinutes * MINUTE_MS;
+  const eff = effectivePlayLimit(pl);
+  pl.sessionEndsAt = now + eff.playMinutes * MINUTE_MS;
   // 護眼上限不得低於基礎遊玩時長；延長至多到 sessionMaxEndsAt（spec#11）。
-  const maxMinutes = Math.max(pl.playMinutes, pl.playMaxMinutes || pl.playMinutes);
+  const maxMinutes = Math.max(eff.playMinutes, eff.playMaxMinutes || eff.playMinutes);
   pl.sessionMaxEndsAt = now + maxMinutes * MINUTE_MS;
   pl.restEndsAt = 0;
   pl.cycle = { coinsAtStart: Number(state.coins) || 0, answered: 0, correct: 0, jobsDone: [] };
@@ -111,11 +144,12 @@ export function extendSession(state, now, minutes) {
 // 由既有時戳推導，不需新增 state 欄位：sessionStart = sessionMaxEndsAt - maxMinutes，延長量 = (sessionEndsAt - sessionStart) - base。
 export function playAllowance(state) {
   const pl = state.playLimit || defaultPlayLimit();
-  const baseMinutes = toMinutes(pl.playMinutes, 15);
+  const eff = effectivePlayLimit(pl);
+  const baseMinutes = eff.playMinutes;
   if (!(pl.sessionEndsAt > 0) || !(pl.sessionMaxEndsAt > 0)) {
     return { baseMinutes, bonusMinutes: 0, totalMinutes: baseMinutes };
   }
-  const maxMinutes = Math.max(baseMinutes, toMinutes(pl.playMaxMinutes, baseMinutes));
+  const maxMinutes = Math.max(baseMinutes, eff.playMaxMinutes || baseMinutes);
   const sessionStart = pl.sessionMaxEndsAt - maxMinutes * MINUTE_MS;
   const totalMinutes = clamp(Math.round((pl.sessionEndsAt - sessionStart) / MINUTE_MS), baseMinutes, maxMinutes);
   return { baseMinutes, bonusMinutes: Math.max(0, totalMinutes - baseMinutes), totalMinutes };
@@ -127,7 +161,7 @@ export function playAllowance(state) {
 export function enterRest(state, now) {
   const pl = state.playLimit;
   const restFrom = pl.sessionEndsAt > 0 ? pl.sessionEndsAt : now;
-  pl.restEndsAt = restFrom + pl.restMinutes * MINUTE_MS;
+  pl.restEndsAt = restFrom + effectivePlayLimit(pl).restMinutes * MINUTE_MS;
   pl.sessionEndsAt = 0;
 }
 
@@ -192,7 +226,7 @@ export function tick(state, now) {
 
   // 遊玩時間已用完、尚未進入休息（restEndsAt 仍 0）。
   if (pl.sessionEndsAt > 0) {
-    const restEnd = pl.sessionEndsAt + pl.restMinutes * MINUTE_MS;
+    const restEnd = pl.sessionEndsAt + effectivePlayLimit(pl).restMinutes * MINUTE_MS;
     if (now < restEnd) {
       // 首次觀察到用完（遊玩中即時到點，或離開後於休息窗內回來）：結算並進入休息（自 sessionEndsAt 起算）。
       const settlement = settlementSummary(state);

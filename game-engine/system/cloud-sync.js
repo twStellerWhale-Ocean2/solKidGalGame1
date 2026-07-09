@@ -16,6 +16,7 @@ import {
   upsertRecentAccount
 } from "../state/cloud-session.js";
 import { session } from "../core/session.js";
+import { setPlayLimitPolicy } from "./play-clock.js";
 
 export const SAVE_DEBOUNCE_MS = 2000;
 const RETRY_BASE_MS = 5000;
@@ -32,10 +33,22 @@ export const cloud = {
   debounceTimer: 0,
   retryTimer: 0,
   retryDelayMs: RETRY_BASE_MS,
+  playLimitPolicy: null, // spec#26：目前帳號之時長政策（{locked,...}｜null＝未鎖定）
   onStatusChange: null, // (status, detail) => void — HUD 同步提示
   onSessionExpired: null, // () => void — 逾期導回登入畫面
-  onConflict: null // (serverSave) => void — 409：提示重載
+  onConflict: null, // (serverSave) => void — 409：提示重載
+  onPolicyChange: null // (policy) => void — 政策變更（鎖定/解除）時重繪設定與時鐘
 };
+
+// spec#26／sysCase#16.1：政策與存檔資料分離——政策注入 play-clock 作為計時執行值，
+// 不改寫 state.playLimit；GET 與 PUT /api/save 回應皆搭載，PUT 使 admin 變更對遊玩中裝置即時生效。
+function applyPlayLimitPolicy(policy) {
+  const next = policy && policy.locked ? policy : null;
+  const changed = JSON.stringify(next) !== JSON.stringify(cloud.playLimitPolicy);
+  cloud.playLimitPolicy = next;
+  setPlayLimitPolicy(next);
+  if (changed && typeof cloud.onPolicyChange === "function") cloud.onPolicyChange(next);
+}
 
 export function cloudActive() {
   return Boolean(cloud.token);
@@ -72,6 +85,7 @@ export async function cloudLogin(username, password) {
   if (save.status !== 200) return { ok: false, status: save.status, code: save.body?.error?.code || "error" };
   applyServerTime(save.body.serverTime);
   adoptSession(username, res.body.token, res.body.account, save.body.updatedAt !== null ? { updatedAt: save.body.updatedAt } : null);
+  applyPlayLimitPolicy(save.body.playLimitPolicy);
   return { ok: true, state: save.body.state };
 }
 
@@ -80,6 +94,7 @@ export async function cloudRegister(username, password) {
   const res = await apiRegister(username, password);
   if (res.status !== 201) return { ok: false, status: res.status, code: res.body?.error?.code || "error" };
   adoptSession(username, res.body.token, res.body.account, null);
+  applyPlayLimitPolicy(null); // 新帳號無覆寫
   return { ok: true, state: null };
 }
 
@@ -100,6 +115,7 @@ export async function cloudResume() {
   }
   applyServerTime(save.body.serverTime);
   adoptSession(cached.username, cached.token, { createdAt: 0 }, save.body.updatedAt !== null ? { updatedAt: save.body.updatedAt } : null);
+  applyPlayLimitPolicy(save.body.playLimitPolicy);
   return { ok: true, username: cached.username, state: save.body.state };
 }
 
@@ -119,6 +135,7 @@ export async function cloudLogout() {
   if (cloud.debounceTimer) { clearTimeout(cloud.debounceTimer); cloud.debounceTimer = 0; }
   if (cloud.retryTimer) { clearTimeout(cloud.retryTimer); cloud.retryTimer = 0; }
   clearCachedSession();
+  applyPlayLimitPolicy(null);
   setStatus("idle");
 }
 
@@ -164,13 +181,15 @@ export async function flushCloudSave() {
   if (result.status === 200) {
     cloud.baseUpdatedAt = result.body.updatedAt;
     applyServerTime(result.body.serverTime);
+    applyPlayLimitPolicy(result.body.playLimitPolicy);
     cloud.retryDelayMs = RETRY_BASE_MS;
     syncRecentSummary();
     setStatus("idle");
     if (cloud.pending) scheduleCloudSave();
     return;
   }
-  if (result.status === 401) {
+  if (result.status === 401 || result.status === 403) {
+    // 401＝session 撤銷／逾期／帳號被刪；403 同屬權限終局——皆不進退避重試（sysCase#16.1），走逾期動線導回登入。
     setStatus("expired");
     if (typeof cloud.onSessionExpired === "function") cloud.onSessionExpired();
     return;

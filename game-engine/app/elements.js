@@ -106,6 +106,7 @@ export function createElements() {
     roomPropLamp: $("#roomPropLamp"),
     playMinutesInput: $("#playMinutesInput"),
     restMinutesInput: $("#restMinutesInput"),
+    playLimitManagedNote: $("#playLimitManagedNote"),
     playLimitForm: $("#playLimitForm"),
     playBreak: $("#playBreak"),
     playBreakStats: $("#playBreakStats"),

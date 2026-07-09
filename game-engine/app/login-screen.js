@@ -2,6 +2,7 @@
 // 沿用 #accountSelect overlay 骨架與帳號卡視覺；雲端模式下取代本機帳號選擇（select-screens 保留為 selftest 測試替身）。
 import {
   PASSWORD_MIN_LENGTH,
+  apiGetConfig,
   validatePasswordInput,
   validateUsernameInput
 } from "../system/api-client.js";
@@ -37,6 +38,33 @@ let uiMode = "cards"; // cards | login | register
 let expandedUsername = "";
 let busy = false;
 
+// issue #310（spec#26／sysCase#16.2）：伺服器公開設定（註冊開關＋新帳號預設時長）。
+// 查詢失敗以註冊開放為預設（fail-open）、不阻斷登入動線。
+let serverConfig = { registrationOpen: true, defaultPlayLimit: null };
+
+async function refreshServerConfig() {
+  try {
+    const res = await apiGetConfig();
+    if (res.status === 200 && res.body) {
+      serverConfig = {
+        registrationOpen: res.body.registrationOpen !== false,
+        defaultPlayLimit: res.body.defaultPlayLimit || null
+      };
+    }
+  } catch {
+    serverConfig = { registrationOpen: true, defaultPlayLimit: serverConfig.defaultPlayLimit };
+  }
+  // 開關可能改變註冊入口呈現：畫面仍開著時重建。
+  if (elements.accountSelect?.classList.contains("show")) buildLoginScreen();
+}
+
+function registrationClosedNotice() {
+  const notice = document.createElement("p");
+  notice.className = "login-hint login-registration-closed";
+  notice.textContent = "This server is not taking new accounts right now. Please ask your grown-up to open it.";
+  return notice;
+}
+
 function overlayEls() {
   return {
     overlay: elements.accountSelect,
@@ -58,6 +86,7 @@ export function openLoginScreen({ mustChoose = true } = {}) {
   if (els.title) els.title.textContent = "Sign in to play";
   if (els.intro) els.intro.textContent = "Pick your card and type your password. Progress is saved on your family server.";
   if (els.newButton) els.newButton.textContent = "Create new account";
+  void refreshServerConfig();
   buildLoginScreen();
   els.overlay.classList.add("show");
   els.overlay.setAttribute("aria-hidden", "false");
@@ -125,6 +154,14 @@ function passwordField({ id, placeholder = "Password" }) {
 // 進入遊戲：serverState 為 null 時建立新局並首寫雲端（baseUpdatedAt=null）。
 async function enterGame(serverState, { isNew = false } = {}) {
   session.state = serverState ? normalizeState(serverState) : freshState();
+  if (!serverState && serverConfig.defaultPlayLimit) {
+    // spec#26 (a)：新帳號初始遊玩／休息時長取執行期設定之預設值（缺值沿程式預設）。
+    const defaults = serverConfig.defaultPlayLimit;
+    const limit = session.state.playLimit;
+    if (Number.isFinite(defaults.playMinutes)) limit.playMinutes = defaults.playMinutes;
+    if (Number.isFinite(defaults.restMinutes)) limit.restMinutes = defaults.restMinutes;
+    if (Number.isFinite(defaults.playMaxMinutes)) limit.playMaxMinutes = defaults.playMaxMinutes;
+  }
   session.accountSelectMustChoose = false;
   if (!serverState) {
     adoptServerBase(null);
@@ -189,6 +226,13 @@ async function submitRegister(username, password, errorEl) {
   try {
     const result = await cloudRegister(username, password);
     if (!result.ok) {
+      // 停留於註冊表單期間才被關閉、送出方知（sysCase#6.2）：同一句友善說明就地呈現。
+      if (result.code === "registration-closed") {
+        serverConfig.registrationOpen = false;
+        errorEl.textContent = "This server is not taking new accounts right now. Please ask your grown-up to open it.";
+        errorEl.hidden = false;
+        return;
+      }
       errorEl.textContent = result.code === "username-taken"
         ? "This username is already taken. Try another one."
         : result.code === "rate-limited"
@@ -444,11 +488,16 @@ export function buildLoginScreen() {
   if (els.back) els.back.hidden = true; // 登入 gate：不可關閉
   const cached = loadCachedSession();
   const recents = loadRecentAccounts();
-  if (els.newButton) els.newButton.hidden = uiMode === "register" || (uiMode === "cards" && recents.length === 0);
+  const registrationOpen = serverConfig.registrationOpen;
+  // 註冊關閉（spec#26 (c)）：不渲染任何「建立新帳號」入口（含空狀態表單），改顯示友善說明。
+  if (els.newButton) els.newButton.hidden = !registrationOpen || uiMode === "register" || (uiMode === "cards" && recents.length === 0);
   if (els.empty) {
     els.empty.hidden = recents.length > 0 || uiMode !== "cards";
-    els.empty.textContent = "No players on this device yet. Create a new account to start your adventure!";
+    els.empty.textContent = registrationOpen
+      ? "No players on this device yet. Create a new account to start your adventure!"
+      : "No players on this device yet. Sign in with your account below.";
   }
+  if (uiMode === "register" && !registrationOpen) uiMode = "cards";
   if (uiMode === "login") {
     els.list.appendChild(buildOtherLoginForm());
     return;
@@ -467,9 +516,10 @@ export function buildLoginScreen() {
   other.addEventListener("click", () => loginScreenSetMode("login"));
   actions.appendChild(other);
   els.list.appendChild(actions);
+  if (!registrationOpen) els.list.appendChild(registrationClosedNotice());
   const migrate = buildMigrationEntry();
   if (migrate) els.list.appendChild(migrate);
-  if (recents.length === 0) loginScreenSetModeSilently();
+  if (recents.length === 0 && registrationOpen) loginScreenSetModeSilently();
 }
 
 // 空狀態（[hmiIntf自訂登入註冊頁] (a)）：無任何帳號卡時預設聚焦建立新帳號表單，

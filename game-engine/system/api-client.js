@@ -51,6 +51,11 @@ export function validatePasswordInput(password) {
   return null;
 }
 
+// 公開設定最小子集（spec#26）：註冊開關＋新帳號預設時長；不受保護、登入畫面用。
+export function apiGetConfig() {
+  return api("/api/config");
+}
+
 export function apiRegister(username, password) {
   return api("/api/auth/register", { method: "POST", body: { username, password } });
 }

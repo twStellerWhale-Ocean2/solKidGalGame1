@@ -19,6 +19,7 @@ import { openArea, renderCastleMap, renderMap } from "../map/map-runtime.js";
 import { renderWorldMap } from "../map/world-map.js";
 import { renderAbout, renderBuildInfo } from "./settings.js";
 import { renderPlayClock } from "../state/play-session.js";
+import { effectivePlayLimit } from "../system/play-clock.js";
 import { elements, session } from "../core/session.js";
 import { cloud, cloudActive, syncRecentSummary } from "../system/cloud-sync.js";
 
@@ -238,8 +239,20 @@ export function renderSettings() {
   }
   if (elements.signOutButton) elements.signOutButton.hidden = !cloudUsername(); // #309 審查 C14：遊戲內登出入口
 
-  if (elements.playMinutesInput) elements.playMinutesInput.value = String(session.state.playLimit.playMinutes);
-  if (elements.restMinutesInput) elements.restMinutesInput.value = String(session.state.playLimit.restMinutes);
+  // issue #310（spec#26／sysCase#16.1）：維護者鎖定時長時，欄位唯讀顯示強制值並明示由維護者管理；
+  // 政策不回寫 state.playLimit（解除鎖定即回復玩家自調值）。
+  const effLimit = effectivePlayLimit(session.state.playLimit);
+  if (elements.playMinutesInput) {
+    elements.playMinutesInput.value = String(effLimit.playMinutes);
+    elements.playMinutesInput.disabled = effLimit.locked;
+  }
+  if (elements.restMinutesInput) {
+    elements.restMinutesInput.value = String(effLimit.restMinutes);
+    elements.restMinutesInput.disabled = effLimit.locked;
+  }
+  if (elements.playLimitManagedNote) elements.playLimitManagedNote.hidden = !effLimit.locked;
+  const saveLimitButton = document.getElementById("savePlayLimitButton");
+  if (saveLimitButton) saveLimitButton.disabled = effLimit.locked;
   renderBuildInfo(elements, buildInfo);
   renderAbout(elements, { copyright, versionHistory });
 }

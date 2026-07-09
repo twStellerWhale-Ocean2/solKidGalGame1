@@ -16,7 +16,7 @@ import { installTestingHooks } from "./testing/selftests.js?v=20260703-issue298-
 import { elements, session } from "./core/session.js";
 import { bindEvents } from "./app/bind-events.js";
 import { buildSaveMarkdown, loadMarkdownText, persist } from "./system/persistence.js";
-import { clockNow, startPlayClock } from "./state/play-session.js";
+import { clockNow, renderPlayClock, startPlayClock } from "./state/play-session.js";
 import { render, renderSettings, syncActiveAccountMeta } from "./render/hud.js";
 import { changeView, closeSystemMenu, openSystemMenu } from "./app/views.js";
 import { buildAccountList, cancelCharacterSelect, closeAccountSelect, createNewAccount, openAccountSelect, openCharacterSelect, refreshAccountStatuses, returnToInitialSelect } from "./app/select-screens.js";
@@ -27,7 +27,7 @@ import { areaMapMetrics, currentPlayerPoint, focusCastleHotspot, focusTravelHots
 import { finishWorldTravel, focusWorldDestination, moveOnWorldMap, nearbyWorldDestination, openWorldDestination, renderWorldMap, requestWorldTravel, worldDestinationById, worldDestinationForArea } from "./map/world-map.js";
 import { applyAreaMapViewport, refreshAreaMapPositions } from "./map/map-gestures.js";
 import { SPEECH_DEBOUNCE_MS, SPEECH_LEADING_PAD, SPEECH_QUEUE_MODE, SPEECH_RATE_SCALE, effectiveSpeechRate, npcVoiceFor, playerVoiceProfile, speechManager } from "./scene/speech.js";
-import { extendSession, isJobDone, markJobDone, normalizePlayLimit, playStatus, recordAnswer as recordCycleAnswer, resumeFromRest, tick as tickPlayLimit } from "./system/play-clock.js";
+import { effectivePlayLimit, extendSession, isJobDone, markJobDone, normalizePlayLimit, playLimitLocked, playStatus, recordAnswer as recordCycleAnswer, resumeFromRest, setPlayLimitPolicy, tick as tickPlayLimit } from "./system/play-clock.js";
 
 const hasSelftest = new URLSearchParams(location.search).has("selftest");
 bindEvents();
@@ -64,6 +64,11 @@ if (CLOUD_MODE) {
       scheduleCloudSave(); // 使用者明示以本機進度覆蓋
     }
   };
+  cloud.onPolicyChange = () => {
+    // spec#26／sysCase#16.1：時長政策變更（鎖定/解除）當場重繪設定欄位與遊玩時鐘顯示。
+    renderSettings();
+    renderPlayClock();
+  };
   installCloudLifecycleFlush();
   openLoginScreen({ mustChoose: true });
 }
@@ -93,6 +98,10 @@ installTestingHooks({
     setLoginMode: loginScreenSetMode,
     isActive: cloudActive,
     get cloud() { return cloud; },
+    // issue #310（spec#26）：時長政策與公開設定之測試介面。
+    effectivePlayLimit,
+    playLimitLocked,
+    setPlayLimitPolicy,
     sessionCacheKey: SESSION_CACHE_KEY,
     recentAccountsKey: RECENT_ACCOUNTS_KEY,
     migratedFlagKey: MIGRATED_FLAG_KEY,
