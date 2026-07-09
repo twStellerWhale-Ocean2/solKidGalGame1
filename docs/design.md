@@ -29,7 +29,7 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件（#309 
 * **spec#12-可依透明角色輪廓強化角色立繪圖地分離**：方案須以角色透明輪廓為基準提供常態描邊與自然陰影，讓角色在複雜背景中維持清楚辨識；描邊與陰影須可依 ADV 立繪、紙娃娃、地圖 token、頭胸照等 surface 分級調整，並與試穿提示等互動狀態光暈維持語意分離，不得以大範圍糊化發光取代角色本體輪廓辨識。
 * **spec#13-可由維護者依內容資料包結構維護與擴充各項組態**：方案須讓維護者能依內容資料包（公主、衣物、地圖與場景、聲音等）及其相依與含蓋關係，集中檢視、調整與擴充各包之可設定項（公主登記與新局起始、衣物單品與投影對位、地圖座標、場景背景與對話題庫、角色語音指定、遊戲時間限制等）；新增內容包或設定項時可沿既有資料包結構擴充、不需打散既有維護動線；此維護者組態管理僅於本機開發環境提供、不出現於公開遊玩端。
 * **spec#14-公主衣櫃可開啟單品 overlay 即時調整對位**：方案須讓所有家庭使用者可於公主衣櫃每件已擁有單品旁觸發「調整」按鈕，以全螢幕 overlay 在不離開遊戲的前提下，利用五組滑桿（中心 X、中心 Y、寬、高、旋轉角度 -180°～180°）即時調整目標單品的對位與旋轉，預覽立即反映於同一 overlay 之 paper-doll；確認後以一次操作將調整結果儲存回 sidecar，overlay 關閉後遊戲即時套用新對位而不需整頁重整。
-* **spec#15-overlay 調整不中斷遊戲流程且不引入四角變形**：[adjust-overlay] 以不干擾現有遊戲表單 DOM 的獨立 `<dialog>` 覆蓋層呈現，關閉後遊戲回到原位；本 spec 範圍不引入四角任意變形（warp/corners），對位調整限矩形邊界（left/top/right/bottom 換算為滑桿友善的中心＋尺寸），配合旋轉組合使用；無法連線 server（如公開 GitHub Pages）時，overlay 可預覽但儲存失敗時以明確提示通知，不 crash 遊戲。
+* **spec#15-overlay 調整不中斷遊戲流程且不引入四角變形**：[adjust-overlay] 以不干擾現有遊戲表單 DOM 的獨立 `<dialog>` 覆蓋層呈現，關閉後遊戲回到原位；本 spec 範圍不引入四角任意變形（warp/corners），對位調整限矩形邊界（left/top/right/bottom 換算為滑桿友善的中心＋尺寸），配合旋轉組合使用；無法連線 dev server 之環境（含凍結之 `pages-legacy` 靜態頁與**自架正式服務**——`/tool/apply-wardrobe` 屬 dev-only [server.mjs]、不在 [sysApi系統] 正式服務內）時，overlay 可預覽但儲存失敗時以明確提示通知，不 crash 遊戲；此功能於自架正式服務上之定位（實質為 dev／LAN 調校作業）列增量 #310 檢整候選。
 * **spec#16-可由維護者在瀏覽器端調整衣物旋轉角度並儲存**：方案須讓維護者能在 [wardrobe-tuner] 以旋轉角度滑桿（-180°～180°）即時預覽並儲存衣物 layer 的旋轉設定；旋轉值儲存於各衣物 sidecar metadata 選填 `rotation` 欄位（缺省 0，向下相容），[server.mjs] 寫入路徑支援 rotation 欄位讀寫，[game-engine] 渲染衣物 layer 時讀取並套用 CSS `transform: rotate(Ndeg)`（旋轉中心為元素中心），使維護者不需手動計算即可精確控制衣物旋轉。
 * **spec#17-可從區網任何家庭裝置存取 wardrobe-tuner**：方案須讓 [server.mjs] 預設監聽 `0.0.0.0`（可由 `HOST` 環境變數覆寫），並於啟動 log 顯示局域網可連線 IP，使同一家庭區網內的任何裝置（手機、平板）可直接以瀏覽器開啟 [wardrobe-tuner] 並儲存衣物對位設定；此設定僅影響 dev-only [server.mjs]，不納入靜態部署。
 * **spec#18-調整儲存後維持原環境不跳轉**：`patchWardrobeItem` 在呼叫 `renderPaperDolls()` 後，須依 `advMode` 選擇對應重繪：`advMode === "wardrobe"` → `renderWardrobeDetail(true)`；`advMode === "shop"` → `renderAdvShop(true)`；其他模式 → 不另行重繪商品面板；使調整 overlay 儲存後維持原環境（衣櫃回衣櫃、商店回商店），不誤跳至公主衣櫃。
@@ -37,8 +37,8 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件（#309 
 * **spec#20-可於對話場景即時看見金錢並順暢瀏覽換裝面板**：方案須讓兒童於進入對話場景（含打工任務、生活聊天、逛店、衣櫃換裝）時，於場景畫面內即時看見目前 coins 數量，不因全屏對話覆蓋而看不見獎勵，使「答對得幣」之所得於當下可感（與 spec#4 正向閉環一致）；換裝與商店共用之衣櫃面板（spec#3）須提供足夠寬之瀏覽區，於桌機寬視口一次完整呈現所有可選品項而非以捲動藏起，且選衣時公主立繪維持完整可見、不被面板遮擋。換裝面板版面與金錢呈現之合格須含手機直向與桌機寬視口、實際穿上代表性衣物後之視覺檢查（與 spec#3 完成判定一致）。
 * **spec#21-可讓新局公主以得體入門造型起步並保留換裝成長空間**：方案須使新建帳號之公主以一套得體（不華麗但不寒酸）之初始造型起步，且新局僅預先擁有身上所穿之品項、其餘外觀一律須以 coins 購得，使「答對得幣→換裝」之成長動機自第一次遊玩即成立（呼應 spec#4 正向閉環），避免新局即擁有過多（含華麗）品項而失去蒐集與獎勵意義；新局初始造型與起始擁有之具體品項屬可由維護者於起始組態調整之內容設定（呼應 spec#13）。
 * **spec#22-可高效且不誤失工作地使用管理設定工具**：方案須讓維護者於桌機與家庭區網行動裝置（手機、平板，呼應 spec#17）上高效、安全地使用 [管理設定工具] 完成內容維護——(a) 工作保護：任何未儲存之編修（衣物框對位、旋轉、對話文本、公主預設等）在重新整理、關閉或切換頁面前均須獲得明確警示，寫回成功後不得以整頁重載丟棄其他未儲存工作與畫面狀態（選取、捲動、篩選、縮放平移）；(b) 導覽動線：左側導覽於收合狀態仍可辨識各資料包、麵包屑可點擊回上層，deep link 涵蓋分頁內工作點（子分頁、所選地區／場景／單品），使維護中斷後可回到原工作點；(c) 操作回饋：確認、錯誤與成功提示採與工具視覺一致之 MD3 dialog／snackbar（不使用原生阻塞式 alert／confirm），危險操作（刪除單品、清除全部語音指定）具 error 色視覺區隔與明確確認、成功訊息自動消散；(d) 編輯效率：框對位提供數值輸入與鍵盤微調、可單件還原與檢視本次待寫回變更清單，AI 生成對話採「生成→對照→採納」而不直接覆寫既有題庫；(e) 小螢幕可用：導覽抽屜於窄視口採 overlay 模式、觸控目標 ≥44px、預覽支援雙指縮放，觸控裝置可見必要操作說明。上述體驗以 paramToolUxQualityBar 之 20 項問題清單（issue #297 盤點）全數修正為完成判定；本工具仍為 dev-only（本機與區網），公開遊玩端不受影響。
-* **spec#23-可建立帳密帳號並登入遊玩**：方案須讓玩家（或協助之家長）於遊戲入口註冊帳號並登入：帳號為小寫英文字母開頭、由小寫英文與數字組成之 3–16 字識別（paramUsernamePattern，`^[a-z][a-z0-9]{2,15}$`）、同一伺服器內全域唯一；密碼長度至少 6 字元（paramPasswordMinLength）；註冊與登入規則於前端與後端同源驗證、錯誤訊息友善且就地提示（帳號格式不符、密碼過短、帳號已存在各自可辨；登入失敗統一顯示「帳號或密碼不正確」、不洩漏帳號存在性）；密碼一律以業界標準單向雜湊（bcrypt、cost ≥10）儲存、資料庫與日誌不得出現明文；登入成功核發有時效之 session token（隨機不可預測、伺服器端可撤銷）並於裝置端快取（重啟瀏覽器免重新輸入、逾期或登出即失效），登出即撤銷 session；受保護 API 一律驗 session，未帶或無效一律拒絕；欄位與動線以家長協助輸入為情境設計（大欄位、觸控友善、錯誤就地提示、不設 email 或第三方登入）。
-* **spec#24-可雲端保存進度並跨裝置還原**：方案須將每帳號之全部遊玩進度（既有 normalized state 全項：coins、學習紀錄、擁有與穿搭、所在位置、所選角色、名字、識別色與背景花紋、遊玩／休息狀態等）保存於伺服器端，登入即還原、跨裝置跨瀏覽器一致；保存採自動節流（paramSaveDebounceMs）＋關鍵事件即時寫入（答題結算、購買退款、換裝、時間到結算、登出）；伺服器暫時不可達時遊戲以記憶體狀態續玩、背景重試並明確提示同步狀態、不 crash 不丟既有畫面；舊進度有兩條遷移路徑——(a) 既有 Markdown 匯出存檔可匯入為目前登入帳號之雲端進度、(b) 本裝置舊版 localStorage 本機帳號可於登入畫面一鍵遷移為伺服器帳號進度——兩者皆沿用既有匯入正規化與 `sol`→`lumi` 等相容 fallback；Markdown 匯出功能保留作為離線備份。
+* **spec#23-可建立帳密帳號並登入遊玩**：方案須讓玩家（或協助之家長）於遊戲入口註冊帳號並登入：帳號為小寫英文字母開頭、由小寫英文與數字組成之 3–16 字識別（paramUsernamePattern，`^[a-z][a-z0-9]{2,15}$`）、同一伺服器內全域唯一；密碼長度至少 6 字元（paramPasswordMinLength）；註冊與登入規則於前端與後端同源驗證、錯誤訊息友善且就地提示（帳號格式不符、密碼過短、帳號已存在各自可辨；登入失敗統一顯示「帳號或密碼不正確」、不洩漏帳號存在性）；密碼一律以業界標準單向雜湊（bcrypt、cost ≥10）儲存、資料庫與日誌不得出現明文；登入成功核發有時效之 session token（隨機不可預測、伺服器端可撤銷）並於裝置端快取（重啟瀏覽器免重新輸入、逾期或登出即失效），登出即撤銷 session；session 快取僅綁定本裝置**最後登入**之帳號，自登入畫面點選其他帳號卡一律須輸入密碼、切換登入成功即覆蓋並撤銷前一快取 session（共用裝置不誤入他人帳號）；session 逾期時遊戲端先嘗試完成一次保存再導回登入畫面；受保護 API 一律驗 session，未帶或無效一律拒絕；密碼長度上限 72 字元、密碼欄具顯示／隱藏切換（降低家長代輸錯誤）；登入與註冊端點具速率限制／連續失敗退避（參數 code 段落地）；**忘記密碼與變更密碼之去處明文**——密碼重設與變更屬維護者作業、納入增量 #310 線上管理範圍，本增量提供維護者於伺服器端以維護指令重設密碼之過渡程序（code 段落地、記入 README 維護者段）；欄位與動線以家長協助輸入為情境設計（大欄位、觸控友善、錯誤就地提示、不設 email 或第三方登入）。
+* **spec#24-可雲端保存進度並跨裝置還原**：方案須將每帳號之全部遊玩進度（既有 normalized state 全項：coins、學習紀錄、擁有與穿搭、所在位置、所選角色、名字、識別色與背景花紋、遊玩／休息狀態等）保存於伺服器端，登入即還原、跨裝置跨瀏覽器一致；保存採自動節流（paramSaveDebounceMs）＋關鍵事件即時寫入（答題結算、購買退款、換裝、時間到結算、登出）；伺服器暫時不可達時遊戲以記憶體狀態續玩、背景重試並明確提示同步狀態、不 crash 不丟既有畫面；舊進度有兩條遷移路徑——(a) 既有 Markdown 匯出存檔可匯入為目前登入帳號之雲端進度、(b) 本裝置舊版 localStorage 本機帳號可於登入畫面一鍵遷移為伺服器帳號進度——兩者皆沿用既有匯入正規化與 `sol`→`lumi` 等相容 fallback，且承接帳號已有雲端進度時須明確警示覆蓋方向並經確認、先上傳成功後才標記已遷移（失敗可重試不重複）；Markdown 匯出功能保留作為離線備份。並發保護：同帳號多裝置同時遊玩時，保存以 `updatedAt` 樂觀比對——過期寫入被拒（HTTP 409）並由遊戲端提示重新載入，不靜默覆蓋較新進度；存檔 API 回應附伺服器時間，遊戲端據以校正遊玩／休息計時判定（裝置時鐘竄改之防護明文屬家長管理範圍、非技術防線）。
 
 # II. 設計分析
 
@@ -173,7 +173,7 @@ HOST -->|"🎚️paramDeployBranch=`main`"| API
 * **Env轉K8sSec參數**
   * [etyCfg自訂sysApi組態]
     * `DATABASE_URL`：PostgreSQL 連線字串（[apiIntf標準Postgres連線]）；正式 K8s Secret 於增量 #311 helm 化，本增量以本機 `.env`／compose 環境變數供給。
-    * `SESSION_SECRET`：session token 之伺服器端簽章／加鹽私鑰；供給方式同上。
+    * `SESSION_SECRET`：session token 雜湊（tokenHash）之 pepper（伺服器端秘密；token 本體為 opaque 隨機值、不採簽章式 token）；供給方式同上。
 * **HelmChart參數-chart.yaml**
   * [etyCfg自訂sysGame組態]／[etyCfg自訂sysApi組態]：暫無自有 chart（正式 helm 整包於增量 #311 編制；本增量驗收環境為本機／區網 docker compose 或等效啟動）。
 * **HelmChart參數-values.yaml**
@@ -285,12 +285,12 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
   * **sysCase#3.2**：[modWardrobe模組]承接[runAct自訂玩家換裝]，以共用 `body` ＋ per-character `head` ＋ 髮型、衣物與配件 layer 的順序更新 outfit 並重繪紙娃娃（`body` 為含永久肌膚安全底著之最底層、`head` 疊於其上承載臉與預設髮、其餘 wardrobe layer 再依序疊上）；穿戴衣物疊於 `body` 底著之上、穿戴髮型 layer 須完全覆蓋 `head` 預設髮，更換時舊層卸下不殘留，舊存檔 starter 相容項正規化為 no overlay 以避免重複疊圖；[Yumi] 與 [Mary] 髮色與眼睛校準須回到該角色 `head` raster 素材本身，不由 [modWardrobe模組] 以濾鏡或額外 layer 代改。wardrobe layer 渲染須先依 item type／slot 取得類別級上下左右邊界或安全框，再將該類 layer 放入對應範圍；單件商品預設不得自帶一次性 nudge，必要例外須受控且可由視覺 QA 追溯。換裝模型採單品單層：每件 wardrobe item 至多對應單一外觀層，不採整套綁定（outfit set）一次裝備多件、亦不採單件跨多層（如 outer 前後雙層），換裝一律以單品逐件穿戴疊合呈現。可裝備服裝型別精簡為整件 `outfit`（原 `dress` 改名之單件全身衣著）、配件（含 `headTop`）與髮型、鞋——移除分件 `top`／`bottom` 型別、slot 與紙娃娃圖層，`outfitSlots`／`paperDollLayerOrder`／類別級 layer bounds 同步移除 top／bottom 並將 `dress` 鍵改名 `outfit`；舊存檔曾穿之 `top`／`bottom` 於 [modState模組] 載入正規化時清除、舊 `dress` 欄位改讀為 `outfit`，使既有存檔相容載入不殘留懸空 slot。
   * **sysCase#3.3**：[modWardrobe模組]承接[runAct自訂玩家退款]，回補 coins 並取消擁有。
   * **sysCase#3.4**：[modWardrobe模組]承接[runAct自訂玩家換裝]，公主房衣櫃與商店逛店**為同一套機制**——共用同一套多欄貨架面板（同一 `renderAdvShop`），且**穿脫互動直接走商店試穿之同一單一來源**（同一 `shopTryOnState`／`toggleShopTryOn`／`updateShopTileStates`，內部依 `advMode` 區分：衣櫃＝持久穿戴、商店＝暫時試穿），不另寫第二套穿脫函式；故衣櫃穿脫鈕即商店左側那顆 try-on 鈕（同位置、按下**就地更新不重建貨架**、面板不跳），就已擁有衣物提供穿脫切換（Wear↔Take Off），衣櫃不渲染右側購買鈕、商店則保留試穿＋購買；衣櫃穿脫鈕著深粉紅以與商店購買鈕（暗色玻璃）區辨。公主房第一層場景選單以單一「換裝」入口開啟此面板，入口鈕沿用一般場景選單樣式（不特別上色）。衣物類型不含 outerwear（外套，issue #244 移除）與分件 `top`／`bottom`（上下身，issue #251 移除、整件改稱 `outfit`）；衣櫃顯示分類精簡為髮型、整件 `outfit`、鞋與配件四類，原 `hats`（`headTop`）由獨立分類併入配件分類顯示。
-  * **sysCase#3.5**：[modWardrobe模組]承接[runAct自訂玩家調整衣物對位]，於衣櫃面板每件已擁有單品右側渲染「調整」按鈕（[item-panel] `createItemPanelRow` 增加選填 `adjustButton` 設定，僅 advMode=`wardrobe` 傳入、商店與退款 mode 不傳即不渲染）；點擊後開啟 [adjust-overlay]——以獨立 `<dialog>` 全螢幕覆蓋，含固定 512:768 比例預覽區與五組 `<input type=range>`（中心 X、中心 Y、寬、高、旋轉 -180°～180°）；預覽區以 [paper-doll.js] `avatarMarkup`＋`applyLayerTransforms` 渲染目前 state.outfit 著裝，目標單品 targetBox（由滑桿 centerX／Y＋width／height 換算 left/top/right/bottom、並驗 left < right、top < bottom、不超出 512×768 canvas）與 rotation 即時覆寫（不呼叫 server）；「儲存」POST `/tool/apply-wardrobe` 寫回 sidecar 並觸發 index 重生（server 端已有此邏輯），成功後以動態 patch itemMap（不整頁重整）使調整立即反映於遊戲；「取消」丟棄本次調整；overlay 以獨立容器渲染、不共享遊戲 `[data-doll]` 選取器、不嵌入現有遊戲表單 DOM；公開 GitHub Pages 無 server 時儲存 POST 失敗，overlay 顯示明確提示、不 crash；本 spec 範圍不實作 warp/corners 四角任意變形。
+  * **sysCase#3.5**：[modWardrobe模組]承接[runAct自訂玩家調整衣物對位]，於衣櫃面板每件已擁有單品右側渲染「調整」按鈕（[item-panel] `createItemPanelRow` 增加選填 `adjustButton` 設定，僅 advMode=`wardrobe` 傳入、商店與退款 mode 不傳即不渲染）；點擊後開啟 [adjust-overlay]——以獨立 `<dialog>` 全螢幕覆蓋，含固定 512:768 比例預覽區與五組 `<input type=range>`（中心 X、中心 Y、寬、高、旋轉 -180°～180°）；預覽區以 [paper-doll.js] `avatarMarkup`＋`applyLayerTransforms` 渲染目前 state.outfit 著裝，目標單品 targetBox（由滑桿 centerX／Y＋width／height 換算 left/top/right/bottom、並驗 left < right、top < bottom、不超出 512×768 canvas）與 rotation 即時覆寫（不呼叫 server）；「儲存」POST `/tool/apply-wardrobe` 寫回 sidecar 並觸發 index 重生（server 端已有此邏輯），成功後以動態 patch itemMap（不整頁重整）使調整立即反映於遊戲；「取消」丟棄本次調整；overlay 以獨立容器渲染、不共享遊戲 `[data-doll]` 選取器、不嵌入現有遊戲表單 DOM；無 dev server 之環境（含 `pages-legacy` 與自架正式服務，寫回端點屬 dev-only [server.mjs]）儲存 POST 失敗，overlay 顯示明確提示、不 crash；本 spec 範圍不實作 warp/corners 四角任意變形。
   * **sysCase#3.6**：[modWardrobe模組]承接[setAct自訂維護者調整衣物旋轉]，以旋轉角度滑桿呈現於 [wardrobe-tuner]（前端單頁工具，非遊戲主體），拖動即時更新紙娃娃 layer 之 CSS `transform: rotate(Ndeg)`（旋轉中心為元素中心）；確認後 POST `/tool/apply-wardrobe`，[server.mjs] 將 `rotation` 欄位與 `targetBox` 一併寫回 sidecar 並重生 [index.generated.js]；[buildWardrobeItem] 自 sidecar 讀取 `rotation`（缺省 0、後向相容）傳入 item 物件；遊戲引擎於 `avatarMarkup` 以 `data-rotation` attribute 記錄、`applyLayerTransforms` 套用旋轉（與 `data-warp` 形變並存時合成）；[server.mjs] 預設監聽 `0.0.0.0`（`HOST` 環境變數可覆寫），啟動 log 顯示 LAN IP，使區網內任一裝置可直接開啟工具頁。
   * **sysCase#3.7**：[modWardrobe模組]承接[runAct自訂玩家調整衣物對位]，`patchWardrobeItem`（overlay 儲存後的 `onSave` 回呼）於呼叫 `renderPaperDolls()` 後依 `advMode` 決定重繪目標：`advMode === "wardrobe"` 時呼叫 `renderWardrobeDetail(true)`；`advMode === "shop"` 時呼叫 `renderAdvShop(true)`；其他模式不另行重繪商品面板；確保調整儲存後使用者維持原環境。
 * **sysStory#4-承接狀態保存與還原**：
   * **sysCase#4.1**：[modState模組]承接[runAct自訂系統保存進度]，以目前 session 經 [apiIntf自訂帳號存檔服務] 將 normalized state 全量寫入 [sysApi系統] 之該帳號雲端存檔；採 paramSaveDebounceMs 節流、關鍵事件（答題結算、購買退款、換裝、時間到結算、登出）即時寫入；寫入失敗（網路或伺服器不可達）時保留記憶體狀態並背景重試、於畫面顯示同步狀態提示，不 crash 不丟畫面；瀏覽器本機儲存不再作為進度寫入目標（僅留 session 快取、裝置最近帳號摘要與舊帳號遷移唯讀來源）。
-  * **sysCase#4.2**：[modState模組]承接[setAct自訂玩家匯入存檔]，解析 Markdown 並正規化後，上傳為目前登入帳號之雲端存檔（與本機舊帳號一鍵遷移共用同一上傳路徑）。
+  * **sysCase#4.2**：[modState模組]承接[setAct自訂玩家匯入存檔]，解析 Markdown 並正規化後，上傳為目前登入帳號之雲端存檔（與本機舊帳號一鍵遷移共用同一上傳路徑）；承接帳號已有雲端進度時先明確警示覆蓋方向並經確認；遷移採「先上傳確認成功、後標記已遷移」順序，失敗可重試不重複。
   * **sysCase#4.3**：[modState模組]承接[runAct自訂系統還原進度]，登入後自 [sysApi系統] 載回該帳號存檔，缺漏欄位以 `normalizeState` 回退預設值（含 `sol`→`lumi` 等相容 fallback）；無存檔時建立新局初始進度。
 * **sysStory#5-承接選角與內容擴充**：
   * **sysCase#5.1**：[modShell模組]承接[runAct自訂玩家選角命名]，於 `lumi`、`yumi`、`rosa` 可玩公主 roster 中更新 activeCharacterId、playerName 與 profileColor；既有存檔帶 `sol` 角色 id 者，於 [modState模組] `normalizeState` 讀取時 fallback 為 `defaultActiveCharacterId`（`lumi`），使舊存檔可無縫升級至新三角色 roster。
@@ -298,7 +298,7 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
   * **sysCase#5.3**：[modContent模組]承接[setAct自訂維護者擴充內容]，匯入新內容包至 registry；可玩公主與 wardrobe layer 均須遵守 [hmiIntf自訂角色尺度與美術規範] 的 `shared-512x768-v1` rig；可玩公主 base、wardrobe layer 與 ADV 場景背景須以 GPT／影像模型產生或修圖為童話手繪風格 transparent/raster 素材，不得以 SVG、CSS 濾鏡、向量拼貼、模糊補版或 renderer 特例代替；新增 wardrobe item 須依 `type`／slot 繼承類別級 layer bounds、且每件至多對應單一 layer slot（單品單層，不採 bundle 套裝或單件多層）；wardrobe 內容以資源包為單位，一個資源包對應一家衣物商店、可含多種類別衣物（含髮型，不限類別），商店以其資源包整包供逛店（包內各類別沿用既有 UI 類別分頁瀏覽，不以單一類別切分商店），原則上每地區一家衣物商店；wardrobe 單品採單一 `512×512` 透明素材兼作投影層與商店預覽（不另設分離商品縮圖），素材由全域 house style＋該包 packStyle＋單品描述詞組 prompt 經影像模型生成、等比縮放使長邊貼滿（短邊置中留透明、不變形），留痕（model／prompt／date）寫入圖檔 metadata；維護工具提供三層描述詞編輯與單品重生；新增或替換場景背景須交付完整繪製之 `1024x1024` WebP，並在 manifest 以 `sceneArt.src` 指向正式資產；所有匯入之圖像資產（角色與 NPC base、wardrobe 單品 layer、ADV 場景背景、地區與世界地圖、UI 等）均須通過資產 lint——其像素尺寸等於 paramAssetStandards 宣告之類別標準值、且檔案位元組不超出該類別檔重預算，超標即視為內容缺陷需重壓縮或具名豁免，使過大圖檔於擴充當下即被擋下、不拖慢純靜態載入。
   * **sysCase#5.4**：[modShell模組]承接[runAct自訂玩家設定公主背景花紋]，自 [modContent模組] 背景花紋資產集提供選項供玩家擇一，更新並持久化目前帳號之背景花紋至其視覺主題狀態；新帳號或首次初始化缺 backgroundPattern 時，由 [modState模組] 自可見背景花紋集合一次性隨機選出初始 backgroundPattern 並保存至帳號狀態，後續載入不得重抽；未知花紋時回退無花紋預設。
 * **sysStory#6-承接帳號登入與管理**：
-  * **sysCase#6.1**：[modShell模組]承接[runAct自訂玩家登入帳號]，啟動時先進入登入畫面：自裝置快取（paramRecentAccountsKey）渲染本裝置最近登入過之帳號卡（頭胸部大頭照、profileColor、lastPlayedAt、coins、play/rest 摘要），點選帳號卡展開密碼欄、或切換「其他帳號」輸入帳號與密碼；經 [modState模組] 呼叫 [sysApi系統] 登入，成功後取得 session token 與該帳號雲端存檔進入遊戲，並更新裝置最近帳號摘要；失敗統一就地顯示「帳號或密碼不正確」。裝置快取有有效 session 時免重新輸入密碼直接續用。
+  * **sysCase#6.1**：[modShell模組]承接[runAct自訂玩家登入帳號]，啟動時先進入登入畫面：自裝置快取（paramRecentAccountsKey）渲染本裝置最近登入過之帳號卡（頭胸部大頭照、profileColor、lastPlayedAt、coins、play/rest 摘要），點選帳號卡展開密碼欄、或切換「其他帳號」輸入帳號與密碼；經 [modState模組] 呼叫 [sysApi系統] 登入，成功後取得 session token 與該帳號雲端存檔進入遊戲，並更新裝置最近帳號摘要；失敗統一就地顯示「帳號或密碼不正確」。session 快取僅綁定本裝置最後登入之帳號：該帳號有有效 session 時免重新輸入密碼直接續用，點選**其他**帳號卡一律須輸入密碼、切換登入成功即覆蓋並撤銷前一快取 session；帳號卡主標為 playerName、副標 username（重名可辨），登入後遊戲內設定選單顯示「目前帳號：`username`」。
   * **sysCase#6.2**：[modState模組]承接[runAct自訂玩家註冊帳號]，前端先以 paramUsernamePattern／paramPasswordMinLength 驗證並就地提示，通過後呼叫 [sysApi系統] 註冊；成功即自動登入並建立新帳號初始進度（初始 profileColor 與 backgroundPattern 一次性隨機寫入，使帳號卡第一次顯示即具備穩定主題）；帳號已存在等錯誤以友善訊息就地呈現。
   * **sysCase#6.3**：[modState模組]承接[runAct自訂玩家登出帳號]，登出前完成一次即時雲端保存、呼叫 [sysApi系統] 撤銷 session、清除裝置 session 快取（保留最近帳號摘要）並回到登入畫面；玩家端不提供刪除帳號（維護者於增量 #310 管理）。
   * **sysCase#6.4**：[modShell模組]承接[runAct自訂玩家回到初始選單]，於遊戲內提供返回登入／帳號選擇畫面的明確按鈕，返回時先保存目前帳號進度與 lastPlayedAt（同步至雲端），再顯示登入畫面；同裝置另一玩家可就其帳號卡輸入密碼進入。
@@ -449,12 +449,12 @@ SERVE -->|"🎚️paramApiPort=`4180`"| SYS
 
 * **sysStory#1-承接帳號註冊登入**：
   * **sysCase#1.1**：[modAuth模組]承接[runAct自訂玩家註冊帳號]，驗證帳號格式（paramUsernamePattern）與密碼長度（paramPasswordMinLength）、檢查帳號唯一性，以 bcrypt（cost ≥10）雜湊密碼後建立帳號並核發 session token；帳號已存在、格式不符、密碼過短各回可辨識之錯誤碼與訊息（HTTP 409／422），資料庫與日誌不落明文密碼。
-  * **sysCase#1.2**：[modAuth模組]承接[runAct自訂玩家登入帳號]，比對密碼雜湊，成功即核發時效 paramSessionTtlDays 之 session token（隨機不可預測、伺服器端持有可撤銷）；失敗統一回 401「帳號或密碼不正確」、不區分帳號不存在與密碼錯誤；受保護端點一律驗 session，未帶或無效回 401。
+  * **sysCase#1.2**：[modAuth模組]承接[runAct自訂玩家登入帳號]，比對密碼雜湊，成功即核發時效 paramSessionTtlDays 之 session token（opaque 隨機值、伺服器端僅存其雜湊 tokenHash、可撤銷；TTL 固定不展期）；失敗統一回 401「帳號或密碼不正確」、不區分帳號不存在與密碼錯誤；登入與註冊端點具速率限制／連續失敗退避；受保護端點一律驗 session，未帶或無效回 401。
   * **sysCase#1.3**：[modAuth模組]承接[runAct自訂玩家登出帳號]，撤銷該 session token；已撤銷或逾期之 token 後續請求一律 401。
 * **sysStory#2-承接雲端存檔**：
-  * **sysCase#2.1**：[modSave模組]承接[runAct自訂系統保存進度]，以 session 所屬帳號 upsert 該帳號之單一存檔紀錄（JSONB 全量 state＋schemaVersion＋updatedAt），寫入採整筆替換（最後寫入者勝）、以參數化查詢執行、無任何跨帳號存取路徑。
-  * **sysCase#2.2**：[modSave模組]承接[runAct自訂系統還原進度]，登入後回傳該帳號存檔全量 state；無存檔時回空（HTTP 204），由遊戲端建立新局初始進度；伺服器不改寫遊戲語意，正規化一律由遊戲端 `normalizeState` 執行。
-  * **sysCase#2.3**：[modSave模組]承接[setAct自訂玩家匯入存檔]，接受遊戲端解析正規化後之整份 state 作為該帳號存檔（Markdown 遷移與本機舊帳號一鍵遷移共用此上傳路徑）。
+  * **sysCase#2.1**：[modSave模組]承接[runAct自訂系統保存進度]，以 session 所屬帳號 upsert 該帳號之單一存檔紀錄（JSONB 全量 state＋schemaVersion＋updatedAt），寫入採整筆替換並以 `updatedAt` 樂觀比對——請求所帶基準 `updatedAt` 過期即拒（HTTP 409、不覆蓋較新進度，由遊戲端提示重新載入）；以參數化查詢執行、請求體具大小上限（值 code 段定）、無任何跨帳號存取路徑。
+  * **sysCase#2.2**：[modSave模組]承接[runAct自訂系統還原進度]，登入後回傳該帳號存檔全量 state 與伺服器時間（供遊戲端校正遊玩／休息計時）；無存檔時回空（HTTP 204），由遊戲端建立新局初始進度；伺服器不改寫遊戲語意，正規化一律由遊戲端 `normalizeState` 執行。
+  * **sysCase#2.3**：[modSave模組]承接[setAct自訂玩家匯入存檔]，接受遊戲端解析正規化後之整份 state 作為該帳號存檔（Markdown 遷移與本機舊帳號一鍵遷移共用此上傳路徑）；遷移／匯入屬使用者明示之覆蓋操作，遊戲端於承接帳號已有雲端進度時先明確警示覆蓋方向並經確認才上傳。
 * **sysStory#3-承接遊戲殼服務**：
   * **sysCase#3.1**：[modServe模組]承接[setAct自訂維護者部署網站]，同站服務遊戲殼靜態檔（`index.html`、[game-engine]、[content-package] 等）與 `/api/*` 端點（同源、免 CORS）；提供不受保護之 `/healthz` liveness／readiness 路徑；[server.mjs] 之 dev 工具職能（管理設定工具 sidecar 寫回）維持獨立、不併入本服務（維護者內容編修仍走本機 dev 環境，其線上化於增量 #310 檢整）。
 
@@ -575,9 +575,9 @@ erDiagram
   * `POST /api/auth/register`：`{username, password}` → `201 {token, account}`；錯誤 `409 username-taken`／`422 invalid-username`／`422 password-too-short`。
   * `POST /api/auth/login`：`{username, password}` → `200 {token, account}`；錯誤統一 `401 invalid-credentials`（不區分帳號不存在與密碼錯誤）。
   * `POST /api/auth/logout`：撤銷目前 session → `204`。
-  * `GET /api/save`：回目前帳號存檔 `200 {state, updatedAt, schemaVersion}`；無存檔 `204`。
-  * `PUT /api/save`：`{state, schemaVersion}` 整筆替換 upsert → `204`。
-  * 通則：除 register／login 外一律以 `Authorization: Bearer <token>` 驗 session（無效 `401`）；錯誤體統一 `{error:{code,message}}`；`/healthz` 不受保護供 liveness／readiness。
+  * `GET /api/save`：回目前帳號存檔 `200 {state, updatedAt, schemaVersion, serverTime}`；無存檔 `204`（回應仍附 `serverTime`）。
+  * `PUT /api/save`：`{state, schemaVersion, baseUpdatedAt}` 整筆替換 upsert，`baseUpdatedAt` 與現存 `updatedAt` 樂觀比對——過期 `409 save-conflict`（不覆蓋較新進度）、成功 `200 {updatedAt, serverTime}`。
+  * 通則：除 register／login 外一律以 `Authorization: Bearer <token>` 驗 session（無效 `401`）；register／login 具速率限制／失敗退避（`429`）；請求體具大小上限（值 code 段定）；錯誤體統一 `{error:{code,message}}`；`/healthz` 不受保護供 liveness／readiness。
 * [datIntf自訂玩家帳號紀錄]：[sysApi系統] 之持久化資料模型（PostgreSQL，依 [techItem資料庫]；欄位型別與約束由 code 段 migration 落地）。帳號一對多 session、一對一存檔；密碼僅存 bcrypt 雜湊；存檔 state 為 JSONB 全量（遊戲端 normalized state 原樣），伺服器不拆欄位、不改寫語意。
 
 ```mermaid
@@ -604,7 +604,7 @@ erDiagram
   }
 ```
 
-* [hmiIntf自訂登入註冊頁]（遊戲殼玩家端，本 repo 自訂、不成檔）：遊戲入口之登入／註冊畫面，沿用遊戲既有童話手繪粉彩視覺（非管理網站規範）；版面三塊——(a) 本裝置最近帳號卡列（沿用既有帳號卡：頭胸照、識別色半透明鋪底、名字、最近遊玩、coins、可玩／休息狀態），點選展開該卡之密碼欄與「進入」鈕；(b)「其他帳號」與「建立新帳號」切換（帳號、密碼大欄位、觸控 ≥44px、錯誤就地紅字提示、家長協助輸入情境）；(c) 本裝置偵測到舊版本機帳號時顯示「匯入本機舊進度」遷移入口（intTest#74）。參考稿見 [docs/design-visual/page-login.svg](design-visual/page-login.svg)（設計期參考、以文字規格為準）。
+* [hmiIntf自訂登入註冊頁]（遊戲殼玩家端，本 repo 自訂、不成檔）：遊戲入口之登入／註冊畫面，沿用遊戲既有童話手繪粉彩視覺（非管理網站規範）；**手機直向為第一視口**——帳號卡單欄堆疊、點卡就地展開密碼欄，桌機寬視口卡片可並排（參考稿為桌機構圖、直向依本文字規格）。版面三塊——(a) 本裝置最近帳號卡列（沿用既有帳號卡：頭胸照、識別色半透明鋪底，主標 playerName、副標 `username` 以辨重名，最近遊玩、coins、可玩／休息狀態），點選展開該卡之密碼欄與「進入」鈕；本裝置無任何帳號卡時（全新裝置／全新伺服器）以空狀態呈現：預設聚焦「建立新帳號」表單並附一句兒童友善引導文案；(b)「其他帳號」與「建立新帳號」切換（帳號、密碼大欄位、密碼欄具顯示／隱藏切換、錯誤就地紅字提示、家長協助輸入情境）；(c) 本裝置偵測到舊版本機帳號時顯示「匯入本機舊進度」遷移入口（intTest#74）。**頁上所有可點入口（含帳號卡、切換鈕、遷移入口）觸控目標一律 ≥44px**。參考稿見 [docs/design-visual/page-login.svg](design-visual/page-login.svg)（設計期參考、以文字規格為準）。
 
 * [hmiIntf通用視覺規範]（管理網站規範）：[管理設定工具]（`tool/wardrobe-tuner.html`）屬「管理網站／CRUD」介面，其元件與視覺通則綁定本契約之 `通用性規範` 與 `專用性規範-管理網站`（MD3 基座）；品牌主題 token 以遊戲識別色（低飽和粉彩色盤）為種子，記於 [docs/design-visual](design-visual/)、經 Material Theme Builder 生成定本後唯讀引用、不重生。工具頁面樹（sitemap）依內容資料包分兩層，各既有管理頁歸入其所屬資料包節點：
   * 公主：公主登記／外觀資產、公主起始
@@ -758,7 +758,7 @@ erDiagram
 * 步驟：
   1. 於選角畫面選定外觀、輸入名字並選擇識別色後確認。
 * 預期結果：
-  1. activeCharacterId、playerName 與 profileColor 更新，遊戲內稱呼與人物資訊隨之改變，且 Lumi、Yumi、Mary、Rosa 四位可玩公主在選角畫面可辨識；Mary 以 `activeCharacterId="sol"` 保存與載入。
+  1. activeCharacterId、playerName 與 profileColor 更新，遊戲內稱呼與人物資訊隨之改變，且 Lumi、Yumi、Rosa 三位可玩公主在選角畫面可辨識（sol／Mary 已於 spec#19 自 roster 移除，見 intTest#61）。
 
 #### intTest#11-驗證 [runAct自訂系統保存進度]
 
@@ -1514,9 +1514,9 @@ erDiagram
   2. 以偽造之隨機 token 直呼受保護 API。
   3. 將 session 設為已逾期（測試鉤或時間模擬）後操作遊戲。
 * 預期結果：
-  1. 裝置快取之有效 session 使玩家免重新輸入密碼直接續玩（paramSessionCacheKey）。
-  2. 偽造 token 一律 401；token 為隨機不可預測、伺服器端持有可撤銷。
-  3. session 逾期時遊戲不 crash，引導回登入畫面重新登入；重新登入後進度為最後保存值。
+  1. 裝置快取之有效 session 僅對**最後登入帳號**免重新輸入密碼直接續玩（paramSessionCacheKey）；點選其他帳號卡一律要求密碼，切換登入成功即覆蓋並撤銷前一快取 session。
+  2. 偽造 token 一律 401；token 為 opaque 隨機值、伺服器端僅存 tokenHash、可撤銷。
+  3. session 逾期時遊戲不 crash，先嘗試完成一次保存再引導回登入畫面；重新登入後進度為最後保存值。
 
 #### intTest#71-驗證 雲端存檔跨裝置還原（spec#24）
 
@@ -1528,7 +1528,7 @@ erDiagram
   3. 於 A、B 交錯改變狀態並保存。
 * 預期結果：
   1. B 所見 coins、穿搭、位置、識別色等與 A 最後保存一致（normalized state 全項）。
-  2. 交錯寫入採整筆替換、最後寫入者勝，無跨帳號污染；他帳號存檔不受影響。
+  2. 交錯寫入以 `baseUpdatedAt` 樂觀比對：基準過期之寫入被拒（409 save-conflict）且遊戲端提示重新載入，較新進度不被靜默覆蓋；無跨帳號污染、他帳號存檔不受影響。
 
 #### intTest#72-驗證 密碼雜湊與 API 安全（spec#23）
 
@@ -1539,11 +1539,13 @@ erDiagram
   2. 分別以不存在帳號與錯誤密碼登入，比對兩者回應。
   3. 以含 SQL 注入字串（如 `' OR 1=1--`）之帳號名嘗試註冊與登入。
   4. 未帶 token 逐一請求受保護端點。
+  5. 對登入端點連續高頻失敗嘗試。
 * 預期結果：
   1. 資料庫僅存 bcrypt 雜湊（`$2` 前綴、cost ≥10）、日誌無明文密碼。
   2. 兩種登入失敗回應一致（401 invalid-credentials），不洩漏帳號存在性。
   3. 注入字串被參數化查詢安全處理：格式驗證擋下或按一般字串處理、無 SQL 錯誤外洩。
   4. 受保護端點未帶 session 一律 401。
+  5. 連續失敗觸發速率限制／退避（429），暫停後可恢復正常登入。
 
 #### intTest#73-驗證 伺服器不可達降級與重試（spec#24）
 
@@ -1564,12 +1566,14 @@ erDiagram
 * 步驟：
   1. 於 localStorage 注入舊版本機帳號資料（paramStorageKey／paramAccountIndexKey 格式，含一筆帶 `sol` 角色 id 之存檔）。
   2. 開啟登入畫面，確認出現「匯入本機舊進度」遷移入口。
-  3. 選擇一個本機舊帳號，登入（或註冊）一個伺服器帳號承接，完成遷移。
-  4. 重整後檢視登入畫面與該帳號進度。
+  3. 選擇一個本機舊帳號，登入（或註冊）一個伺服器帳號承接，完成遷移；另以一個**已有雲端進度**之帳號承接重試一次。
+  4. 模擬上傳失敗（API 不可達）後重試遷移。
+  5. 重整後檢視登入畫面與該帳號進度。
 * 預期結果：
   1. 遷移入口僅於偵測到舊本機帳號時顯示。
-  2. 遷移後該伺服器帳號之雲端存檔等於舊本機進度經 `normalizeState` 正規化之結果（含 `sol`→`lumi` fallback）。
-  3. 已遷移之本機帳號標記為已遷移、不重複列出；未遷移者保留可再遷移。
+  2. 遷移後該伺服器帳號之雲端存檔等於舊本機進度經 `normalizeState` 正規化之結果（含 `sol`→`lumi` fallback）；承接帳號已有雲端進度時先明確警示覆蓋方向、經確認才覆蓋。
+  3. 上傳失敗時不標記已遷移、可重試不重複；成功上傳後才標記。
+  4. 已遷移之本機帳號標記為已遷移、不重複列出；未遷移者保留可再遷移。
 
 ## E. 方案層級：文件程式化測試
 
@@ -1758,6 +1762,15 @@ erDiagram
 * 通過判定：
   1. 讀者可依 productReadme 預期未儲存工作不會無警示丟失、寫回成功後不整頁重載。
   2. 讀者可依 productReadme 於行動裝置操作工具並回到中斷前的工作點。
+
+#### docProgTest#24-productReadme 承接 [solStory#24-帳號安全與跨裝置同步]
+
+* productReadme 要求：
+  1. 說明密碼以業界標準雜湊保存（伺服器不存明文）、登入失敗提示不洩漏帳號存在性，以及進度以帳號為單位存於伺服器、跨裝置登入一致。
+  2. 說明伺服器暫時連不上時遊戲不中斷、恢復後自動補存。
+* 通過判定：
+  1. 家長可依 productReadme 理解帳密保存方式與跨裝置同步行為。
+  2. 讀者可依 productReadme 預期離線降級與自動補存表現。
 
 ## F. 方案層級：文件端對端測試
 
@@ -2013,7 +2026,7 @@ erDiagram
 
 #### e2eTest#24-依 productReadme 驗測註冊登入、雲端保存與舊存檔遷移全流程（spec#23、spec#24）
 
-* 依據：docProgTest#05、docProgTest#09、[solCase#9.1]、[solCase#9.2]、[solCase#5.1]、[solCase#5.2]。
+* 依據：docProgTest#05、docProgTest#09、docProgTest#24、[solCase#9.1]、[solCase#9.2]、[solCase#5.1]、[solCase#5.2]、[solCase#24.1]、[solCase#24.2]。
 * 步驟：
   1. 依 productReadme 於全新瀏覽器註冊帳號（驗證帳號格式與密碼長度之就地提示），登入後遊玩取得 coins 並換裝。
   2. 關閉瀏覽器重開，確認 session 快取免重輸密碼續玩；登出後確認需重新輸入密碼。
@@ -2031,7 +2044,7 @@ erDiagram
 * **開發 REPO**：`git remote origin`
 * **產品 REPO**：`待定`（自增量 #309 起以自架伺服器整包為交付形態；正式對外散佈通道──image＋helm chart──於增量 #311 接軌發佈列車）
 * **productReadme 來源**：`README.md`（本 repo 根目錄產品手冊；尚未採 buildStage 目錄慣例）
-* **部署方式**：自架伺服器整包──[sysApi系統]（依 [techStackNodeSvr]：Node.js LTS＋TypeScript）同站服務遊戲殼靜態檔（[techStackStaticWeb] 產物，無打包）與 `/api/*` 帳號存檔端點；資料庫 PostgreSQL（依 [techItem資料庫]，經 [apiIntf標準Postgres連線]）。本增量（#309）驗收環境為本機／區網：docker compose（node 服務＋PostgreSQL）或等效啟動；正式 helm 整包（單一 release）於增量 #311 編制。**GitHub Pages 過渡凍結**：Pages 來源改指 `pages-legacy` 分支（釘於最後純靜態版 v0.61.0），main 不再驅動公開站；Pages 於增量 #311 退場。
+* **部署方式**：自架伺服器整包──[sysApi系統]（依 [techStackNodeSvr]：Node.js LTS＋TypeScript）同站服務遊戲殼靜態檔（[techStackStaticWeb] 產物，無打包）與 `/api/*` 帳號存檔端點；資料庫 PostgreSQL（依 [techItem資料庫]，經 [apiIntf標準Postgres連線]）。本增量（#309）驗收環境為本機／區網：docker compose（node 服務＋PostgreSQL）或等效啟動；正式 helm 整包（單一 release）於增量 #311 編制。**傳輸層（明文接受之過渡風險）**：本增量之區網部署為 HTTP（架構圖之 [comIntf通用HTTPS連線] 為目標形態）——密碼與 session token 於家庭內網明文傳輸，威脅模型評估為可接受；TLS 終結（reverse proxy／K8s gateway）於增量 #311 隨正式整包交代。**資料保全**：資料庫備份屬維護者例行作業（`pg_dump` 級，指令由 code 段校準並記入 README）；玩家層另有 Markdown 匯出備份。**密碼重設（過渡）**：玩家忘記密碼時由維護者於伺服器端以維護指令重設（code 段落地），線上化納入增量 #310。**GitHub Pages 過渡凍結**：Pages 來源改指 `pages-legacy` 分支（釘於最後純靜態版 v0.61.0），main 不再驅動公開站；Pages 於增量 #311 退場。
 * **建置指令**：遊戲殼無打包（no-op，直接收集靜態檔）；[sysApi系統] `npm ci && npm run build`（於其建置單元目錄；正式 image `docker build` 於 #311 定案）。本機預覽：自架服務啟動後直接開服務 URL；`node server.mjs` 維持 dev 工具用途（管理設定工具寫回，預設 `http://0.0.0.0:4174/`，可設 `HOST` 環境變數覆寫監聽位址；啟動 log 顯示 LAN IP 供區網存取）。
 * **本機開發工具入口**：本機開發環境（前端偵測 `location.hostname` 為 `127.0.0.1`／`localhost`／`[::1]`）下，起始選單之選角對話框 `Start` 鈕下方顯示［衣物調整工具］dev 入口，點擊以相對路徑導向 `tool/wardrobe-tuner.html`；以前端環境偵測為閘門，正式發佈站（GitHub Pages 公開網域）一律不顯示此入口。屬 dev-only 作者工具便利性、非玩家功能（不進產品手冊主流程與 e2e），其完整套用／管理功能仍需 `node server.mjs`。
 * **測試指令**：[sysApi系統] 單元／整合測試 `npm test`（vitest，涵蓋率門檻 ≥80%）與依賴安全 `npm audit`（0 已知漏洞或列名豁免）；型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=data-audit`／`?selftest=save-load`／`?selftest=accounts`／`?selftest=playtimer`／`?selftest=profile-color`／`?selftest=map-avatar`／`?selftest=character-silhouette`／`?selftest=monkey`／`?selftest=chinese-reward`／`?selftest=scene-nav`／`?selftest=dev-tools`／`?selftest=visual-qa&surface=<id>`；場景背景資產 visual QA 需輸出全場景 contact sheet 與手機直向／桌機截圖；圖像資產標準尺寸與檔重預算之檔案系統 gate `node scripts/assetLint.mjs`（掃描 content-base／content-package 全部 shipped 圖像檔、不只 registry 引用，對照 paramAssetStandards），瀏覽器 `?selftest=data-audit` 另對 registry 引用資產做 runtime 尺寸／檔重檢查；版號投影防漂移 gate `node scripts/genVersion.mjs --check`（斷言 `game-engine/build/version.js`／`CHANGELOG.md` 與根目錄 `VERSION` SSOT 一致）；結構守門 `node scripts/structureLint.mjs`（JS／CSS 單檔行數上限、main.js 組裝上限與 CSS 同檔同 media 重複規則塊歸零，對照 paramStructureQualityBar，lint 內具名豁免清單除外）；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`；**體驗品質雙人工查核（paramExperienceQualityGate，機械守門綠 ≠ 可收）**——會話語感 QA 逐題查核紀錄（intTest#64，落 `docs/qa/`）與版型視覺 QA 雙視口逐畫面走查紀錄（intTest#65，落 `docs/qa/`）齊備且全數通過、並納入 test-summary，方可宣稱完成。
