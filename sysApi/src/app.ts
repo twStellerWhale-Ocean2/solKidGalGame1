@@ -243,7 +243,13 @@ export function createApp(options: AppOptions) {
           lastLoginAt: row.lastLoginAt,
           saveUpdatedAt: row.saveUpdatedAt,
           playLimitPolicy: row.playLimit,
-          playStatus: derivePlayStatus(row.savePlayLimit, now())
+          // 鎖定帳號之休息窗以政策 restMinutes 推導（與遊戲端 effectivePlayLimit 同語意）。
+          playStatus: derivePlayStatus(
+            row.savePlayLimit && row.playLimit.locked && row.playLimit.restMinutes !== null
+              ? { ...row.savePlayLimit, restMinutes: row.playLimit.restMinutes }
+              : row.savePlayLimit,
+            now()
+          )
         }))
       });
     } catch (error) {

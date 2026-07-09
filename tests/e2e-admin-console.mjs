@@ -39,6 +39,18 @@ async function api(pathname, { method = "GET", token, body } = {}) {
   return { status: res.status, body: json };
 }
 
+// 截圖前隱藏殘留 snackbar（證據衛生：不讓上一動作的回饋疊在不同主題的證據上）。
+async function hideSnackbar(page) {
+  await page.evaluate(() => { const bar = document.getElementById("snackbar"); if (bar) bar.hidden = true; });
+}
+
+// headless 無渲染幀時 CSS transition 凍在起始值（動畫時鐘隨幀推進）：
+// 截圖前催兩幀＋等過 transition 時長，確保證據呈現最終視覺狀態。
+async function settleFrames(page) {
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  await page.waitForTimeout(250);
+}
+
 async function waitHealthy() {
   for (let i = 0; i < 50; i += 1) {
     try {
@@ -83,6 +95,7 @@ try {
   admin.on("pageerror", (e) => adminErrors.push(e.message));
   await admin.goto(`${BASE}/admin/`, { waitUntil: "networkidle" });
   check("admin login page shown", await admin.isVisible("#viewLogin"));
+  check("logout button hidden while signed out", !(await admin.isVisible("#topbarAccount")));
   await admin.screenshot({ path: path.join(SHOTS, "issue310-01-admin-login.png") });
 
   // 玩家帳號登入管理頁 → 明示無管理權限（solCase#25.2 UI 面）
@@ -107,6 +120,7 @@ try {
   await admin.click(`.account-row[data-username="${kidUser}"] .account-actions .btn`);
   await admin.waitForSelector("#dialog[open] input", { timeout: 5000 });
   await admin.fill("#dialog input", "fresh66");
+  await hideSnackbar(admin);
   await admin.screenshot({ path: path.join(SHOTS, "issue310-03-admin-reset-password.png") });
   await admin.click("#dialog .btn-filled");
   await admin.waitForSelector("#snackbar:not([hidden])", { timeout: 5000 });
@@ -123,11 +137,19 @@ try {
   await minuteInputs.nth(0).fill("10");
   await minuteInputs.nth(1).fill("20");
   await minuteInputs.nth(2).fill("12");
+  // 開關視覺須反映鎖定狀態（#310 審查：dialog 內 :checked 樣式失效改以 class 驅動）。
+  const switchOn = await admin.evaluate(() => document.querySelector("#dialog .switch")?.classList.contains("is-on"));
+  check("play-limit dialog switch shows ON state", switchOn === true);
+  await hideSnackbar(admin);
+  await settleFrames(admin);
+  const switchBg = await admin.evaluate(() => getComputedStyle(document.querySelector("#dialog .switch-track")).backgroundColor);
+  check("switch track visually reflects ON (primary color)", switchBg === "rgb(107, 95, 181)", switchBg);
   await admin.screenshot({ path: path.join(SHOTS, "issue310-04-admin-play-limit.png") });
   await admin.click("#dialog .btn-filled");
   await admin.waitForSelector(`.account-row[data-username="${kidUser}"] .policy-chip.is-locked`, { timeout: 8000 });
   const chipText = await admin.textContent(`.account-row[data-username="${kidUser}"] .policy-chip`);
   check("policy chip shows locked minutes", (chipText || "").includes("玩10") && (chipText || "").includes("休20"), chipText || "");
+  await hideSnackbar(admin);
   await admin.screenshot({ path: path.join(SHOTS, "issue310-10-admin-locked-chip.png") });
 
   // ── 孩子端（手機直向）：登入 → 設定時長唯讀＋提示（sysCase#16.1） ──
@@ -150,6 +172,9 @@ try {
   check("kid play-minutes input readonly under lock", playDisabled !== null);
   check("managed-by-guardian note visible", noteHidden === false);
   check("kid settings show enforced minutes (10)", playValue === "10", playValue);
+  // 讓「唯讀時長欄位＋提示」主體入鏡（證據主張要看得到）。
+  await kid.evaluate(() => document.getElementById("playLimitManagedNote")?.scrollIntoView({ block: "center" }));
+  await kid.waitForTimeout(200);
   await kid.screenshot({ path: path.join(SHOTS, "issue310-05-kid-locked-settings.png") });
 
   // ── 管理端：設定分頁 → 關閉註冊（spec#26 (c)、儲存即生效） ──
@@ -184,6 +209,7 @@ try {
   await admin.waitForSelector(".row-menu", { timeout: 5000 });
   await admin.click(".row-menu button:has-text('刪除帳號')");
   await admin.waitForSelector("#dialog[open] .btn-danger", { timeout: 5000 });
+  await hideSnackbar(admin);
   await admin.screenshot({ path: path.join(SHOTS, "issue310-08-admin-delete-confirm.png") });
   await admin.click("#dialog .btn-danger");
   await admin.waitForSelector(`.account-row[data-username="${disposableUser}"]`, { state: "detached", timeout: 8000 });
@@ -200,6 +226,11 @@ try {
   await adminMobile.waitForSelector(`.account-row[data-username="${kidUser}"]`, { timeout: 8000 });
   await adminMobile.screenshot({ path: path.join(SHOTS, "issue310-09-admin-mobile-cards.png") });
   check("admin console usable on mobile viewport", true);
+  // 重整後身分以登入時儲存為準（#310 審查 must-fix：不得自清單推斷第一個 admin）。
+  await adminMobile.reload({ waitUntil: "networkidle" });
+  await adminMobile.waitForSelector("#topbarUsername", { timeout: 8000 });
+  const topbarName = await adminMobile.textContent("#topbarUsername");
+  check("identity preserved across reload", (topbarName || "").includes(adminUser), topbarName || "");
 
   check("no admin page errors", adminErrors.length === 0, adminErrors.join(" | "));
 

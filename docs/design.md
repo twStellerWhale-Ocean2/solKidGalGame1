@@ -351,7 +351,7 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
   * **sysCase#15.4**：[modWardrobe模組]承接[setAct自訂維護者調整衣物旋轉]（含框對位編修），[wardrobe-tuner] 框對位增設數值輸入欄（與拖曳、預覽三向同步）與方向鍵微調（1px、Shift＝10px）、「還原此件」（回 seed）與「還原全部」；「套用到檔案」前呈現待寫回變更清單（單品框／旋轉異動件數與 `rules.js` 是否變動），寫回後回報實際寫入檔案；[scene-tuner] AI 生成改「生成→對照預覽→採納」三步，未採納前工作副本題庫不被覆寫。
   * **sysCase#15.5**：[modContent模組]承接[setAct自訂維護者依資料包管理組態]，工具樣式收斂：[tool/wardrobe-tuner.css] 依分頁解體為 ≤800 行分層樣式檔（共用 admin shell／衣物／地圖與場景／聲音與公主預設），硬寫色歸零改引 [tool/theme-md3.css] token 使深色模式一致，並自 structureLint 豁免清單移除（paramStructureQualityBar (c)）；解體採域內保序、每步視覺回歸（沿 #298 mobile.css 工法）。
 * **sysStory#16-承接執行期設定生效**：
-  * **sysCase#16.1**：[modState模組]承接[runAct自訂系統套用執行期設定]，自 [sysApi系統] 存檔回應（GET 與 PUT `/api/save` 皆搭載）取得時長政策（enforced playMinutes／restMinutes／playMaxMinutes 與 locked 旗標）套用目前帳號：locked 時遊玩／休息計時一律以政策值為執行值（**不改寫、不回寫** `state.playLimit` 之玩家自調值——政策與存檔資料分離，不與 `updatedAt` 樂觀鎖動線互相干擾），[modShell模組] 將設定選單之時長輸入欄設為唯讀顯示強制值並顯示「由維護者管理」提示，[modState模組] 不再承接玩家調整；解除鎖定後回復玩家自調值；PUT 回應之政策變更當場套用，使 admin 儲存對遊玩中裝置即時生效；保存收到 401／403（session 被撤銷或帳號被刪除）時不進背景退避重試，改走 session 逾期動線（嘗試性保存後導回登入畫面）。
+  * **sysCase#16.1**：[modState模組]承接[runAct自訂系統套用執行期設定]，自 [sysApi系統] 存檔回應（GET 與 PUT `/api/save` 皆搭載）取得時長政策（enforced playMinutes／restMinutes／playMaxMinutes 與 locked 旗標）套用目前帳號：locked 時遊玩／休息計時一律以政策值為執行值（**不改寫、不回寫** `state.playLimit` 之玩家自調值——政策與存檔資料分離，不與 `updatedAt` 樂觀鎖動線互相干擾），[modShell模組] 將設定選單之時長輸入欄設為唯讀顯示強制值並顯示「由維護者管理」提示，[modState模組] 不再承接玩家調整；解除鎖定後回復玩家自調值；PUT 回應之政策變更當場套用於顯示與後續計時（進行中回合之 sessionEndsAt 等既定時戳不重算，強制時長自下一遊玩回合起生效——code 段落地校準，README 同語意）；保存收到 401／403（session 被撤銷或帳號被刪除）時不進背景退避重試，改走 session 逾期動線（嘗試性保存後導回登入畫面）。時長鎖定屬家長管理之輔助（由遊戲端程式執行），非防竄改技術防線（與 spec#24 裝置時鐘竄改同定位）。
   * **sysCase#16.2**：[modShell模組]承接[runAct自訂系統套用執行期設定]，登入畫面載入時查詢 [sysApi系統] 公開設定（註冊開關）：註冊關閉時不渲染「建立新帳號」入口（含空狀態之註冊表單），改顯示一句友善說明（如「本伺服器目前不開放新帳號，請找爸媽幫忙」）；查詢失敗時以註冊開放為預設、不阻斷登入動線。
 
 ### (D) 重點組態
@@ -1681,7 +1681,7 @@ erDiagram
   3. 關閉註冊開關後開啟登入畫面（含全新裝置之空狀態）；再開啟註冊開關重整。
   4. 模擬 `GET /api/config` 失敗（網路錯誤）開啟登入畫面。
 * 預期結果：
-  1. 時長欄位唯讀並顯示「由維護者管理」提示；遊玩／休息計時依強制值執行、重整與跨裝置一致；遊玩中之政策變更隨下一次保存回應（PUT 搭載）當場套用、不需重載。
+  1. 時長欄位唯讀並顯示「由維護者管理」提示；遊玩／休息計時依強制值執行、重整與跨裝置一致；遊玩中之政策變更隨下一次保存回應（PUT 搭載）當場套用於顯示與後續回合、不需重載（進行中回合之既定時戳不重算）。
   2. 解除後欄位回復可編輯、玩家原自調值保留並回復生效（`state.playLimit` 未被強制值改寫）。
   3. 註冊關閉時登入畫面無「建立新帳號」入口（含空狀態）且顯示友善說明；重新開放後入口回復。
   4. 查詢失敗時登入動線不受阻、以註冊開放為預設呈現。

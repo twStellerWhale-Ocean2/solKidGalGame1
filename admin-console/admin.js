@@ -4,6 +4,20 @@ import { versionHistory } from "/game-engine/build/version.js";
 
 const TOKEN_KEY = "luminara-admin-session";
 
+// 開關視覺以 class 同步：class 直接掛在 track 元素本身——
+// `:checked + sibling` 與後代 class 選擇器於 <dialog> top layer 內均有樣式不重算問題（Chromium）。
+function bindSwitchVisual(input) {
+  const wrap = input.closest(".switch");
+  const track = wrap?.querySelector(".switch-track");
+  if (!wrap || !track) return;
+  const sync = () => {
+    wrap.classList.toggle("is-on", input.checked);
+    track.classList.toggle("is-on", input.checked);
+  };
+  input.addEventListener("change", sync);
+  sync();
+}
+
 const $ = (id) => document.getElementById(id);
 const els = {
   viewLogin: $("viewLogin"),
@@ -33,9 +47,19 @@ const els = {
   footerVersion: $("footerVersion")
 };
 
+// 憑證與身分一併存放（#310 審查：重整後不得以「清單第一個 admin」推斷自身，多 admin 時會誤判）。
+function loadStoredSession() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(TOKEN_KEY) || "");
+    if (parsed && typeof parsed.token === "string" && parsed.id && parsed.username) return parsed;
+  } catch { /* 舊格式或無值 */ }
+  return null;
+}
+
+const stored = loadStoredSession();
 const state = {
-  token: localStorage.getItem(TOKEN_KEY) || "",
-  me: null,
+  token: stored?.token || "",
+  me: stored ? { id: stored.id, username: stored.username, role: "admin" } : null,
   settingsDirty: false,
   snackbarTimer: 0
 };
@@ -104,10 +128,12 @@ function makeButton(label, className, onClick) {
 }
 
 // ── 檢視切換 ──
-function showLogin() {
-  state.token = "";
-  state.me = null;
-  localStorage.removeItem(TOKEN_KEY);
+function showLogin({ clearSession = true } = {}) {
+  if (clearSession) {
+    state.token = "";
+    state.me = null;
+    localStorage.removeItem(TOKEN_KEY);
+  }
   els.viewApp.hidden = true;
   els.topbarAccount.hidden = true;
   els.viewLogin.hidden = false;
@@ -159,7 +185,7 @@ async function handleLogin(event) {
     }
     state.token = data.token;
     state.me = data.account;
-    localStorage.setItem(TOKEN_KEY, data.token);
+    localStorage.setItem(TOKEN_KEY, JSON.stringify({ token: data.token, id: data.account.id, username: data.account.username }));
     showApp();
   } catch (error) {
     els.loginError.textContent = error.code === "rate-limited"
@@ -181,7 +207,7 @@ async function handleLogout() {
 }
 
 // ── 帳號分頁 ──
-const dateFormat = new Intl.DateTimeFormat("zh-TW", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+const dateFormat = new Intl.DateTimeFormat("zh-TW", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false });
 function formatTime(ms) {
   return ms ? dateFormat.format(new Date(ms)) : "－";
 }
@@ -202,6 +228,7 @@ const PLAY_STATUS_LABEL = { play: "遊玩中", rest: "休息中", idle: "可玩"
 
 function closeRowMenus() {
   document.querySelectorAll(".row-menu").forEach((menu) => menu.remove());
+  document.querySelectorAll(".menu-button[aria-expanded='true']").forEach((button) => button.setAttribute("aria-expanded", "false"));
 }
 
 async function loadAccounts() {
@@ -215,7 +242,8 @@ async function loadAccounts() {
 }
 
 function renderAccounts(accounts) {
-  els.accountsTitle.textContent = `玩家帳號（${accounts.length}）`;
+  const players = accounts.filter((account) => account.role === "player").length;
+  els.accountsTitle.textContent = `全部帳號（玩家 ${players}・維護者 ${accounts.length - players}）`;
   els.accountsList.innerHTML = "";
   const header = document.createElement("div");
   header.className = "accounts-header";
@@ -236,17 +264,22 @@ function renderAccountRow(account) {
   const name = document.createElement("div");
   name.className = "account-name";
   const username = document.createElement("span");
+  username.className = "account-username";
   username.textContent = account.username;
+  // 徽章固定第二行（不隨帳號名長度 flex-wrap 參差）。
+  const badges = document.createElement("span");
+  badges.className = "account-badges";
   const badge = document.createElement("span");
   badge.className = `role-badge${account.role === "admin" ? " is-admin" : ""}`;
   badge.textContent = account.role;
-  name.append(username, badge);
+  badges.append(badge);
   if (account.role === "player") {
     const status = document.createElement("span");
     status.className = "status-chip";
     status.textContent = PLAY_STATUS_LABEL[account.playStatus] || "可玩";
-    name.append(status);
+    badges.append(status);
   }
+  name.append(username, badges);
 
   const created = cell("建立", formatTime(account.createdAt));
   const lastLogin = cell("最近登入", formatTime(account.lastLoginAt));
@@ -267,6 +300,8 @@ function renderAccountRow(account) {
     menuButton.type = "button";
     menuButton.className = "menu-button";
     menuButton.setAttribute("aria-label", `${account.username} 更多操作`);
+    menuButton.setAttribute("aria-haspopup", "menu");
+    menuButton.setAttribute("aria-expanded", "false");
     menuButton.textContent = "⋮";
     menuButton.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -274,6 +309,7 @@ function renderAccountRow(account) {
       closeRowMenus();
       if (existing) return;
       actions.append(renderRowMenu(account));
+      menuButton.setAttribute("aria-expanded", "true");
     });
     actions.append(menuButton);
   }
@@ -341,6 +377,22 @@ function openResetPasswordDialog(account) {
       ? "變更後其他裝置會被登出，這台裝置維持登入。"
       : "重設後這個帳號的所有裝置都要用新密碼重新登入。";
     const { label, input } = fieldInput("新密碼（至少 6 個字元）", { type: "password", minLength: 6, maxLength: 72 });
+    // 顯示／隱藏切換（替孩子設新密碼須可目視驗證，避免打錯字把孩子鎖在門外）。
+    const passwordWrap = document.createElement("span");
+    passwordWrap.className = "password-wrap";
+    input.replaceWith(passwordWrap);
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "password-toggle";
+    toggle.textContent = "顯示";
+    toggle.setAttribute("aria-pressed", "false");
+    toggle.addEventListener("click", () => {
+      const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      toggle.textContent = show ? "隱藏" : "顯示";
+      toggle.setAttribute("aria-pressed", String(show));
+    });
+    passwordWrap.append(input, toggle);
     const error = dialogError();
     const cancel = makeButton("取消", "btn-outlined", () => els.dialog.close());
     const submit = makeButton("重設密碼", "btn-filled", async () => {
@@ -359,6 +411,9 @@ function openResetPasswordDialog(account) {
         error.textContent = apiError.message;
         error.hidden = false;
       }
+    });
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") submit.click();
     });
     dialog.append(title, note, label, error, dialogActions(cancel, submit));
     input.focus();
@@ -386,6 +441,7 @@ function openPlayLimitDialog(account) {
     lockTrack.className = "switch-track";
     lockWrap.append(lockInput, lockTrack);
     lockRow.append(lockText, lockWrap);
+    bindSwitchVisual(lockInput);
     const play = fieldInput("每次遊玩（分鐘，1–120）", { type: "number", min: 1, max: 120, value: policy.playMinutes ?? 15 });
     const rest = fieldInput("每次休息（分鐘，1–120）", { type: "number", min: 1, max: 120, value: policy.restMinutes ?? 15 });
     const max = fieldInput("單回合上限（分鐘，1–120）", { type: "number", min: 1, max: 120, value: policy.playMaxMinutes ?? 20 });
@@ -395,6 +451,11 @@ function openPlayLimitDialog(account) {
     }
     lockInput.addEventListener("change", syncMinuteFields);
     syncMinuteFields();
+    [play.input, rest.input, max.input].forEach((minuteInput) => {
+      minuteInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") submit.click();
+      });
+    });
     const cancel = makeButton("取消", "btn-outlined", () => els.dialog.close());
     const submit = makeButton("套用", "btn-filled", async () => {
       const body = lockInput.checked
@@ -473,6 +534,7 @@ async function loadSettings() {
   try {
     const settings = await api("/api/admin/settings");
     els.settingRegistrationOpen.checked = settings.registrationOpen;
+    els.settingRegistrationOpen.dispatchEvent(new Event("change")); // 同步開關視覺 class（程式設值不觸發 change）
     els.settingPlayMinutes.value = settings.defaultPlayMinutes;
     els.settingRestMinutes.value = settings.defaultRestMinutes;
     els.settingPlayMaxMinutes.value = settings.defaultPlayMaxMinutes;
@@ -523,6 +585,10 @@ async function boot() {
   document.addEventListener("click", (event) => {
     if (!(event.target instanceof Element) || !event.target.closest(".account-actions")) closeRowMenus();
   });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeRowMenus();
+  });
+  bindSwitchVisual(els.settingRegistrationOpen);
   els.settingsForm.addEventListener("input", () => { state.settingsDirty = true; });
   els.settingsForm.addEventListener("submit", handleSettingsSubmit);
   window.addEventListener("beforeunload", (event) => {
@@ -531,17 +597,16 @@ async function boot() {
     event.returnValue = "";
   });
 
-  if (!state.token) return showLogin();
+  if (!state.token || !state.me) return showLogin();
   try {
-    // 以帳號清單驗 session 是否仍有效並取得自身身分。
-    const data = await api("/api/admin/accounts");
-    const meRow = data.accounts.find((account) => account.role === "admin");
-    // 清單不含 session 歸屬——me 以登入時儲存為準；重整後自清單推回（單一 admin 情境）。
-    state.me = meRow ? { id: meRow.id, username: meRow.username, role: "admin" } : null;
-    if (!state.me) return showLogin();
+    // 驗 session 仍有效（身分以登入時儲存之 {id, username} 為準，不自清單推斷）。
+    await api("/api/admin/accounts");
     showApp();
-  } catch {
-    showLogin();
+  } catch (error) {
+    if (error instanceof ApiError) return showLogin(); // 401/403：憑證失效，清除重登
+    // 網路暫斷：保留憑證，提示重試（不逼重輸密碼）。
+    showLogin({ clearSession: false });
+    snackbar("無法連線到伺服器，請確認連線後重新整理", { sticky: true });
   }
 }
 
