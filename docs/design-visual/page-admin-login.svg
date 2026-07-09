@@ -26,6 +26,7 @@
   <rect x="204" y="352" width="232" height="44" rx="22" fill="#8c4a60"/>
   <text x="320" y="379" font-size="14" text-anchor="middle" fill="#ffffff" font-weight="600">登入</text>
   <!-- 註記 -->
-  <text x="320" y="430" font-size="10.5" text-anchor="middle" fill="#7a6a6f">玩家帳號登入時顯示「此帳號無管理權限」，不進入管理內容</text>
+  <text x="320" y="418" font-size="10.5" text-anchor="middle" fill="#7a6a6f">玩家帳號登入時顯示「此帳號無管理權限」，不進入管理內容</text>
+  <text x="320" y="436" font-size="10.5" text-anchor="middle" fill="#8c4a60">維護者忘記密碼？離線重設方式見產品手冊</text>
   <text x="320" y="464" font-size="9.5" text-anchor="middle" fill="#b3a3a8">設計期參考稿（page-admin-login）·以 design.md 文字規格為準·code 段以實際截圖替換</text>
 </svg>

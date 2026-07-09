@@ -41,6 +41,6 @@
   <text x="32" y="398" font-size="11.5" fill="#ffffff">✓ 已儲存，設定即時生效</text>
   <!-- 頁尾：版本與職能分界 -->
   <line x1="16" y1="428" x2="624" y2="428" stroke="#e5d0d7"/>
-  <text x="16" y="448" font-size="10" fill="#9c8a90">Luminara v0.63.0 ・ 內容編修（題庫、衣物對位、語音）請於開發環境使用管理設定工具，隨版本發行</text>
+  <text x="16" y="448" font-size="10" fill="#9c8a90">Luminara v0.63.0 ・ 使用說明：產品手冊 ・ 內容編修（題庫、衣物對位、語音）請於開發環境使用管理設定工具</text>
   <text x="320" y="470" font-size="9.5" text-anchor="middle" fill="#b3a3a8">設計期參考稿（page-admin-settings）·以 design.md 文字規格為準·code 段以實際截圖替換</text>
 </svg>

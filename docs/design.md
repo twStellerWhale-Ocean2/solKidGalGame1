@@ -39,7 +39,7 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件（#309 
 * **spec#22-可高效且不誤失工作地使用管理設定工具**：方案須讓維護者於桌機與家庭區網行動裝置（手機、平板，呼應 spec#17）上高效、安全地使用 [管理設定工具] 完成內容維護——(a) 工作保護：任何未儲存之編修（衣物框對位、旋轉、對話文本、公主預設等）在重新整理、關閉或切換頁面前均須獲得明確警示，寫回成功後不得以整頁重載丟棄其他未儲存工作與畫面狀態（選取、捲動、篩選、縮放平移）；(b) 導覽動線：左側導覽於收合狀態仍可辨識各資料包、麵包屑可點擊回上層，deep link 涵蓋分頁內工作點（子分頁、所選地區／場景／單品），使維護中斷後可回到原工作點；(c) 操作回饋：確認、錯誤與成功提示採與工具視覺一致之 MD3 dialog／snackbar（不使用原生阻塞式 alert／confirm），危險操作（刪除單品、清除全部語音指定）具 error 色視覺區隔與明確確認、成功訊息自動消散；(d) 編輯效率：框對位提供數值輸入與鍵盤微調、可單件還原與檢視本次待寫回變更清單，AI 生成對話採「生成→對照→採納」而不直接覆寫既有題庫；(e) 小螢幕可用：導覽抽屜於窄視口採 overlay 模式、觸控目標 ≥44px、預覽支援雙指縮放，觸控裝置可見必要操作說明。上述體驗以 paramToolUxQualityBar 之 20 項問題清單（issue #297 盤點）全數修正為完成判定；本工具仍為 dev-only（本機與區網），公開遊玩端不受影響。
 * **spec#23-可建立帳密帳號並登入遊玩**：方案須讓玩家（或協助之家長）於遊戲入口註冊帳號並登入：帳號為小寫英文字母開頭、由小寫英文與數字組成之 3–16 字識別（paramUsernamePattern，`^[a-z][a-z0-9]{2,15}$`）、同一伺服器內全域唯一；密碼長度至少 6 字元（paramPasswordMinLength）；註冊與登入規則於前端與後端同源驗證、錯誤訊息友善且就地提示（帳號格式不符、密碼過短、帳號已存在各自可辨；登入失敗統一顯示「帳號或密碼不正確」、不洩漏帳號存在性）；密碼一律以業界標準單向雜湊（bcrypt、cost ≥10）儲存、資料庫與日誌不得出現明文；登入成功核發有時效之 session token（隨機不可預測、伺服器端可撤銷）並於裝置端快取（重啟瀏覽器免重新輸入、逾期或登出即失效），登出即撤銷 session；session 快取僅綁定本裝置**最後登入**之帳號，自登入畫面點選其他帳號卡一律須輸入密碼、切換登入成功即覆蓋並撤銷前一快取 session（共用裝置不誤入他人帳號）；session 逾期時遊戲端先嘗試完成一次保存再導回登入畫面；受保護 API 一律驗 session，未帶或無效一律拒絕；密碼長度上限 72 字元、密碼欄具顯示／隱藏切換（降低家長代輸錯誤）；登入與註冊端點具速率限制／連續失敗退避（參數 code 段落地）；**忘記密碼與變更密碼之去處明文**——密碼重設與變更屬維護者作業、由維護者線上管理承載（spec#25，玩家忘記密碼時由維護者於管理頁重設）；原伺服器端維護指令重設密碼之過渡程序保留、降級為維護者自身忘記密碼時之離線後門（唯一無法以管理頁自救之情境，README 維護者段重新定位）；欄位與動線以家長協助輸入為情境設計（大欄位、觸控友善、錯誤就地提示、不設 email 或第三方登入）。
 * **spec#24-可雲端保存進度並跨裝置還原**：方案須將每帳號之全部遊玩進度（既有 normalized state 全項：coins、學習紀錄、擁有與穿搭、所在位置、所選角色、名字、識別色與背景花紋、遊玩／休息狀態等）保存於伺服器端，登入即還原、跨裝置跨瀏覽器一致；保存採自動節流（paramSaveDebounceMs）＋關鍵事件即時寫入（答題結算、購買退款、換裝、時間到結算、登出）；伺服器暫時不可達時遊戲以記憶體狀態續玩、背景重試並明確提示同步狀態、不 crash 不丟既有畫面；舊進度有兩條遷移路徑——(a) 既有 Markdown 匯出存檔可匯入為目前登入帳號之雲端進度、(b) 本裝置舊版 localStorage 本機帳號可於登入畫面一鍵遷移為伺服器帳號進度——兩者皆沿用既有匯入正規化與 `sol`→`lumi` 等相容 fallback，且承接帳號已有雲端進度時須明確警示覆蓋方向並經確認、先上傳成功後才標記已遷移（失敗可重試不重複）；Markdown 匯出功能保留作為離線備份。並發保護：同帳號多裝置同時遊玩時，保存以 `updatedAt` 樂觀比對——過期寫入被拒（HTTP 409）並由遊戲端提示重新載入，不靜默覆蓋較新進度；存檔 API 回應附伺服器時間，遊戲端據以校正遊玩／休息計時判定（裝置時鐘竄改之防護明文屬家長管理範圍、非技術防線）。
-* **spec#25-可由維護者線上管理玩家帳號**：方案須讓維護者（admin）以瀏覽器於自架伺服器之專屬線上管理頁完成帳號管理，不再需要伺服器端指令——admin 以帳密登入管理頁（與玩家遊戲入口分流，遊戲殼與兒童端不出現任何管理入口）後可：(a) 檢視伺服器上全部玩家帳號之清單（帳號、建立時間、最近登入時間、存檔更新時間）；(b) 為任一帳號重設密碼（含變更 admin 自身密碼；新密碼沿用 spec#23 之密碼規則）；(c) 撤銷任一帳號之全部 session（該帳號所有裝置即刻登出）；(d) 刪除帳號——連同其存檔與全部 session 一併刪除，屬不可復原之危險操作、須經明確二次確認方執行。admin 憑證與玩家帳號同一安全標準（bcrypt 雜湊、登入失敗統一訊息、速率限制）；管理 API 一律驗 admin 身分——未登入、玩家 session 或逾期憑證一律拒絕、不洩漏管理資訊；第一個 admin 帳號由部署期程序建立（部署做法見＜IV.A＞），本方案為家庭自架情境、單一 admin 即足，不做多管理員分級與操作稽核日誌。管理頁屬管理網站介面（依 [hmiIntf通用視覺規範] MD3 基座）、桌機與行動裝置觸控皆可用。
+* **spec#25-可由維護者線上管理玩家帳號**：方案須讓維護者（admin）以瀏覽器於自架伺服器之專屬線上管理頁完成帳號管理，不再需要伺服器端指令——admin 以帳密登入管理頁（與玩家遊戲入口分流，遊戲殼與兒童端不出現任何管理入口）後可：(a) 檢視伺服器上全部玩家帳號之清單（帳號、建立時間、最近登入時間、存檔更新時間、目前可玩／休息狀態摘要）；(b) 為任一帳號重設密碼（含變更 admin 自身密碼——自身變更保留當前登入、其他裝置登出；新密碼沿用 spec#23 之密碼規則）；(c) 撤銷任一帳號之全部 session（該帳號所有裝置即刻登出）；(d) 刪除帳號——連同其存檔與全部 session 一併刪除，屬不可復原之危險操作、須經明確二次確認方執行（admin 自身不可刪除，防自鎖）。本增量明文不做：多管理員分級、操作稽核日誌、遊玩時長統計報表（留待真需求）。admin 憑證與玩家帳號同一安全標準（bcrypt 雜湊、登入失敗統一訊息、速率限制）；管理 API 一律驗 admin 身分——未登入、玩家 session 或逾期憑證一律拒絕、不洩漏管理資訊；第一個 admin 帳號由部署期程序建立（部署做法見＜IV.A＞），本方案為家庭自架情境、單一 admin 即足，不做多管理員分級與操作稽核日誌。管理頁屬管理網站介面（依 [hmiIntf通用視覺規範] MD3 基座）、桌機與行動裝置觸控皆可用。
 * **spec#26-可由維護者線上管理執行期遊戲設定**：方案須讓維護者於同一線上管理頁調整**執行期遊戲設定**，設定存於伺服器資料庫、儲存後即時生效，不需改版或重新部署（落地資料三分歸屬之「執行期設定歸 DB」一分）——範圍：(a) **新帳號預設遊玩／休息時長**（新註冊帳號之 playMinutes／restMinutes／playMaxMinutes 初始值，取代寫死之程式常數；範圍限 spec#9 之合法分鐘區間）；(b) **個別帳號時長覆寫與鎖定**（家長管控）——對指定帳號設定強制遊玩／休息時長並鎖定，鎖定後該帳號遊戲內時長設定唯讀（spec#9），解除鎖定即回復玩家可自調；(c) **註冊開關**——關閉後伺服器拒絕新帳號註冊、遊戲登入畫面不提供註冊入口並顯示友善說明（家庭伺服器成員到齊後可關閉，防陌生註冊佔用）。設定採**明確欄位 schema**（每一設定項於本設計文件與程式各有具名定義）、資料庫缺值時以程式預設值遞補（部署升級零遷移負擔），不採動態 key-value 自由欄位。職能分界明文：內容編修（題庫、衣物對位、語音指定、地圖座標、公主預設）屬「內容歸 git」，維持 [管理設定工具]（[tool/]，dev-only）既有動線、隨版本發行，不納入本線上管理；本線上管理只管「這台伺服器的營運狀態」（帳號與執行期設定）。
 
 # II. 設計分析
@@ -311,7 +311,7 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
   * **sysCase#5.4**：[modShell模組]承接[runAct自訂玩家設定公主背景花紋]，自 [modContent模組] 背景花紋資產集提供選項供玩家擇一，更新並持久化目前帳號之背景花紋至其視覺主題狀態；新帳號或首次初始化缺 backgroundPattern 時，由 [modState模組] 自可見背景花紋集合一次性隨機選出初始 backgroundPattern 並保存至帳號狀態，後續載入不得重抽；未知花紋時回退無花紋預設。
 * **sysStory#6-承接帳號登入與管理**：
   * **sysCase#6.1**：[modShell模組]承接[runAct自訂玩家登入帳號]，啟動時先進入登入畫面：自裝置快取（paramRecentAccountsKey）渲染本裝置最近登入過之帳號卡（頭胸部大頭照、profileColor、lastPlayedAt、coins、play/rest 摘要），點選帳號卡展開密碼欄、或切換「其他帳號」輸入帳號與密碼；經 [modState模組] 呼叫 [sysApi系統] 登入，成功後取得 session token 與該帳號雲端存檔進入遊戲，並更新裝置最近帳號摘要；失敗統一就地顯示「帳號或密碼不正確」。session 快取僅綁定本裝置最後登入之帳號：該帳號有有效 session 時免重新輸入密碼直接續用，點選**其他**帳號卡一律須輸入密碼、切換登入成功即覆蓋並撤銷前一快取 session；帳號卡主標為 playerName、副標 username（重名可辨），登入後遊戲內設定選單顯示「目前帳號：`username`」。
-  * **sysCase#6.2**：[modState模組]承接[runAct自訂玩家註冊帳號]，前端先以 paramUsernamePattern／paramPasswordMinLength 驗證並就地提示，通過後呼叫 [sysApi系統] 註冊；成功即自動登入並建立新帳號初始進度（初始 profileColor 與 backgroundPattern 一次性隨機寫入，使帳號卡第一次顯示即具備穩定主題）；帳號已存在等錯誤以友善訊息就地呈現。
+  * **sysCase#6.2**：[modState模組]承接[runAct自訂玩家註冊帳號]，前端先以 paramUsernamePattern／paramPasswordMinLength 驗證並就地提示，通過後呼叫 [sysApi系統] 註冊；成功即自動登入並建立新帳號初始進度（初始 profileColor 與 backgroundPattern 一次性隨機寫入，使帳號卡第一次顯示即具備穩定主題）；帳號已存在、伺服器不開放註冊（`403 registration-closed`，含停留於註冊表單期間才被關閉、送出方知之情境）等錯誤以友善訊息就地呈現。
   * **sysCase#6.3**：[modState模組]承接[runAct自訂玩家登出帳號]，登出前完成一次即時雲端保存、呼叫 [sysApi系統] 撤銷 session、清除裝置 session 快取（保留最近帳號摘要）並回到登入畫面；玩家端不提供刪除帳號（維護者於增量 #310 管理）。
   * **sysCase#6.4**：[modShell模組]承接[runAct自訂玩家回到初始選單]，於遊戲內提供返回登入／帳號選擇畫面的明確按鈕，返回時先保存目前帳號進度與 lastPlayedAt（同步至雲端），再顯示登入畫面；同裝置另一玩家可就其帳號卡輸入密碼進入。
 * **sysStory#7-承接遊玩時間限制與護眼休息**：
@@ -351,7 +351,7 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
   * **sysCase#15.4**：[modWardrobe模組]承接[setAct自訂維護者調整衣物旋轉]（含框對位編修），[wardrobe-tuner] 框對位增設數值輸入欄（與拖曳、預覽三向同步）與方向鍵微調（1px、Shift＝10px）、「還原此件」（回 seed）與「還原全部」；「套用到檔案」前呈現待寫回變更清單（單品框／旋轉異動件數與 `rules.js` 是否變動），寫回後回報實際寫入檔案；[scene-tuner] AI 生成改「生成→對照預覽→採納」三步，未採納前工作副本題庫不被覆寫。
   * **sysCase#15.5**：[modContent模組]承接[setAct自訂維護者依資料包管理組態]，工具樣式收斂：[tool/wardrobe-tuner.css] 依分頁解體為 ≤800 行分層樣式檔（共用 admin shell／衣物／地圖與場景／聲音與公主預設），硬寫色歸零改引 [tool/theme-md3.css] token 使深色模式一致，並自 structureLint 豁免清單移除（paramStructureQualityBar (c)）；解體採域內保序、每步視覺回歸（沿 #298 mobile.css 工法）。
 * **sysStory#16-承接執行期設定生效**：
-  * **sysCase#16.1**：[modState模組]承接[runAct自訂系統套用執行期設定]，自 [sysApi系統] 登入／存檔回應搭載之時長政策（enforced playMinutes／restMinutes／playMaxMinutes 與 locked 旗標）套用目前帳號：locked 時 [modShell模組] 將設定選單之時長輸入欄設為唯讀並顯示「由維護者管理」提示，[modState模組] 不再承接玩家調整；解除鎖定後回復玩家可自調；伺服器端為時長強制之單一套用點（存檔讀回時已為套用後值），遊戲端不自行二次演算、不與 `updatedAt` 樂觀鎖動線互相干擾。
+  * **sysCase#16.1**：[modState模組]承接[runAct自訂系統套用執行期設定]，自 [sysApi系統] 存檔回應（GET 與 PUT `/api/save` 皆搭載）取得時長政策（enforced playMinutes／restMinutes／playMaxMinutes 與 locked 旗標）套用目前帳號：locked 時遊玩／休息計時一律以政策值為執行值（**不改寫、不回寫** `state.playLimit` 之玩家自調值——政策與存檔資料分離，不與 `updatedAt` 樂觀鎖動線互相干擾），[modShell模組] 將設定選單之時長輸入欄設為唯讀顯示強制值並顯示「由維護者管理」提示，[modState模組] 不再承接玩家調整；解除鎖定後回復玩家自調值；PUT 回應之政策變更當場套用，使 admin 儲存對遊玩中裝置即時生效；保存收到 401／403（session 被撤銷或帳號被刪除）時不進背景退避重試，改走 session 逾期動線（嘗試性保存後導回登入畫面）。
   * **sysCase#16.2**：[modShell模組]承接[runAct自訂系統套用執行期設定]，登入畫面載入時查詢 [sysApi系統] 公開設定（註冊開關）：註冊關閉時不渲染「建立新帳號」入口（含空狀態之註冊表單），改顯示一句友善說明（如「本伺服器目前不開放新帳號，請找爸媽幫忙」）；查詢失敗時以註冊開放為預設、不阻斷登入動線。
 
 ### (D) 重點組態
@@ -480,14 +480,14 @@ ADMIN -->|"🎚️paramRegistrationOpenDefault=`true`"| SYS
   * **sysCase#1.3**：[modAuth模組]承接[runAct自訂玩家登出帳號]，撤銷該 session token；已撤銷或逾期之 token 後續請求一律 401；逾期與已撤銷之 session 資料列由伺服器惰性清理（#309 審查 A7：於登入等既有寫入時機順掃刪除、不常駐排程），不無限累積。
 * **sysStory#2-承接雲端存檔**：
   * **sysCase#2.1**：[modSave模組]承接[runAct自訂系統保存進度]，以 session 所屬帳號 upsert 該帳號之單一存檔紀錄（JSONB 全量 state＋schemaVersion＋updatedAt），寫入採整筆替換並以 `updatedAt` 樂觀比對——請求所帶基準 `updatedAt` 過期即拒（HTTP 409、不覆蓋較新進度，由遊戲端提示重新載入）；寫入前施 state **形狀校驗**（#309 審查 B9：頂層須為 JSON 物件、必要欄位型別檢查，非法形狀拒 422、不落庫），以參數化查詢執行、請求體具大小上限（值 code 段定）、無任何跨帳號存取路徑。
-  * **sysCase#2.2**：[modSave模組]承接[runAct自訂系統還原進度]，登入後回傳該帳號存檔全量 state 與伺服器時間（供遊戲端校正遊玩／休息計時）；回應並搭載該帳號之時長政策（enforced 時長與 locked 旗標，經 [modAdmin模組] 讀執行期設定與帳號覆寫，spec#26）——受鎖定帳號之存檔 state 於回傳前由伺服器套用強制時長（伺服器為單一套用點，遊戲端行為見 [sysGame系統] sysStory#16）；無存檔時回空（HTTP 204），由遊戲端建立新局初始進度；伺服器不改寫其餘遊戲語意，正規化一律由遊戲端 `normalizeState` 執行。
+  * **sysCase#2.2**：[modSave模組]承接[runAct自訂系統還原進度]，登入後回傳該帳號存檔全量 state 與伺服器時間（供遊戲端校正遊玩／休息計時）；回應並搭載該帳號之時長政策（enforced 時長與 locked 旗標，經 [modAdmin模組] 讀帳號覆寫，spec#26）——**政策與存檔資料分離**：伺服器不改寫 `state.playLimit`（玩家原自調值保留於存檔、解除鎖定即回復），鎖定之強制值僅經 `playLimitPolicy` 下發、由遊戲端作為計時執行值套用（[sysGame系統] sysStory#16）；保存（PUT）回應亦搭載最新政策，使 admin 儲存對遊玩中裝置即時生效；無存檔時回空（HTTP 204），由遊戲端建立新局初始進度；伺服器不改寫其餘遊戲語意，正規化一律由遊戲端 `normalizeState` 執行。
   * **sysCase#2.3**：[modSave模組]承接[setAct自訂玩家匯入存檔]，接受遊戲端解析正規化後之整份 state 作為該帳號存檔（Markdown 遷移與本機舊帳號一鍵遷移共用此上傳路徑）；遷移／匯入屬使用者明示之覆蓋操作，遊戲端於承接帳號已有雲端進度時先明確警示覆蓋方向並經確認才上傳。
 * **sysStory#3-承接遊戲殼服務**：
   * **sysCase#3.1**：[modServe模組]承接[setAct自訂維護者部署網站]，同站服務遊戲殼靜態檔（`index.html`、[game-engine]、[content-package] 等）、線上管理頁靜態子樹（`/admin/`，頁面本身可公開取得、其資料一律經受 admin 保護之管理 API）與 `/api/*` 端點（同源、免 CORS）；靜態服務維持 allowlist 子樹（[tool/]、內部檔案與其餘 repo 樹一律 404）；提供不受保護之 `/healthz` liveness／readiness 路徑；[server.mjs] 之 dev 工具職能（管理設定工具 sidecar 寫回）維持獨立、不併入本服務（內容編修屬「內容歸 git」，職能分界見 spec#26、不線上化）。
 * **sysStory#4-承接維護者線上管理**：
-  * **sysCase#4.1**：[modAdmin模組]承接[setAct自訂維護者線上管理帳號]，admin 以帳密自 `/admin/` 管理頁登入——憑證驗證沿用 [modAuth模組] 同一機制（bcrypt 比對、統一錯誤訊息、速率限制、opaque session token），僅 `role=admin` 之帳號可通過管理登入；全部管理 API 一律驗「有效 session **且** role=admin」，玩家 session 或未登入一律拒絕（solCase#25.2）；第一個 admin 帳號由部署期程序建立（paramAdminBootstrap：服務啟動時依 `ADMIN_USERNAME`／`ADMIN_PASSWORD` 環境變數建立或比對更新，見＜IV.A＞）。
-  * **sysCase#4.2**：[modAdmin模組]承接[setAct自訂維護者線上管理帳號]，提供帳號清單（帳號、role、建立時間、最近登入時間、存檔更新時間；參數化查詢）、重設任一帳號密碼（沿 spec#23 密碼規則驗證、bcrypt 重雜湊、並撤銷該帳號全部既有 session 使舊裝置重新登入）、撤銷任一帳號全部 session、刪除帳號（連同其存檔與全部 session 於同一交易刪除；admin 不得刪除自身帳號，防自鎖）。
-  * **sysCase#4.3**：[modAdmin模組]承接[setAct自訂維護者線上調整執行期設定]，讀寫執行期設定（明確欄位 schema：新帳號預設遊玩／休息／上限時長、註冊開關；單列存放、資料庫缺值時以程式預設遞補）與個別帳號時長覆寫與鎖定（寫入前驗分鐘值於 spec#9 合法區間）；寫入即生效——後續註冊、登入與存檔請求即讀到新值，不需重啟服務。
+  * **sysCase#4.1**：[modAdmin模組]承接[setAct自訂維護者線上管理帳號]，admin 以帳密自 `/admin/` 管理頁登入——憑證驗證沿用 [modAuth模組] 同一機制（bcrypt 比對、統一錯誤訊息、速率限制、opaque session token），僅 `role=admin` 之帳號可通過管理登入；全部管理 API 一律驗「有效 session **且** role=admin」，玩家 session 或未登入一律拒絕（solCase#25.2）；第一個 admin 帳號由部署期程序建立（paramAdminBootstrap：服務啟動時依 `ADMIN_USERNAME`／`ADMIN_PASSWORD` 環境變數**僅於該帳號不存在時建立**——不覆寫既有密碼，admin 於管理頁變更後之密碼以資料庫為準、不被服務重啟回滾；`ADMIN_USERNAME` 撞名既有 `role=player` 帳號時啟動失敗並明確報錯、不就地升權；見＜IV.A＞）。
+  * **sysCase#4.2**：[modAdmin模組]承接[setAct自訂維護者線上管理帳號]，提供帳號清單（帳號、role、建立時間、最近登入時間、存檔更新時間、目前可玩／休息狀態摘要——由存檔之遊玩／休息時戳推導；參數化查詢）、重設任一帳號密碼（沿 spec#23 密碼規則驗證、bcrypt 重雜湊、並撤銷該帳號全部既有 session 使舊裝置重新登入——操作者重設**自身**密碼時保留當前管理 session、UI 明示其他裝置將登出）、撤銷任一帳號全部 session（輕量確認後執行）、刪除帳號（連同其存檔與全部 session 於同一交易刪除；admin 不得刪除自身帳號，防自鎖）；管理頁對 admin 自身列僅提供「重設密碼」（時長政策與撤銷 session 不適用自身、刪除禁用）；admin 帳號屬同一帳號體系、亦可於遊戲端登入遊玩；本增量明文不做遊玩時長統計報表與操作稽核日誌。
+  * **sysCase#4.3**：[modAdmin模組]承接[setAct自訂維護者線上調整執行期設定]，讀寫執行期設定（明確欄位 schema：新帳號預設遊玩／休息／上限時長、註冊開關；單列存放、資料庫缺值時以程式預設遞補；單一 admin 情境、寫入採後寫勝不設基準比對）與個別帳號時長覆寫與鎖定（寫入前驗分鐘值於 spec#9 合法區間、且 `playMinutes ≤ playMaxMinutes`——違者 422 拒絕，設定與帳號覆寫同規則）；寫入即生效——後續註冊、登入與存檔請求即讀到新值，不需重啟服務。
   * **sysCase#4.4**：[modAdmin模組]承接[runAct自訂系統套用執行期設定]，對外提供不受保護之公開設定端點（僅揭露註冊開關等登入畫面所需之最小子集，不含任何帳號資料），供 [sysGame系統] 登入畫面查詢（sysCase#16.2）；並供 [modAuth模組]（註冊開關與新帳號預設時長，sysCase#1.1）與 [modSave模組]（時長政策搭載與強制套用，sysCase#2.2）服務內查詢。
 
 ### (D) 重點組態
@@ -504,7 +504,7 @@ ADMIN -->|"🎚️paramRegistrationOpenDefault=`true`"| SYS
     * paramPasswordHash=`bcrypt cost≥10`
     * paramSessionTtlDays=`30`（暫定，維護者可調）
     * paramDbName=`luminara`（暫定）
-    * paramAdminBootstrap=`ADMIN_USERNAME＋ADMIN_PASSWORD env（服務啟動時建立或更新唯一 admin 帳號；username 沿 paramUsernamePattern、密碼沿 paramPasswordMinLength）`
+    * paramAdminBootstrap=`ADMIN_USERNAME＋ADMIN_PASSWORD env（服務啟動時僅於帳號不存在時建立唯一 admin；不覆寫既有密碼——admin 線上變更後之密碼以 DB 為準；撞名既有玩家帳號則啟動失敗報錯、不升權；username 沿 paramUsernamePattern、密碼沿 paramPasswordMinLength）`
     * paramRegistrationOpenDefault=`true`（執行期設定「註冊開關」之程式預設；DB 有值以 DB 為準）
     * paramDefaultPlayLimit=`play 15／rest 15／max 20 分鐘`（執行期設定「新帳號預設時長」之程式預設；DB 有值以 DB 為準，合法區間同 spec#9 之 1–120 分鐘）
 
@@ -608,20 +608,20 @@ erDiagram
 
 * [apiIntf自訂帳號存檔服務]：[sysGame系統]（[modState模組]）與 [sysApi系統] 之間之 HTTP JSON 介面（同源 `/api/*`，本 repo 自訂、不成檔，正式機器可驗契約 openapi.yaml 由 code 段隨 [sysApi系統] 交付）。端點高階表：
   * `POST /api/auth/register`：`{username, password}` → `201 {token, account}`；錯誤 `409 username-taken`／`422 invalid-username`／`422 password-too-short`／`403 registration-closed`（註冊開關關閉，spec#26）。
-  * `POST /api/auth/login`：`{username, password}` → `200 {token, account}`；錯誤統一 `401 invalid-credentials`（不區分帳號不存在與密碼錯誤）。
+  * `POST /api/auth/login`：`{username, password}` → `200 {token, account}`（`account`＝`{id, username, role}`；時長政策不隨 login 搭載，由隨後之 `GET /api/save` 取得）；錯誤統一 `401 invalid-credentials`（不區分帳號不存在與密碼錯誤）。
   * `POST /api/auth/logout`：撤銷目前 session → `204`。
-  * `GET /api/save`：一律 `200 {state, updatedAt, schemaVersion, serverTime, playLimitPolicy}`；無存檔時 `state`／`updatedAt`／`schemaVersion` 為 `null`（code 段落地修訂：原 204 無法附 body 攜 `serverTime`，收斂為單一 200 形態）；`playLimitPolicy` 為 `{locked, playMinutes, restMinutes, playMaxMinutes}`（spec#26 時長政策——未鎖定時 `locked:false` 且分鐘值為 `null`；受鎖定帳號之 `state.playLimit` 已由伺服器套用強制值）。
-  * `PUT /api/save`：`{state, schemaVersion, baseUpdatedAt}` 整筆替換 upsert，`baseUpdatedAt` 與現存 `updatedAt` 樂觀比對——過期 `409 save-conflict`（不覆蓋較新進度）、成功 `200 {updatedAt, serverTime}`；`state` 非 JSON 物件或必要欄位型別非法時 `422 invalid-state`（#309 審查 B9，不落庫）。
+  * `GET /api/save`：一律 `200 {state, updatedAt, schemaVersion, serverTime, playLimitPolicy}`；無存檔時 `state`／`updatedAt`／`schemaVersion` 為 `null`（code 段落地修訂：原 204 無法附 body 攜 `serverTime`，收斂為單一 200 形態）；`playLimitPolicy` 為 `{locked, playMinutes, restMinutes, playMaxMinutes}`（spec#26 時長政策——未鎖定時 `locked:false` 且分鐘值為 `null`；政策與存檔資料分離，伺服器不改寫 `state.playLimit`，鎖定時由遊戲端以政策值為計時執行值）。
+  * `PUT /api/save`：`{state, schemaVersion, baseUpdatedAt}` 整筆替換 upsert，`baseUpdatedAt` 與現存 `updatedAt` 樂觀比對——過期 `409 save-conflict`（不覆蓋較新進度）、成功 `200 {updatedAt, serverTime, playLimitPolicy}`（政策隨保存回應下發，使 admin 變更對遊玩中裝置即時生效）；`state` 非 JSON 物件或必要欄位型別非法時 `422 invalid-state`（#309 審查 B9，不落庫）。
   * `GET /api/config`：不受保護之公開設定最小子集 → `200 {registrationOpen}`（登入畫面用，spec#26；不含任何帳號資料）。
   * 通則：除 register／login／config 外一律以 `Authorization: Bearer <token>` 驗 session（無效 `401`）；register／login 具速率限制／失敗退避（`429`，僅累計失敗嘗試、成功即清零）；請求體具大小上限（值 code 段定）；錯誤體統一 `{error:{code,message}}`；`/healthz` 不受保護供 liveness／readiness。
 * [apiIntf自訂線上管理服務]：[etyCfg通用家長維護者]（`/admin/` 線上管理頁）與 [sysApi系統]（[modAdmin模組]）之間之 HTTP JSON 介面（同源 `/api/admin/*`，本 repo 自訂、不成檔）。管理登入沿用 `POST /api/auth/login`（僅 `role=admin` 帳號之 token 可通過下列端點），端點高階表：
-  * `GET /api/admin/accounts`：全部帳號清單 → `200 {accounts:[{id, username, role, createdAt, lastLoginAt, saveUpdatedAt, playLimitPolicy}]}`。
-  * `POST /api/admin/accounts/:id/reset-password`：`{newPassword}`（沿 spec#23 密碼規則）→ `204`；重雜湊並撤銷該帳號全部 session。
+  * `GET /api/admin/accounts`：全部帳號清單 → `200 {accounts:[{id, username, role, createdAt, lastLoginAt, saveUpdatedAt, playLimitPolicy, playStatus}]}`（`playStatus`＝目前可玩／休息狀態摘要，由存檔之遊玩／休息時戳推導）。
+  * `POST /api/admin/accounts/:id/reset-password`：`{newPassword}`（沿 spec#23 密碼規則）→ `204`；重雜湊並撤銷該帳號全部 session（`:id` 為操作者自身時保留當前 session）。
   * `POST /api/admin/accounts/:id/revoke-sessions`：撤銷該帳號全部 session → `204`。
   * `DELETE /api/admin/accounts/:id`：刪除帳號連同存檔與全部 session（同一交易）→ `204`；`:id` 為 admin 自身時拒絕（`409 cannot-delete-self`，防自鎖）。
-  * `PUT /api/admin/accounts/:id/play-limit`：`{locked, playMinutes, restMinutes, playMaxMinutes}` 設定該帳號時長覆寫與鎖定（分鐘值驗 spec#9 合法區間；`locked:false` 即解除）→ `200`。
-  * `GET /api/admin/settings`／`PUT /api/admin/settings`：執行期設定讀寫 → `200 {registrationOpen, defaultPlayMinutes, defaultRestMinutes, defaultPlayMaxMinutes}`（明確欄位 schema；PUT 驗值域、寫入即生效）。
-  * 通則：一律 `Authorization: Bearer <token>` 且 `role=admin`（未帶或無效 `401`、非 admin `403 admin-only`）；錯誤體統一 `{error:{code,message}}`；玩家資料以參數化查詢存取、回應不含 passwordHash 等敏感欄位。
+  * `PUT /api/admin/accounts/:id/play-limit`：`{locked, playMinutes, restMinutes, playMaxMinutes}` 設定該帳號時長覆寫與鎖定（分鐘值驗 spec#9 合法區間且 `playMinutes ≤ playMaxMinutes`，違者 `422`；`locked:false` 即解除）→ `200`。
+  * `GET /api/admin/settings`／`PUT /api/admin/settings`：執行期設定讀寫 → `200 {registrationOpen, defaultPlayMinutes, defaultRestMinutes, defaultPlayMaxMinutes}`（明確欄位 schema；PUT 驗值域含 `playMinutes ≤ playMaxMinutes`、寫入即生效；單 admin、後寫勝）。
+  * 通則：一律 `Authorization: Bearer <token>` 且 `role=admin`（未帶或無效 `401`、非 admin `403 admin-only`）；admin 登出沿用 `POST /api/auth/logout`；錯誤體統一 `{error:{code,message}}`；玩家資料以參數化查詢存取、回應不含 passwordHash 等敏感欄位。
 * [datIntf自訂玩家帳號紀錄]：[sysApi系統] 之持久化資料模型（PostgreSQL，依 [techItem資料庫]；欄位型別與約束由 code 段 migration 落地）。帳號一對多 session、一對一存檔；密碼僅存 bcrypt 雜湊；存檔 state 為 JSONB 全量（遊戲端 normalized state 原樣），伺服器不拆欄位、不改寫語意。自增量 #310：帳號帶 `role`（`player`／`admin`）與時長政策欄位（維護者對該帳號之覆寫與鎖定，spec#26；未鎖定時為空值）、`lastLoginAt` 供管理頁清單；執行期設定為單列 SETTINGS（明確欄位 schema，缺列或缺值以程式預設遞補、部署升級零遷移）。
 
 ```mermaid
@@ -663,11 +663,11 @@ erDiagram
 
 * [hmiIntf自訂登入註冊頁]（遊戲殼玩家端，本 repo 自訂、不成檔）：遊戲入口之登入／註冊畫面，沿用遊戲既有童話手繪粉彩視覺（非管理網站規範）；**手機直向為第一視口**——帳號卡單欄堆疊、點卡就地展開密碼欄，桌機寬視口卡片可並排（參考稿為桌機構圖、直向依本文字規格）。版面三塊——(a) 本裝置最近帳號卡列（沿用既有帳號卡：頭胸照、識別色半透明鋪底，主標 playerName、副標 `username` 以辨重名，最近遊玩、coins、可玩／休息狀態），點選展開該卡之密碼欄與「進入」鈕；本裝置無任何帳號卡時（全新裝置／全新伺服器）以空狀態呈現：預設聚焦「建立新帳號」表單並附一句兒童友善引導文案；(b)「其他帳號」與「建立新帳號」切換（帳號、密碼大欄位、密碼欄具顯示／隱藏切換、錯誤就地紅字提示、家長協助輸入情境）；(c) 本裝置偵測到舊版本機帳號時顯示「匯入本機舊進度」遷移入口（intTest#74）。**頁上所有可點入口（含帳號卡、切換鈕、遷移入口）觸控目標一律 ≥44px**。自增量 #310（spec#26）：註冊開關關閉時本頁不渲染「建立新帳號」入口（含空狀態之註冊表單），改顯示一句兒童友善說明；公開設定查詢失敗時以註冊開放為預設。參考稿見 [docs/design-visual/page-login.svg](design-visual/page-login.svg)（設計期參考、以文字規格為準）。
 
-* [hmiIntf自訂線上管理頁]（維護者線上管理，本 repo 自訂、不成檔）：`/admin/` 線上管理介面（spec#25／spec#26），屬「管理網站／CRUD」介面、綁定 [hmiIntf通用視覺規範] 之 MD3 基座（沿用 [tool/theme-md3.css] 既有主題 token、不重生主題；支援深色模式；觸控目標 ≥44px，桌機與行動裝置皆可用）。外殼採 Top App Bar（左：站名「Luminara 管理」；右：目前 admin 帳號與登出鈕）＋雙分頁導覽（帳號／設定；頁少不設 Nav Drawer，窄視口以 top tabs 呈現）。具名頁三張：
-  * **[管理登入頁]**（`/admin/`，未帶有效 admin session 時）：置中單卡登入表單——帳號、密碼（具顯示／隱藏切換）、登入鈕；錯誤就地提示（統一「帳號或密碼不正確」）；非 admin 帳號登入成功但無管理權時明示「此帳號無管理權限」並不進入管理內容。參考稿見 [docs/design-visual/page-admin-login.svg](design-visual/page-admin-login.svg)。
-  * **[管理帳號頁]**（分頁「帳號」，登入後預設頁）：全部帳號之清單表格（帳號、role 徽章、建立時間、最近登入、存檔更新、時長政策摘要），每列操作——重設密碼（dialog 輸入新密碼、沿 spec#23 規則就地驗證）、時長覆寫與鎖定（dialog：鎖定開關＋遊玩／休息／上限分鐘欄位，驗 1–120 區間）、撤銷 session、刪除帳號（error 色、二次確認 dialog 明示不可復原且連同存檔刪除；admin 自身列不提供刪除）；操作結果以 snackbar 回饋（成功自動消散、失敗持留說明）。窄視口表格降級為卡片列。參考稿見 [docs/design-visual/page-admin-accounts.svg](design-visual/page-admin-accounts.svg)。
-  * **[管理設定頁]**（分頁「設定」）：執行期設定表單——註冊開關（switch＋一句影響說明）、新帳號預設遊玩／休息／上限時長（數值欄位＋合法區間提示）；儲存鈕寫回即生效、成功 snackbar；頁尾註記服務版本（About 資訊）與「內容編修請用管理設定工具（dev 環境）」之職能分界說明。參考稿見 [docs/design-visual/page-admin-settings.svg](design-visual/page-admin-settings.svg)。
-  * 以上參考稿均為設計期參考、以文字規格為準（code 段以實際截圖替換 README 對應圖）。
+* [hmiIntf自訂線上管理頁]（維護者線上管理，本 repo 自訂、不成檔）：`/admin/` 線上管理介面（spec#25／spec#26），屬「管理網站／CRUD」介面、綁定 [hmiIntf通用視覺規範] 之 MD3 基座（沿用 [tool/theme-md3.css] 既有主題 token、不重生主題；支援深色模式；觸控目標 ≥44px，桌機與行動裝置皆可用）。外殼採 Top App Bar（左：站名「Luminara 管理」；右：目前 admin 帳號與登出鈕）＋雙分頁導覽（帳號／設定；頁少不設 Nav Drawer，窄視口以 top tabs 呈現）；**行動裝置（家長手機直向）為常用視口**——帳號頁表格降級為卡片列、dialog 於窄視口全寬呈現，全頁操作觸控目標 ≥44px。具名頁三張：
+  * **[管理登入頁]**（`/admin/`，未帶有效 admin session 時）：置中單卡登入表單——帳號、密碼（具顯示／隱藏切換）、登入鈕；錯誤就地提示（統一「帳號或密碼不正確」）；非 admin 帳號登入成功但無管理權時明示「此帳號無管理權限」並不進入管理內容；卡下附一行指引「維護者忘記密碼之離線重設方式見產品手冊」。參考稿見 [docs/design-visual/page-admin-login.svg](design-visual/page-admin-login.svg)。
+  * **[管理帳號頁]**（分頁「帳號」，登入後預設頁）：全部帳號之清單表格（帳號、role 徽章、建立時間、最近登入、存檔更新、目前可玩／休息狀態、時長政策摘要——格式定為 `鎖定 玩X/休Y/上限Z` 或 `玩家自調`），每列操作採**主操作＋溢出選單**收納（MD3 列操作慣例）：主操作「重設密碼」（dialog 輸入新密碼、沿 spec#23 規則就地驗證；自身列即變更自身密碼、明示其他裝置將登出）＋ `⋮` 選單收「時長覆寫與鎖定」（dialog：鎖定開關＋遊玩／休息／上限分鐘欄位，驗 1–120 且遊玩 ≤ 上限）、「撤銷 session」（輕量確認）、「刪除帳號」（error 色、二次確認 dialog 明示不可復原且連同存檔刪除）；admin 自身列僅主操作、不出現 `⋮` 選單。操作結果以 snackbar 回饋（成功自動消散、失敗持留說明）。窄視口卡片列：首行帳號＋role 徽章、次行摘要（最近登入／存檔更新／時長政策），卡右上 `⋮` 同選單。參考稿見 [docs/design-visual/page-admin-accounts.svg](design-visual/page-admin-accounts.svg)。
+  * **[管理設定頁]**（分頁「設定」）：執行期設定表單——註冊開關（switch＋一句影響說明）、新帳號預設遊玩／休息／上限時長（數值欄位＋合法區間提示，遊玩 ≤ 上限）；**整頁表單統一「儲存設定」一鈕寫回**（switch 亦屬表單之一部分、非即切即存），任一未儲存變更時離頁／切分頁前警示（dirty guard，沿 spec#22 慣例）；儲存即生效、成功 snackbar；頁尾註記服務版本（About 資訊）、產品手冊（使用說明）連結與「內容編修請用管理設定工具（dev 環境）」之職能分界說明。參考稿見 [docs/design-visual/page-admin-settings.svg](design-visual/page-admin-settings.svg)。
+  * 以上參考稿均為設計期參考（桌機構圖）、以文字規格為準（含窄視口規格；code 段以實際截圖替換 README 對應圖）。
 
 * [hmiIntf通用視覺規範]（管理網站規範）：[管理設定工具]（`tool/wardrobe-tuner.html`，dev-only 內容編修）與 [hmiIntf自訂線上管理頁]（`/admin/`，線上營運管理，spec#25／spec#26）皆屬「管理網站／CRUD」介面，其元件與視覺通則綁定本契約之 `通用性規範` 與 `專用性規範-管理網站`（MD3 基座）；品牌主題 token 以遊戲識別色（低飽和粉彩色盤）為種子，記於 [docs/design-visual](design-visual/)、經 Material Theme Builder 生成定本後唯讀引用、不重生。工具頁面樹（sitemap）依內容資料包分兩層，各既有管理頁歸入其所屬資料包節點：
   * 公主：公主登記／外觀資產、公主起始
@@ -1645,13 +1645,13 @@ erDiagram
 * 新增項目：[sysApi系統]之 admin 鑑權、帳號管理操作與權限負向防護。
 * 步驟：
   1. 以 `ADMIN_USERNAME`／`ADMIN_PASSWORD` 啟動服務，於 `/admin/` 以 admin 帳密登入。
-  2. 檢視帳號清單；為一個玩家帳號重設密碼；撤銷另一帳號全部 session；刪除一個測試帳號（經二次確認）。
-  3. 嘗試刪除 admin 自身帳號。
+  2. 檢視帳號清單；為一個玩家帳號重設密碼；撤銷另一帳號全部 session；刪除一個測試帳號（經二次確認）；admin 重設自身密碼。
+  3. 嘗試刪除 admin 自身帳號；重啟服務（env 之 `ADMIN_PASSWORD` 為舊值）後以線上改過之新密碼登入。
   4. 負向：未帶 token、帶玩家 session token、帶偽造 token 逐一請求各管理端點；以玩家帳密登入 `/admin/`。
 * 預期結果：
   1. admin 登入成功進入管理頁；清單含全部帳號之帳號、role、建立時間、最近登入與存檔更新時間。
-  2. 重設密碼後舊密碼失效、新密碼可登入且該帳號全部既有 session 被撤銷；撤銷 session 後該帳號裝置端需重新登入；刪除帳號後其帳號、存檔與 session 一併消失（同一交易）、他帳號不受影響。
-  3. admin 自身不可刪除（409 cannot-delete-self）。
+  2. 重設密碼後舊密碼失效、新密碼可登入且該帳號全部既有 session 被撤銷；admin 重設自身密碼時當前管理 session 保留、不被踢出；撤銷 session 後該帳號裝置端需重新登入；刪除帳號後其帳號、存檔與 session 一併消失（同一交易）、他帳號不受影響。
+  3. admin 自身不可刪除（409 cannot-delete-self）；服務重啟不以 env 回滾線上改過之 admin 密碼（paramAdminBootstrap 僅於帳號不存在時建立）。
   4. 未帶／偽造 token 一律 401、玩家 session 一律 403 admin-only、回應不含管理資訊；玩家帳號於管理頁明示無管理權限、不進入管理內容。
 
 #### intTest#76-驗證 [setAct自訂維護者線上調整執行期設定]（spec#26）
@@ -1662,7 +1662,7 @@ erDiagram
   1. admin 於 [管理設定頁] 修改新帳號預設時長並儲存，隨即註冊一個新帳號。
   2. 關閉註冊開關，再嘗試註冊另一帳號。
   3. 對一個玩家帳號設定時長覆寫並鎖定（如 play 10／rest 20）；之後解除鎖定。
-  4. 對設定與時長政策寫入非法值（0、121、非數值）。
+  4. 對設定與時長政策寫入非法值（0、121、非數值、遊玩時長大於單回合上限）。
   5. 直接重啟服務後讀取設定。
 * 預期結果：
   1. 新帳號初始遊玩／休息時長等於新預設值（不需重啟服務）。
@@ -1676,13 +1676,13 @@ erDiagram
 * 既有基底：intTest#16、intTest#13。
 * 新增項目：[sysGame系統]之時長鎖定唯讀與註冊開關呈現。
 * 步驟：
-  1. admin 對帳號 A 鎖定時長後，以帳號 A 登入遊戲並開啟設定選單；嘗試修改時長欄位。
-  2. admin 解除鎖定後，帳號 A 重新載入並再調整時長。
+  1. admin 對帳號 A 鎖定時長後，以帳號 A 登入遊戲並開啟設定選單；嘗試修改時長欄位。另於帳號 A **遊玩中**（不重載）時由 admin 變更政策、等待下一次雲端保存。
+  2. admin 解除鎖定後，帳號 A 重新載入並再調整時長；確認玩家先前自調之時長值未被強制值洗掉（政策與存檔分離）。
   3. 關閉註冊開關後開啟登入畫面（含全新裝置之空狀態）；再開啟註冊開關重整。
   4. 模擬 `GET /api/config` 失敗（網路錯誤）開啟登入畫面。
 * 預期結果：
-  1. 時長欄位唯讀並顯示「由維護者管理」提示；遊玩／休息計時依強制值執行、重整與跨裝置一致。
-  2. 解除後欄位回復可編輯、玩家自調生效。
+  1. 時長欄位唯讀並顯示「由維護者管理」提示；遊玩／休息計時依強制值執行、重整與跨裝置一致；遊玩中之政策變更隨下一次保存回應（PUT 搭載）當場套用、不需重載。
+  2. 解除後欄位回復可編輯、玩家原自調值保留並回復生效（`state.playLimit` 未被強制值改寫）。
   3. 註冊關閉時登入畫面無「建立新帳號」入口（含空狀態）且顯示友善說明；重新開放後入口回復。
   4. 查詢失敗時登入動線不受阻、以註冊開放為預設呈現。
 
@@ -2215,7 +2215,7 @@ erDiagram
 * **開發 REPO**：`git remote origin`
 * **產品 REPO**：`待定`（自增量 #309 起以自架伺服器整包為交付形態；正式對外散佈通道──image＋helm chart──於增量 #311 接軌發佈列車）
 * **productReadme 來源**：`README.md`（本 repo 根目錄產品手冊；尚未採 buildStage 目錄慣例）
-* **部署方式**：自架伺服器整包──[sysApi系統]（依 [techStackNodeSvr]：Node.js LTS＋TypeScript）同站服務遊戲殼靜態檔（[techStackStaticWeb] 產物，無打包）與 `/api/*` 帳號存檔端點；資料庫 PostgreSQL（依 [techItem資料庫]，經 [apiIntf標準Postgres連線]）。本增量（#309）驗收環境為本機／區網：docker compose（node 服務＋PostgreSQL）或等效啟動；正式 helm 整包（單一 release）於增量 #311 編制。**傳輸層（明文接受之過渡風險）**：本增量之區網部署為 HTTP（架構圖之 [comIntf通用HTTPS連線] 為目標形態）——密碼與 session token 於家庭內網明文傳輸，威脅模型評估為可接受；TLS 終結（reverse proxy／K8s gateway）於增量 #311 隨正式整包交代。**資料保全**：資料庫備份屬維護者例行作業（`pg_dump` 級，指令由 code 段校準並記入 README）；玩家層另有 Markdown 匯出備份。**密碼重設**：玩家忘記密碼時由維護者於 `/admin/` 線上管理頁重設（spec#25，自增量 #310）；伺服器端維護指令保留為 admin 自身忘記密碼之離線後門。**admin 起始帳號**：以 `ADMIN_USERNAME`／`ADMIN_PASSWORD` 環境變數於服務啟動時建立或更新（paramAdminBootstrap）。**GitHub Pages（舊公開站）**：USR 裁決不保留舊版——Pages 設定未變（仍指 main），自本增量起其內容需後端、公開網址不再可玩；Pages 之正式關閉退場於增量 #311 辦理。
+* **部署方式**：自架伺服器整包──[sysApi系統]（依 [techStackNodeSvr]：Node.js LTS＋TypeScript）同站服務遊戲殼靜態檔（[techStackStaticWeb] 產物，無打包）與 `/api/*` 帳號存檔端點；資料庫 PostgreSQL（依 [techItem資料庫]，經 [apiIntf標準Postgres連線]）。本增量（#309）驗收環境為本機／區網：docker compose（node 服務＋PostgreSQL）或等效啟動；正式 helm 整包（單一 release）於增量 #311 編制。**傳輸層（明文接受之過渡風險）**：本增量之區網部署為 HTTP（架構圖之 [comIntf通用HTTPS連線] 為目標形態）——密碼與 session token（含 admin 憑證與管理 session，#310）於家庭內網明文傳輸，威脅模型評估為可接受、惟明文提醒**不得將服務 port 轉發至公網**（README 維護者段記載）；TLS 終結（reverse proxy／K8s gateway）於增量 #311 隨正式整包交代。**資料保全**：資料庫備份屬維護者例行作業（`pg_dump` 級，指令由 code 段校準並記入 README）；玩家層另有 Markdown 匯出備份。**密碼重設**：玩家忘記密碼時由維護者於 `/admin/` 線上管理頁重設（spec#25，自增量 #310）；伺服器端維護指令保留為 admin 自身忘記密碼之離線後門。**admin 起始帳號**：以 `ADMIN_USERNAME`／`ADMIN_PASSWORD` 環境變數於服務啟動時建立——僅於帳號不存在時；admin 於管理頁改過的密碼不被服務重啟回滾，撞名既有玩家帳號則啟動失敗報錯（paramAdminBootstrap）。**GitHub Pages（舊公開站）**：USR 裁決不保留舊版——Pages 設定未變（仍指 main），自本增量起其內容需後端、公開網址不再可玩；Pages 之正式關閉退場於增量 #311 辦理。
 * **建置指令**：遊戲殼無打包（no-op，直接收集靜態檔）；[sysApi系統] `cd sysApi && npm ci && npm run build`（TypeScript → `dist/`；正式 image `docker build` 於 #311 定案）。本機預覽：自架服務啟動後直接開服務 URL（預設 `http://0.0.0.0:4180/`）；`node server.mjs` 維持 dev 工具用途（管理設定工具寫回，預設 `http://0.0.0.0:4174/`，可設 `HOST` 環境變數覆寫監聽位址；啟動 log 顯示 LAN IP 供區網存取）。
 * **本機開發工具入口**：本機開發環境（前端偵測 `location.hostname` 為 `127.0.0.1`／`localhost`／`[::1]`）下，起始選單之選角對話框 `Start` 鈕下方顯示［衣物調整工具］dev 入口，點擊以相對路徑導向 `tool/wardrobe-tuner.html`；以前端環境偵測為閘門，正式發佈站（GitHub Pages 公開網域）一律不顯示此入口。屬 dev-only 作者工具便利性、非玩家功能（不進產品手冊主流程與 e2e），其完整套用／管理功能仍需 `node server.mjs`。
 * **測試指令**：[sysApi系統] 單元測試 `cd sysApi && npm test`（vitest，涵蓋率門檻 ≥80%）、整合測試 `npm run integration`（對 compose 之真 PostgreSQL＋運行中服務，涵蓋註冊／登入／session／存檔樂觀鎖／速率限制／密碼重設 CLI，自 #310 併入 admin 鑑權與帳號管理、執行期設定生效與權限負向案例）與依賴安全 `npm audit`（0 已知漏洞或列名豁免）；方案層真堆疊端對端 `node tests/e2e-account-cloud.mjs`（註冊→選角→遊玩→雲端保存→跨裝置還原→免密續玩，含證據截圖）與 `node tests/e2e-admin-console.mjs`（自 #310：admin 登入→帳號管理→執行期設定→遊戲端生效，含證據截圖；檔名 code 段校準）；型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=auth`（注入 fake fetch 驗雲端帳號／存檔路徑）／`?selftest=data-audit`／`?selftest=save-load`／`?selftest=accounts`／`?selftest=playtimer`／`?selftest=profile-color`／`?selftest=map-avatar`／`?selftest=character-silhouette`／`?selftest=monkey`／`?selftest=chinese-reward`／`?selftest=scene-nav`／`?selftest=dev-tools`／`?selftest=visual-qa&surface=<id>`；場景背景資產 visual QA 需輸出全場景 contact sheet 與手機直向／桌機截圖；圖像資產標準尺寸與檔重預算之檔案系統 gate `node scripts/assetLint.mjs`（掃描 content-base／content-package 全部 shipped 圖像檔、不只 registry 引用，對照 paramAssetStandards），瀏覽器 `?selftest=data-audit` 另對 registry 引用資產做 runtime 尺寸／檔重檢查；版號投影防漂移 gate `node scripts/genVersion.mjs --check`（斷言 `game-engine/build/version.js`／`CHANGELOG.md` 與根目錄 `VERSION` SSOT 一致）；結構守門 `node scripts/structureLint.mjs`（JS／CSS 單檔行數上限、main.js 組裝上限與 CSS 同檔同 media 重複規則塊歸零，對照 paramStructureQualityBar，lint 內具名豁免清單除外）；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`；**體驗品質雙人工查核（paramExperienceQualityGate，機械守門綠 ≠ 可收）**——會話語感 QA 逐題查核紀錄（intTest#64，落 `docs/qa/`）與版型視覺 QA 雙視口逐畫面走查紀錄（intTest#65，落 `docs/qa/`）齊備且全數通過、並納入 test-summary，方可宣稱完成。
