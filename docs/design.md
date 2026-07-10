@@ -41,7 +41,7 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件（#309 
 * **spec#24-可雲端保存進度並跨裝置還原**：方案須將每帳號之全部遊玩進度（既有 normalized state 全項：coins、學習紀錄、擁有與穿搭、所在位置、所選角色、名字、識別色與背景花紋、遊玩／休息狀態等）保存於伺服器端，登入即還原、跨裝置跨瀏覽器一致；保存採自動節流（paramSaveDebounceMs）＋關鍵事件即時寫入（答題結算、購買退款、換裝、時間到結算、登出）；伺服器暫時不可達時遊戲以記憶體狀態續玩、背景重試並明確提示同步狀態、不 crash 不丟既有畫面；舊進度有兩條遷移路徑——(a) 既有 Markdown 匯出存檔可匯入為目前登入帳號之雲端進度、(b) 本裝置舊版 localStorage 本機帳號可於登入畫面一鍵遷移為伺服器帳號進度——兩者皆沿用既有匯入正規化與 `sol`→`lumi` 等相容 fallback，且承接帳號已有雲端進度時須明確警示覆蓋方向並經確認、先上傳成功後才標記已遷移（失敗可重試不重複）；Markdown 匯出功能保留作為離線備份。並發保護：同帳號多裝置同時遊玩時，保存以 `updatedAt` 樂觀比對——過期寫入被拒（HTTP 409）並由遊戲端提示重新載入，不靜默覆蓋較新進度；存檔 API 回應附伺服器時間，遊戲端據以校正遊玩／休息計時判定（裝置時鐘竄改之防護明文屬家長管理範圍、非技術防線）。
 * **spec#25-可由維護者線上管理玩家帳號**：方案須讓維護者（admin）以瀏覽器於自架伺服器之專屬線上管理頁完成帳號管理，不再需要伺服器端指令——admin 以帳密登入管理頁（與玩家遊戲入口分流，遊戲殼與兒童端不出現任何管理入口）後可：(a) 檢視伺服器上全部玩家帳號之清單（帳號、建立時間、最近登入時間、存檔更新時間、目前可玩／休息狀態摘要）；(b) 為任一帳號重設密碼（含變更 admin 自身密碼——自身變更保留當前登入、其他裝置登出；新密碼沿用 spec#23 之密碼規則）；(c) 撤銷任一帳號之全部 session（該帳號所有裝置即刻登出）；(d) 刪除帳號——連同其存檔與全部 session 一併刪除，屬不可復原之危險操作、須經明確二次確認方執行（admin 自身不可刪除，防自鎖）。本增量明文不做：多管理員分級、操作稽核日誌、遊玩時長統計報表（留待真需求）。admin 憑證與玩家帳號同一安全標準（bcrypt 雜湊、登入失敗統一訊息、速率限制）；管理 API 一律驗 admin 身分——未登入、玩家 session 或逾期憑證一律拒絕、不洩漏管理資訊；第一個 admin 帳號由部署期程序建立（部署做法見＜IV.A＞），本方案為家庭自架情境、單一 admin 即足，不做多管理員分級與操作稽核日誌。管理頁屬管理網站介面（依 [hmiIntf通用視覺規範] MD3 基座）、桌機與行動裝置觸控皆可用。
 * **spec#26-可由維護者線上管理執行期遊戲設定**：方案須讓維護者於同一線上管理頁調整**執行期遊戲設定**，設定存於伺服器資料庫、儲存後即時生效，不需改版或重新部署（落地資料三分歸屬之「執行期設定歸 DB」一分）——範圍：(a) **新帳號預設遊玩／休息時長**（新註冊帳號之 playMinutes／restMinutes／playMaxMinutes 初始值，取代寫死之程式常數；範圍限 spec#9 之合法分鐘區間）；(b) **個別帳號時長覆寫與鎖定**（家長管控）——對指定帳號設定強制遊玩／休息時長並鎖定，鎖定後該帳號遊戲內時長設定唯讀（spec#9），解除鎖定即回復玩家可自調；(c) **註冊開關**——關閉後伺服器拒絕新帳號註冊、遊戲登入畫面不提供註冊入口並顯示友善說明（家庭伺服器成員到齊後可關閉，防陌生註冊佔用）。設定採**明確欄位 schema**（每一設定項於本設計文件與程式各有具名定義）、資料庫缺值時以程式預設值遞補（部署升級零遷移負擔），不採動態 key-value 自由欄位。職能分界明文：內容編修（題庫、衣物對位、語音指定、地圖座標、公主預設）屬「內容歸 git」，維持 [管理設定工具]（[tool/]，dev-only）既有動線、隨版本發行，不納入本線上管理；本線上管理只管「這台伺服器的營運狀態」（帳號與執行期設定）。
-* **spec#27-可取得版本化整包發行物並於自架環境安裝升級與保全資料**：方案須以「單一 container image＋單一 helm chart」之版本化整包作為正式對外散佈單位（依 [comIntf通用K8sHelm部署格式]），供維護者於自有 Kubernetes 環境（家庭主機單節點即足）以 `helm install` 一鍵部署整套——遊戲殼、帳號存檔 API、`/admin/` 線上管理頁與 PostgreSQL 資料庫（依 [techStackPostgres]）——並以 `helm upgrade` 升級版本；**升級與重啟不得遺失玩家帳號、雲端存檔與執行期設定**（資料庫落於持久化儲存 PVC、schema 演進沿既有零遷移慣例），`helm uninstall` 預設保留資料卷、確要清除由維護者明示執行；image 內容邊界以遊戲服務既有靜態 allowlist 語意為單一事實來源（dev 工具 [tool/]、測試與 repo 內部檔案不入包）；image tag、chart 版本與根目錄 `VERSION` 三處同源對齊並具防漂移守門；資料庫備份與還原程序（`pg_dump` 級）須文件化於產品手冊；發行物之對外散佈（registry push、GitHub Release）由發佈列車（trainFlow）承載、不在本方案增量內執行；原始碼形態（clone＋compose＋npm）自本增量起降級為開發期路徑、不再是正式自架動線。
+* **spec#27-可取得版本化整包發行物並於自架環境安裝升級與保全資料**：方案須以「單一 container image＋單一 helm chart」之版本化整包作為正式對外散佈單位（依 [comIntf通用K8sHelm部署格式]），供維護者於自有 Kubernetes 環境（家庭主機單節點即足）以 `helm install` 一鍵部署整套——遊戲殼、帳號存檔 API、`/admin/` 線上管理頁與 PostgreSQL 資料庫（依 [techStackPostgres]）——並以 `helm upgrade` 升級版本；**升級與重啟不得遺失玩家帳號、雲端存檔與執行期設定**（資料庫落於持久化儲存 PVC、schema 演進沿既有零遷移慣例），`helm uninstall` 預設保留資料卷、確要清除由維護者明示執行；image 內容邊界以遊戲服務既有靜態 allowlist 語意為單一事實來源（dev 工具 [tool/]、測試與 repo 內部檔案不入包）；image tag、chart 版本與根目錄 `VERSION` 三處同源對齊並具防漂移守門；資料庫備份與**還原**程序（`pg_dump`／`psql` 級，兩向均給具體指令並實測）須文件化於產品手冊，既有 compose 部署遷移至 helm 之資料搬移程序（dump→restore）亦須文件化；發行物之對外散佈（registry push、GitHub Release）由發佈列車（trainFlow）承載、不在本方案增量內執行；原始碼形態（clone＋compose＋npm）自本增量起降級為開發期路徑、不再是正式自架動線。
 
 # II. 設計分析
 
@@ -182,7 +182,7 @@ HOST -->|"🎚️paramDeployBranch=`main`"| API
   * **solCase#26.1**：[etyCfg通用家長維護者]執行[setAct自訂維護者線上調整執行期設定]，於線上管理頁調整新帳號預設遊玩／休息時長、對個別帳號覆寫並鎖定時長（或解除鎖定）、開關新帳號註冊；設定寫入伺服器資料庫、儲存後即時生效，不需改版或重新部署。
   * **solCase#26.2**：[sysGame系統]執行[runAct自訂系統套用執行期設定]，自登入／存檔回應取得目前帳號之時長強制值與鎖定旗標——鎖定時遊戲內設定之時長欄位唯讀並明示由維護者管理；註冊關閉時登入畫面不提供註冊入口並顯示友善說明。
 * **solStory#27-整包發行與自架安裝升級**：
-  * **solCase#27.1**：[etyCfg通用家長維護者]執行[setAct自訂維護者部署網站]，取得版本化整包發行物（container image＋helm chart，依 [comIntf通用K8sHelm部署格式]），於自有 Kubernetes 環境以 `helm install` 一鍵部署整套（遊戲殼＋帳號存檔 API＋`/admin/` 線上管理頁＋PostgreSQL 資料庫）；部署後 `/healthz` 綠、遊戲與線上管理頁可用，必要秘密（`SESSION_SECRET`、admin 起始帳密、資料庫密碼）經 chart 之 Secret 供給。
+  * **solCase#27.1**：[etyCfg通用家長維護者]執行[setAct自訂維護者部署網站]，取得版本化整包發行物（container image＋helm chart，依 [comIntf通用K8sHelm部署格式]），於自有 Kubernetes 環境以 `helm install` 一鍵部署整套（遊戲殼＋帳號存檔 API＋`/admin/` 線上管理頁＋PostgreSQL 資料庫）；部署後就緒（readiness `/readyz` 綠、含資料庫依賴）、遊戲與線上管理頁可用，服務網址對維護者可預期（NodePort 固定配號＋chart NOTES.txt 印出）；必要秘密（`SESSION_SECRET`、admin 起始帳密、資料庫密碼）經 chart 之 Secret 供給（values 檔或首次生成，生命週期見＜II.A (D)＞ paramSecrets）。
   * **solCase#27.2**：[etyCfg通用家長維護者]執行[setAct自訂維護者升級部署]，以 `helm upgrade` 將運行中部署升至新版本 image；升級後玩家帳號、雲端存檔與執行期設定全數保留（資料庫 PVC 持久化＋零遷移 schema 演進），且服務所報版本（About／buildInfo）反映新版。
   * **solCase#27.3**：[etyCfg通用家長維護者]執行[setAct自訂維護者移除部署]，以 `helm uninstall` 移除部署——資料卷（PVC）預設保留（誤刪可復原、重裝可續用），確要清除資料時由維護者明示刪除；備份與還原以 `pg_dump`／restore 程序辦理（產品手冊記載）。
 
@@ -205,11 +205,15 @@ HOST -->|"🎚️paramDeployBranch=`main`"| API
     * paramChartVersion=`與根目錄 VERSION 同源`（chart `version` 與 `appVersion` 均由 `VERSION` 投影、納入防漂移守門，不另存第二份版本真相）
 * **HelmChart參數-values.yaml**
   * [etyCfg通用自架主機平台]（chart values 明確欄位；對照 `sysApi/.env.example` 為組態語意正本）
-    * paramImageRepository=`ghcr.io/twstellerwhale-ocean2/solkidgalgame1`（預設；registry push 屬發佈列車）
+    * paramImageRepository=`ghcr.io/twstellerwhale-ocean2/solkidgalgame1`（預設；公開 image、免 pull secret；registry push 屬發佈列車）
     * paramImageTag=`預設隨 chart appVersion`（即 `VERSION`；可覆寫）
-    * paramServiceType=`NodePort`（家庭單機預設、可改 ClusterIP＋Ingress；TLS／Ingress 屬選配欄位，未啟用時沿家庭內網 HTTP 定位與公網轉發警語）
-    * paramDbStorage=`PVC（大小可調，預設 1Gi；helm uninstall 預設保留）`
-    * paramSecrets=`SESSION_SECRET／ADMIN_USERNAME／ADMIN_PASSWORD／POSTGRES_PASSWORD 經 Secret 供給（安裝時必填或首次生成）`
+    * paramChartDistribution=`消費端取得形態＝OCI chart（ghcr.io，經發佈列車 push）或 GitHub Release 之 chart .tgz 附件；本 repo 內 deploy/helm 路徑屬 pre-release 驗測動線`（發行單位是整包，正式手冊示例以發行物形態為準）
+    * paramServiceType=`NodePort`（家庭單機預設、**固定 nodePort=30418**——不採隨機配號，使服務網址 `http://<主機IP>:30418/` 對維護者可預期且重裝不變；可改 ClusterIP＋Ingress；TLS／Ingress 屬選配欄位，未啟用時沿家庭內網 HTTP 定位與公網轉發警語）
+    * paramDbWorkload=`PostgreSQL 以 StatefulSet（單 replica）承載、更新採 Recreate 語意`（避免 RollingUpdate 下新舊 pod 互搶 RWO PVC 死鎖；升級期間資料庫短暫中斷屬家庭情境可接受並明文）；**PG major 版本 pin**（`postgres:16` 系列）——PG major 升級屬手動 dump／restore 程序、不隨 `helm upgrade` 自動發生
+    * paramDbStorage=`PVC（大小可調，預設 1Gi）`；**保留機制明文**：PVC 掛 `helm.sh/resource-policy: keep` 註記、名稱固定不含 release 隨機成分——`helm uninstall` 不刪、同名重裝自動續用；確要清除由維護者手動刪 PVC
+    * paramProbes=`liveness=/healthz（進程存活）、readiness=/readyz（含資料庫依賴檢查）`；app 啟動之 admin bootstrap 需 DB——以啟動重試（或 initContainer wait-for-db）容忍資料庫晚就緒，不得 CrashLoop 即死
+    * paramSecrets=`SESSION_SECRET／ADMIN_USERNAME／ADMIN_PASSWORD／POSTGRES_PASSWORD 經 K8s Secret 供給`；**秘密生命週期明文**——(a) 安裝時以 values 檔供給（`-f secrets.yaml`，用後即刪；不以 `--set` 內聯明文留 shell 歷史）或首次自動生成；(b) 自動生成值以 template `lookup` 沿用既值——**upgrade 不重供即沿用、不得重抽**；(c) `POSTGRES_PASSWORD` 僅於資料庫 initdb 時消費——事後改 Secret 不會改到既有資料庫實際密碼（改庫密碼屬手動 DB 程序、明文不隨 upgrade 代辦）；(d) `SESSION_SECRET` 換值＝全部裝置 session 失效（重登入），屬維護者明知後果之操作
+    * paramChartNotes=`chart 附 NOTES.txt`——安裝完成即印出遊玩網址、`/admin/` 位置、就緒查法（`kubectl get pods`）與備份指令提示，家長不需翻手冊找網址
   * [etyCfg自訂sysApi組態]
     * paramTechStack=`techStackNodeSvr`
     * paramDatabase=`PostgreSQL`（依 [techStackPostgres]，經 [apiIntf標準Postgres連線]）
@@ -504,7 +508,7 @@ ADMIN -->|"🎚️paramRegistrationOpenDefault=`true`"| SYS
   * **sysCase#2.2**：[modSave模組]承接[runAct自訂系統還原進度]，登入後回傳該帳號存檔全量 state 與伺服器時間（供遊戲端校正遊玩／休息計時）；回應並搭載該帳號之時長政策（enforced 時長與 locked 旗標，經 [modAdmin模組] 讀帳號覆寫，spec#26）——**政策與存檔資料分離**：伺服器不改寫 `state.playLimit`（玩家原自調值保留於存檔、解除鎖定即回復），鎖定之強制值僅經 `playLimitPolicy` 下發、由遊戲端作為計時執行值套用（[sysGame系統] sysStory#16）；保存（PUT）回應亦搭載最新政策，使 admin 儲存對遊玩中裝置即時生效；無存檔時回空（HTTP 204），由遊戲端建立新局初始進度；伺服器不改寫其餘遊戲語意，正規化一律由遊戲端 `normalizeState` 執行。
   * **sysCase#2.3**：[modSave模組]承接[setAct自訂玩家匯入存檔]，接受遊戲端解析正規化後之整份 state 作為該帳號存檔（Markdown 遷移與本機舊帳號一鍵遷移共用此上傳路徑）；遷移／匯入屬使用者明示之覆蓋操作，遊戲端於承接帳號已有雲端進度時先明確警示覆蓋方向並經確認才上傳。
 * **sysStory#3-承接遊戲殼服務**：
-  * **sysCase#3.1**：[modServe模組]承接[setAct自訂維護者部署網站]，同站服務遊戲殼靜態檔（`index.html`、[game-engine]、[content-package] 等）、線上管理頁靜態子樹（`/admin/`，頁面本身可公開取得、其資料一律經受 admin 保護之管理 API）與 `/api/*` 端點（同源、免 CORS）；靜態服務維持 allowlist 子樹（[tool/]、內部檔案與其餘 repo 樹一律 404）；提供不受保護之 `/healthz` liveness／readiness 路徑；[server.mjs] 之 dev 工具職能（管理設定工具 sidecar 寫回）維持獨立、不併入本服務（內容編修屬「內容歸 git」，職能分界見 spec#26、不線上化）。
+  * **sysCase#3.1**：[modServe模組]承接[setAct自訂維護者部署網站]，同站服務遊戲殼靜態檔（`index.html`、[game-engine]、[content-package] 等）、線上管理頁靜態子樹（`/admin/`，頁面本身可公開取得、其資料一律經受 admin 保護之管理 API）與 `/api/*` 端點（同源、免 CORS）；靜態服務維持 allowlist 子樹（[tool/]、內部檔案與其餘 repo 樹一律 404）；提供不受保護之 `/healthz`（liveness，進程存活）與 `/readyz`（readiness，含資料庫依賴檢查）路徑；[server.mjs] 之 dev 工具職能（管理設定工具 sidecar 寫回）維持獨立、不併入本服務（內容編修屬「內容歸 git」，職能分界見 spec#26、不線上化）。
 * **sysStory#4-承接維護者線上管理**：
   * **sysCase#4.1**：[modAdmin模組]承接[setAct自訂維護者線上管理帳號]，admin 以帳密自 `/admin/` 管理頁登入——憑證驗證沿用 [modAuth模組] 同一機制（bcrypt 比對、統一錯誤訊息、速率限制、opaque session token），僅 `role=admin` 之帳號可通過管理登入；全部管理 API 一律驗「有效 session **且** role=admin」，玩家 session 或未登入一律拒絕（solCase#25.2）；第一個 admin 帳號由部署期程序建立（paramAdminBootstrap：服務啟動時依 `ADMIN_USERNAME`／`ADMIN_PASSWORD` 環境變數**僅於該帳號不存在時建立**——不覆寫既有密碼，admin 於管理頁變更後之密碼以資料庫為準、不被服務重啟回滾；`ADMIN_USERNAME` 撞名既有 `role=player` 帳號時啟動失敗並明確報錯、不就地升權；見＜IV.A＞）。
   * **sysCase#4.2**：[modAdmin模組]承接[setAct自訂維護者線上管理帳號]，提供帳號清單（帳號、role、建立時間、最近登入時間、存檔更新時間、目前可玩／休息狀態摘要——由存檔之遊玩／休息時戳推導；參數化查詢）、重設任一帳號密碼（沿 spec#23 密碼規則驗證、bcrypt 重雜湊、並撤銷該帳號全部既有 session 使舊裝置重新登入——操作者重設**自身**密碼時保留當前管理 session、UI 明示其他裝置將登出）、撤銷任一帳號全部 session（輕量確認後執行）、刪除帳號（連同其存檔與全部 session 於同一交易刪除；admin 不得刪除自身帳號，防自鎖）；管理頁對 admin 自身列僅提供「重設密碼」（時長政策與撤銷 session 不適用自身、刪除禁用）；admin 帳號屬同一帳號體系、亦可於遊戲端登入遊玩；本增量明文不做遊玩時長統計報表與操作稽核日誌。
@@ -1734,7 +1738,7 @@ erDiagram
   4. 檢查 image 建置內容清單（Dockerfile COPY 範圍）與遊戲服務靜態 allowlist 語意一致（[tool/]、測試與內部檔案不入包）。
 * 預期結果：
   1. `helm lint` 0 錯誤。
-  2. manifest 含 app Deployment＋Service、PostgreSQL 工作負載＋PVC、Secret；未供給必填秘密時安裝失敗並明確報錯（不落不安全預設值）。
+  2. manifest 含 app Deployment（liveness `/healthz`＋readiness `/readyz` 探針）＋Service（固定 nodePort）、PostgreSQL StatefulSet（單 replica、Recreate 語意、PG major pin）＋PVC（掛 `helm.sh/resource-policy: keep`、名稱無 release 隨機成分）、Secret；未供給必填秘密時安裝失敗並明確報錯（不落不安全預設值）。
   3. 三處版本同源一致（防漂移守門納入常備測試指令）。
   4. 包內容邊界一致，無 dev 工具或內部檔案混入。
 
@@ -1743,15 +1747,17 @@ erDiagram
 * 既有基底：intTest#79。
 * 新增項目：於本機 Kubernetes 叢集（單節點即足）之真裝驗收。
 * 步驟：
-  1. `helm install` 部署整套，等待就緒後請求 `/healthz`、開啟遊戲殼與 `/admin/`。
+  1. `helm install`（秘密以 values 檔供給）部署整套，等待就緒後請求 `/healthz` 與 `/readyz`、開啟遊戲殼與 `/admin/`（網址依固定 nodePort）。
   2. 註冊一個玩家帳號、產生雲端存檔；以 admin 調整一項執行期設定。
-  3. 以新版本 image tag 執行 `helm upgrade`（模擬升版），等待滾動完成。
+  3. 以新版本 image tag 執行 `helm upgrade`（**不重供秘密**，模擬升版），等待完成。
   4. 重新登入該玩家帳號與 admin 管理頁。
-  5. `helm uninstall` 後檢視 PVC；重新 `helm install` 指向同 PVC。
+  5. 執行 `pg_dump` 備份；刪除一筆測試資料後以 `psql` 還原、驗資料回復。
+  6. `helm uninstall` 後檢視 PVC；重新同名 `helm install`。
 * 預期結果：
-  1. 安裝一鍵完成：`/healthz` 200、遊戲殼與管理頁均可用、admin 起始帳號可登入。
-  2. 升級後帳號、存檔與執行期設定全數保留，服務所報版本反映新版。
-  3. uninstall 預設保留 PVC；重裝續用後資料仍在（誤刪可復原動線成立）。
+  1. 安裝一鍵完成：`/healthz`／`/readyz` 200、遊戲殼與管理頁均可用、admin 起始帳號可登入；DB 晚就緒時 app 以重試等待、不 CrashLoop 即死。
+  2. 升級後帳號、存檔與執行期設定全數保留（秘密沿用既值、未被重抽），服務所報版本反映新版。
+  3. 備份 dump 經真還原驗證可用（不只檔案存在）。
+  4. uninstall 預設保留 PVC；同名重裝續用後資料仍在（誤刪可復原動線成立）。
 
 ## E. 方案層級：文件程式化測試
 
@@ -1973,11 +1979,12 @@ erDiagram
 #### docProgTest#27-productReadme 承接 [solStory#27-整包發行與自架安裝升級]
 
 * productReadme 要求：
-  1. 說明正式自架路徑為 helm 整包（前置需求：Kubernetes 環境與 helm）——安裝、升級、移除各自的指令與必要秘密之供給方式。
-  2. 說明資料保全行為：升級不失資料、uninstall 預設保留資料卷，以及 `pg_dump` 備份與還原程序。
-  3. 說明開發期路徑（compose＋npm）之定位（開發與輕量試用、非正式散佈動線），與原 GitHub Pages 公開站已關閉之事實。
+  1. 說明正式自架路徑為 helm 整包——前置需求完整列明（Kubernetes 環境含預設 StorageClass、helm、kubectl），發行物之具體取得方式（chart 來源與公開 image），安裝、升級、移除各自的指令，與必要秘密之供給方式（values 檔、不以 `--set` 內聯明文；隨機字串附生成示例）。
+  2. 說明安裝後怎麼確認就緒（`kubectl get pods`）與服務網址是什麼（固定 nodePort／NOTES.txt），不留「開服務網址」之無受詞指示。
+  3. 說明資料保全行為：升級不失資料（不需重供秘密）、uninstall 預設保留資料卷，`pg_dump` 備份與 `psql` 還原**兩向具體指令**（含怎麼找資料庫 pod）、admin 忘記密碼後門之 helm 版指令，以及既有 compose 部署遷移至 helm 之資料搬移程序。
+  4. 說明開發期路徑（compose＋npm）之定位（開發與輕量試用、非正式散佈動線），與原 GitHub Pages 公開站已關閉之事實。
 * 通過判定：
-  1. 具 Kubernetes 環境之維護者可依 productReadme 不看程式碼完成安裝、升級與備份。
+  1. 具 Kubernetes 環境之維護者可依 productReadme 不看程式碼完成安裝、找到網址、升級、備份與還原。
   2. 讀者可分辨正式路徑與開發路徑、不把 compose 動線誤當正式散佈。
 
 ## F. 方案層級：文件端對端測試
@@ -2274,14 +2281,14 @@ erDiagram
 
 * 依據：docProgTest#27、[solCase#27.1]、[solCase#27.2]、[solCase#27.3]。
 * 步驟：
-  1. 於本機 Kubernetes 叢集依 productReadme 以 `helm install` 完成整包部署（含必要秘密供給）。
+  1. 於本機 Kubernetes 叢集依 productReadme 以 `helm install` 完成整包部署（秘密依手冊以 values 檔供給），依手冊確認就緒並取得服務網址。
   2. 開啟遊戲殼註冊帳號、遊玩並雲端保存；以 admin 登入 `/admin/` 調整一項執行期設定。
-  3. 依 productReadme 以 `helm upgrade` 升級版本；升級後重新登入玩家與 admin。
-  4. 依 productReadme 執行資料庫備份；`helm uninstall` 後重裝、驗資料續用。
+  3. 依 productReadme 以 `helm upgrade` 升級版本（不重供秘密）；升級後重新登入玩家與 admin。
+  4. 依 productReadme 執行資料庫備份與**還原**（兩向都實走）；`helm uninstall` 後重裝、驗資料續用。
 * 預期結果：
-  1. 依手冊即可完成安裝：`/healthz` 綠、遊戲與管理頁可用（不需查閱程式碼）。
+  1. 依手冊即可完成安裝並找到網址：就緒判定與網址取得均照手冊步驟可達（不需查閱程式碼）、遊戲與管理頁可用。
   2. 升級後帳號、存檔與設定全數保留，About／buildInfo 反映新版本。
-  3. 備份指令產出可還原之 dump；uninstall 預設保留資料卷、重裝續用資料仍在。
+  3. 備份 dump 經還原實測可用；uninstall 預設保留資料卷、重裝續用資料仍在。
 
 # IV. 部署成效
 
@@ -2294,9 +2301,9 @@ erDiagram
 * **建置指令**：遊戲殼無打包（no-op，直接收集靜態檔）；[sysApi系統] `cd sysApi && npm ci && npm run build`（TypeScript → `dist/`）；正式 image 以根目錄 Dockerfile 多階段建置 `docker build -t ghcr.io/twstellerwhale-ocean2/solkidgalgame1:<VERSION> .`（builder 段 npm ci＋tsc、runtime 段僅帶 dist＋靜態內容，非 root 使用者；COPY 範圍對齊靜態 allowlist 語意，[tool/]、測試與內部檔案不入包）；chart 打包 `helm package deploy/helm`（chart `version`／`appVersion` 與 `VERSION` 同源，防漂移守門見＜測試指令＞；指令細節 code 段校準）。本機預覽：自架服務啟動後直接開服務 URL（預設 `http://0.0.0.0:4180/`）；`node server.mjs` 維持 dev 工具用途（管理設定工具寫回，預設 `http://0.0.0.0:4174/`，可設 `HOST` 環境變數覆寫監聽位址；啟動 log 顯示 LAN IP 供區網存取）。
 * **本機開發工具入口**：本機開發環境（前端偵測 `location.hostname` 為 `127.0.0.1`／`localhost`／`[::1]`）下，起始選單之選角對話框 `Start` 鈕下方顯示［衣物調整工具］dev 入口，點擊以相對路徑導向 `tool/wardrobe-tuner.html`；以前端環境偵測為閘門，正式部署站（非 localhost 網域）一律不顯示此入口。屬 dev-only 作者工具便利性、非玩家功能（不進產品手冊主流程與 e2e），其完整套用／管理功能仍需 `node server.mjs`。
 * **測試指令**：[sysApi系統] 單元測試 `cd sysApi && npm test`（vitest，涵蓋率門檻 ≥80%）、整合測試 `npm run integration`（對 compose 之真 PostgreSQL＋運行中服務，涵蓋註冊／登入／session／存檔樂觀鎖／速率限制／密碼重設 CLI，自 #310 併入 admin 鑑權與帳號管理、執行期設定生效與權限負向案例）與依賴安全 `npm audit`（0 已知漏洞或列名豁免）；方案層真堆疊端對端 `node tests/e2e-account-cloud.mjs`（註冊→選角→遊玩→雲端保存→跨裝置還原→免密續玩，含證據截圖）與 `node tests/e2e-admin-console.mjs`（自 #310：admin 登入→線上重設密碼→時長鎖定→孩子端唯讀→註冊開關→刪除帳號→行動視口，22 檢核含證據截圖）；整合與 e2e 測試預設使用同容器之 `luminara_test` 專用測試資料庫（自 #310，不污染營運庫 `luminara`）；型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=auth`（注入 fake fetch 驗雲端帳號／存檔路徑）／`?selftest=data-audit`／`?selftest=save-load`／`?selftest=accounts`／`?selftest=playtimer`／`?selftest=profile-color`／`?selftest=map-avatar`／`?selftest=character-silhouette`／`?selftest=monkey`／`?selftest=chinese-reward`／`?selftest=scene-nav`／`?selftest=dev-tools`／`?selftest=visual-qa&surface=<id>`；場景背景資產 visual QA 需輸出全場景 contact sheet 與手機直向／桌機截圖；圖像資產標準尺寸與檔重預算之檔案系統 gate `node scripts/assetLint.mjs`（掃描 content-base／content-package 全部 shipped 圖像檔、不只 registry 引用，對照 paramAssetStandards），瀏覽器 `?selftest=data-audit` 另對 registry 引用資產做 runtime 尺寸／檔重檢查；版號投影防漂移 gate `node scripts/genVersion.mjs --check`（斷言 `game-engine/build/version.js`／`CHANGELOG.md` 與根目錄 `VERSION` SSOT 一致）；helm 整包守門（自 #311）`helm lint deploy/helm`＋`helm template` 合法產出＋chart 版本鏈防漂移檢查（chart `version`／`appVersion`／預設 image tag 對齊 `VERSION`，腳本 code 段落地，對照 cfgTest#12／intTest#79）與本機 Kubernetes 叢集真裝 e2e（intTest#80／e2eTest#27，腳本 code 段落地）；結構守門 `node scripts/structureLint.mjs`（JS／CSS 單檔行數上限、main.js 組裝上限與 CSS 同檔同 media 重複規則塊歸零，對照 paramStructureQualityBar，lint 內具名豁免清單除外）；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`；**體驗品質雙人工查核（paramExperienceQualityGate，機械守門綠 ≠ 可收）**——會話語感 QA 逐題查核紀錄（intTest#64，落 `docs/qa/`）與版型視覺 QA 雙視口逐畫面走查紀錄（intTest#65，落 `docs/qa/`）齊備且全數通過、並納入 test-summary，方可宣稱完成。
-* **部署指令**（code 段落地實況）：**正式路徑（helm）**——`helm install luminara deploy/helm --set-string secrets.sessionSecret=…,secrets.adminUsername=…,secrets.adminPassword=…`（必要秘密安裝時供給、chart 不設不安全預設；等待就緒後 `/healthz` 綠即完成）；升級 `helm upgrade luminara deploy/helm`（或指定新 image tag）；移除 `helm uninstall luminara`（PVC 預設保留）；備份 `kubectl exec <db-pod> -- pg_dump -U luminara luminara > backup.sql`（實際 release 名與參數 code 段校準並記入 README）。**開發期路徑（compose＋npm）**——資料庫 `docker compose -f deploy/compose.yaml up -d`（PostgreSQL 16，named volume `luminara-db` 持久化，port `5433`）；服務 `cd sysApi && npm ci && npm run build && npm start`（環境變數 `DATABASE_URL`／`SESSION_SECRET`／`ADMIN_USERNAME`／`ADMIN_PASSWORD` 經 `sysApi/.env`，樣板見 `sysApi/.env.example`）；備份 `docker exec deploy-db-1 pg_dump -U luminara luminara > backup.sql`。線上管理頁 `http://<主機>:<port>/admin/`（admin 帳密登入；玩家忘記密碼於此重設）；admin 自身忘記密碼之離線後門 `npm run reset-password -- <username> <new-password>`（正式部署於容器內 `kubectl exec` 執行）。GitHub Pages 舊版不保留（USR 裁決）——站台已於 #311 正式關閉退場（關閉動作於本增量 merge 收尾執行、結果留證於 Issue）。
+* **部署指令**（code 段落地實況）：**正式路徑（helm）**——安裝 `helm install luminara <chart 來源> -f secrets.yaml`（chart 來源：正式＝發佈列車發行之 OCI chart／Release `.tgz`，pre-release 驗測＝本 repo `deploy/helm`；秘密以 values 檔供給、用後即刪，**不以 `--set` 內聯明文**，chart 不設不安全預設；等待就緒 `kubectl get pods` 全 Ready、readiness `/readyz` 綠即完成，NOTES.txt 印出遊玩網址與 `/admin/` 位置）；升級 `helm upgrade luminara <chart 來源>`（**不重供秘密即沿用既值**，或指定新 image tag）；移除 `helm uninstall luminara`（PVC 掛 keep 註記預設保留、同名重裝續用）；備份 `kubectl exec $(kubectl get pods -l <db 標籤> -o name) -- pg_dump -U luminara luminara > backup.sql`、還原 `kubectl exec -i <db-pod> -- psql -U luminara luminara < backup.sql`（自 compose 部署遷移至 helm 亦走此 dump→restore 程序）；admin 忘記密碼之離線後門於 helm 部署為 `kubectl exec <app-pod> -- npm run reset-password -- <username> <new-password>`（實際 release 名、標籤與參數 code 段校準並記入 README）。`helm rollback` 屬異常處置而非常規動線——零遷移 schema 慣例（欄位演進採加法）使舊版 image 可讀新 schema、rollback 不失資料，但已寫入之新欄位語意由舊版忽略。image 架構本增量僅建 `linux/amd64`（多 arch 列後續真需求）。**開發期路徑（compose＋npm）**——資料庫 `docker compose -f deploy/compose.yaml up -d`（PostgreSQL 16，named volume `luminara-db` 持久化，port `5433`）；服務 `cd sysApi && npm ci && npm run build && npm start`（環境變數 `DATABASE_URL`／`SESSION_SECRET`／`ADMIN_USERNAME`／`ADMIN_PASSWORD` 經 `sysApi/.env`，樣板見 `sysApi/.env.example`）；備份 `docker exec deploy-db-1 pg_dump -U luminara luminara > backup.sql`。線上管理頁 `http://<主機>:<port>/admin/`（admin 帳密登入；玩家忘記密碼於此重設）；admin 自身忘記密碼之離線後門 `npm run reset-password -- <username> <new-password>`（正式部署於容器內 `kubectl exec` 執行）。GitHub Pages 舊版不保留（USR 裁決）——站台已於 #311 正式關閉退場（關閉動作於本增量 merge 收尾執行、結果留證於 Issue）。
 * **版號與發佈（單一 VERSION SSOT、版號釘選於 merge、release 解耦）**：
-  * **單一 SSOT＝根目錄 `VERSION`**：版號之唯一事實來源為根目錄 `VERSION`（**結構化 JSON**，持有 `version`（SemVer，現行 `0.1.0`）＋`date`＋`copyright`＋`history[]`，後者即版本沿革/about；`history[0]` 須等於頂層 `version`／`date`）。其餘所有版號面皆自 `VERSION` **投影、不另存第二份**：`game-engine/build/version.js`（遊戲 runtime）與 `CHANGELOG.md` 由 `node scripts/genVersion.mjs` 生成，git tag 為 `v{version}`，遊戲 About 與 buildInfo 由 `version.js` 導出。
+  * **單一 SSOT＝根目錄 `VERSION`**：版號之唯一事實來源為根目錄 `VERSION`（**結構化 JSON**，持有 `version`（SemVer，以 `VERSION` 檔現值為準）＋`date`＋`copyright`＋`history[]`，後者即版本沿革/about；`history[0]` 須等於頂層 `version`／`date`）。其餘所有版號面皆自 `VERSION` **投影、不另存第二份**：`game-engine/build/version.js`（遊戲 runtime）與 `CHANGELOG.md` 由 `node scripts/genVersion.mjs` 生成，git tag 為 `v{version}`，遊戲 About 與 buildInfo 由 `version.js` 導出。
   * **版號釘選於 merge**：每張 PR 於 merge 當下，嚴格依該 PR 的 Conventional Commits 變更型別 bump `VERSION` 之 `version`（`feat→minor`／`fix→patch`／breaking→`major`）並補一筆 `history`，維持 1 PR＝1 增量＝1 版號；「版本時間」即該 PR 入庫之 `date`，不另由日曆或 release 決定。
   * **buildInfo（與版號獨立）**：buildInfo ＝ `VERSION` 之 `version`＋`date` ＋ build 當下由 `git` 取得之 commit SHA（回答「線上這顆是哪個 commit」）；**SHA 不入 `VERSION`**（commit 後才產生、寫入會循環依賴），故僅 `version`／`date` 投影進 `version.js`，SHA 由部署點之 git tag／commit 追溯。
   * **CHANGELOG／About 皆為 VERSION 投影**：`CHANGELOG.md` 投影 `history` 全量（含 internal）；[datIntf自訂版本沿革目錄] 之 `versionHistory`（遊戲 About）只投影 `history` 中 `playerVisible:true` 之 feat／fix。dev-only 類改動（如本機開發工具入口、版號工具本身）標 `playerVisible:false`、歸 internal——進 `CHANGELOG.md` 但不進玩家 About 沿革。當前版號（版本卡）為 SemVer、可能為 internal release，故不必等於玩家沿革首筆（與舊「首筆＝當前」雙軌規則脫鉤）。

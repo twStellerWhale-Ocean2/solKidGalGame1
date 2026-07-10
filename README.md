@@ -27,19 +27,36 @@
 
 > 🧪 本節之 helm 指令為設計初稿（issue #311 2plan），實際 release 名、參數與網址形式以 dev 落地後之校準為準。
 
-**正式路徑：helm 整包（建議）**——需要一台有 Kubernetes 的家庭主機（單節點即可，如 k3s／rancher-desktop／docker-desktop）與 helm；一個 chart 就把整套（遊戲網頁＋帳號存檔 API＋線上管理頁＋PostgreSQL 資料庫）裝起來：
+**正式路徑：helm 整包（建議）**——前置需求：一台有 Kubernetes 的家庭主機（單節點即可，如 k3s／rancher-desktop／docker-desktop——**需有預設 StorageClass**，上述三者內建都有）、`helm` 與 `kubectl` 指令。一個 chart 就把整套（遊戲網頁＋帳號存檔 API＋線上管理頁＋PostgreSQL 資料庫）裝起來：
 
-1. 取得發行物：容器 image `ghcr.io/twstellerwhale-ocean2/solkidgalgame1` 與 chart `solkidgalgame`（chart 源於本 repo `deploy/helm/`；對外散佈之 image 與 chart 由發佈列車隨版本提供）。
-2. 安裝（三個秘密安裝時自己給：`SESSION_SECRET` 一段隨機長字串、維護者起始帳號與密碼——服務第一次啟動會用它建立**維護者管理帳號**，帳號已存在時不會覆寫）：
+1. 取得發行物：chart `solkidgalgame` 取自發佈列車隨版本發行的 chart 套件（GitHub Release 附件 `.tgz` 或 OCI registry；正式發行前的驗測可直接用本 repo 的 `deploy/helm/`）；容器 image `ghcr.io/twstellerwhale-ocean2/solkidgalgame1` 為公開 image、不需登入即可拉取。
+2. 準備秘密檔 `secrets.yaml`（**不要**用 `--set` 直接把密碼打在指令上——會留在指令歷史裡）：
 
-   ```powershell
-   helm install luminara deploy/helm --set-string secrets.sessionSecret=<隨機長字串> --set-string secrets.adminUsername=<維護者帳號> --set-string secrets.adminPassword=<維護者密碼>
+   ```yaml
+   secrets:
+     sessionSecret: "<一段隨機長字串>"   # 例：PowerShell 執行 -join ((48..57)+(97..122) | Get-Random -Count 32 | % {[char]$_})
+     adminUsername: "<維護者帳號>"        # 服務第一次啟動會用它建立維護者管理帳號；帳號已存在時不會覆寫
+     adminPassword: "<維護者密碼>"
    ```
 
-3. 等待就緒後，瀏覽器開服務網址即可遊玩（`/healthz` 可作健康檢查）；線上管理頁在 `/admin/`。
-4. **升級**：新版發行後 `helm upgrade luminara deploy/helm`（或指定新版 image tag）——**玩家帳號、存檔與遊戲設定都會保留**（資料落在持久化儲存 PVC）。
-5. **移除**：`helm uninstall luminara`——資料卷**預設保留**（重裝可續用；確定不要資料時再手動刪除 PVC）。
-6. **備份**：`kubectl exec <資料庫 pod> -- pg_dump -U luminara luminara > backup.sql`；還原以 `psql` 倒回。
+3. 安裝，然後把 `secrets.yaml` 刪掉（秘密已存入叢集）：
+
+   ```powershell
+   helm install luminara <chart 來源> -f secrets.yaml
+   ```
+
+4. 確認就緒與取得網址：`kubectl get pods` 全部 Ready 即完成；服務網址為 `http://<主機IP>:30418/`（chart 預設固定 port `30418`，安裝完成訊息也會印出網址）。瀏覽器開網址即可遊玩；線上管理頁在 `/admin/`。
+5. **升級**：新版發行後 `helm upgrade luminara <chart 來源>`——**不需要重給秘密**（沿用叢集內既有設定），**玩家帳號、存檔與遊戲設定都會保留**（資料落在持久化儲存 PVC）。
+6. **移除**：`helm uninstall luminara`——資料卷**預設保留**（同名重裝可續用；確定不要資料時再手動刪除 PVC）。
+7. **備份與還原**（先找到資料庫 pod：`kubectl get pods` 內名稱含 `db` 者）：
+
+   ```powershell
+   kubectl exec <資料庫pod> -- pg_dump -U luminara luminara > backup.sql   # 備份
+   kubectl exec -i <資料庫pod> -- psql -U luminara luminara < backup.sql   # 還原
+   ```
+
+   原本用 compose 路徑跑的伺服器要改用 helm 時，也是用同一套「compose 版備份 → helm 版還原」把全家進度搬過去。
+8. **admin 自己忘記密碼**（唯一無法用網頁自救的情況）：`kubectl exec <服務pod> -- npm run reset-password -- <帳號> <新密碼>`。
 
 **開發期路徑：compose＋npm**（開發與輕量試用；不是正式散佈動線）：
 
@@ -65,8 +82,8 @@
 
 - 家庭內網走 HTTP——**請勿把這個服務的 port 轉發到公網**：密碼與登入狀態（含管理帳號）在內網是明文傳輸的，只適合家庭內部使用（chart 留有選配的 Ingress／TLS 欄位，有憑證與網域的維護者可自行啟用）。
 - **定期備份你的資料庫**：全家的帳號與進度都存在 PostgreSQL 裡；玩家也可各自在遊戲內匯出 Markdown 備份。
-- **線上管理**：瀏覽器開 `http://<主機IP>:4180/admin/`、以 admin 帳密登入，即可線上管理帳號（孩子忘記密碼在這裡重設、刪除不用的帳號）與執行期遊戲設定（預設遊玩時長、鎖定孩子時長、關閉註冊），儲存即生效、不需重佈——見 [III.J 線上管理](#j-線上管理維護者)。
-- **admin 自己忘記密碼**（唯一無法用網頁自救的情況）：在伺服器端執行 `cd sysApi && npm run reset-password -- <帳號> <新密碼>`。
+- **線上管理**：瀏覽器開 `http://<主機IP>:<port>/admin/`（helm 路徑預設 port `30418`、開發路徑 `4180`）、以 admin 帳密登入，即可線上管理帳號（孩子忘記密碼在這裡重設、刪除不用的帳號）與執行期遊戲設定（預設遊玩時長、鎖定孩子時長、關閉註冊），儲存即生效、不需重佈——見 [III.J 線上管理](#j-線上管理維護者)。
+- **admin 自己忘記密碼**（唯一無法用網頁自救的情況）：開發路徑在伺服器端執行 `cd sysApi && npm run reset-password -- <帳號> <新密碼>`；helm 部署見正式路徑步驟 8（`kubectl exec`）。
 - `server.mjs` 仍是**維護者專用 dev 工具**（管理設定工具的寫回），與遊玩用服務無關。
 
 ### (B) 遊玩
@@ -114,7 +131,7 @@
 
 - 公主立繪採**共用 `body`（neck-down、含永久肌膚安全底著）＋ 每位公主一張 `head`（臉＋預設髮型）** 之分層合成，皆為 `shared-512x768-v1`、`512x768` 透明 WebP；換裝時衣物疊在底著之上、髮型 layer 完全覆蓋預設髮，換裝後舊層不殘留。
 - 衣物、鞋帽與配件採**類別級 layer 對位範圍**，同類共用同一範圍、新增商品不必逐件 nudge。
-- 各類圖像資產有**標準尺寸與檔重預算**（角色 body／head／NPC 512×768、ADV 場景 1024×1024、地區地圖 1536×1536、世界地圖 1024×1536、衣物縮圖 256×256、衣物 layer 512×768），素材須為 GPT 產生或手工修圖的童話手繪風格 PNG／WebP，禁止以 SVG／CSS 濾鏡代替。
+- 各類圖像資產有**標準尺寸與檔重預算**（角色 body／head／NPC 512×768、ADV 場景 1024×1024、地區地圖 1536×1536、世界地圖 1024×1536、衣物單品 layer 兼商店預覽 512×512——單一素材、無另設分離縮圖），素材須為 GPT 產生或手工修圖的童話手繪風格 PNG／WebP，禁止以 SVG／CSS 濾鏡代替。
 - 規格詳見 [docs/design.md](docs/design.md) 與 [contract-local/hmiIntf自訂角色尺度與美術規範.md](contract-local/hmiIntf自訂角色尺度與美術規範.md)。
 
 ## D. 參考案例
