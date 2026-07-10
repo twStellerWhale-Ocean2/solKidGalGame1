@@ -343,6 +343,25 @@ function buildAccountCard(entry, cachedUsername) {
       panel.append(wrap, enter, error);
       setTimeout(() => input.focus({ preventScroll: true }), 0);
     }
+    // 自本裝置移除卡片（#317／spec#8）：僅清本機快取摘要、不動伺服器帳號與存檔（重新登入即重建）；
+    // 防兒童誤觸採兩段確認；被維護者刪除之帳號其殘留卡亦由此移除（401 統一錯誤不可自動辨識，spec#23）。
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "soft-button login-remove-card";
+    removeBtn.textContent = "Remove card from this device";
+    removeBtn.addEventListener("click", async () => {
+      if (!removeBtn.dataset.armed) {
+        removeBtn.dataset.armed = "1";
+        removeBtn.classList.add("is-armed");
+        removeBtn.textContent = "Tap again to remove (progress stays on the server)";
+        return;
+      }
+      if (isResume && loadCachedSession()) await cloudLogout().catch(() => {});
+      removeRecentAccount(entry.username);
+      expandedUsername = "";
+      buildLoginScreen();
+    });
+    panel.appendChild(removeBtn);
     row.appendChild(panel);
   }
   return row;

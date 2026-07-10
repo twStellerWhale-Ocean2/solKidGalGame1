@@ -3,7 +3,7 @@ import { CLOUD_MODE, isLocalDevEnv, isLocalDevHost, WARDROBE_TUNER_DEV_PATH } fr
 import { setApiFetch, USERNAME_PATTERN, PASSWORD_MIN_LENGTH, validateUsernameInput, validatePasswordInput } from "./system/api-client.js";
 import { adoptServerBase, cloud, cloudActive, cloudLogin, cloudLogout, cloudRegister, cloudResume, flushCloudSave, installCloudLifecycleFlush, scheduleCloudSave, syncRecentSummary } from "./system/cloud-sync.js";
 import { buildLoginScreen, loginScreenSetMode, migrateLocalAccount, openLoginScreen } from "./app/login-screen.js";
-import { loadCachedSession, loadMigratedLocalIds, loadRecentAccounts, MIGRATED_FLAG_KEY, RECENT_ACCOUNTS_KEY, SESSION_CACHE_KEY, upsertRecentAccount } from "./state/cloud-session.js";
+import { loadCachedSession, loadMigratedLocalIds, loadRecentAccounts, MIGRATED_FLAG_KEY, RECENT_ACCOUNTS_KEY, removeRecentAccount, SESSION_CACHE_KEY, upsertRecentAccount } from "./state/cloud-session.js";
 import { areaForHotspot, categoryForType, itemMatchesCategory, hotspotById, itemById, nodeMapForArea, sceneConfigFor } from "./core/lookups.js";
 import { areaRegistry, castleMapNodes, categories, characterScaleContract, characterRegistry, defaultActiveCharacterId, defaultProfileColorFor, difficultyConfig, playableCharacterById, normalizeProfileColor, randomProfileColor, backgroundPatternIds, normalizeBackgroundPattern, randomBackgroundPattern, mapNodes, paperDollBaseLayer, wardrobeLayerBoundsByType, wardrobeLayerBoundsForType, playableVoiceById, profileColorPalette, shopItems, worldMap, composeVoiceProfile, resolveVoiceProfile, DEFAULT_VOICE_PROFILE, recommendedVoiceNamesForGender, usedVoiceBuckets } from "./data/game-data.js";
 import { firstLayerActionsFor } from "./flow/scene-actions.js";
@@ -108,7 +108,8 @@ installTestingHooks({
     loadCachedSession,
     loadRecentAccounts,
     loadMigratedLocalIds,
-    upsertRecentAccount
+    upsertRecentAccount,
+    removeRecentAccount
   },
   accounts: {
     list: listAccounts,

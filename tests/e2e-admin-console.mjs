@@ -189,6 +189,41 @@ try {
   const configClosed = await api("/api/config");
   check("registration closed takes effect immediately", configClosed.body.registrationOpen === false);
 
+  // ── #317：dirty guard MD3 dialog（切分頁與登出皆攔、原生 confirm 歸零）＋ tabs 鍵盤導覽 ──
+  const nativeDialogs = [];
+  admin.on("dialog", (d) => { nativeDialogs.push(d.type()); d.dismiss().catch(() => {}); });
+  await admin.fill("#settingPlayMinutes", "14"); // 弄髒表單（不儲存）
+  await admin.click("#tabAccounts");
+  await admin.waitForSelector("#dialog[open]", { timeout: 5000 });
+  check("dirty guard shows MD3 dialog on tab switch", true);
+  await hideSnackbar(admin);
+  await settleFrames(admin);
+  await admin.screenshot({ path: path.join(SHOTS, "issue317-01-dirty-dialog.png") });
+  await admin.click("#dialog button:has-text('留在此頁')");
+  await admin.waitForTimeout(250);
+  check("stay keeps settings panel", await admin.evaluate(() => !document.getElementById("panelSettings").hidden));
+  await admin.click("#logoutButton");
+  await admin.waitForSelector("#dialog[open]", { timeout: 5000 });
+  check("dirty guard intercepts logout too (#310 gap fixed)", true);
+  await admin.click("#dialog button:has-text('留在此頁')");
+  await admin.waitForTimeout(250);
+  check("still logged in after staying", await admin.evaluate(() => !document.getElementById("viewApp").hidden));
+  await admin.click("#tabAccounts");
+  await admin.waitForSelector("#dialog[open]", { timeout: 5000 });
+  await admin.click("#dialog button:has-text('放棄變更')");
+  await admin.waitForSelector("#panelAccounts:not([hidden])", { timeout: 5000 });
+  check("discard switches to accounts tab", true);
+  check("no native confirm used (MD3 only)", nativeDialogs.length === 0);
+  await admin.focus("#tabAccounts");
+  await admin.keyboard.press("ArrowRight");
+  await admin.waitForSelector("#panelSettings:not([hidden])", { timeout: 5000 });
+  check("arrow key switches tab (accounts→settings)", true);
+  check("roving tabindex follows selection", await admin.evaluate(() =>
+    document.getElementById("tabSettings").tabIndex === 0 && document.getElementById("tabAccounts").tabIndex === -1));
+  await admin.keyboard.press("ArrowLeft");
+  await admin.waitForSelector("#panelAccounts:not([hidden])", { timeout: 5000 });
+  check("arrow key switches back (settings→accounts)", true);
+
   // 新裝置登入畫面：無「建立新帳號」、顯示友善說明（sysCase#16.2）。
   const freshCtx = await browser.newContext({ viewport: { width: 412, height: 880 } });
   const fresh = await freshCtx.newPage();
@@ -231,6 +266,25 @@ try {
   await adminMobile.waitForSelector("#topbarUsername", { timeout: 8000 });
   const topbarName = await adminMobile.textContent("#topbarUsername");
   check("identity preserved across reload", (topbarName || "").includes(adminUser), topbarName || "");
+
+  // ── #317：登入卡「自本裝置移除」（兩段確認）——用 kid 裝置脈絡（其 localStorage 已有帳號卡）。
+  const kidLogin2 = await kidCtx.newPage();
+  await kidLogin2.goto(`${BASE}/`, { waitUntil: "networkidle" });
+  await kidLogin2.waitForSelector("#accountSelect.show", { timeout: 15000 });
+  await kidLogin2.click(`.account-pick[data-username="${kidUser}"]`);
+  await kidLogin2.waitForSelector(".login-remove-card", { timeout: 8000 });
+  await kidLogin2.click(".login-remove-card");
+  const armed = await kidLogin2.evaluate(() => document.querySelector(".login-remove-card")?.classList.contains("is-armed") === true);
+  const cardStillThere = await kidLogin2.evaluate((u) => !!document.querySelector(`.account-pick[data-username="${u}"]`), kidUser);
+  check("remove-card single tap only arms (two-step confirm)", armed && cardStillThere);
+  await kidLogin2.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+  await kidLogin2.waitForTimeout(250);
+  await kidLogin2.screenshot({ path: path.join(SHOTS, "issue317-02-login-remove-card.png") });
+  await kidLogin2.click(".login-remove-card");
+  await kidLogin2.waitForSelector(`.account-pick[data-username="${kidUser}"]`, { state: "detached", timeout: 8000 });
+  check("armed tap removes card from device", true);
+  const kidStillOnServer = await api("/api/auth/login", { method: "POST", body: { username: kidUser, password: "fresh66" } }); // 密碼已於前段線上重設
+  check("server account untouched after card removal", kidStillOnServer.status === 200, `status=${kidStillOnServer.status}`);
 
   check("no admin page errors", adminErrors.length === 0, adminErrors.join(" | "));
 

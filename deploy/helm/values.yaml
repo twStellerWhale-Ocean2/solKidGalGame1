@@ -39,4 +39,10 @@ ingress:
   host: ""
   tls: []
 
-resources: {}
+# app 容器資源預設（家庭單機保守值，可覆寫；#317 paramAppHardening）。
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 512Mi

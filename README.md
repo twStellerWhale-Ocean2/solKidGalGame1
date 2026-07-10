@@ -105,7 +105,10 @@
    ![登入畫面：帳號卡與免密續玩](docs/manual-assets/issue309-07-login-cards.png)
 
 4. 忘記密碼時，請部署的家長／維護者在**線上管理頁**（`/admin/`）幫你重設新密碼（見 [III.J 線上管理](#j-線上管理維護者)），再用新密碼登入即可，進度不受影響。
-5. 若登入畫面沒有「Create new account」而是顯示「This server is not taking new accounts right now. Please ask your grown-up to open it.」（本伺服器目前不開放新帳號，請找家長開放），代表維護者已關閉註冊——請找部署的家長／維護者開放後再註冊。
+5. 這台裝置上不需要的帳號卡（例如帳號已被維護者刪除、或借別人裝置玩過）：點開卡片後按「**Remove card from this device**」、再按一次確認即可移除——**只移除這台裝置上的卡片**，伺服器上的帳號與進度完全不受影響，之後重新登入卡片就會回來。
+
+   ![移除本裝置帳號卡（再點一次確認）](docs/manual-assets/issue317-02-login-remove-card.png)
+6. 若登入畫面沒有「Create new account」而是顯示「This server is not taking new accounts right now. Please ask your grown-up to open it.」（本伺服器目前不開放新帳號，請找家長開放），代表維護者已關閉註冊——請找部署的家長／維護者開放後再註冊。
 
 ### (C) 管理（維護者的兩個工具）
 
@@ -350,6 +353,9 @@
   ![註冊關閉時的登入畫面](docs/manual-assets/issue310-07-registration-closed.png)
 
 - **新帳號預設遊玩／休息時長**：之後註冊的新帳號一開始就用你設的時長（每項 1–120 分鐘，遊玩時長不可大於單回合上限）。
+- **設定沒儲存就想離開？** 切回「帳號」分頁或按「登出」時會先跳出確認框（「留在此頁／放棄變更」），不會默默丟掉你改到一半的設定。分頁也支援鍵盤操作：焦點在分頁上時按 ←／→ 方向鍵即可切換。
+
+  ![未儲存離開的確認框](docs/manual-assets/issue317-01-dirty-dialog.png)
 - 這一頁的開關與欄位都要按「**儲存設定**」才寫回（有未儲存的變更時離開會提醒）。
 
 管理頁在手機上也可用（清單自動改為卡片式）：

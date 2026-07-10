@@ -42,6 +42,7 @@ if (manifest) {
     ["path: /readyz", "readiness 探針 /readyz"],
     ["wait-for-db", "initContainer 等待資料庫"],
     ["PGDATA", "PGDATA 子目錄（block 型 StorageClass 之 lost+found 防護）"],
+    ["runAsNonRoot: true", "app 容器 securityContext 硬化（#317 paramAppHardening）"],
   ];
   for (const [needle, label] of must) {
     if (!manifest.includes(needle)) errors.push(`manifest 缺 ${label}（找不到 "${needle}"）`);
