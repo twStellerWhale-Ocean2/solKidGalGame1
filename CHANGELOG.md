@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.64.2 — 2026-07-10 _(internal)_
+- fix (#320): 發行 image 內建 npm CLI 升級至 12.0.0（deploy-only、遊戲行為零變更）：修補 base image node:22-alpine 隨附 npm 10.x 之 bundled 依賴兩筆 HIGH 漏洞（picomatch CVE-2026-33671 ReDoS、sigstore CVE-2026-48815 驗證約束失效）——發佈列車 #313 發車時點 Trivy 成品掃描攔下、循修復增量快車道處置；app 依賴（express／bcryptjs／pg）不受影響
+
 ## 0.64.1 — 2026-07-10
 - fix (#317): 登入畫面帳號卡可「自本裝置移除」（點兩次確認；只移除這台裝置上的卡片，伺服器帳號與進度不受影響、重新登入即回復）——被維護者刪除的帳號殘留卡片自此有移除途徑；線上管理頁：分頁支援鍵盤方向鍵切換，設定未儲存就切分頁或登出時改以頁面一致的確認框攔下（原本登出不會攔、且用系統原生視窗），頁尾服務版本改顯示實際版號；部署包：app 容器補資源預設與安全性硬化
 
