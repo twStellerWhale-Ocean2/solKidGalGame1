@@ -15,6 +15,7 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const versionPath = join(root, "VERSION");
 const versionJsPath = join(root, "game-engine", "build", "version.js");
 const changelogPath = join(root, "CHANGELOG.md");
+const chartYamlPath = join(root, "deploy", "helm", "Chart.yaml");
 
 function fail(msg) {
   console.error(`genVersion: ${msg}`);
@@ -101,6 +102,20 @@ function genChangelog(data) {
   return `${head}\n${sections}`;
 }
 
+// 投影三：helm chart 版本鏈（issue #311，cfgTest#12）——chart version／appVersion 與 VERSION 同源。
+function genChartYaml(data) {
+  return [
+    "# 由 scripts/genVersion.mjs 自根目錄 VERSION 投影生成——禁止手改（防漂移：genVersion --check）。",
+    "apiVersion: v2",
+    "name: solkidgalgame",
+    "description: solKidGalGame 整包自架部署（遊戲殼＋帳號存檔 API＋/admin/ 線上管理＋PostgreSQL；spec#27）",
+    "type: application",
+    `version: ${data.version}`,
+    `appVersion: "${data.version}"`,
+    "",
+  ].join("\n");
+}
+
 const norm = (s) => s.replace(/\r\n/g, "\n");
 
 function main() {
@@ -109,6 +124,7 @@ function main() {
   const targets = [
     { path: versionJsPath, label: "game-engine/build/version.js", content: genVersionJs(data) },
     { path: changelogPath, label: "CHANGELOG.md", content: genChangelog(data) },
+    { path: chartYamlPath, label: "deploy/helm/Chart.yaml", content: genChartYaml(data) },
   ];
   if (check) {
     const drift = [];

@@ -1,0 +1,87 @@
+# app 容器（單一 image：遊戲殼＋/admin/＋API）——liveness=/healthz、readiness=/readyz（含 DB 依賴）；
+# initContainer 等待資料庫 TCP 就緒（design paramProbes：DB 晚就緒不 CrashLoop 即死）。
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-app
+  labels:
+    {{- include "solkidgal.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: app
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: app
+    spec:
+      initContainers:
+        - name: wait-for-db
+          image: busybox:1.36
+          command: ["sh", "-c", "until nc -z {{ .Release.Name }}-db 5432; do echo waiting for db; sleep 2; done"]
+      containers:
+        - name: app
+          image: "{{ .Values.image.repository }}:{{ include "solkidgal.imageTag" . }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secrets
+                  key: postgresPassword
+            - name: DATABASE_URL
+              value: "postgres://{{ .Values.db.user }}:$(POSTGRES_PASSWORD)@{{ .Release.Name }}-db:5432/{{ .Values.db.database }}"
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secrets
+                  key: sessionSecret
+            - name: ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secrets
+                  key: adminUsername
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secrets
+                  key: adminPassword
+          ports:
+            - containerPort: 4180
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 4180
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 4180
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-app
+  labels:
+    {{- include "solkidgal.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: app
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 4180
+      {{- if and (eq .Values.service.type "NodePort") .Values.service.nodePort }}
+      nodePort: {{ .Values.service.nodePort }}
+      {{- end }}

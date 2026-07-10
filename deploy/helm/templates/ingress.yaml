@@ -1,0 +1,28 @@
+{{- if .Values.ingress.enabled }}
+# 選配 TLS／Ingress（design ＜IV.A＞ 傳輸層定位）：未啟用時沿家庭內網 HTTP、勿轉發公網。
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-app
+  labels:
+    {{- include "solkidgal.labels" . | nindent 4 }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+    - host: {{ required "ingress.host 為必填（啟用 ingress 時）" .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-app
+                port:
+                  number: {{ .Values.service.port }}
+{{- end }}
