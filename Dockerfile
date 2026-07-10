@@ -12,6 +12,10 @@ RUN npm run build && npm prune --omit=dev
 
 FROM node:22-alpine
 ENV NODE_ENV=production
+# base 內建 npm CLI（10.x）帶有已公告 HIGH 漏洞之 bundled 依賴（picomatch CVE-2026-33671、
+# sigstore CVE-2026-48815；issue #320，發佈列車 #313 Trivy 發車掃描攔下）——升級至 pin 版修補。
+# runtime 僅 reset-password 離線後門用到 npm（kubectl exec … npm run reset-password）。
+RUN npm install -g npm@12.0.0
 WORKDIR /app
 COPY --from=builder /build/sysApi/dist ./sysApi/dist
 COPY --from=builder /build/sysApi/node_modules ./sysApi/node_modules

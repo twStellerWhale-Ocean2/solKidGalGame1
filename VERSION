@@ -1,8 +1,16 @@
 {
-  "version": "0.64.1",
+  "version": "0.64.2",
   "date": "2026-07-10",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.64.2",
+      "date": "2026-07-10",
+      "type": "fix",
+      "playerVisible": false,
+      "issue": "#320",
+      "summaryZh": "發行 image 內建 npm CLI 升級至 12.0.0（deploy-only、遊戲行為零變更）：修補 base image node:22-alpine 隨附 npm 10.x 之 bundled 依賴兩筆 HIGH 漏洞（picomatch CVE-2026-33671 ReDoS、sigstore CVE-2026-48815 驗證約束失效）——發佈列車 #313 發車時點 Trivy 成品掃描攔下、循修復增量快車道處置；app 依賴（express／bcryptjs／pg）不受影響"
+    },
     {
       "version": "0.64.1",
       "date": "2026-07-10",
