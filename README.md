@@ -15,15 +15,33 @@
 
 - 一個給**年幼英文學習者**玩的日式 ADV 風格英文練習遊戲：家庭**自架伺服器**遊玩，玩家用自己的**帳號**登入，進度**保存在伺服器**、換裝置也能繼續玩。
 - 主要在**手機瀏覽器直向**遊玩，桌機也可用。
-- 形態為「**靜態遊戲殼＋node API 核**」：遊戲畫面仍是無框架的靜態網頁，帳號與存檔由同一台自架伺服器的 API 承接（issue #309 起；設計依據見 [docs/design.md](docs/design.md) spec#7／#8／#23／#24）。
+- 形態為「**靜態遊戲殼＋node API 核**」：遊戲畫面仍是無框架的靜態網頁，帳號與存檔由同一台自架伺服器的 API 承接（issue #309 起；設計依據見 [docs/design.md](docs/design.md) spec#7／#8／#23／#24）；正式散佈單位為**容器 image＋helm chart 整包**（issue #311，spec#27）。
 
-> ℹ️ 過渡說明：原 GitHub Pages 免安裝版**不保留**（維護者裁決）——新版遊戲需自架伺服器，公開網址自本版起不再可玩，Pages 將於後續增量（#311）正式關閉下線；遊玩一律走自架伺服器形態。
+> ℹ️ 原 GitHub Pages 免安裝版**不保留**（維護者裁決）——站台已正式關閉下線（issue #311），公開網址不再可玩；遊玩一律走自架伺服器形態。
 
 不做的事：不做 landing page、不做大型課程平台、不做密集 phonics 課程、不做後台商品管理、不做 email／第三方（Google 等）登入、不做公開多租戶營運服務（一家一伺服器、自架自管）。
 
 ## B. 快速開始
 
 ### (A) 部署（自架伺服器）
+
+> 🧪 本節之 helm 指令為設計初稿（issue #311 2plan），實際 release 名、參數與網址形式以 dev 落地後之校準為準。
+
+**正式路徑：helm 整包（建議）**——需要一台有 Kubernetes 的家庭主機（單節點即可，如 k3s／rancher-desktop／docker-desktop）與 helm；一個 chart 就把整套（遊戲網頁＋帳號存檔 API＋線上管理頁＋PostgreSQL 資料庫）裝起來：
+
+1. 取得發行物：容器 image `ghcr.io/twstellerwhale-ocean2/solkidgalgame1` 與 chart `solkidgalgame`（chart 源於本 repo `deploy/helm/`；對外散佈之 image 與 chart 由發佈列車隨版本提供）。
+2. 安裝（三個秘密安裝時自己給：`SESSION_SECRET` 一段隨機長字串、維護者起始帳號與密碼——服務第一次啟動會用它建立**維護者管理帳號**，帳號已存在時不會覆寫）：
+
+   ```powershell
+   helm install luminara deploy/helm --set-string secrets.sessionSecret=<隨機長字串> --set-string secrets.adminUsername=<維護者帳號> --set-string secrets.adminPassword=<維護者密碼>
+   ```
+
+3. 等待就緒後，瀏覽器開服務網址即可遊玩（`/healthz` 可作健康檢查）；線上管理頁在 `/admin/`。
+4. **升級**：新版發行後 `helm upgrade luminara deploy/helm`（或指定新版 image tag）——**玩家帳號、存檔與遊戲設定都會保留**（資料落在持久化儲存 PVC）。
+5. **移除**：`helm uninstall luminara`——資料卷**預設保留**（重裝可續用；確定不要資料時再手動刪除 PVC）。
+6. **備份**：`kubectl exec <資料庫 pod> -- pg_dump -U luminara luminara > backup.sql`；還原以 `psql` 倒回。
+
+**開發期路徑：compose＋npm**（開發與輕量試用；不是正式散佈動線）：
 
 1. 啟動資料庫（PostgreSQL，資料落 named volume、重啟不失）：
 
@@ -41,9 +59,12 @@
    npm start
    ```
 
-4. 瀏覽器開 `http://<主機IP>:4180/` 即可遊玩；`/healthz` 可作服務健康檢查。
-- 正式對外散佈（容器 image＋helm chart 整包）於增量 #311 提供；本階段以本機／家庭區網自架為主（家庭內網走 HTTP，TLS 於 #311 隨整包交代）。**請勿把這個服務的 port 轉發到公網**——密碼與登入狀態（含管理帳號）在內網是明文傳輸的，只適合家庭內部使用。
-- **備份你的資料庫**：全家的帳號與進度都存在 PostgreSQL 裡，請定期備份：`docker exec deploy-db-1 pg_dump -U luminara luminara > backup.sql`；還原：`docker exec -i deploy-db-1 psql -U luminara luminara < backup.sql`（容器名依 compose 專案目錄推導，換目錄部署時以 `docker ps` 確認）；玩家也可各自在遊戲內匯出 Markdown 備份。
+4. 瀏覽器開 `http://<主機IP>:4180/` 即可遊玩；`/healthz` 可作服務健康檢查。備份：`docker exec deploy-db-1 pg_dump -U luminara luminara > backup.sql`；還原：`docker exec -i deploy-db-1 psql -U luminara luminara < backup.sql`（容器名依 compose 專案目錄推導，換目錄部署時以 `docker ps` 確認）。
+
+兩條路徑共通的注意事項：
+
+- 家庭內網走 HTTP——**請勿把這個服務的 port 轉發到公網**：密碼與登入狀態（含管理帳號）在內網是明文傳輸的，只適合家庭內部使用（chart 留有選配的 Ingress／TLS 欄位，有憑證與網域的維護者可自行啟用）。
+- **定期備份你的資料庫**：全家的帳號與進度都存在 PostgreSQL 裡；玩家也可各自在遊戲內匯出 Markdown 備份。
 - **線上管理**：瀏覽器開 `http://<主機IP>:4180/admin/`、以 admin 帳密登入，即可線上管理帳號（孩子忘記密碼在這裡重設、刪除不用的帳號）與執行期遊戲設定（預設遊玩時長、鎖定孩子時長、關閉註冊），儲存即生效、不需重佈——見 [III.J 線上管理](#j-線上管理維護者)。
 - **admin 自己忘記密碼**（唯一無法用網頁自救的情況）：在伺服器端執行 `cd sysApi && npm run reset-password -- <帳號> <新密碼>`。
 - `server.mjs` 仍是**維護者專用 dev 工具**（管理設定工具的寫回），與遊玩用服務無關。
@@ -120,6 +141,7 @@
 - 場景互動分為生活聊天（每題 2 選項、加心情並延長可玩時間）、逛店與打工（每題 3 選項、賺 coins）三種，以模組旗標統一宣告、不以商店為特例；對白由場景角色第一人稱對公主發話、選項為公主口語自然的回應。
 - 桌機或寬螢幕遊玩時，固定比例畫面置中後露出的留白以該畫面背景的模糊放大版鋪底（僅在內容區外），畫面內容本身維持完整清楚。
 - 維護者能以自架伺服器整包（node 服務＋資料庫）部署，並可依內容資料包結構模組化擴充內容而不影響既有功能；場景背景維持完整繪製、無模糊補版。
+- 具 Kubernetes 環境的維護者能依本手冊以 `helm install` 一鍵裝起整套、`helm upgrade` 升級**不失**帳號存檔與設定、`helm uninstall` 預設保留資料卷，並能完成資料庫備份與還原；不需查閱程式碼。
 - 維護者能以 admin 帳號登入線上管理頁完成帳號管理（清單、線上重設密碼、撤銷登入、刪除帳號）——孩子忘記密碼不再需要伺服器指令；非 admin 一律進不了管理內容。
 - 維護者能線上調整執行期遊戲設定（新帳號預設時長、個別帳號時長鎖定、註冊開關），儲存即生效、不需改版重佈；被鎖定時長的帳號在遊戲內看到唯讀時長並標示由維護者管理。
 
@@ -323,6 +345,7 @@
 
 ## B. 修訂紀錄
 
+- 2026-07-10（issue #311）：**對外發行改制**——正式散佈單位改為「容器 image＋helm chart 整包」：具 Kubernetes 的家庭主機可 `helm install` 一鍵部署整套（遊戲＋API＋管理頁＋資料庫）、`helm upgrade` 升級不失資料（PVC 持久化）、`helm uninstall` 預設保留資料卷；備份還原程序文件化。原 GitHub Pages 公開站（自 #309 起實質不可玩）**正式關閉下線**、README 移除公開網址；compose＋npm 動線降級為開發期路徑。design.md 新增 spec#27、研改 spec#7，並依技術選型四層改制矯正宣告（單一 sys＝techApp遊戲webApp；資料庫升列 techStackPostgres）。本項為 2plan 初稿，待 dev／opr 校準。
 - 2026-07-10（issue #310）：設計**維護者線上管理**——新增 `/admin/` 線上管理頁：帳號管理（清單、線上重設密碼、撤銷登入、刪除帳號；孩子忘記密碼不再需要伺服器指令，CLI 降級為 admin 自身忘記密碼之離線後門）與執行期遊戲設定（新帳號預設遊玩／休息時長、個別帳號時長覆寫與鎖定之家長管控、註冊開關），設定存資料庫、儲存即生效不需重佈；admin 帳號由部署環境變數建立，管理 API 一律驗 admin 身分；並收斂 #309 審查後續辦理之伺服器防護三項（速率限制僅計失敗、過期 session 清理、存檔形狀校驗）。新增 design.md spec#25／spec#26、研改 spec#8／#9／#23。本項已於 dev 實作並驗證（sysApi 單元 52＋admin 整合 55 檢核、真堆疊管理 e2e 22 檢核、全套 22 selftest 綠；測試改用專用 `luminara_test` 資料庫不污染營運庫），待 opr 終驗。
 - 2026-07-09（issue #309）：**方向轉換**——由「純靜態 GitHub Pages＋瀏覽器本機存檔」轉為「**自架伺服器＋帳號雲端存檔**」：玩家以小寫英文帳號＋至少 6 位密碼註冊登入（家長可協助），進度以帳號為單位存於伺服器（PostgreSQL）、跨裝置還原；遊戲端維持靜態無框架網頁（「靜態遊戲殼＋node API 核」），新增 node API 建置單元承接註冊、登入、session 與存檔；舊存檔可經 Markdown 匯入或登入畫面「匯入本機舊進度」一鍵遷移；玩家端不提供刪除帳號（帳號管理屬維護者，於 #310 提供）。GitHub Pages 免安裝版不保留（維護者裁決）——公開網址自本增量起不再可玩，Pages 於 #311 隨 helm 整包發行正式關閉退場。廢改 design.md spec#7／spec#8、新增 spec#23／spec#24。本項已於 dev 實作並以真堆疊端對端驗證（sysApi 單元 31＋整合 27、全套 22 selftest、跨裝置 e2e 10 檢核全綠），待 opr 終驗。
 - 2026-07-03（issue #297）：優化管理設定工具使用體驗（dev-only 維護工具，**不影響公開遊玩端**）。依專業盤點的 20 項問題分四類修正：**工作保護**（未儲存變更離頁警示、寫回成功不再整頁重載、保留工作點）、**回饋一致**（原生 alert/confirm 全面改為 MD3 風格對話框與 snackbar、危險操作紅色系確認）、**編輯效率**（衣物框數值輸入與方向鍵微調、單件還原、套用前變更清單、AI 生成「生成→對照→採納」三步）、**導覽與小螢幕**（深連結記住分頁內工作點、收合導覽可辨識、窄視口導覽浮出式、觸控目標 ≥44px、預覽雙指縮放）；並把工具樣式檔（1596 行）依分頁解體、硬寫色收斂為 MD3 token、移除 structureLint 豁免。設計決策見 [docs/design.md](docs/design.md)（spec#22、solStory#23、sysStory#15、paramToolUxQualityBar、intTest#67–#69）。本項為 2plan 初稿，待 dev／opr 校準。
