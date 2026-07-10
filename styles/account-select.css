@@ -273,3 +273,18 @@ body.cloud-offline #statusMessage {
 .login-expand .login-enter {
   width: 100%;
 }
+
+/* #317：自本裝置移除卡片（兩段確認）——常態低調、armed 後轉警示色 */
+.login-expand .login-remove-card {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 6px;
+  font-size: 0.86rem;
+  opacity: 0.75;
+}
+.login-expand .login-remove-card.is-armed {
+  opacity: 1;
+  color: #a03434;
+  border-color: #c98484;
+  background: #fdf1f1;
+}

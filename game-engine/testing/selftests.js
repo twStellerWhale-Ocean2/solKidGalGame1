@@ -264,6 +264,21 @@ function runCloudAuthSelfTest(api) {
       if (!passwordInput) errors.push("clicking card did not expand password field");
       const toggle = document.querySelector(".login-show-toggle");
       if (!toggle) errors.push("password show/hide toggle missing");
+      // #317：自本裝置移除卡片——兩段確認（單擊只 armed 不執行）、僅清本機快取、不打任何伺服器請求。
+      const removeBtn = document.querySelector(".login-remove-card");
+      if (!removeBtn) errors.push("remove-card button missing in expanded panel");
+      if (removeBtn) {
+        removeBtn.click();
+        if (!cloudAuth.loadRecentAccounts().some((e) => e.username === "mimi")) errors.push("single tap must not remove card (two-step confirm)");
+        if (!removeBtn.classList.contains("is-armed")) errors.push("remove button not armed after first tap");
+        if (!removeBtn.disabled) errors.push("armed button should briefly disable to absorb double-tap (#317)");
+        removeBtn.disabled = false; // 測試取消冷卻（真實動線由 700ms 冷卻吃掉連點）
+        removeBtn.click();
+        await Promise.resolve();
+        if (cloudAuth.loadRecentAccounts().some((e) => e.username === "mimi")) errors.push("armed tap did not remove card from device cache");
+        if (document.querySelector("#accountList .account-pick[data-username=\"mimi\"]")) errors.push("removed card still rendered after rebuild");
+        cloudAuth.upsertRecentAccount("mimi", { playerName: "CloudMimi", characterId: "lumi", coins: 555, outfit: api.state.outfit, playLimit: api.state.playLimit, lastPlayedAt: Date.now() }); // 還原供後續步驟
+      }
       const overlay = document.getElementById("accountSelect");
       if (overlay) {
         overlay.classList.remove("show");

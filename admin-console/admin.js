@@ -1,6 +1,6 @@
 // [hmiIntf自訂線上管理頁] 前端（issue #310，spec#25／spec#26）：原生 ES module、無框架。
 // 資料一律經 [apiIntf自訂線上管理服務] /api/admin/*（Bearer admin session）；401 一律回登入頁。
-import { versionHistory } from "/game-engine/build/version.js";
+import { buildInfo } from "/game-engine/build/version.js";
 
 const TOKEN_KEY = "luminara-admin-session";
 
@@ -154,15 +154,31 @@ function selectTab(name) {
   const accounts = name === "accounts";
   els.tabAccounts.setAttribute("aria-selected", String(accounts));
   els.tabSettings.setAttribute("aria-selected", String(!accounts));
+  // roving tabindex（WAI-ARIA tabs，#317）：Tab 鍵只落在當前分頁，方向鍵在分頁間移動。
+  els.tabAccounts.tabIndex = accounts ? 0 : -1;
+  els.tabSettings.tabIndex = accounts ? -1 : 0;
   els.panelAccounts.hidden = !accounts;
   els.panelSettings.hidden = accounts;
   if (accounts) loadAccounts();
 }
 
-// 分頁切換前的未儲存變更防護（dirty guard，沿 spec#22 慣例）。
-function guardDirty() {
-  if (!state.settingsDirty) return true;
-  return window.confirm("設定尚未儲存，確定要離開嗎？未儲存的變更會遺失。");
+// 分頁切換／登出前的未儲存變更防護（dirty guard，沿 spec#22 慣例）——
+// 警示採工具內一致之 MD3 dialog（原生 confirm 歸零，#317）；Esc 或關閉 dialog 視同留在此頁。
+function confirmDiscardChanges() {
+  return new Promise((resolve) => {
+    let settled = false;
+    const settle = (ok) => { if (!settled) { settled = true; resolve(ok); } };
+    openDialog((dialog) => {
+      const title = document.createElement("h3");
+      title.textContent = "設定尚未儲存";
+      const note = document.createElement("p");
+      note.textContent = "離開後未儲存的變更會遺失。";
+      const stay = makeButton("留在此頁", "btn-outlined", () => els.dialog.close());
+      const discard = makeButton("放棄變更", "btn-danger", () => { settle(true); els.dialog.close(); });
+      dialog.append(title, note, dialogActions(stay, discard));
+    });
+    els.dialog.addEventListener("close", () => settle(false), { once: true });
+  });
 }
 
 // ── 登入／登出 ──
@@ -196,7 +212,8 @@ async function handleLogin(event) {
 }
 
 async function handleLogout() {
-  if (!guardDirty()) return;
+  // dirty 防護統一由捕捉階段之 guard 負責（confirmDiscardChanges）；此處不再重複判定（#317 審查 must-fix：
+  // 原 guardDirty 已改名，殘留呼叫會使登出整路 ReferenceError）。
   try {
     await api("/api/auth/logout", { method: "POST" });
   } catch {
@@ -570,7 +587,9 @@ async function handleSettingsSubmit(event) {
 
 // ── 啟動 ──
 async function boot() {
-  els.footerVersion.textContent = `Luminara v${versionHistory[0]?.version || "?"}`;
+  // 服務版本取 buildInfo（當前版號，含 internal 版）；versionHistory 只投影玩家可見版、
+  // internal release 時會顯示過期版號（#317 順修）。
+  els.footerVersion.textContent = `Luminara v${buildInfo.version || "?"}`;
   els.loginForm.addEventListener("submit", handleLogin);
   els.loginPasswordToggle.addEventListener("click", () => {
     const show = els.loginPassword.type === "password";
@@ -582,6 +601,22 @@ async function boot() {
   els.tabAccounts.addEventListener("click", () => selectTab("accounts") );
   els.tabSettings.addEventListener("click", () => selectTab("settings"));
   els.tabAccounts.addEventListener("click", closeRowMenus);
+  // tabs 鍵盤導覽（WAI-ARIA tabs：方向鍵切換、Home/End 首末；以 click() 走同一條 dirty guard 動線，#317）。
+  const tabOrder = [els.tabAccounts, els.tabSettings];
+  tabOrder.forEach((tab, index) => {
+    tab.addEventListener("keydown", (event) => {
+      let target = null;
+      // 水平 tablist 依 WAI-ARIA APG 只回應 Left/Right（不吃 Up/Down，#317 審查）。
+      if (event.key === "ArrowRight") target = tabOrder[(index + 1) % tabOrder.length];
+      else if (event.key === "ArrowLeft") target = tabOrder[(index + tabOrder.length - 1) % tabOrder.length];
+      else if (event.key === "Home") target = tabOrder[0];
+      else if (event.key === "End") target = tabOrder[tabOrder.length - 1];
+      if (!target || target === tab) return;
+      event.preventDefault();
+      target.focus();
+      target.click();
+    });
+  });
   document.addEventListener("click", (event) => {
     if (!(event.target instanceof Element) || !event.target.closest(".account-actions")) closeRowMenus();
   });
@@ -610,12 +645,24 @@ async function boot() {
   }
 }
 
-// 分頁切換的 dirty guard：以捕捉階段攔下切走設定分頁。
+// 分頁切換與登出的 dirty guard：以捕捉階段一律先攔下、經 MD3 dialog 確認後代為執行原動作
+// （#310 版僅攔分頁切換、登出未攔屬缺陷，#317 併修；dialog 為非同步、不能沿用同步放行寫法）。
 [els.tabAccounts, els.logoutButton].forEach((el) => {
-  el.addEventListener("click", (event) => {
-    if (el === els.tabAccounts && !els.panelSettings.hidden && !guardDirty()) {
-      event.stopImmediatePropagation();
-      event.preventDefault();
+  el.addEventListener("click", async (event) => {
+    if (els.panelSettings.hidden || !state.settingsDirty) return; // 不在設定頁或無未儲存變更：放行
+    event.stopImmediatePropagation();
+    event.preventDefault();
+    if (!(await confirmDiscardChanges())) {
+      // 留在此頁：鍵盤動線曾把焦點移到目標分頁，還給當前選取分頁以維持 roving tabindex 不變量（#317 審查）。
+      if (el === els.tabAccounts) els.tabSettings.focus();
+      return;
+    }
+    state.settingsDirty = false;
+    if (el === els.tabAccounts) {
+      closeRowMenus();
+      selectTab("accounts");
+    } else {
+      handleLogout();
     }
   }, { capture: true });
 });

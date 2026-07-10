@@ -18,12 +18,14 @@ import {
   syncRecentSummary
 } from "../system/cloud-sync.js";
 import {
+  clearCachedSession,
   loadCachedSession,
   loadMigratedLocalIds,
   loadRecentAccounts,
   markLocalAccountMigrated,
   removeRecentAccount
 } from "../state/cloud-session.js";
+import { apiLogout } from "../system/api-client.js";
 import { freshState, loadAccountState, normalizeState } from "../state/game-state.js";
 import { listAccounts } from "../state/accounts.js";
 import { playableCharacterById, normalizeBackgroundPattern } from "../data/game-data.js";
@@ -343,6 +345,44 @@ function buildAccountCard(entry, cachedUsername) {
       panel.append(wrap, enter, error);
       setTimeout(() => input.focus({ preventScroll: true }), 0);
     }
+    // 自本裝置移除卡片（#317／spec#8）：僅清本機快取摘要、不動伺服器帳號與存檔（重新登入即重建）；
+    // 防兒童誤觸採兩段確認；被維護者刪除之帳號其殘留卡亦由此移除（401 統一錯誤不可自動辨識，spec#23）。
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "soft-button login-remove-card";
+    removeBtn.textContent = "Remove card from this device";
+    let disarmTimer = 0;
+    removeBtn.addEventListener("click", async () => {
+      if (!removeBtn.dataset.armed) {
+        removeBtn.dataset.armed = "1";
+        removeBtn.classList.add("is-armed");
+        removeBtn.textContent = "Tap again to remove (progress stays on the server)";
+        // 防兒童連點誤觸（#317 審查）：armed 後短暫停用吃掉 double-tap，閒置未確認則自動撤防。
+        removeBtn.disabled = true;
+        setTimeout(() => { removeBtn.disabled = false; }, 700);
+        disarmTimer = setTimeout(() => {
+          delete removeBtn.dataset.armed;
+          removeBtn.classList.remove("is-armed");
+          removeBtn.textContent = "Remove card from this device";
+        }, 5000);
+        return;
+      }
+      clearTimeout(disarmTimer);
+      // 係本裝置最後登入帳號時：活躍 session（自遊戲返回選單）走正規登出；非活躍（重整後直落登入畫面）
+      // cloudLogout 為 no-op——改本地清快取＋盡力撤銷伺服器 session（#317 審查 must-fix：快取不得殘留）。
+      const cached = loadCachedSession();
+      if (cached?.username === entry.username) {
+        await cloudLogout().catch(() => {});
+        if (loadCachedSession()?.username === entry.username) {
+          apiLogout(cached.token).catch(() => {});
+          clearCachedSession();
+        }
+      }
+      removeRecentAccount(entry.username);
+      expandedUsername = "";
+      buildLoginScreen();
+    });
+    panel.appendChild(removeBtn);
     row.appendChild(panel);
   }
   return row;
