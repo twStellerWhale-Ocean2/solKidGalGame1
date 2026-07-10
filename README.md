@@ -25,8 +25,6 @@
 
 ### (A) 部署（自架伺服器）
 
-> 🧪 本節之 helm 指令為設計初稿（issue #311 2plan），實際 release 名、參數與網址形式以 dev 落地後之校準為準。
-
 **正式路徑：helm 整包（建議）**——前置需求：一台有 Kubernetes 的家庭主機（單節點即可，如 k3s／rancher-desktop／docker-desktop——**需有預設 StorageClass**，上述三者內建都有）、`helm` 與 `kubectl` 指令。一個 chart 就把整套（遊戲網頁＋帳號存檔 API＋線上管理頁＋PostgreSQL 資料庫）裝起來：
 
 1. 取得發行物：chart `solkidgalgame` 取自發佈列車隨版本發行的 chart 套件（GitHub Release 附件 `.tgz` 或 OCI registry；正式發行前的驗測可直接用本 repo 的 `deploy/helm/`）；容器 image `ghcr.io/twstellerwhale-ocean2/solkidgalgame1` 為公開 image、不需登入即可拉取。
@@ -46,6 +44,10 @@
    ```
 
 4. 確認就緒與取得網址：`kubectl get pods` 全部 Ready 即完成；服務網址為 `http://<主機IP>:30418/`（chart 預設固定 port `30418`，安裝完成訊息也會印出網址）。瀏覽器開網址即可遊玩；線上管理頁在 `/admin/`。
+
+   ![helm 部署後首次進入：遊戲登入畫面](docs/manual-assets/issue311-01-helm-game-login.png)
+
+   ![helm 部署之線上管理頁（admin 起始帳號登入後）](docs/manual-assets/issue311-02-helm-admin-accounts.png)
 5. **升級**：新版發行後 `helm upgrade luminara <chart 來源>`——**不需要重給秘密**（沿用叢集內既有設定），**玩家帳號、存檔與遊戲設定都會保留**（資料落在持久化儲存 PVC）。
 6. **移除**：`helm uninstall luminara`——資料卷**預設保留**（同名重裝可續用；確定不要資料時再手動刪除 PVC）。
 7. **備份與還原**（先找到資料庫 pod：`kubectl get pods` 內名稱含 `db` 者）：
@@ -362,7 +364,7 @@
 
 ## B. 修訂紀錄
 
-- 2026-07-10（issue #311）：**對外發行改制**——正式散佈單位改為「容器 image＋helm chart 整包」：具 Kubernetes 的家庭主機可 `helm install` 一鍵部署整套（遊戲＋API＋管理頁＋資料庫）、`helm upgrade` 升級不失資料（PVC 持久化）、`helm uninstall` 預設保留資料卷；備份還原程序文件化。原 GitHub Pages 公開站（自 #309 起實質不可玩）**正式關閉下線**、README 移除公開網址；compose＋npm 動線降級為開發期路徑。design.md 新增 spec#27、研改 spec#7，並依技術選型四層改制矯正宣告（單一 sys＝techApp遊戲webApp；資料庫升列 techStackPostgres）。本項為 2plan 初稿，待 dev／opr 校準。
+- 2026-07-10（issue #311）：**對外發行改制**——正式散佈單位改為「容器 image＋helm chart 整包」：具 Kubernetes 的家庭主機可 `helm install` 一鍵部署整套（遊戲＋API＋管理頁＋資料庫）、`helm upgrade` 升級不失資料（PVC 持久化）、`helm uninstall` 預設保留資料卷；備份還原程序文件化。原 GitHub Pages 公開站（自 #309 起實質不可玩）**正式關閉下線**、README 移除公開網址；compose＋npm 動線降級為開發期路徑。design.md 新增 spec#27、研改 spec#7，並依技術選型四層改制矯正宣告（單一 sys＝techApp遊戲webApp；資料庫升列 techStackPostgres）。本項已於 dev 實作並以本機 k3s 真裝驗證（chartLint 機判＋e2e-helm 22 檢核全綠：安裝→升級資料保全→備份毀損還原實走→uninstall 保留→重裝續用），待 opr 終驗。
 - 2026-07-10（issue #310）：設計**維護者線上管理**——新增 `/admin/` 線上管理頁：帳號管理（清單、線上重設密碼、撤銷登入、刪除帳號；孩子忘記密碼不再需要伺服器指令，CLI 降級為 admin 自身忘記密碼之離線後門）與執行期遊戲設定（新帳號預設遊玩／休息時長、個別帳號時長覆寫與鎖定之家長管控、註冊開關），設定存資料庫、儲存即生效不需重佈；admin 帳號由部署環境變數建立，管理 API 一律驗 admin 身分；並收斂 #309 審查後續辦理之伺服器防護三項（速率限制僅計失敗、過期 session 清理、存檔形狀校驗）。新增 design.md spec#25／spec#26、研改 spec#8／#9／#23。本項已於 dev 實作並驗證（sysApi 單元 52＋admin 整合 55 檢核、真堆疊管理 e2e 22 檢核、全套 22 selftest 綠；測試改用專用 `luminara_test` 資料庫不污染營運庫），待 opr 終驗。
 - 2026-07-09（issue #309）：**方向轉換**——由「純靜態 GitHub Pages＋瀏覽器本機存檔」轉為「**自架伺服器＋帳號雲端存檔**」：玩家以小寫英文帳號＋至少 6 位密碼註冊登入（家長可協助），進度以帳號為單位存於伺服器（PostgreSQL）、跨裝置還原；遊戲端維持靜態無框架網頁（「靜態遊戲殼＋node API 核」），新增 node API 建置單元承接註冊、登入、session 與存檔；舊存檔可經 Markdown 匯入或登入畫面「匯入本機舊進度」一鍵遷移；玩家端不提供刪除帳號（帳號管理屬維護者，於 #310 提供）。GitHub Pages 免安裝版不保留（維護者裁決）——公開網址自本增量起不再可玩，Pages 於 #311 隨 helm 整包發行正式關閉退場。廢改 design.md spec#7／spec#8、新增 spec#23／spec#24。本項已於 dev 實作並以真堆疊端對端驗證（sysApi 單元 31＋整合 27、全套 22 selftest、跨裝置 e2e 10 檢核全綠），待 opr 終驗。
 - 2026-07-03（issue #297）：優化管理設定工具使用體驗（dev-only 維護工具，**不影響公開遊玩端**）。依專業盤點的 20 項問題分四類修正：**工作保護**（未儲存變更離頁警示、寫回成功不再整頁重載、保留工作點）、**回饋一致**（原生 alert/confirm 全面改為 MD3 風格對話框與 snackbar、危險操作紅色系確認）、**編輯效率**（衣物框數值輸入與方向鍵微調、單件還原、套用前變更清單、AI 生成「生成→對照→採納」三步）、**導覽與小螢幕**（深連結記住分頁內工作點、收合導覽可辨識、窄視口導覽浮出式、觸控目標 ≥44px、預覽雙指縮放）；並把工具樣式檔（1596 行）依分頁解體、硬寫色收斂為 MD3 token、移除 structureLint 豁免。設計決策見 [docs/design.md](docs/design.md)（spec#22、solStory#23、sysStory#15、paramToolUxQualityBar、intTest#67–#69）。本項為 2plan 初稿，待 dev／opr 校準。

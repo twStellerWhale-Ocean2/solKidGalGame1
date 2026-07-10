@@ -44,6 +44,12 @@ CREATE TABLE IF NOT EXISTS settings (
 
 export async function createPgStore(databaseUrl: string): Promise<Store> {
   const pool = new Pool({ connectionString: databaseUrl });
+  // 資料庫連線被外力斷開（DB 重啟、備份還原之 DROP … WITH (FORCE)）時，idle client 會對 Pool 發
+  // error 事件——未接住即炸掉整個進程（#311 e2e 災難復原實測）。接住記錄即可：Pool 會補新連線，
+  // 進行中請求各自收到錯誤由路由層回 5xx，服務本體不得因此死亡（design paramProbes：不 CrashLoop 即死）。
+  pool.on("error", (error) => {
+    console.error("sysApi pg pool error (connection dropped, pool will recover):", error.message);
+  });
   await pool.query(MIGRATION);
   return {
     async createAccount(username, passwordHash, now, role: AccountRole = "player") {
