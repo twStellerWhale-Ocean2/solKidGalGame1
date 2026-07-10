@@ -37,15 +37,18 @@ if (manifest) {
     ["kind: StatefulSet", "PostgreSQL StatefulSet"],
     ["kind: PersistentVolumeClaim", "資料 PVC"],
     ["kind: Secret", "秘密 Secret"],
-    ["helm.sh/resource-policy: keep", "PVC keep 註記（uninstall 保留）"],
     ["nodePort: 30418", "固定 nodePort 配號"],
     ["path: /healthz", "liveness 探針 /healthz"],
     ["path: /readyz", "readiness 探針 /readyz"],
     ["wait-for-db", "initContainer 等待資料庫"],
+    ["PGDATA", "PGDATA 子目錄（block 型 StorageClass 之 lost+found 防護）"],
   ];
   for (const [needle, label] of must) {
     if (!manifest.includes(needle)) errors.push(`manifest 缺 ${label}（找不到 "${needle}"）`);
   }
+  // keep 註記須 PVC 與 Secret 各自帶（只驗全文一次會被另一資源遮蔽）。
+  const keepCount = (manifest.match(/helm\.sh\/resource-policy: keep/g) || []).length;
+  if (keepCount < 2) errors.push(`resource-policy: keep 註記數 ${keepCount} < 2（PVC 與 Secret 須各自掛 keep）`);
 }
 
 // ③ 版本鏈：Chart.yaml 與 VERSION 同源
@@ -71,7 +74,10 @@ if (!dirsMatch) {
 } else {
   const allow = dirsMatch[1].split(",").map((s) => s.trim().replace(/["']/g, "")).filter(Boolean);
   const dockerfile = readFileSync(join(root, "Dockerfile"), "utf8");
-  const copies = [...dockerfile.matchAll(/^COPY (?!--from)([^ ]+) /gm)].map((m) => m[1].replace(/^\.\//, ""));
+  // COPY 可有多個來源（最後一個 token 是目的地）——逐 token 解析，單看第一來源會漏檢後續來源。
+  const copies = [...dockerfile.matchAll(/^COPY (?!--from)(.+)$/gm)]
+    .flatMap((m) => m[1].trim().split(/\s+/).slice(0, -1))
+    .map((s) => s.replace(/^\.\//, ""));
   const expected = [...allow, "index.html", "admin-console"];
   for (const dir of expected) {
     if (!copies.includes(dir)) errors.push(`Dockerfile 缺 allowlist 項 COPY：${dir}`);

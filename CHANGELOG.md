@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.64.0 — 2026-07-10 _(internal)_
+- build (#311): 對外發行改以 helm 整包自架部署：單一 container image（遊戲網頁＋帳號存檔 API＋線上管理頁）＋helm chart（含 PostgreSQL 與持久化資料卷），helm install 一鍵部署、helm upgrade 升級不失帳號存檔與設定、helm uninstall 預設保留資料卷，備份還原程序文件化；chart 版本與 VERSION 同源防漂移（chartLint 守門）；伺服器資料庫斷線韌性強化（連線池不因外力斷線而中止、啟動容忍資料庫晚就緒）；原 GitHub Pages 公開站正式關閉退場、compose＋npm 動線降級為開發期路徑；技術選型宣告依四層改制矯正（單一系統＝techApp遊戲webApp、資料庫升列 techStackPostgres）
+
 ## 0.63.0 — 2026-07-10
 - feat (#310): 新增維護者線上管理頁（/admin/，admin 帳密登入）：帳號清單（含最近登入、存檔更新與可玩/休息狀態）、線上重設密碼（孩子忘記密碼不再需要伺服器指令）、撤銷登入、刪除帳號（連同存檔、二次確認）；執行期遊戲設定存資料庫、儲存即生效——新帳號預設遊玩/休息時長、對個別帳號鎖定時長（孩子端設定變唯讀、標示由維護者管理、解除即恢復自調）、關閉新帳號註冊（登入畫面顯示友善說明）；admin 帳號由部署環境變數第一次啟動建立、線上改密不被重啟洗掉；並強化伺服器防護（登入限流僅計失敗、過期登入紀錄自動清理、存檔格式校驗）
 

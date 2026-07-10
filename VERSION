@@ -1,8 +1,16 @@
 {
-  "version": "0.63.0",
+  "version": "0.64.0",
   "date": "2026-07-10",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.64.0",
+      "date": "2026-07-10",
+      "type": "build",
+      "playerVisible": false,
+      "issue": "#311",
+      "summaryZh": "對外發行改以 helm 整包自架部署：單一 container image（遊戲網頁＋帳號存檔 API＋線上管理頁）＋helm chart（含 PostgreSQL 與持久化資料卷），helm install 一鍵部署、helm upgrade 升級不失帳號存檔與設定、helm uninstall 預設保留資料卷，備份還原程序文件化；chart 版本與 VERSION 同源防漂移（chartLint 守門）；伺服器資料庫斷線韌性強化（連線池不因外力斷線而中止、啟動容忍資料庫晚就緒）；原 GitHub Pages 公開站正式關閉退場、compose＋npm 動線降級為開發期路徑；技術選型宣告依四層改制矯正（單一系統＝techApp遊戲webApp、資料庫升列 techStackPostgres）"
+    },
     {
       "version": "0.63.0",
       "date": "2026-07-10",

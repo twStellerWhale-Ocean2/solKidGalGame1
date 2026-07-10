@@ -142,7 +142,7 @@ function main() {
       console.error("genVersion --check 失敗（版號投影漂移）：\n  - " + drift.join("\n  - ") + "\n  修復：node scripts/genVersion.mjs");
       process.exit(1);
     }
-    console.log("genVersion --check：PASS（version.js／CHANGELOG.md 與 VERSION 一致）");
+    console.log("genVersion --check：PASS（version.js／CHANGELOG.md／deploy/helm/Chart.yaml 與 VERSION 一致）");
     return;
   }
   for (const t of targets) {

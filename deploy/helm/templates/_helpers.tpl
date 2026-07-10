@@ -27,6 +27,9 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- $required := index . 2 -}}
 {{- $fromValues := index $ctx.Values.secrets $key -}}
 {{- if $fromValues -}}
+{{- if and (eq $key "postgresPassword") (not (regexMatch "^[A-Za-z0-9]+$" $fromValues)) -}}
+{{- fail "secrets.postgresPassword 僅允許英數字元（會原文拼進 DATABASE_URL，特殊字元會使連線字串解析錯亂）" -}}
+{{- end -}}
 {{- $fromValues -}}
 {{- else -}}
 {{- $existing := lookup "v1" "Secret" $ctx.Release.Namespace (printf "%s-secrets" $ctx.Release.Name) -}}

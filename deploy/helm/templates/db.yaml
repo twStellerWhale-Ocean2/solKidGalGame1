@@ -30,6 +30,8 @@ spec:
     - port: 5432
       targetPort: 5432
 ---
+# StatefulSet 預設 RollingUpdate 即 delete-before-create（先終止舊 pod 才建新 pod），
+# 滿足 design paramDbWorkload 之「Recreate 語意」——不會有新舊 pod 互搶 RWO PVC 的死鎖窗口。
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -53,6 +55,10 @@ spec:
         - name: postgres
           image: {{ .Values.db.image }}
           env:
+            # PGDATA 用子目錄：block 型 StorageClass（如 Longhorn）在卷根留 lost+found 會使 initdb
+            # 見非空目錄拒絕初始化；hostPath 型（k3s local-path）無此問題但統一寫法消滅整類故障。
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
             - name: POSTGRES_USER
               value: {{ .Values.db.user | quote }}
             - name: POSTGRES_DB

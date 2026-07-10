@@ -48,16 +48,21 @@
    ![helm 部署後首次進入：遊戲登入畫面](docs/manual-assets/issue311-01-helm-game-login.png)
 
    ![helm 部署之線上管理頁（admin 起始帳號登入後）](docs/manual-assets/issue311-02-helm-admin-accounts.png)
-5. **升級**：新版發行後 `helm upgrade luminara <chart 來源>`——**不需要重給秘密**（沿用叢集內既有設定），**玩家帳號、存檔與遊戲設定都會保留**（資料落在持久化儲存 PVC）。
+5. **升級**：新版發行後 `helm upgrade luminara <chart 來源>`——**不需要重給秘密**（沿用叢集內既有設定），**玩家帳號、存檔與遊戲設定都會保留**（資料落在持久化儲存 PVC）。想先試跑再升級請用 `helm upgrade --dry-run=server …`（一般 `--dry-run` 讀不到叢集內秘密、會誤報「必填」）。
 6. **移除**：`helm uninstall luminara`——資料卷**預設保留**（同名重裝可續用；確定不要資料時再手動刪除 PVC）。
-7. **備份與還原**（先找到資料庫 pod：`kubectl get pods` 內名稱含 `db` 者）：
+7. **備份與還原**（資料庫 pod 名固定為 `luminara-db-0`，release 名不同時對應調整）：
 
    ```powershell
-   kubectl exec <資料庫pod> -- pg_dump -U luminara luminara > backup.sql   # 備份
-   kubectl exec -i <資料庫pod> -- psql -U luminara luminara < backup.sql   # 還原
+   # 備份（PowerShell 7）：
+   kubectl exec luminara-db-0 -- pg_dump -U luminara luminara > backup.sql
+
+   # 還原——⚠️ 會以備份內容「整個取代」現有資料，先清空重建再倒回：
+   kubectl exec luminara-db-0 -- psql -U luminara -d postgres -c "DROP DATABASE luminara WITH (FORCE);" -c "CREATE DATABASE luminara OWNER luminara;"
+   Get-Content backup.sql -Raw | kubectl exec -i luminara-db-0 -- psql -U luminara -d luminara -f -
    ```
 
-   原本用 compose 路徑跑的伺服器要改用 helm 時，也是用同一套「compose 版備份 → helm 版還原」把全家進度搬過去。
+   （PowerShell 不支援 `<` 導入，還原一律用上面的 `Get-Content … |` 管線寫法；還原完成後重新整理頁面即可。）原本用 compose 路徑跑的伺服器要改用 helm 時，也是用同一套「compose 版備份 → helm 版還原」把全家進度搬過去。
+   另外：**不要手動刪除叢集裡的 `luminara-secrets`**——資料庫實際密碼在首次安裝時已寫進資料卷，這個 Secret 與資料卷同壽命，刪掉重裝會連不上既有資料。
 8. **admin 自己忘記密碼**（唯一無法用網頁自救的情況）：`kubectl exec <服務pod> -- npm run reset-password -- <帳號> <新密碼>`。
 
 **開發期路徑：compose＋npm**（開發與輕量試用；不是正式散佈動線）：
@@ -78,7 +83,7 @@
    npm start
    ```
 
-4. 瀏覽器開 `http://<主機IP>:4180/` 即可遊玩；`/healthz` 可作服務健康檢查。備份：`docker exec deploy-db-1 pg_dump -U luminara luminara > backup.sql`；還原：`docker exec -i deploy-db-1 psql -U luminara luminara < backup.sql`（容器名依 compose 專案目錄推導，換目錄部署時以 `docker ps` 確認）。
+4. 瀏覽器開 `http://<主機IP>:4180/` 即可遊玩；`/healthz` 可作服務健康檢查。備份：`docker exec deploy-db-1 pg_dump -U luminara luminara > backup.sql`；還原（PowerShell 不支援 `<` 導入，用管線；還原前同樣先清空重建，見正式路徑步驟 7 說明）：`Get-Content backup.sql -Raw | docker exec -i deploy-db-1 psql -U luminara luminara`（容器名依 compose 專案目錄推導，換目錄部署時以 `docker ps` 確認）。
 
 兩條路徑共通的注意事項：
 
