@@ -1,12 +1,12 @@
 ---
 name: techStackNodeSvr
 date: 2026-06-12
-description: 伺服器類技術選型 Profile —— Node.js + TypeScript；定義資料夾慣例、建置/測試/部署指令、產物型態與部署方法。
+description: 技術選型·構件層(techStack)·自建型·伺服器類 —— Node.js + TypeScript；定義資料夾慣例、建置/測試/部署指令、產物型態與部署方法。
 ---
 
 # I. 主旨目的
 
-定義以 Node.js + TypeScript 實作伺服器類建置單元（sys，或下放時 mod）的標準技術選型 Profile。於 design.md＜B 運作想定.(A) 資訊架構＞以 🧱 標於所屬建置單元方框宣告、＜C 組態設定.(D) 部署做法＞繼承其建置/測試/部署指令。
+定義以 Node.js + TypeScript 實作伺服器類構件（mod＝建置單元）的標準技術選型 Profile。於 design.md ＜III＞ 以文字標記（`techStack: XXX`）標於所屬 mod 方框宣告（formatVersion 3.3；3.1/3.2 legacy 為 ＜II.B.(A)＞ 之 🧱）、＜C 組態設定.(D) 部署做法＞繼承其建置/測試/部署指令。
 
 # II. 參考準備
 

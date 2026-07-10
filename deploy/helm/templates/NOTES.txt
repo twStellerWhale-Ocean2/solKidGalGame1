@@ -1,0 +1,19 @@
+solKidGalGame {{ .Chart.AppVersion }} 已部署（release: {{ .Release.Name }}）。
+
+1. 確認就緒：kubectl get pods -l app.kubernetes.io/instance={{ .Release.Name }}
+   （全部 Ready 即完成；app 會等資料庫就緒才啟動）
+{{- if eq .Values.service.type "NodePort" }}
+
+2. 開始遊玩：http://<主機IP>:{{ .Values.service.nodePort }}/
+   線上管理頁：http://<主機IP>:{{ .Values.service.nodePort }}/admin/（以安裝時提供的維護者帳密登入）
+{{- else }}
+
+2. 服務為 {{ .Values.service.type }}：請依你的 Ingress／轉接方式取得網址；管理頁在 /admin/。
+{{- end }}
+
+3. 備份資料庫：
+   kubectl exec {{ .Release.Name }}-db-0 -- pg_dump -U {{ .Values.db.user }} {{ .Values.db.database }} > backup.sql
+   還原：會整個取代現有資料、且須先清空重建——具體指令見產品手冊 README「備份與還原」節
+   （PowerShell 不支援 `<` 導入，README 有可照抄的管線寫法）。
+
+提醒：家庭內網為 HTTP 明文，請勿把服務 port 轉發到公網（詳見產品手冊 README）。

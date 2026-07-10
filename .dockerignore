@@ -1,0 +1,19 @@
+# 只有 Dockerfile COPY 指名的路徑會入包；本檔縮小 build context 並防呆。
+.git
+.claude
+node_modules
+sysApi/node_modules
+sysApi/dist
+sysApi/coverage
+docs
+deploy
+contract-common
+contract-local
+scripts
+tests
+tool
+server.mjs
+*.png
+AGENTS.md
+CHANGELOG.md
+README.md

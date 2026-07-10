@@ -1,8 +1,8 @@
 ---
 name: solKidGalGame
-date: 2026/7/9
+date: 2026/7/10
 formatVersion: "2.0"
-description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件（#309 起轉向「靜態遊戲殼＋node API 核」自架伺服器形態）。
+description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件（#309 起轉向「靜態遊戲殼＋node API 核」自架伺服器形態；#311 起正式對外散佈單位為 container image＋helm chart 整包）。
 ---
 
 # I. 主旨目的
@@ -21,7 +21,7 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件（#309 
 * **spec#4-可形成練英文獲獎勵換裝的正向閉環**：方案須使英文練習、獎勵取得與換裝回饋構成同一個可重複的正向循環。
 * **spec#5-可保存並還原玩家進度**：方案須讓每個帳號各自的 coins、學習紀錄、擁有與穿搭、所在位置、所選角色、名字與識別色可被保存並於再次遊玩時還原。
 * **spec#6-可選擇與命名自己的公主**：方案須讓玩家首次進入時選定公主外觀、命名並確認識別色，之後可重選外觀、改名或調整識別色，且不影響既有存檔進度；可玩公主 roster 須提供可辨識差異，使用者可見名為 Lumi、Yumi、Rosa；既有存檔帶 `sol` 角色 id 者，於讀取時 fallback 為預設角色 `lumi`，使舊存檔可無縫升級至新三角色 roster。識別色須以飽和度較低、柔和的粉彩色盤供選擇，並可由調色器自訂任一色（既有存檔之識別色須相容保留、不被重置）；新帳號或首次初始化公主視覺主題時，profileColor 與背景花紋須各自自合法集合一次性隨機選出並寫入帳號狀態，後續載入不得重抽；玩家仍可手動改色或自背景花紋集（如波浪、泡泡、格紋等）改選，與識別色共同構成可辨識且具沉浸感的公主視覺主題。
-* **spec#7-可以自架伺服器形態部署並模組化擴充內容**：方案須能以「靜態遊戲殼＋node API 核」之自架伺服器形態部署遊玩——遊戲端維持無 build 相依之原生靜態網站包（HTML/JS/CSS ES modules、無前端框架），由自架伺服器（本機、區網或家庭主機）同站服務遊戲殼與帳號存檔 API；不再以 GitHub Pages 公開遊玩為交付目標（既有 GitHub Pages 公開站不保留——USR 裁決不凍結舊版、公開網址自本增量起不再可玩；Pages 關閉退場與正式整包 image＋helm chart 對外發行於增量 #311 辦理），且 area、角色、可玩公主 roster 與衣物等內容可模組化新增與調整；角色、wardrobe layer、ADV 場景背景與可見美術素材之交付應採內容包 raster 檔案，不以 SVG、CSS 濾鏡、模糊補版或 renderer 特例偽裝素材完成；商店商品預覽直接重用 wardrobe layer 素材、不另設獨立商品縮圖；衣物內容以資源包為模組化單位——一個衣物資源包可含多種類別之衣物（含髮型，不限類別、無類別相容限制），對應一家衣物商店整包販售，原則上每地區一家衣物商店對應一個資源包；新增一個衣物資源包即新增其對應商店、並沿用類別級 layer bounds 組態，使新增同類衣物不需另建單件對位常數；新增或替換場景背景須維持單張 `1024x1024` WebP 與現有 sceneArt renderer 載入方式，整張圖皆應為正式繪製內容；且各類圖像資產（可玩公主立繪採共用 `body` 512×768 ＋ per-character `head` 512×768、場景人物 base 512×768、ADV 場景背景 1024×1024、地區地圖 1536×1536、世界地圖 1024×1536、衣物單品 layer 兼商店預覽 512×512、UI 資產等）須符合各自宣告之標準像素尺寸與檔重預算（byte budget），使純靜態載入不因錯置過大圖檔而變慢，新增資產類別須先於資產標準表登記其尺寸與檔重上限方納入（標準尺寸與檔重之合規守門屬工程實作，見＜II＞重點組態與＜III＞整合測試）。
+* **spec#7-可以自架伺服器形態部署並模組化擴充內容**：方案須能以「靜態遊戲殼＋node API 核」之自架伺服器形態部署遊玩——遊戲端維持無 build 相依之原生靜態網站包（HTML/JS/CSS ES modules、無前端框架），由自架伺服器（本機、區網或家庭主機）同站服務遊戲殼與帳號存檔 API；不再以 GitHub Pages 公開遊玩為交付目標（既有 GitHub Pages 公開站不保留——USR 裁決不凍結舊版；GitHub Pages 站台已於增量 #311 正式關閉退場，正式對外散佈單位為版本化整包 container image＋helm chart，見 spec#27），且 area、角色、可玩公主 roster 與衣物等內容可模組化新增與調整；角色、wardrobe layer、ADV 場景背景與可見美術素材之交付應採內容包 raster 檔案，不以 SVG、CSS 濾鏡、模糊補版或 renderer 特例偽裝素材完成；商店商品預覽直接重用 wardrobe layer 素材、不另設獨立商品縮圖；衣物內容以資源包為模組化單位——一個衣物資源包可含多種類別之衣物（含髮型，不限類別、無類別相容限制），對應一家衣物商店整包販售，原則上每地區一家衣物商店對應一個資源包；新增一個衣物資源包即新增其對應商店、並沿用類別級 layer bounds 組態，使新增同類衣物不需另建單件對位常數；新增或替換場景背景須維持單張 `1024x1024` WebP 與現有 sceneArt renderer 載入方式，整張圖皆應為正式繪製內容；且各類圖像資產（可玩公主立繪採共用 `body` 512×768 ＋ per-character `head` 512×768、場景人物 base 512×768、ADV 場景背景 1024×1024、地區地圖 1536×1536、世界地圖 1024×1536、衣物單品 layer 兼商店預覽 512×512、UI 資產等）須符合各自宣告之標準像素尺寸與檔重預算（byte budget），使純靜態載入不因錯置過大圖檔而變慢，新增資產類別須先於資產標準表登記其尺寸與檔重上限方納入（標準尺寸與檔重之合規守門屬工程實作，見＜II＞重點組態與＜III＞整合測試）。
 * **spec#8-可用伺服器帳號分離不同玩家進度**：方案須讓同一自架伺服器上多位玩家各自擁有伺服器帳號，每次進入遊戲先於登入畫面登入要使用的帳號（帳號與密碼規則見 spec#23）；登入畫面沿用既有帳號卡辨識慣例——本裝置最近登入過之帳號以頭胸部大頭照、背景識別色、最近遊玩時間、coins 與可遊玩／休息狀態呈現，大頭照卡片以該帳號識別色之半透明底色鋪底（避免過重色塊、維持柔和一致的辨識），點選帳號卡輸入密碼即可進入，亦可切換輸入其他帳號或註冊新帳號；該頭胸部大頭照須與全身著裝同源同對位（沿用同一紙娃娃層合成之等比頭胸裁切、不另維護第二套裁切），使其即時穿搭之衣物不錯位，並使不同玩家的進度與換裝成果互不混用。帳號之刪除與集中管理屬維護者作業、由維護者線上管理承載（spec#25），玩家端不提供刪除入口。（原「多帳號僅限同一瀏覽器本機、不做網路登入／密碼／雲端同步」之限制自增量 #309 廢止，帳號與存檔改由 spec#23／spec#24 承載。）
 * **spec#9-可限制每次遊玩時長並強制休息以護眼**：方案須在兒童連續遊玩達設定時長後自動結算本回合成果並進入強制休息，休息時間結束前不可續玩，以保護兒童視力；每次遊玩與休息的預設時長各 15 分鐘（新帳號預設時長可由維護者於執行期設定調整，spec#26），且可由玩家於設定調整並以各帳號各自計算；惟維護者可對個別帳號覆寫並鎖定遊玩／休息時長（家長管控，spec#26）——鎖定後遊戲內設定之時長欄位唯讀並明示由維護者管理，玩家不可自調、亦不可藉重新註冊或重整繞過。遊戲內須顯示本次可玩時間額度（基礎時長與生活聊天延長之合計，並使聊天延長可被看見）與剩餘可玩時間，休息／結算畫面須允許回到初始帳號／公主選單但不得繞過休息鎖定；地圖上公主 token 須以足夠大的尺寸醒目且清楚呈現（較原放大約一倍），不再以識別色背板標示，各帳號識別色不再於地圖 token 上呈現（以視覺簡潔為先）。
 * **spec#10-可查看作品版權與版本沿革**：方案須在設定選單提供 About 頁籤，呈現作品版權宣告，並以中文短主旨列出歷次版本的主要變更，使玩家與家長能識別作品來源並了解版本演進。
@@ -41,6 +41,7 @@ description: 兒童英文 ADV 換裝學習遊戲的方案級設計文件（#309 
 * **spec#24-可雲端保存進度並跨裝置還原**：方案須將每帳號之全部遊玩進度（既有 normalized state 全項：coins、學習紀錄、擁有與穿搭、所在位置、所選角色、名字、識別色與背景花紋、遊玩／休息狀態等）保存於伺服器端，登入即還原、跨裝置跨瀏覽器一致；保存採自動節流（paramSaveDebounceMs）＋關鍵事件即時寫入（答題結算、購買退款、換裝、時間到結算、登出）；伺服器暫時不可達時遊戲以記憶體狀態續玩、背景重試並明確提示同步狀態、不 crash 不丟既有畫面；舊進度有兩條遷移路徑——(a) 既有 Markdown 匯出存檔可匯入為目前登入帳號之雲端進度、(b) 本裝置舊版 localStorage 本機帳號可於登入畫面一鍵遷移為伺服器帳號進度——兩者皆沿用既有匯入正規化與 `sol`→`lumi` 等相容 fallback，且承接帳號已有雲端進度時須明確警示覆蓋方向並經確認、先上傳成功後才標記已遷移（失敗可重試不重複）；Markdown 匯出功能保留作為離線備份。並發保護：同帳號多裝置同時遊玩時，保存以 `updatedAt` 樂觀比對——過期寫入被拒（HTTP 409）並由遊戲端提示重新載入，不靜默覆蓋較新進度；存檔 API 回應附伺服器時間，遊戲端據以校正遊玩／休息計時判定（裝置時鐘竄改之防護明文屬家長管理範圍、非技術防線）。
 * **spec#25-可由維護者線上管理玩家帳號**：方案須讓維護者（admin）以瀏覽器於自架伺服器之專屬線上管理頁完成帳號管理，不再需要伺服器端指令——admin 以帳密登入管理頁（與玩家遊戲入口分流，遊戲殼與兒童端不出現任何管理入口）後可：(a) 檢視伺服器上全部玩家帳號之清單（帳號、建立時間、最近登入時間、存檔更新時間、目前可玩／休息狀態摘要）；(b) 為任一帳號重設密碼（含變更 admin 自身密碼——自身變更保留當前登入、其他裝置登出；新密碼沿用 spec#23 之密碼規則）；(c) 撤銷任一帳號之全部 session（該帳號所有裝置即刻登出）；(d) 刪除帳號——連同其存檔與全部 session 一併刪除，屬不可復原之危險操作、須經明確二次確認方執行（admin 自身不可刪除，防自鎖）。本增量明文不做：多管理員分級、操作稽核日誌、遊玩時長統計報表（留待真需求）。admin 憑證與玩家帳號同一安全標準（bcrypt 雜湊、登入失敗統一訊息、速率限制）；管理 API 一律驗 admin 身分——未登入、玩家 session 或逾期憑證一律拒絕、不洩漏管理資訊；第一個 admin 帳號由部署期程序建立（部署做法見＜IV.A＞），本方案為家庭自架情境、單一 admin 即足，不做多管理員分級與操作稽核日誌。管理頁屬管理網站介面（依 [hmiIntf通用視覺規範] MD3 基座）、桌機與行動裝置觸控皆可用。
 * **spec#26-可由維護者線上管理執行期遊戲設定**：方案須讓維護者於同一線上管理頁調整**執行期遊戲設定**，設定存於伺服器資料庫、儲存後即時生效，不需改版或重新部署（落地資料三分歸屬之「執行期設定歸 DB」一分）——範圍：(a) **新帳號預設遊玩／休息時長**（新註冊帳號之 playMinutes／restMinutes／playMaxMinutes 初始值，取代寫死之程式常數；範圍限 spec#9 之合法分鐘區間）；(b) **個別帳號時長覆寫與鎖定**（家長管控）——對指定帳號設定強制遊玩／休息時長並鎖定，鎖定後該帳號遊戲內時長設定唯讀（spec#9），解除鎖定即回復玩家可自調；(c) **註冊開關**——關閉後伺服器拒絕新帳號註冊、遊戲登入畫面不提供註冊入口並顯示友善說明（家庭伺服器成員到齊後可關閉，防陌生註冊佔用）。設定採**明確欄位 schema**（每一設定項於本設計文件與程式各有具名定義）、資料庫缺值時以程式預設值遞補（部署升級零遷移負擔），不採動態 key-value 自由欄位。職能分界明文：內容編修（題庫、衣物對位、語音指定、地圖座標、公主預設）屬「內容歸 git」，維持 [管理設定工具]（[tool/]，dev-only）既有動線、隨版本發行，不納入本線上管理；本線上管理只管「這台伺服器的營運狀態」（帳號與執行期設定）。
+* **spec#27-可取得版本化整包發行物並於自架環境安裝升級與保全資料**：方案須以「單一 container image＋單一 helm chart」之版本化整包作為正式對外散佈單位（依 [comIntf通用K8sHelm部署格式]），供維護者於自有 Kubernetes 環境（家庭主機單節點即足）以 `helm install` 一鍵部署整套——遊戲殼、帳號存檔 API、`/admin/` 線上管理頁與 PostgreSQL 資料庫（依 [techStackPostgres]）——並以 `helm upgrade` 升級版本；**升級與重啟不得遺失玩家帳號、雲端存檔與執行期設定**（資料庫落於持久化儲存 PVC、schema 演進沿既有零遷移慣例），`helm uninstall` 預設保留資料卷、確要清除由維護者明示執行；image 內容邊界以遊戲服務既有靜態 allowlist 語意為單一事實來源（dev 工具 [tool/]、測試與 repo 內部檔案不入包）；image tag、chart 版本與根目錄 `VERSION` 三處同源對齊並具防漂移守門；資料庫備份與**還原**程序（`pg_dump`／`psql` 級，兩向均給具體指令並實測）須文件化於產品手冊，既有 compose 部署遷移至 helm 之資料搬移程序（dump→restore）亦須文件化；發行物之對外散佈（registry push、GitHub Release）由發佈列車（trainFlow）承載、不在本方案增量內執行；原始碼形態（clone＋compose＋npm）自本增量起降級為開發期路徑、不再是正式自架動線。
 
 # II. 設計分析
 
@@ -85,6 +86,7 @@ subgraph SOL["🗺️[solKidGalGame方案]"]
 end
 
 ADM -.->|"🔧setAct自訂維護者部署網站"| HOST
+ADM -.->|"🔧setAct自訂維護者升級部署"| HOST
 ADM -.->|"🔧setAct自訂維護者移除部署"| HOST
 ADM -.->|"🔧setAct自訂維護者設定角色語音"| SYS
 ADM -.->|"🔧setAct自訂維護者依資料包管理組態"| SYS
@@ -116,9 +118,9 @@ HOST -->|"🎚️paramDeployBranch=`main`"| API
   * **solCase#6.2**：[etyCfg通用兒童玩家]執行[runAct自訂玩家設定公主識別色]，於選角命名流程選擇公主識別色；新帳號或首次初始化時由系統自飽和度較低的粉彩色盤一次性隨機選入 profileColor 並保存，玩家可改選色盤色或以調色器自訂任一色（既有存檔之識別色相容保留），該色用於公主選單與人物資訊的大頭照卡片半透明底色與帳號辨識；#161 後地圖公主 token 不再套用識別色背板。
   * **solCase#6.3**：[etyCfg通用兒童玩家]執行[runAct自訂玩家設定公主背景花紋]，新帳號或首次初始化時由系統自背景花紋集（如波浪、泡泡、格紋等）一次性隨機選入 backgroundPattern 並保存；玩家可再改選花紋，與識別色共同構成公主視覺主題。
 * **solStory#7-部署擴充與移除**：
-  * **solCase#7.1**：[etyCfg通用家長維護者]執行[setAct自訂維護者部署網站]，將「靜態遊戲殼＋node API 核」自架服務（[sysApi系統] node 服務＋PostgreSQL 資料庫）部署於本機、區網或家庭主機，由同一服務同站提供遊戲殼靜態檔與帳號存檔 API（正式 helm 整包對外發行於增量 #311；既有 GitHub Pages 舊版不保留、於 #311 關閉退場）。
+  * **solCase#7.1**：[etyCfg通用家長維護者]執行[setAct自訂維護者部署網站]，將「靜態遊戲殼＋node API 核」自架服務（[sysApi系統] node 服務＋PostgreSQL 資料庫）部署於本機、區網或家庭主機，由同一服務同站提供遊戲殼靜態檔與帳號存檔 API；正式部署路徑為 helm 整包（solStory#27）、開發期路徑為 compose＋npm（既有 GitHub Pages 舊版不保留、已於 #311 關閉退場）。
   * **solCase#7.2**：[etyCfg通用家長維護者]執行[setAct自訂維護者擴充內容]，調整 area、角色、可玩公主、衣物或場景背景內容包（新增、替換或移除單一包），且可玩公主 base 與 wardrobe 外觀層須持續遵守同一紙娃娃 rig；可玩公主 base、wardrobe layer 與場景背景須由 GPT 產生或修圖為童話手繪風格 raster 素材，不得以 SVG、CSS 濾鏡、模糊補版或 runtime 特例代替；新增衣物須依其類別繼承共用 layer bounds，不得每件重做一次對位；調整 area 內容時，各地圖之地點配置須對應該地圖背景藝術元素且相互不過度群聚，場景背景須為完整繪製之 `1024x1024` WebP；新增或替換之各類資產均須符合資產標準表（paramAssetStandards）宣告之像素尺寸與檔重預算，超出預算之過大圖檔須先重壓縮至預算內（維持像素尺寸與童話手繪觀感）或登記具名豁免，方可納入內容包。
-  * **solCase#7.3**：[etyCfg通用家長維護者]執行[setAct自訂維護者移除部署]，停用自架服務與資料庫（資料卷保留與否由維護者決定；GitHub Pages 之關閉退場於增量 #311 辦理）。
+  * **solCase#7.3**：[etyCfg通用家長維護者]執行[setAct自訂維護者移除部署]，停用自架服務與資料庫（資料卷保留與否由維護者決定；helm 部署之移除見 solCase#27.3）。
 * **solStory#8-初始化與異常復原**：
   * **solCase#8.1**：[sysGame系統]執行[runAct自訂系統還原進度]，讀取伺服器端該帳號存檔並將缺漏或損壞欄位正規化回預設值。
 * **solStory#9-帳號登入與管理**：
@@ -179,19 +181,42 @@ HOST -->|"🎚️paramDeployBranch=`main`"| API
 * **solStory#26-執行期設定線上管理與生效**：
   * **solCase#26.1**：[etyCfg通用家長維護者]執行[setAct自訂維護者線上調整執行期設定]，於線上管理頁調整新帳號預設遊玩／休息時長、對個別帳號覆寫並鎖定時長（或解除鎖定）、開關新帳號註冊；設定寫入伺服器資料庫、儲存後即時生效，不需改版或重新部署。
   * **solCase#26.2**：[sysGame系統]執行[runAct自訂系統套用執行期設定]，自登入／存檔回應取得目前帳號之時長強制值與鎖定旗標——鎖定時遊戲內設定之時長欄位唯讀並明示由維護者管理；註冊關閉時登入畫面不提供註冊入口並顯示友善說明。
+* **solStory#27-整包發行與自架安裝升級**：
+  * **solCase#27.1**：[etyCfg通用家長維護者]執行[setAct自訂維護者部署網站]，取得版本化整包發行物（container image＋helm chart，依 [comIntf通用K8sHelm部署格式]），於自有 Kubernetes 環境以 `helm install` 一鍵部署整套（遊戲殼＋帳號存檔 API＋`/admin/` 線上管理頁＋PostgreSQL 資料庫）；部署後就緒（readiness `/readyz` 綠、含資料庫依賴）、遊戲與線上管理頁可用，服務網址對維護者可預期（NodePort 固定配號＋chart NOTES.txt 印出）；必要秘密（`SESSION_SECRET`、admin 起始帳密、資料庫密碼）經 chart 之 Secret 供給（values 檔或首次生成，生命週期見＜II.A (D)＞ paramSecrets）。
+  * **solCase#27.2**：[etyCfg通用家長維護者]執行[setAct自訂維護者升級部署]，以 `helm upgrade` 將運行中部署升至新版本 image；升級後玩家帳號、雲端存檔與執行期設定全數保留（資料庫 PVC 持久化＋零遷移 schema 演進），且服務所報版本（About／buildInfo）反映新版。
+  * **solCase#27.3**：[etyCfg通用家長維護者]執行[setAct自訂維護者移除部署]，以 `helm uninstall` 移除部署——資料卷（PVC）預設保留（誤刪可復原、重裝可續用），確要清除資料時由維護者明示刪除；備份與還原以 `pg_dump`／restore 程序辦理（產品手冊記載）。
 
 ### (D) 重點組態
 
+* **技術選型（四層宣告；依 2026-07-10 技術選型四層改制矯正）**
+  * **techStyle（方案風格）**＝[techStyle童話手繪粉彩]：全方案設計主軸——低飽和粉彩色盤、童話手繪 raster 素材紀律（禁 SVG／濾鏡代替正式素材）、兒童友善語氣；管理面（[管理設定工具]、`/admin/`）以 [hmiIntf通用視覺規範] MD3 基座承接、主題 token 以遊戲識別色為種子生成定本。
+  * **techApp（系統類型）**＝[techApp遊戲webApp]：本方案依四層改制為**單一 sys**（單一業務能力、單一份資料所有權、單一組對外 API 契約、單一 release 部署）；本文件 ＜II.B＞（sysGame）／＜II.C＞（sysApi）兩章屬**敘述分章**（前端引擎與伺服器核之工程視角），非兩個獨立 sys 邊界——全文章構之合併（formatVersion 3.3 升版）列後續格式升版增量辦理，本增量先矯正宣告層。
+  * **techStack（建置單元＝mod）**：遊戲殼靜態網站依 [techStackStaticWeb]（無框架 HTML/JS/CSS，無 build）、API 服務（含 `/admin/` 靜態子樹）依 [techStackNodeSvr]（Node LTS＋TypeScript）、資料庫依 [techStackPostgres]（**現成服務型**——無本案 code、單獨成容器、隨 chart 部署；原 [techItem資料庫] 引用依改制升列至 techStack 層）。
+  * **techItem（mod 內函式庫）**：express／bcryptjs／pg／vitest 等隨 [techStackNodeSvr] 生態慣例管理；遊戲殼無框架、無前端函式庫。
+  * **部署選型（綁 techApp）**：單一 release 之 helm 整包（app 容器＋PostgreSQL 容器＋PVC；[comIntf通用K8sHelm部署格式]），見 spec#27 與 ＜IV.A＞。
 * **Env轉K8sSec參數**
   * [etyCfg自訂sysApi組態]
-    * `DATABASE_URL`：PostgreSQL 連線字串（[apiIntf標準Postgres連線]）；正式 K8s Secret 於增量 #311 helm 化，本增量以本機 `.env`／compose 環境變數供給。
-    * `SESSION_SECRET`：session token 雜湊（tokenHash）之 pepper（伺服器端秘密；token 本體為 opaque 隨機值、不採簽章式 token）；供給方式同上。
+    * `DATABASE_URL`：PostgreSQL 連線字串（[apiIntf標準Postgres連線]）；正式部署由 chart 依 values 組合並經 K8s Secret 供給；開發期以本機 `.env`／compose 環境變數供給。
+    * `SESSION_SECRET`：session token 雜湊（tokenHash）之 pepper（伺服器端秘密；token 本體為 opaque 隨機值、不採簽章式 token）；正式部署經 K8s Secret 供給（安裝時必填、chart 不設不安全預設值），開發期同上。
+    * `ADMIN_USERNAME`／`ADMIN_PASSWORD`：admin 起始帳號 bootstrap（paramAdminBootstrap，僅於帳號不存在時建立）；正式部署經 K8s Secret 供給。
 * **HelmChart參數-chart.yaml**
-  * [etyCfg自訂sysGame組態]／[etyCfg自訂sysApi組態]：暫無自有 chart（正式 helm 整包於增量 #311 編制；本增量驗收環境為本機／區網 docker compose 或等效啟動）。
+  * [solKidGalGame方案]（單一 release 整包，chart 置 `deploy/helm/`）
+    * paramChartName=`solkidgalgame`
+    * paramChartVersion=`與根目錄 VERSION 同源`（chart `version` 與 `appVersion` 均由 `VERSION` 投影、納入防漂移守門，不另存第二份版本真相）
 * **HelmChart參數-values.yaml**
+  * [etyCfg通用自架主機平台]（chart values 明確欄位；對照 `sysApi/.env.example` 為組態語意正本）
+    * paramImageRepository=`ghcr.io/twstellerwhale-ocean2/solkidgalgame1`（預設；公開 image、免 pull secret；registry push 屬發佈列車）
+    * paramImageTag=`預設隨 chart appVersion`（即 `VERSION`；可覆寫）
+    * paramChartDistribution=`消費端取得形態＝OCI chart（ghcr.io，經發佈列車 push）或 GitHub Release 之 chart .tgz 附件；本 repo 內 deploy/helm 路徑屬 pre-release 驗測動線`（發行單位是整包，正式手冊示例以發行物形態為準）
+    * paramServiceType=`NodePort`（家庭單機預設、**固定 nodePort=30418**——不採隨機配號，使服務網址 `http://<主機IP>:30418/` 對維護者可預期且重裝不變；可改 ClusterIP＋Ingress；TLS／Ingress 屬選配欄位，未啟用時沿家庭內網 HTTP 定位與公網轉發警語）
+    * paramDbWorkload=`PostgreSQL 以 StatefulSet（單 replica）承載、更新採 Recreate 語意`（避免 RollingUpdate 下新舊 pod 互搶 RWO PVC 死鎖；升級期間資料庫短暫中斷屬家庭情境可接受並明文）；**PG major 版本 pin**（`postgres:16` 系列）——PG major 升級屬手動 dump／restore 程序、不隨 `helm upgrade` 自動發生
+    * paramDbStorage=`PVC（大小可調，預設 1Gi）`；**保留機制明文**：PVC 掛 `helm.sh/resource-policy: keep` 註記、名稱固定不含 release 隨機成分——`helm uninstall` 不刪、同名重裝自動續用；確要清除由維護者手動刪 PVC
+    * paramProbes=`liveness=/healthz（進程存活）、readiness=/readyz（含資料庫依賴檢查）`；app 啟動之 admin bootstrap 需 DB——以啟動重試（或 initContainer wait-for-db）容忍資料庫晚就緒，不得 CrashLoop 即死
+    * paramSecrets=`SESSION_SECRET／ADMIN_USERNAME／ADMIN_PASSWORD／POSTGRES_PASSWORD 經 K8s Secret 供給`；**秘密生命週期明文**——(a) 安裝時以 values 檔供給（`-f secrets.yaml`，用後即刪；不以 `--set` 內聯明文留 shell 歷史）或首次自動生成；(b) 自動生成值以 template `lookup` 沿用既值——**upgrade 不重供即沿用、不得重抽**；(c) `POSTGRES_PASSWORD` 僅於資料庫 initdb 時消費——事後改 Secret 不會改到既有資料庫實際密碼（改庫密碼屬手動 DB 程序、明文不隨 upgrade 代辦）；(d) `SESSION_SECRET` 換值＝全部裝置 session 失效（重登入），屬維護者明知後果之操作；(e) Secret 資源與資料 PVC 同掛 `helm.sh/resource-policy: keep`——`postgresPassword` 已寫入 PGDATA，秘密須隨保留資料一起留存，uninstall 後同名重裝 lookup 沿用、不重供不重抽
+    * paramChartNotes=`chart 附 NOTES.txt`——安裝完成即印出遊玩網址、`/admin/` 位置、就緒查法（`kubectl get pods`）與備份指令提示，家長不需翻手冊找網址
   * [etyCfg自訂sysApi組態]
     * paramTechStack=`techStackNodeSvr`
-    * paramDatabase=`PostgreSQL`（依 [techItem資料庫]，經 [apiIntf標準Postgres連線]）
+    * paramDatabase=`PostgreSQL`（依 [techStackPostgres]，經 [apiIntf標準Postgres連線]）
     * paramApiPort=`4180`（暫定，code 段落地校準）
     * paramUsernamePattern=`^[a-z][a-z0-9]{2,15}$`
     * paramPasswordMinLength=`6`
@@ -199,7 +224,7 @@ HOST -->|"🎚️paramDeployBranch=`main`"| API
     * paramSessionTtlDays=`30`（暫定，維護者可調）
   * [etyCfg自訂sysGame組態]
     * paramTechStack=`techStackStaticWeb`
-    * paramDeployTarget=`self-host`（原 `github-pages` 自增量 #309 廢止；舊版不保留，Pages 於 #311 關閉退場）
+    * paramDeployTarget=`self-host`（原 `github-pages` 自增量 #309 廢止；舊版不保留，Pages 已於 #311 關閉退場）
     * paramSiteRoot=`repository-root`
     * paramExperienceQualityGate=`體驗品質雙人工查核（會話語感 QA intTest#64、版型視覺 QA intTest#65）為釋出必要條件；機械守門（lint／selftest）綠 ≠ 可收——機械守門驗「有沒有」、體驗查核驗「好不好」，兩者缺一不得宣稱完成`
     * paramLayoutQualityBar=`版型品質準則：手機直向（390×844 級）與桌機寬視口（1280×800 以上）逐畫面走查——無溢位、裁切、錯位或擠壓；間距遵循 8px 節奏、字級遵循一致型階；觸控目標 ≥44px；文字對比達 WCAG AA；同類元件跨畫面樣式一致（樣式收斂為 design token 與共用類別，禁單點 magic 補丁）；查核清單見 intTest#65`
@@ -341,7 +366,7 @@ WARDROBE -->|"🎚️paramCharacterSilhouetteFilter=`outline+depth-shadow`"| SYS
   * **sysCase#12.1**：[modScene模組]承接[runAct自訂系統渲染角色輪廓]，為 ADV NPC 立繪套用依透明 alpha 輪廓計算的常態描邊與自然陰影；描邊提供深色輪廓辨識，陰影提供角色後方景深，不以大範圍亮色光暈作為常態可讀性來源。
   * **sysCase#12.2**：[modWardrobe模組]承接[runAct自訂系統渲染角色輪廓]，為可玩公主紙娃娃、地圖 token 與頭胸照套用 surface 分級的輪廓規則；其中 ADV 場景之公主立繪 surface 常態陰影須呈簡潔深灰立體投影（以單一方向性接地投影為主、保留貼合輪廓描邊），避免多層柔邊投影疊加被讀為角色光暈或糊化腳底陰影；多層 wardrobe layer 不得因逐層陰影疊加造成過重髒邊，試穿狀態光暈須保留為互動狀態提示而非角色常態陰影。
 * **sysStory#13-承接依資料包集中維護組態**：
-  * **sysCase#13.1**：[modContent模組]承接[setAct自訂維護者依資料包管理組態]，[管理設定工具] 依 [modContent模組] 之內容資料包結構（公主、衣物、地圖與場景、聲音、遊戲規則等資料包）組織兩層導覽——頂層為各內容資料包、包內再依含蓋關係分層（地圖與場景依世界→地區→地點/場景→對話），各既有管理頁（衣物單品與投影、地圖座標、場景對話、角色語音、新局起始等）依其所屬資料包歸入對應節點；新增管理頁沿資料包結構掛入而不需重排頂層導覽，工具僅於本機開發環境提供、寫回經 dev server 白名單，公開 GitHub Pages 不提供此入口。
+  * **sysCase#13.1**：[modContent模組]承接[setAct自訂維護者依資料包管理組態]，[管理設定工具] 依 [modContent模組] 之內容資料包結構（公主、衣物、地圖與場景、聲音、遊戲規則等資料包）組織兩層導覽——頂層為各內容資料包、包內再依含蓋關係分層（地圖與場景依世界→地區→地點/場景→對話），各既有管理頁（衣物單品與投影、地圖座標、場景對話、角色語音、新局起始等）依其所屬資料包歸入對應節點；新增管理頁沿資料包結構掛入而不需重排頂層導覽，工具僅於本機開發環境提供、寫回經 dev server 白名單，公開遊玩端不提供此入口。
 * **sysStory#14-承接角色 roster 精簡與舊存檔升級**：
   * **sysCase#14.1**：[modState模組]承接[runAct自訂玩家選角命名]，`normalizeState` 讀取存檔時，若 `activeCharacterId` 不存在於 `characterRegistry`（如已移除之 `sol`），則 fallback 為 `defaultActiveCharacterId`（`lumi`）；移除後 `characterRegistry` 不含 `sol` 鍵、`playableVoiceById` 不含 `sol`、starter wardrobe 不含 `solStarterHair`，使 roster 精簡完整且無殘留。
 * **sysStory#15-承接管理工具使用體驗**：
@@ -422,7 +447,7 @@ flowchart TB
 
 GAME["💽[sysGame系統]"]
 ADM["😃[etyCfg通用家長維護者]"]
-DB["☁️[techItem資料庫]<br/>PostgreSQL"]
+DB["☁️[techStackPostgres]<br/>PostgreSQL"]
 
 subgraph SYS["💽[sysApi系統]"]
   SERVE["📦[modServe模組]<br/>遊戲殼與內容靜態服務"]
@@ -483,7 +508,7 @@ ADMIN -->|"🎚️paramRegistrationOpenDefault=`true`"| SYS
   * **sysCase#2.2**：[modSave模組]承接[runAct自訂系統還原進度]，登入後回傳該帳號存檔全量 state 與伺服器時間（供遊戲端校正遊玩／休息計時）；回應並搭載該帳號之時長政策（enforced 時長與 locked 旗標，經 [modAdmin模組] 讀帳號覆寫，spec#26）——**政策與存檔資料分離**：伺服器不改寫 `state.playLimit`（玩家原自調值保留於存檔、解除鎖定即回復），鎖定之強制值僅經 `playLimitPolicy` 下發、由遊戲端作為計時執行值套用（[sysGame系統] sysStory#16）；保存（PUT）回應亦搭載最新政策，使 admin 儲存對遊玩中裝置即時生效；無存檔時回空（HTTP 204），由遊戲端建立新局初始進度；伺服器不改寫其餘遊戲語意，正規化一律由遊戲端 `normalizeState` 執行。
   * **sysCase#2.3**：[modSave模組]承接[setAct自訂玩家匯入存檔]，接受遊戲端解析正規化後之整份 state 作為該帳號存檔（Markdown 遷移與本機舊帳號一鍵遷移共用此上傳路徑）；遷移／匯入屬使用者明示之覆蓋操作，遊戲端於承接帳號已有雲端進度時先明確警示覆蓋方向並經確認才上傳。
 * **sysStory#3-承接遊戲殼服務**：
-  * **sysCase#3.1**：[modServe模組]承接[setAct自訂維護者部署網站]，同站服務遊戲殼靜態檔（`index.html`、[game-engine]、[content-package] 等）、線上管理頁靜態子樹（`/admin/`，頁面本身可公開取得、其資料一律經受 admin 保護之管理 API）與 `/api/*` 端點（同源、免 CORS）；靜態服務維持 allowlist 子樹（[tool/]、內部檔案與其餘 repo 樹一律 404）；提供不受保護之 `/healthz` liveness／readiness 路徑；[server.mjs] 之 dev 工具職能（管理設定工具 sidecar 寫回）維持獨立、不併入本服務（內容編修屬「內容歸 git」，職能分界見 spec#26、不線上化）。
+  * **sysCase#3.1**：[modServe模組]承接[setAct自訂維護者部署網站]，同站服務遊戲殼靜態檔（`index.html`、[game-engine]、[content-package] 等）、線上管理頁靜態子樹（`/admin/`，頁面本身可公開取得、其資料一律經受 admin 保護之管理 API）與 `/api/*` 端點（同源、免 CORS）；靜態服務維持 allowlist 子樹（[tool/]、內部檔案與其餘 repo 樹一律 404）；提供不受保護之 `/healthz`（liveness，進程存活）與 `/readyz`（readiness，含資料庫依賴檢查）路徑；[server.mjs] 之 dev 工具職能（管理設定工具 sidecar 寫回）維持獨立、不併入本服務（內容編修屬「內容歸 git」，職能分界見 spec#26、不線上化）。
 * **sysStory#4-承接維護者線上管理**：
   * **sysCase#4.1**：[modAdmin模組]承接[setAct自訂維護者線上管理帳號]，admin 以帳密自 `/admin/` 管理頁登入——憑證驗證沿用 [modAuth模組] 同一機制（bcrypt 比對、統一錯誤訊息、速率限制、opaque session token），僅 `role=admin` 之帳號可通過管理登入；全部管理 API 一律驗「有效 session **且** role=admin」，玩家 session 或未登入一律拒絕（solCase#25.2）；第一個 admin 帳號由部署期程序建立（paramAdminBootstrap：服務啟動時依 `ADMIN_USERNAME`／`ADMIN_PASSWORD` 環境變數**僅於該帳號不存在時建立**——不覆寫既有密碼，admin 於管理頁變更後之密碼以資料庫為準、不被服務重啟回滾；`ADMIN_USERNAME` 撞名既有 `role=player` 帳號時啟動失敗並明確報錯、不就地升權；見＜IV.A＞）。
   * **sysCase#4.2**：[modAdmin模組]承接[setAct自訂維護者線上管理帳號]，提供帳號清單（帳號、role、建立時間、最近登入時間、存檔更新時間、目前可玩／休息狀態摘要——由存檔之遊玩／休息時戳推導；參數化查詢）、重設任一帳號密碼（沿 spec#23 密碼規則驗證、bcrypt 重雜湊、並撤銷該帳號全部既有 session 使舊裝置重新登入——操作者重設**自身**密碼時保留當前管理 session、UI 明示其他裝置將登出）、撤銷任一帳號全部 session（輕量確認後執行）、刪除帳號（連同其存檔與全部 session 於同一交易刪除；admin 不得刪除自身帳號，防自鎖）；管理頁對 admin 自身列僅提供「重設密碼」（時長政策與撤銷 session 不適用自身、刪除禁用）；admin 帳號屬同一帳號體系、亦可於遊戲端登入遊玩；本增量明文不做遊玩時長統計報表與操作稽核日誌。
@@ -493,9 +518,9 @@ ADMIN -->|"🎚️paramRegistrationOpenDefault=`true`"| SYS
 ### (D) 重點組態
 
 * **Env轉K8sSec參數**
-  * [etyCfg自訂sysApi組態]：`DATABASE_URL`、`SESSION_SECRET`（見 ＜II.A (D)＞；本增量以 `.env`／compose 供給，K8s Secret 於 #311 helm 化）。
+  * [etyCfg自訂sysApi組態]：`DATABASE_URL`、`SESSION_SECRET`、`ADMIN_USERNAME`／`ADMIN_PASSWORD`（見 ＜II.A (D)＞；正式部署經 chart 之 K8s Secret 供給，開發期以 `.env`／compose 供給）。
 * **HelmChart參數-chart.yaml**
-  * [etyCfg自訂sysApi組態]：暫無自有 chart（於增量 #311 編制單一 release 之 helm 整包）。
+  * [etyCfg自訂sysApi組態]：無自有 chart——隨方案層單一 release 之 helm 整包部署（chart 見 ＜II.A (D)＞ 與 spec#27，app 容器＝本系統 image）。
 * **HelmChart參數-values.yaml**
   * [etyCfg自訂sysApi組態]
     * paramApiPort=`4180`（暫定）
@@ -622,7 +647,7 @@ erDiagram
   * `PUT /api/admin/accounts/:id/play-limit`：`{locked, playMinutes, restMinutes, playMaxMinutes}` 設定該帳號時長覆寫與鎖定（分鐘值驗 spec#9 合法區間且 `playMinutes ≤ playMaxMinutes`，違者 `422`；`locked:false` 即解除）→ `200`。
   * `GET /api/admin/settings`／`PUT /api/admin/settings`：執行期設定讀寫 → `200 {registrationOpen, defaultPlayMinutes, defaultRestMinutes, defaultPlayMaxMinutes}`（明確欄位 schema；PUT 驗值域含 `playMinutes ≤ playMaxMinutes`、寫入即生效；單 admin、後寫勝）。
   * 通則：一律 `Authorization: Bearer <token>` 且 `role=admin`（未帶或無效 `401`、非 admin `403 admin-only`）；admin 登出沿用 `POST /api/auth/logout`；錯誤體統一 `{error:{code,message}}`；玩家資料以參數化查詢存取、回應不含 passwordHash 等敏感欄位。
-* [datIntf自訂玩家帳號紀錄]：[sysApi系統] 之持久化資料模型（PostgreSQL，依 [techItem資料庫]；欄位型別與約束由 code 段 migration 落地）。帳號一對多 session、一對一存檔；密碼僅存 bcrypt 雜湊；存檔 state 為 JSONB 全量（遊戲端 normalized state 原樣），伺服器不拆欄位、不改寫語意。自增量 #310：帳號帶 `role`（`player`／`admin`）與時長政策欄位（維護者對該帳號之覆寫與鎖定，spec#26；未鎖定時為空值）、`lastLoginAt` 供管理頁清單；執行期設定為單列 SETTINGS（明確欄位 schema，缺列或缺值以程式預設遞補、部署升級零遷移）。
+* [datIntf自訂玩家帳號紀錄]：[sysApi系統] 之持久化資料模型（PostgreSQL，依 [techStackPostgres]；欄位型別與約束由 code 段 migration 落地）。帳號一對多 session、一對一存檔；密碼僅存 bcrypt 雜湊；存檔 state 為 JSONB 全量（遊戲端 normalized state 原樣），伺服器不拆欄位、不改寫語意。自增量 #310：帳號帶 `role`（`player`／`admin`）與時長政策欄位（維護者對該帳號之覆寫與鎖定，spec#26；未鎖定時為空值）、`lastLoginAt` 供管理頁清單；執行期設定為單列 SETTINGS（明確欄位 schema，缺列或缺值以程式預設遞補、部署升級零遷移）。
 
 ```mermaid
 erDiagram
@@ -717,6 +742,7 @@ erDiagram
 | cfgTest#09 | [etyCfg自訂devServer組態] | dev server 監聽位址與端口組態符合契約規範 |
 | cfgTest#10 | [etyCfg自訂sysApi組態] | 帳號規則、密碼雜湊、session 時效與資料庫連線組態符合契約規範 |
 | cfgTest#11 | [etyCfg自訂sysApi組態] | admin 起始帳號（paramAdminBootstrap）與執行期設定程式預設（paramRegistrationOpenDefault、paramDefaultPlayLimit）組態符合契約規範 |
+| cfgTest#12 | [etyCfg通用自架主機平台] | helm chart 組態符合契約規範——`helm lint` 0 錯誤、`helm template` 產出合法 manifest、values 為明確欄位（無萬能 key-value）、chart `version`／`appVersion`／image tag 與根目錄 `VERSION` 同源對齊（防漂移） |
 
 ## D. 方案層級：整合測試(setAct/runAct)
 
@@ -725,9 +751,9 @@ erDiagram
 #### intTest#01-驗證 [setAct自訂維護者部署網站]
 
 * 既有基底：無。
-* 新增項目：[sysApi系統]自架服務（遊戲殼＋API＋資料庫）之本機／區網部署。
+* 新增項目：[sysApi系統]自架服務（遊戲殼＋API＋資料庫）之本機／區網部署（開發期路徑；正式 helm 整包路徑另見 intTest#80）。
 * 步驟：
-  1. 以 docker compose（node 服務＋PostgreSQL）或等效方式啟動自架服務，供給 `DATABASE_URL` 與 `SESSION_SECRET`。
+  1. 以 docker compose（PostgreSQL）＋node 服務（或等效方式）啟動自架服務，供給 `DATABASE_URL` 與 `SESSION_SECRET`。
   2. 以瀏覽器開啟服務 URL。
   3. 請求 `/healthz`。
 * 預期結果：
@@ -1701,6 +1727,38 @@ erDiagram
   3. 逾期／已撤銷之 session 資料列被惰性清理、不無限累積；有效 session 不受影響。
   4. 非法形狀一律 422 invalid-state、不落庫；超大請求體被大小上限拒絕；既有存檔不被破壞。
 
+#### intTest#79-驗證 helm chart 機判與版本鏈防漂移（spec#27）
+
+* 既有基底：無（chart 靜態驗證，不需叢集）。
+* 新增項目：`deploy/helm/` chart 之機器判定守門。
+* 步驟：
+  1. 對 chart 執行 `helm lint`。
+  2. 以預設 values（補齊必填秘密之測試值）執行 `helm template` 並檢視產出 manifest。
+  3. 比對 chart `version`／`appVersion`、values 預設 image tag 與根目錄 `VERSION`。
+  4. 檢查 image 建置內容清單（Dockerfile COPY 範圍）與遊戲服務靜態 allowlist 語意一致（[tool/]、測試與內部檔案不入包）。
+* 預期結果：
+  1. `helm lint` 0 錯誤。
+  2. manifest 含 app Deployment（liveness `/healthz`＋readiness `/readyz` 探針）＋Service（固定 nodePort）、PostgreSQL StatefulSet（單 replica、Recreate 語意、PG major pin）＋PVC（掛 `helm.sh/resource-policy: keep`、名稱無 release 隨機成分）、Secret；未供給必填秘密時安裝失敗並明確報錯（不落不安全預設值）。
+  3. 三處版本同源一致（防漂移守門納入常備測試指令）。
+  4. 包內容邊界一致，無 dev 工具或內部檔案混入。
+
+#### intTest#80-驗證 helm 整包安裝、升級與資料保全（spec#27）
+
+* 既有基底：intTest#79。
+* 新增項目：於本機 Kubernetes 叢集（單節點即足）之真裝驗收。
+* 步驟：
+  1. `helm install`（秘密以 values 檔供給）部署整套，等待就緒後請求 `/healthz` 與 `/readyz`、開啟遊戲殼與 `/admin/`（網址依固定 nodePort）。
+  2. 註冊一個玩家帳號、產生雲端存檔；以 admin 調整一項執行期設定。
+  3. 以新版本 image tag 執行 `helm upgrade`（**不重供秘密**，模擬升版），等待完成。
+  4. 重新登入該玩家帳號與 admin 管理頁。
+  5. 執行 `pg_dump` 備份；刪除一筆測試資料後以 `psql` 還原、驗資料回復。
+  6. `helm uninstall` 後檢視 PVC；重新同名 `helm install`。
+* 預期結果：
+  1. 安裝一鍵完成：`/healthz`／`/readyz` 200、遊戲殼與管理頁均可用、admin 起始帳號可登入；DB 晚就緒時 app 以重試等待、不 CrashLoop 即死。
+  2. 升級後帳號、存檔與執行期設定全數保留（秘密沿用既值、未被重抽），服務所報版本反映新版。
+  3. 備份 dump 經真還原驗證可用（不只檔案存在）。
+  4. uninstall 預設保留 PVC；同名重裝續用後資料仍在（誤刪可復原動線成立）。
+
 ## E. 方案層級：文件程式化測試
 
 #### docProgTest#01-productReadme 承接 [solStory#1-短回合英文練習]
@@ -1752,7 +1810,7 @@ erDiagram
 #### docProgTest#07-productReadme 承接 [solStory#7-部署擴充與移除]
 
 * productReadme 要求：
-  1. 說明以自架伺服器（docker compose 或等效啟動之 node 服務＋PostgreSQL）部署、擴充內容包與移除部署的方式（含 GitHub Pages 舊版不保留、待 #311 關閉之過渡說明），並指向可玩公主 `shared-512x768-v1` rig 與共用 `body`／per-character `head`／wardrobe layer 分層契約；維護者須知道角色 `body`／`head`、wardrobe layer、商品縮圖與場景背景應使用 GPT 產生或手工修圖之童話手繪風格 raster 素材，不可用 SVG、CSS 濾鏡、模糊補版或 renderer 特例代替，新增衣物須繼承類別級 layer bounds，新增或替換場景背景須為完整繪製之 `1024x1024` WebP。
+  1. 說明以自架伺服器（docker compose 或等效啟動之 node 服務＋PostgreSQL）部署、擴充內容包與移除部署的方式（正式路徑為 helm 整包、compose＋npm 為開發期路徑，見 docProgTest#27；GitHub Pages 舊版已關閉退場），並指向可玩公主 `shared-512x768-v1` rig 與共用 `body`／per-character `head`／wardrobe layer 分層契約；維護者須知道角色 `body`／`head`、wardrobe layer、商品縮圖與場景背景應使用 GPT 產生或手工修圖之童話手繪風格 raster 素材，不可用 SVG、CSS 濾鏡、模糊補版或 renderer 特例代替，新增衣物須繼承類別級 layer bounds，新增或替換場景背景須為完整繪製之 `1024x1024` WebP。
 * 通過判定：
   1. 維護者可依 productReadme 完成一次自架部署（服務啟動、`/healthz` 綠、遊戲殼可開）。
   2. 維護者可依 productReadme 判斷新增或替換場景背景時的正式素材門檻。
@@ -1792,7 +1850,7 @@ erDiagram
 * productReadme 要求：
   1. 說明不同場景人物會以各自的聲音說話、玩家公主會以其聲音唸出所選的答案，以及這些語音受既有 Voice 開關控制。
   2. 說明 #109 語音品質規劃：語速基準約 80%、首字清楚度、voice fallback、佇列／重播策略，以及維護者可用診斷紀錄判斷實際採用 voice 與錯誤。
-  3. 說明公開遊玩端不再於設定指定語音、未指定之角色類型一律由系統自動依性別與語言選用並可繼承同性別之指定；角色語音指定改由維護者於 [管理設定工具] 之聲音管理頁籤設定（device-wide、僅本機 dev 環境，公開 GitHub Pages 不提供此入口），以及語音開頭以前置留白改善清楚度。
+  3. 說明公開遊玩端不再於設定指定語音、未指定之角色類型一律由系統自動依性別與語言選用並可繼承同性別之指定；角色語音指定改由維護者於 [管理設定工具] 之聲音管理頁籤設定（device-wide、僅本機 dev 環境，公開遊玩端不提供此入口），以及語音開頭以前置留白改善清楚度。
 * 通過判定：
   1. 讀者可依 productReadme 預期不同角色的聲音差異與公主朗讀作答，並知道如何開關語音。
   2. 維護者可依 productReadme 理解 Web Speech API 限制與本案採用的降級、診斷與 QA 重點。
@@ -1826,14 +1884,14 @@ erDiagram
 #### docProgTest#16-productReadme 承接 [solStory#16-依資料包集中維護組態]
 
 * productReadme 要求：
-  1. 說明維護者可於本機開發環境開啟 [管理設定工具]，其導覽依內容資料包（公主、衣物、地圖與場景、聲音、遊戲規則）組織、地圖與場景再依世界→地區→地點/場景→對話分層，並指出此入口僅本機 dev 環境提供、公開 GitHub Pages 不出現。
+  1. 說明維護者可於本機開發環境開啟 [管理設定工具]，其導覽依內容資料包（公主、衣物、地圖與場景、聲音、遊戲規則）組織、地圖與場景再依世界→地區→地點/場景→對話分層，並指出此入口僅本機 dev 環境提供、公開遊玩端不出現。
 * 通過判定：
   1. 維護者可依 productReadme 依資料包結構找到並進入欲維護之組態管理頁。
 
 #### docProgTest#17-productReadme 承接 [solStory#17-衣物對位即時調整]
 
 * productReadme 要求：
-  1. 說明家庭使用者可於公主衣櫃每件已擁有單品旁按「調整」按鈕，以 overlay 利用五組滑桿（中心 X、中心 Y、寬、高、旋轉）即時預覽並調整對位，確認後儲存；說明此功能需 `node server.mjs` 在執行（家庭 LAN），公開 GitHub Pages 上可預覽但儲存會失敗並顯示提示。
+  1. 說明家庭使用者可於公主衣櫃每件已擁有單品旁按「調整」按鈕，以 overlay 利用五組滑桿（中心 X、中心 Y、寬、高、旋轉）即時預覽並調整對位，確認後儲存；說明此功能需 `node server.mjs` 在執行（家庭 LAN），無 dev server 之正式遊玩端可預覽但儲存會失敗並顯示提示。
   2. 說明 overlay 不干擾遊戲流程，取消可回到原位；本功能不提供四角任意變形。
 * 通過判定：
   1. 家庭使用者可依 productReadme 開啟 overlay 並完成一次衣物對位調整儲存。
@@ -1918,6 +1976,17 @@ erDiagram
   1. 家長可依 productReadme 完成「限制孩子每次遊玩時長」與「關閉陌生註冊」兩項管控。
   2. 讀者可依 productReadme 分辨線上管理與內容編修工具之用途、不誤用。
 
+#### docProgTest#27-productReadme 承接 [solStory#27-整包發行與自架安裝升級]
+
+* productReadme 要求：
+  1. 說明正式自架路徑為 helm 整包——前置需求完整列明（Kubernetes 環境含預設 StorageClass、helm、kubectl），發行物之具體取得方式（chart 來源與公開 image），安裝、升級、移除各自的指令，與必要秘密之供給方式（values 檔、不以 `--set` 內聯明文；隨機字串附生成示例）。
+  2. 說明安裝後怎麼確認就緒（`kubectl get pods`）與服務網址是什麼（固定 nodePort／NOTES.txt），不留「開服務網址」之無受詞指示。
+  3. 說明資料保全行為：升級不失資料（不需重供秘密）、uninstall 預設保留資料卷，`pg_dump` 備份與 `psql` 還原**兩向具體指令**（含怎麼找資料庫 pod）、admin 忘記密碼後門之 helm 版指令，以及既有 compose 部署遷移至 helm 之資料搬移程序。
+  4. 說明開發期路徑（compose＋npm）之定位（開發與輕量試用、非正式散佈動線），與原 GitHub Pages 公開站已關閉之事實。
+* 通過判定：
+  1. 具 Kubernetes 環境之維護者可依 productReadme 不看程式碼完成安裝、找到網址、升級、備份與還原。
+  2. 讀者可分辨正式路徑與開發路徑、不把 compose 動線誤當正式散佈。
+
 ## F. 方案層級：文件端對端測試
 
 #### e2eTest#01-依 productReadme 驗測主循環
@@ -1943,7 +2012,7 @@ erDiagram
 
 * 依據：docProgTest#07、docProgTest#06、docProgTest#09、[solCase#7.1]、[solCase#9.2]、[solCase#6.1]、[solCase#6.2]。
 * 步驟：
-  1. 依 productReadme 啟動自架服務（node 服務＋PostgreSQL）。
+  1. 依 productReadme 啟動自架服務（開發期路徑：node 服務＋PostgreSQL；helm 正式路徑之部署驗測另見 e2eTest#27）。
   2. 以全新瀏覽器開啟服務 URL，註冊一個新帳號，完成選角、命名與識別色設定。
 * 預期結果：
   1. 首次進入顯示登入畫面，註冊成功即自動登入並進入選角命名畫面，命名與改色後進入遊戲且 ES module 無 404。
@@ -2208,20 +2277,33 @@ erDiagram
   2. 孩子端時長欄位唯讀且標示由維護者管理，計時依強制值執行、休息鎖定正常。
   3. 登入畫面無註冊入口並顯示友善說明；既有帳號登入不受影響。
 
+#### e2eTest#27-依 productReadme 驗測 helm 整包安裝升級與資料保全（spec#27）
+
+* 依據：docProgTest#27、[solCase#27.1]、[solCase#27.2]、[solCase#27.3]。
+* 步驟：
+  1. 於本機 Kubernetes 叢集依 productReadme 以 `helm install` 完成整包部署（秘密依手冊以 values 檔供給），依手冊確認就緒並取得服務網址。
+  2. 開啟遊戲殼註冊帳號、遊玩並雲端保存；以 admin 登入 `/admin/` 調整一項執行期設定。
+  3. 依 productReadme 以 `helm upgrade` 升級版本（不重供秘密）；升級後重新登入玩家與 admin。
+  4. 依 productReadme 執行資料庫備份與**還原**（兩向都實走）；`helm uninstall` 後重裝、驗資料續用。
+* 預期結果：
+  1. 依手冊即可完成安裝並找到網址：就緒判定與網址取得均照手冊步驟可達（不需查閱程式碼）、遊戲與管理頁可用。
+  2. 升級後帳號、存檔與設定全數保留，About／buildInfo 反映新版本。
+  3. 備份 dump 經還原實測可用；uninstall 預設保留資料卷、重裝續用資料仍在。
+
 # IV. 部署成效
 
 ## A. 部署組態
 
 * **開發 REPO**：`git remote origin`
-* **產品 REPO**：`待定`（自增量 #309 起以自架伺服器整包為交付形態；正式對外散佈通道──image＋helm chart──於增量 #311 接軌發佈列車）
+* **產品 REPO**：container image `ghcr.io/twstellerwhale-ocean2/solkidgalgame1`＋helm chart `solkidgalgame`（chart 源於本 repo `deploy/helm/`；registry push 與 GitHub Release 由發佈列車 trainFlow 執行，本 repo 增量只交付可發行之 build 產物）
 * **productReadme 來源**：`README.md`（本 repo 根目錄產品手冊；尚未採 buildStage 目錄慣例）
-* **部署方式**：自架伺服器整包──[sysApi系統]（依 [techStackNodeSvr]：Node.js LTS＋TypeScript）同站服務遊戲殼靜態檔（[techStackStaticWeb] 產物，無打包）與 `/api/*` 帳號存檔端點；資料庫 PostgreSQL（依 [techItem資料庫]，經 [apiIntf標準Postgres連線]）。本增量（#309）驗收環境為本機／區網：docker compose（node 服務＋PostgreSQL）或等效啟動；正式 helm 整包（單一 release）於增量 #311 編制。**傳輸層（明文接受之過渡風險）**：本增量之區網部署為 HTTP（架構圖之 [comIntf通用HTTPS連線] 為目標形態）——密碼與 session token（含 admin 憑證與管理 session，#310）於家庭內網明文傳輸，威脅模型評估為可接受、惟明文提醒**不得將服務 port 轉發至公網**（README 維護者段記載）；TLS 終結（reverse proxy／K8s gateway）於增量 #311 隨正式整包交代。**資料保全**：資料庫備份屬維護者例行作業（`pg_dump` 級，指令由 code 段校準並記入 README）；玩家層另有 Markdown 匯出備份。**密碼重設**：玩家忘記密碼時由維護者於 `/admin/` 線上管理頁重設（spec#25，自增量 #310）；伺服器端維護指令保留為 admin 自身忘記密碼之離線後門。**admin 起始帳號**：以 `ADMIN_USERNAME`／`ADMIN_PASSWORD` 環境變數於服務啟動時建立——僅於帳號不存在時；admin 於管理頁改過的密碼不被服務重啟回滾，撞名既有玩家帳號則啟動失敗報錯（paramAdminBootstrap）。**GitHub Pages（舊公開站）**：USR 裁決不保留舊版——Pages 設定未變（仍指 main），自本增量起其內容需後端、公開網址不再可玩；Pages 之正式關閉退場於增量 #311 辦理。
-* **建置指令**：遊戲殼無打包（no-op，直接收集靜態檔）；[sysApi系統] `cd sysApi && npm ci && npm run build`（TypeScript → `dist/`；正式 image `docker build` 於 #311 定案）。本機預覽：自架服務啟動後直接開服務 URL（預設 `http://0.0.0.0:4180/`）；`node server.mjs` 維持 dev 工具用途（管理設定工具寫回，預設 `http://0.0.0.0:4174/`，可設 `HOST` 環境變數覆寫監聽位址；啟動 log 顯示 LAN IP 供區網存取）。
-* **本機開發工具入口**：本機開發環境（前端偵測 `location.hostname` 為 `127.0.0.1`／`localhost`／`[::1]`）下，起始選單之選角對話框 `Start` 鈕下方顯示［衣物調整工具］dev 入口，點擊以相對路徑導向 `tool/wardrobe-tuner.html`；以前端環境偵測為閘門，正式發佈站（GitHub Pages 公開網域）一律不顯示此入口。屬 dev-only 作者工具便利性、非玩家功能（不進產品手冊主流程與 e2e），其完整套用／管理功能仍需 `node server.mjs`。
-* **測試指令**：[sysApi系統] 單元測試 `cd sysApi && npm test`（vitest，涵蓋率門檻 ≥80%）、整合測試 `npm run integration`（對 compose 之真 PostgreSQL＋運行中服務，涵蓋註冊／登入／session／存檔樂觀鎖／速率限制／密碼重設 CLI，自 #310 併入 admin 鑑權與帳號管理、執行期設定生效與權限負向案例）與依賴安全 `npm audit`（0 已知漏洞或列名豁免）；方案層真堆疊端對端 `node tests/e2e-account-cloud.mjs`（註冊→選角→遊玩→雲端保存→跨裝置還原→免密續玩，含證據截圖）與 `node tests/e2e-admin-console.mjs`（自 #310：admin 登入→線上重設密碼→時長鎖定→孩子端唯讀→註冊開關→刪除帳號→行動視口，22 檢核含證據截圖）；整合與 e2e 測試預設使用同容器之 `luminara_test` 專用測試資料庫（自 #310，不污染營運庫 `luminara`）；型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=auth`（注入 fake fetch 驗雲端帳號／存檔路徑）／`?selftest=data-audit`／`?selftest=save-load`／`?selftest=accounts`／`?selftest=playtimer`／`?selftest=profile-color`／`?selftest=map-avatar`／`?selftest=character-silhouette`／`?selftest=monkey`／`?selftest=chinese-reward`／`?selftest=scene-nav`／`?selftest=dev-tools`／`?selftest=visual-qa&surface=<id>`；場景背景資產 visual QA 需輸出全場景 contact sheet 與手機直向／桌機截圖；圖像資產標準尺寸與檔重預算之檔案系統 gate `node scripts/assetLint.mjs`（掃描 content-base／content-package 全部 shipped 圖像檔、不只 registry 引用，對照 paramAssetStandards），瀏覽器 `?selftest=data-audit` 另對 registry 引用資產做 runtime 尺寸／檔重檢查；版號投影防漂移 gate `node scripts/genVersion.mjs --check`（斷言 `game-engine/build/version.js`／`CHANGELOG.md` 與根目錄 `VERSION` SSOT 一致）；結構守門 `node scripts/structureLint.mjs`（JS／CSS 單檔行數上限、main.js 組裝上限與 CSS 同檔同 media 重複規則塊歸零，對照 paramStructureQualityBar，lint 內具名豁免清單除外）；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`；**體驗品質雙人工查核（paramExperienceQualityGate，機械守門綠 ≠ 可收）**——會話語感 QA 逐題查核紀錄（intTest#64，落 `docs/qa/`）與版型視覺 QA 雙視口逐畫面走查紀錄（intTest#65，落 `docs/qa/`）齊備且全數通過、並納入 test-summary，方可宣稱完成。
-* **部署指令**（code 段落地實況）：資料庫 `docker compose -f deploy/compose.yaml up -d`（PostgreSQL 16，named volume `luminara-db` 持久化，port `5433`）；服務 `cd sysApi && npm ci && npm run build && npm start`（環境變數 `DATABASE_URL`／`SESSION_SECRET`／`ADMIN_USERNAME`／`ADMIN_PASSWORD` 經 `sysApi/.env`，樣板見 `sysApi/.env.example`）；線上管理頁 `http://<主機>:4180/admin/`（admin 帳密登入；玩家忘記密碼於此重設）；admin 自身忘記密碼之離線後門 `cd sysApi && npm run reset-password -- <username> <new-password>`；資料庫備份 `docker exec deploy-db-1 pg_dump -U luminara luminara > backup.sql`。正式 helm 整包部署指令於增量 #311 編制。GitHub Pages 舊版不保留（USR 裁決）——無凍結作業，Pages 之關閉退場於增量 #311 辦理。
+* **部署方式**：**正式路徑＝helm 整包（單一 release，spec#27，自增量 #311）**——單一 app container image（[sysApi系統] 依 [techStackNodeSvr]：Node.js LTS＋TypeScript，同站服務遊戲殼靜態檔（[techStackStaticWeb] 產物，無打包）、`/admin/` 線上管理頁與 `/api/*` 端點）＋PostgreSQL 容器（依 [techStackPostgres]，經 [apiIntf標準Postgres連線]；資料落 PVC 持久化），以 `deploy/helm/` chart（[comIntf通用K8sHelm部署格式]）部署於維護者自有 Kubernetes（家庭主機單節點即足）。**開發期路徑**＝docker compose（PostgreSQL）＋node 服務本機執行（沿 #309/#310 動線，供開發與輕量試用、非正式散佈動線）。**傳輸層（明文接受之風險定位）**：家庭內網部署為 HTTP（架構圖之 [comIntf通用HTTPS連線] 為目標形態）——密碼與 session token（含 admin 憑證）於內網明文傳輸，威脅模型評估為可接受、惟明文提醒**不得將服務 port 轉發至公網**（README 維護者段記載）；chart 提供選配 Ingress／TLS 欄位（維護者具憑證與網域時可啟用），未啟用即沿內網定位。**資料保全**：正式部署之資料庫落 PVC——升級不失資料、`helm uninstall` 預設保留；資料庫備份屬維護者例行作業（`pg_dump` 級，指令記入 README）；玩家層另有 Markdown 匯出備份。**密碼重設**：玩家忘記密碼時由維護者於 `/admin/` 線上管理頁重設（spec#25，自增量 #310）；伺服器端維護指令保留為 admin 自身忘記密碼之離線後門（容器內以 `kubectl exec` 執行、開發期以 npm script 執行）。**admin 起始帳號**：以 `ADMIN_USERNAME`／`ADMIN_PASSWORD`（正式部署經 chart Secret、開發期經環境變數）於服務啟動時建立——僅於帳號不存在時；admin 於管理頁改過的密碼不被服務重啟回滾，撞名既有玩家帳號則啟動失敗報錯（paramAdminBootstrap）。**GitHub Pages（舊公開站）**：USR 裁決不保留舊版——Pages 站台已於增量 #311 正式關閉退場（README 已移除公開網址、改自架指引），對外遊玩一律走自架部署。
+* **建置指令**：遊戲殼無打包（no-op，直接收集靜態檔）；[sysApi系統] `cd sysApi && npm ci && npm run build`（TypeScript → `dist/`）；正式 image 以根目錄 Dockerfile 多階段建置 `docker build -t ghcr.io/twstellerwhale-ocean2/solkidgalgame1:<VERSION> .`（builder 段 npm ci＋tsc、runtime 段僅帶 dist＋靜態內容，非 root 使用者；COPY 範圍對齊靜態 allowlist 語意，[tool/]、測試與內部檔案不入包）；chart 打包 `helm package deploy/helm`（chart `version`／`appVersion` 與 `VERSION` 同源，防漂移守門見＜測試指令＞；指令細節 code 段校準）。本機預覽：自架服務啟動後直接開服務 URL（預設 `http://0.0.0.0:4180/`）；`node server.mjs` 維持 dev 工具用途（管理設定工具寫回，預設 `http://0.0.0.0:4174/`，可設 `HOST` 環境變數覆寫監聽位址；啟動 log 顯示 LAN IP 供區網存取）。
+* **本機開發工具入口**：本機開發環境（前端偵測 `location.hostname` 為 `127.0.0.1`／`localhost`／`[::1]`）下，起始選單之選角對話框 `Start` 鈕下方顯示［衣物調整工具］dev 入口，點擊以相對路徑導向 `tool/wardrobe-tuner.html`；以前端環境偵測為閘門，正式部署站（非 localhost 網域）一律不顯示此入口。屬 dev-only 作者工具便利性、非玩家功能（不進產品手冊主流程與 e2e），其完整套用／管理功能仍需 `node server.mjs`。
+* **測試指令**：[sysApi系統] 單元測試 `cd sysApi && npm test`（vitest，涵蓋率門檻 ≥80%）、整合測試 `npm run integration`（對 compose 之真 PostgreSQL＋運行中服務，涵蓋註冊／登入／session／存檔樂觀鎖／速率限制／密碼重設 CLI，自 #310 併入 admin 鑑權與帳號管理、執行期設定生效與權限負向案例）與依賴安全 `npm audit`（0 已知漏洞或列名豁免）；方案層真堆疊端對端 `node tests/e2e-account-cloud.mjs`（註冊→選角→遊玩→雲端保存→跨裝置還原→免密續玩，含證據截圖）與 `node tests/e2e-admin-console.mjs`（自 #310：admin 登入→線上重設密碼→時長鎖定→孩子端唯讀→註冊開關→刪除帳號→行動視口，22 檢核含證據截圖）；整合與 e2e 測試預設使用同容器之 `luminara_test` 專用測試資料庫（自 #310，不污染營運庫 `luminara`）；型別契約檢查 `npx --yes -p typescript tsc --noEmit --project jsconfig.json`；瀏覽器 selftest `?selftest=auth`（注入 fake fetch 驗雲端帳號／存檔路徑）／`?selftest=data-audit`／`?selftest=save-load`／`?selftest=accounts`／`?selftest=playtimer`／`?selftest=profile-color`／`?selftest=map-avatar`／`?selftest=character-silhouette`／`?selftest=monkey`／`?selftest=chinese-reward`／`?selftest=scene-nav`／`?selftest=dev-tools`／`?selftest=visual-qa&surface=<id>`；場景背景資產 visual QA 需輸出全場景 contact sheet 與手機直向／桌機截圖；圖像資產標準尺寸與檔重預算之檔案系統 gate `node scripts/assetLint.mjs`（掃描 content-base／content-package 全部 shipped 圖像檔、不只 registry 引用，對照 paramAssetStandards），瀏覽器 `?selftest=data-audit` 另對 registry 引用資產做 runtime 尺寸／檔重檢查；版號投影防漂移 gate `node scripts/genVersion.mjs --check`（斷言 `game-engine/build/version.js`／`CHANGELOG.md` 與根目錄 `VERSION` SSOT 一致）；helm 整包守門（自 #311）`node scripts/chartLint.mjs`（helm lint／template 資源斷言含 keep 註記與探針／版本鏈對齊 `VERSION`／必填秘密缺席負向／Dockerfile COPY 對齊 allowlist SSOT；cfgTest#12／intTest#79）與本機 Kubernetes 叢集真裝 e2e `node tests/e2e-helm.mjs`（install→遊玩管理 smoke→upgrade 資料保全→pg_dump 備份·毀損·還原實走→uninstall keep→同名重裝續用，22 檢核含 README 證據截圖；intTest#80／e2eTest#27）；結構守門 `node scripts/structureLint.mjs`（JS／CSS 單檔行數上限、main.js 組裝上限與 CSS 同檔同 media 重複規則塊歸零，對照 paramStructureQualityBar，lint 內具名豁免清單除外）；結構檢查 `pwsh scripts/docLint.ps1 -Path docs/design.md` 與 `pwsh scripts/repoLint.ps1 -Path .`；**體驗品質雙人工查核（paramExperienceQualityGate，機械守門綠 ≠ 可收）**——會話語感 QA 逐題查核紀錄（intTest#64，落 `docs/qa/`）與版型視覺 QA 雙視口逐畫面走查紀錄（intTest#65，落 `docs/qa/`）齊備且全數通過、並納入 test-summary，方可宣稱完成。
+* **部署指令**（code 段落地實況）：**正式路徑（helm）**——安裝 `helm install luminara <chart 來源> -f secrets.yaml`（chart 來源：正式＝發佈列車發行之 OCI chart／Release `.tgz`，pre-release 驗測＝本 repo `deploy/helm`；秘密以 values 檔供給、用後即刪，**不以 `--set` 內聯明文**，chart 不設不安全預設；等待就緒 `kubectl get pods` 全 Ready、readiness `/readyz` 綠即完成，NOTES.txt 印出遊玩網址與 `/admin/` 位置）；升級 `helm upgrade luminara <chart 來源>`（**不重供秘密即沿用既值**，或指定新 image tag）；移除 `helm uninstall luminara`（PVC 掛 keep 註記預設保留、同名重裝續用）；備份 `kubectl exec $(kubectl get pods -l <db 標籤> -o name) -- pg_dump -U luminara luminara > backup.sql`、還原 `kubectl exec -i <db-pod> -- psql -U luminara luminara < backup.sql`（自 compose 部署遷移至 helm 亦走此 dump→restore 程序）；admin 忘記密碼之離線後門於 helm 部署為 `kubectl exec <app-pod> -- npm run reset-password -- <username> <new-password>`（實際 release 名、標籤與參數 code 段校準並記入 README）。`helm rollback` 屬異常處置而非常規動線——零遷移 schema 慣例（欄位演進採加法）使舊版 image 可讀新 schema、rollback 不失資料，但已寫入之新欄位語意由舊版忽略。image 架構本增量僅建 `linux/amd64`（多 arch 列後續真需求）。**開發期路徑（compose＋npm）**——資料庫 `docker compose -f deploy/compose.yaml up -d`（PostgreSQL 16，named volume `luminara-db` 持久化，port `5433`）；服務 `cd sysApi && npm ci && npm run build && npm start`（環境變數 `DATABASE_URL`／`SESSION_SECRET`／`ADMIN_USERNAME`／`ADMIN_PASSWORD` 經 `sysApi/.env`，樣板見 `sysApi/.env.example`）；備份 `docker exec deploy-db-1 pg_dump -U luminara luminara > backup.sql`。線上管理頁 `http://<主機>:<port>/admin/`（admin 帳密登入；玩家忘記密碼於此重設）；admin 自身忘記密碼之離線後門 `npm run reset-password -- <username> <new-password>`（正式部署於容器內 `kubectl exec` 執行）。GitHub Pages 舊版不保留（USR 裁決）——站台已於 #311 正式關閉退場（關閉動作於本增量 merge 收尾執行、結果留證於 Issue）。
 * **版號與發佈（單一 VERSION SSOT、版號釘選於 merge、release 解耦）**：
-  * **單一 SSOT＝根目錄 `VERSION`**：版號之唯一事實來源為根目錄 `VERSION`（**結構化 JSON**，持有 `version`（SemVer，現行 `0.1.0`）＋`date`＋`copyright`＋`history[]`，後者即版本沿革/about；`history[0]` 須等於頂層 `version`／`date`）。其餘所有版號面皆自 `VERSION` **投影、不另存第二份**：`game-engine/build/version.js`（遊戲 runtime）與 `CHANGELOG.md` 由 `node scripts/genVersion.mjs` 生成，git tag 為 `v{version}`，遊戲 About 與 buildInfo 由 `version.js` 導出。
+  * **單一 SSOT＝根目錄 `VERSION`**：版號之唯一事實來源為根目錄 `VERSION`（**結構化 JSON**，持有 `version`（SemVer，以 `VERSION` 檔現值為準）＋`date`＋`copyright`＋`history[]`，後者即版本沿革/about；`history[0]` 須等於頂層 `version`／`date`）。其餘所有版號面皆自 `VERSION` **投影、不另存第二份**：`game-engine/build/version.js`（遊戲 runtime）與 `CHANGELOG.md` 由 `node scripts/genVersion.mjs` 生成，git tag 為 `v{version}`，遊戲 About 與 buildInfo 由 `version.js` 導出。
   * **版號釘選於 merge**：每張 PR 於 merge 當下，嚴格依該 PR 的 Conventional Commits 變更型別 bump `VERSION` 之 `version`（`feat→minor`／`fix→patch`／breaking→`major`）並補一筆 `history`，維持 1 PR＝1 增量＝1 版號；「版本時間」即該 PR 入庫之 `date`，不另由日曆或 release 決定。
   * **buildInfo（與版號獨立）**：buildInfo ＝ `VERSION` 之 `version`＋`date` ＋ build 當下由 `git` 取得之 commit SHA（回答「線上這顆是哪個 commit」）；**SHA 不入 `VERSION`**（commit 後才產生、寫入會循環依賴），故僅 `version`／`date` 投影進 `version.js`，SHA 由部署點之 git tag／commit 追溯。
   * **CHANGELOG／About 皆為 VERSION 投影**：`CHANGELOG.md` 投影 `history` 全量（含 internal）；[datIntf自訂版本沿革目錄] 之 `versionHistory`（遊戲 About）只投影 `history` 中 `playerVisible:true` 之 feat／fix。dev-only 類改動（如本機開發工具入口、版號工具本身）標 `playerVisible:false`、歸 internal——進 `CHANGELOG.md` 但不進玩家 About 沿革。當前版號（版本卡）為 SemVer、可能為 internal release，故不必等於玩家沿革首筆（與舊「首筆＝當前」雙軌規則脫鉤）。
@@ -2249,7 +2331,7 @@ erDiagram
   * 評估方式：觀察選角命名與識別色設定完成率、改名後稱呼一致性、三位公主辨識度，以及識別色（初始化隨機、粉彩與調色器自訂）與背景花紋設定情形與舊存檔相容。
   * 觀察項目：選角完成率、profileColor 設定成功率、初始 profileColor 與 backgroundPattern 合法集合命中率、初始主題重整後不重抽成功率、調色器自訂色保存（不被重置）成功率、背景花紋設定與套用率、粉彩色盤各色辨識度、稱呼動態化正確率、Lumi／Yumi／Rosa 辨識正確率、舊 `lumi`／`yumi`／`rosa` 存檔（含既有識別色）載入成功率、帶 `sol` id 之舊存檔升級為 `lumi` 正確率。
 * **spec#7-可以自架伺服器形態部署並模組化擴充內容**
-  * 評估方式：以全新環境依 productReadme 完成自架部署（服務啟動、`/healthz` 綠、遊戲殼可開）與內容擴充，並驗證可玩公主、衣物 layer 與場景背景可獨立擴充，且角色、wardrobe 與 sceneArt 素材擴充流程維持 raster 內容包交付、類別級對位組態與 `1024x1024` 場景背景契約可重用；並以資產 lint 驗證各類圖像資產之像素尺寸與檔重預算合規、過大圖檔已收斂，使靜態遊戲殼載入不被過大圖檔拖慢；另確認 GitHub Pages 舊公開站已明文不保留（關閉退場於 #311）。
+  * 評估方式：以全新環境依 productReadme 完成自架部署（服務啟動、`/healthz` 綠、遊戲殼可開）與內容擴充，並驗證可玩公主、衣物 layer 與場景背景可獨立擴充，且角色、wardrobe 與 sceneArt 素材擴充流程維持 raster 內容包交付、類別級對位組態與 `1024x1024` 場景背景契約可重用；並以資產 lint 驗證各類圖像資產之像素尺寸與檔重預算合規、過大圖檔已收斂，使靜態遊戲殼載入不被過大圖檔拖慢；另確認 GitHub Pages 舊公開站已正式關閉退場（#311）、公開通道無殘留。
   * 觀察項目：自架部署成功率、新增內容包後既有功能未回歸、可玩公主新增／替換成功率、新增 wardrobe item 繼承類別級 layer bounds 成功率、同一衣物 layer 跨角色對位成功率、角色與 wardrobe 素材 raster 交付率、場景背景 raster 交付率、場景背景完整繪製通過率、SVG／濾鏡／模糊補版／renderer 特例替代檢出率、資產標準尺寸合規率、資產檔重預算合規率、過大圖檔（超預算）檢出率、現存超標資產重壓縮完成率、地區地圖與場景背景載入時間、wardrobe 單品單一素材（`image`＝`layers[0].src`、無分離縮圖殘留）合規率、wardrobe `512×512` 長邊貼滿合規率、影像模型生成素材留痕（metadata）完整率、衣物資源包為單位與每地區一家衣物商店收斂後既有存檔（已購 itemId）載入相容率、被合併商店殘留引用（storeId／NPC／場景／題庫／地圖節點）清除率。
 * **spec#8-可用伺服器帳號分離不同玩家進度**
   * 評估方式：以多個伺服器帳號分別登入遊玩後比對各自進度、識別色、最近遊玩時間與休息狀態是否互不混用，並觀察是否能於遊戲內返回初始選單切換帳號（點卡輸入密碼）。
@@ -2268,18 +2350,18 @@ erDiagram
   * 觀察項目：角色輪廓清楚度、複雜背景下人物外框辨識通過率、常態大範圍糊化光暈檢出率、試穿狀態光暈正確出現與移除率、多層 wardrobe layer 陰影過重檢出率、手機直向與桌機視口角色輪廓 QA 通過率。
 * **spec#13-可由維護者依內容資料包結構維護與擴充各項組態**
   * 評估方式：於本機開發環境開啟 [管理設定工具]，檢視頂層導覽是否依內容資料包組織、各既有管理頁是否歸入所屬資料包節點且編輯寫回不退化，並確認地圖與場景依世界→地區→地點/場景→對話分層、公開遊玩端不出現此入口。
-  * 觀察項目：頂層導覽節點對齊內容資料包之正確率、各既有管理頁歸入正確資料包節點之正確率、地圖與場景包內分層正確率、既有各管理頁編輯與寫回未退化率、hash 深連結相容率、公開 GitHub Pages 無此維護者入口之合格率。
+  * 觀察項目：頂層導覽節點對齊內容資料包之正確率、各既有管理頁歸入正確資料包節點之正確率、地圖與場景包內分層正確率、既有各管理頁編輯與寫回未退化率、hash 深連結相容率、公開遊玩端無此維護者入口之合格率。
 * **spec#14-公主衣櫃可開啟單品 overlay 即時調整對位**
   * 評估方式：以家庭 LAN 環境（`node server.mjs` 在執行）實際穿上一件衣物後點擊「調整」，拖動五組滑桿並確認預覽即時更新，儲存後脫下再穿上確認新對位已反映，不需整頁重整；並以 spy 確認儲存路徑 POST `/tool/apply-wardrobe` 與 itemMap 動態更新。
   * 觀察項目：「調整」按鈕出現於衣櫃 mode 正確率（商店與退款 mode 應為 0）、overlay 開啟不破壞遊戲 DOM 正確率、五組滑桿即時預覽更新正確率（無 server 呼叫）、邊界換算合法率（left < right、top < bottom、不超出 canvas）、儲存 POST payload 格式正確率、itemMap 動態更新生效率（無整頁重整）、脫下再穿後新對位反映正確率、取消後 itemMap 未被改動正確率、overlay 取消/關閉後遊戲回復原位正確率。
 * **spec#15-overlay 調整不中斷遊戲流程且不引入四角變形**
-  * 評估方式：確認 overlay 使用獨立 `<dialog>` 元素、不嵌入既有遊戲表單 DOM、不共享 `[data-doll]` 選取器；模擬 POST 失敗確認不 crash 且顯示提示；確認無 warp/corners 四角任意變形相關 UI 或後端路徑；於公開 GitHub Pages 環境（無 server）確認 overlay 可開啟並預覽，儲存失敗時顯示明確提示、遊戲不中斷。
+  * 評估方式：確認 overlay 使用獨立 `<dialog>` 元素、不嵌入既有遊戲表單 DOM、不共享 `[data-doll]` 選取器；模擬 POST 失敗確認不 crash 且顯示提示；確認無 warp/corners 四角任意變形相關 UI 或後端路徑；於無 dev server 之正式遊玩端環境確認 overlay 可開啟並預覽，儲存失敗時顯示明確提示、遊戲不中斷。
   * 觀察項目：overlay 使用獨立 `<dialog>` 且不污染遊戲表單 DOM 之合格率、無 warp/corners UI 及後端路徑之確認率、POST 失敗時明確提示且不 crash 之通過率、公開 Pages 無 server 環境下預覽可用率、取消操作無損遊戲狀態之正確率。
 * **spec#16-可由維護者在瀏覽器端調整衣物旋轉角度並儲存**
   * 評估方式：於 [wardrobe-tuner] 為任一衣物以旋轉滑桿調整並儲存，確認 sidecar `rotation` 欄位寫回正確值，且遊戲引擎渲染後 layer 以正確角度呈現；另確認缺省（無 rotation 欄位）舊 sidecar 正常渲染不出現 NaN 或旋轉失效。
   * 觀察項目：旋轉滑桿可用範圍（-180°～180°）正確性、即時預覽更新精準度、儲存後 sidecar 值與遊戲渲染吻合度、缺省 rotation=0 後向相容率。
 * **spec#17-可從區網任何家庭裝置存取 wardrobe-tuner**
-  * 評估方式：啟動 `node server.mjs`，以區網內另一裝置（手機）使用啟動 log 顯示之 LAN IP 存取工具頁，確認可正常開啟並儲存旋轉設定；另確認正式靜態部署（GitHub Pages）無此路徑暴露。
+  * 評估方式：啟動 `node server.mjs`，以區網內另一裝置（手機）使用啟動 log 顯示之 LAN IP 存取工具頁，確認可正常開啟並儲存旋轉設定；另確認正式部署（自架服務 allowlist）無此路徑暴露。
   * 觀察項目：server 啟動 log 正確顯示非迴環 LAN IP 之合格率、區網裝置連線工具頁成功率、儲存成功（POST 200）率、靜態部署不受影響之合格率。
 * **spec#18-調整儲存後維持原環境不跳轉**
   * 評估方式：在商店模式（advMode=`shop`）對已試穿商品點擊「Adjust」並儲存，確認面板仍停留於商店逛店視圖、onBack 仍指向 backToStoreScene；同樣於衣櫃模式（advMode=`wardrobe`）確認儲存後維持衣櫃視圖。
@@ -2308,3 +2390,6 @@ erDiagram
 * **spec#26-可由維護者線上管理執行期遊戲設定**
   * 評估方式：調整各執行期設定後不重啟服務直接於遊戲端驗證生效（新帳號預設時長、個別帳號鎖定、註冊開關）；重啟服務與資料庫缺列情境驗證持久化與程式預設遞補；並確認內容編修職能仍在 dev 工具、未混入線上管理（intTest#76、intTest#77、e2eTest#26）。
   * 觀察項目：設定儲存後即時生效率（不需重啟，應 100%）、新帳號預設時長套用正確率、鎖定帳號時長強制值與唯讀呈現正確率（跨裝置一致）、解除鎖定回復自調率、註冊關閉時 API 拒絕率與登入畫面入口隱藏率（應 100%）、設定重啟後持久率、DB 缺值程式預設遞補正確率、非法值拒絕率（應 100%）、線上管理誤含內容編修功能檢出率（應 0%）。
+* **spec#27-可取得版本化整包發行物並於自架環境安裝升級與保全資料**
+  * 評估方式：以全新 Kubernetes 環境依 productReadme 完成 `helm install`→遊玩→`helm upgrade`→驗資料→備份→`helm uninstall`→重裝續用一輪（intTest#79／#80、e2eTest#27）；並以機判守門驗 chart 品質與版本鏈一致。
+  * 觀察項目：依手冊安裝成功率（不查程式碼）、安裝後 `/healthz` 與遊戲／管理頁可用率（應 100%）、升級後帳號／存檔／執行期設定保留率（應 100%）、升級後 About／buildInfo 版本反映正確率、uninstall 預設保留資料卷合格率、重裝續用資料完整率、備份 dump 可還原率、`helm lint` 0 錯誤維持率、chart 版本鏈（chart version／appVersion／image tag／`VERSION`）一致率（應 100%）、image 內容混入 dev 工具或內部檔案檢出率（應 0%）。

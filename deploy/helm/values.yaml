@@ -1,0 +1,42 @@
+# solKidGalGame helm chart values（明確欄位 schema；語意正本對照 sysApi/.env.example 與
+# docs/design.md ＜II.A (D)＞ HelmChart參數-values.yaml。不設萬能 key-value 影子組態。）
+
+image:
+  repository: ghcr.io/twstellerwhale-ocean2/solkidgalgame1
+  # 留空＝隨 chart appVersion（即根目錄 VERSION，版本鏈防漂移守門）。
+  tag: ""
+  pullPolicy: IfNotPresent
+
+service:
+  # 家庭單機預設 NodePort＋固定配號（服務網址 http://<主機IP>:30418/ 可預期、重裝不變）。
+  type: NodePort
+  port: 4180
+  nodePort: 30418
+
+db:
+  # PG major pin（postgres:16 系列）——PG major 升級屬手動 dump/restore，不隨 helm upgrade 自動發生。
+  image: postgres:16-alpine
+  user: luminara
+  database: luminara
+  # PVC 大小；PVC 掛 helm.sh/resource-policy: keep、名稱固定——uninstall 不刪、同名重裝續用。
+  storage: 1Gi
+
+secrets:
+  # 安裝時以 values 檔供給（helm install -f secrets.yaml，用後即刪；勿以 --set 內聯明文）。
+  # upgrade 不重供即沿用叢集內既值（template lookup）、不得重抽。
+  adminUsername: ""   # 必填（首次安裝）：維護者起始帳號（paramAdminBootstrap）
+  adminPassword: ""   # 必填（首次安裝）：維護者起始密碼
+  sessionSecret: ""   # 留空＝首次自動生成後沿用；換值＝全部裝置 session 失效
+  postgresPassword: "" # 留空＝首次自動生成後沿用（僅 initdb 消費；事後改值不會改到既有資料庫實際密碼）；自供值限英數字元
+  # ⚠️ 勿手動刪除叢集內 <release>-secrets：postgresPassword 已寫入資料卷，Secret 與資料同壽命（resource-policy: keep）。
+
+initImage: busybox:1.36 # wait-for-db initContainer（airgap／mirror 環境可覆寫）
+
+ingress:
+  # 選配 TLS／Ingress：有憑證與網域的維護者可啟用；未啟用沿家庭內網 HTTP 定位（勿轉發公網）。
+  enabled: false
+  className: ""
+  host: ""
+  tls: []
+
+resources: {}
