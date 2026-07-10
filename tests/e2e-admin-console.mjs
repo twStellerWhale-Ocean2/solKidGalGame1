@@ -266,6 +266,11 @@ try {
   await adminMobile.waitForSelector("#topbarUsername", { timeout: 8000 });
   const topbarName = await adminMobile.textContent("#topbarUsername");
   check("identity preserved across reload", (topbarName || "").includes(adminUser), topbarName || "");
+  // #317 審查補：無未儲存變更時登出須成功回登入頁（原 handleLogout 殘留 guardDirty 呼叫曾使登出整路失效，
+  // 而全套測試從未走過一次成功登出——此檢核堵住該缺口）。
+  await adminMobile.click("#logoutButton");
+  await adminMobile.waitForSelector("#viewLogin:not([hidden])", { timeout: 5000 });
+  check("logout completes when not dirty (#317 must-fix regression)", true);
 
   // ── #317：登入卡「自本裝置移除」（兩段確認）——用 kid 裝置脈絡（其 localStorage 已有帳號卡）。
   const kidLogin2 = await kidCtx.newPage();
@@ -285,6 +290,8 @@ try {
   check("armed tap removes card from device", true);
   const kidStillOnServer = await api("/api/auth/login", { method: "POST", body: { username: kidUser, password: "fresh66" } }); // 密碼已於前段線上重設
   check("server account untouched after card removal", kidStillOnServer.status === 200, `status=${kidStillOnServer.status}`);
+  const sessionCleared = await kidLogin2.evaluate(() => !localStorage.getItem("luminara-princess-english-session"));
+  check("device session cache cleared on card removal (#317 must-fix)", sessionCleared);
 
   check("no admin page errors", adminErrors.length === 0, adminErrors.join(" | "));
 

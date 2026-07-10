@@ -271,6 +271,8 @@ function runCloudAuthSelfTest(api) {
         removeBtn.click();
         if (!cloudAuth.loadRecentAccounts().some((e) => e.username === "mimi")) errors.push("single tap must not remove card (two-step confirm)");
         if (!removeBtn.classList.contains("is-armed")) errors.push("remove button not armed after first tap");
+        if (!removeBtn.disabled) errors.push("armed button should briefly disable to absorb double-tap (#317)");
+        removeBtn.disabled = false; // 測試取消冷卻（真實動線由 700ms 冷卻吃掉連點）
         removeBtn.click();
         await Promise.resolve();
         if (cloudAuth.loadRecentAccounts().some((e) => e.username === "mimi")) errors.push("armed tap did not remove card from device cache");

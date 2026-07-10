@@ -18,6 +18,10 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: app
     spec:
+      # pod 層 seccomp 一次涵蓋 init 與 app（#317 審查）；db pod 另計（不套硬化，見容器註解）。
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       initContainers:
         - name: wait-for-db
           image: {{ .Values.initImage }}
@@ -34,8 +38,11 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           # 硬化僅施於 app／init（design paramAppHardening）；db 容器不套用——官方 postgres image
           # 啟動時以 root 做 initdb 權限調整後自行降權，強制 runAsNonRoot 會破壞初始化。
+          # runAsUser 必須給數字（#317 審查 must-fix）：Dockerfile 的 `USER node` 為名字，
+          # kubelet 對非數字 image user 無法驗證 non-root、會 CreateContainerConfigError 拒起。
           securityContext:
             runAsNonRoot: true
+            runAsUser: 1000
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]

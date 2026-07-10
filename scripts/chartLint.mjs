@@ -42,14 +42,19 @@ if (manifest) {
     ["path: /readyz", "readiness 探針 /readyz"],
     ["wait-for-db", "initContainer 等待資料庫"],
     ["PGDATA", "PGDATA 子目錄（block 型 StorageClass 之 lost+found 防護）"],
-    ["runAsNonRoot: true", "app 容器 securityContext 硬化（#317 paramAppHardening）"],
+    ["runAsUser: 1000", "app 容器數字 runAsUser（Dockerfile USER 為名字時 kubelet 無法驗 non-root，#317 審查）"],
+    ["runAsUser: 65534", "init 容器數字 runAsUser"],
+    ["seccompProfile", "seccomp RuntimeDefault"],
+    ["cpu: 50m", "app resources 預設（requests）"],
   ];
   for (const [needle, label] of must) {
     if (!manifest.includes(needle)) errors.push(`manifest 缺 ${label}（找不到 "${needle}"）`);
   }
-  // keep 註記須 PVC 與 Secret 各自帶（只驗全文一次會被另一資源遮蔽）。
+  // keep 註記須 PVC 與 Secret 各自帶；runAsNonRoot 須 app 與 init 各自帶（只驗全文一次會被另一處遮蔽）。
   const keepCount = (manifest.match(/helm\.sh\/resource-policy: keep/g) || []).length;
   if (keepCount < 2) errors.push(`resource-policy: keep 註記數 ${keepCount} < 2（PVC 與 Secret 須各自掛 keep）`);
+  const nonRootCount = (manifest.match(/runAsNonRoot: true/g) || []).length;
+  if (nonRootCount < 2) errors.push(`runAsNonRoot 註記數 ${nonRootCount} < 2（app 與 init 容器須各自硬化，#317）`);
 }
 
 // ③ 版本鏈：Chart.yaml 與 VERSION 同源

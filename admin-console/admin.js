@@ -212,7 +212,8 @@ async function handleLogin(event) {
 }
 
 async function handleLogout() {
-  if (!guardDirty()) return;
+  // dirty 防護統一由捕捉階段之 guard 負責（confirmDiscardChanges）；此處不再重複判定（#317 審查 must-fix：
+  // 原 guardDirty 已改名，殘留呼叫會使登出整路 ReferenceError）。
   try {
     await api("/api/auth/logout", { method: "POST" });
   } catch {
@@ -605,8 +606,9 @@ async function boot() {
   tabOrder.forEach((tab, index) => {
     tab.addEventListener("keydown", (event) => {
       let target = null;
-      if (event.key === "ArrowRight" || event.key === "ArrowDown") target = tabOrder[(index + 1) % tabOrder.length];
-      else if (event.key === "ArrowLeft" || event.key === "ArrowUp") target = tabOrder[(index + tabOrder.length - 1) % tabOrder.length];
+      // 水平 tablist 依 WAI-ARIA APG 只回應 Left/Right（不吃 Up/Down，#317 審查）。
+      if (event.key === "ArrowRight") target = tabOrder[(index + 1) % tabOrder.length];
+      else if (event.key === "ArrowLeft") target = tabOrder[(index + tabOrder.length - 1) % tabOrder.length];
       else if (event.key === "Home") target = tabOrder[0];
       else if (event.key === "End") target = tabOrder[tabOrder.length - 1];
       if (!target || target === tab) return;
@@ -650,7 +652,11 @@ async function boot() {
     if (els.panelSettings.hidden || !state.settingsDirty) return; // 不在設定頁或無未儲存變更：放行
     event.stopImmediatePropagation();
     event.preventDefault();
-    if (!(await confirmDiscardChanges())) return;
+    if (!(await confirmDiscardChanges())) {
+      // 留在此頁：鍵盤動線曾把焦點移到目標分頁，還給當前選取分頁以維持 roving tabindex 不變量（#317 審查）。
+      if (el === els.tabAccounts) els.tabSettings.focus();
+      return;
+    }
     state.settingsDirty = false;
     if (el === els.tabAccounts) {
       closeRowMenus();
