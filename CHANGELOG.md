@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.64.3 — 2026-07-14 _(internal)_
+- refactor (#322): repo 全面對齊遠端新名 solLingoWorld、design.md 由 formatVersion 2.0 完整升 3.3、發行物 image／chart 收斂為單一 sollingoworld 名幹（矯正舊 solkidgalgame1／solkidgalgame 不一致），系統模型矯正為單一 sys＋4 mod；遊戲品牌 Luminara 與 helm release／DB luminara 沿用不改。純改名／文件重構，遊戲行為零變更
+
 ## 0.64.2 — 2026-07-10 _(internal)_
 - fix (#320): 發行 image 內建 npm CLI 升級至 12.0.0（deploy-only、遊戲行為零變更）：修補 base image node:22-alpine 隨附 npm 10.x 之 bundled 依賴兩筆 HIGH 漏洞（picomatch CVE-2026-33671 ReDoS、sigstore CVE-2026-48815 驗證約束失效）——發佈列車 #313 發車時點 Trivy 成品掃描攔下、循修復增量快車道處置；app 依賴（express／bcryptjs／pg）不受影響
 
