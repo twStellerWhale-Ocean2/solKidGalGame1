@@ -82,7 +82,7 @@ HOST -->|"param整包 image＋chart 部署"| SYS
 
 ### (C) 人機介面
 
-* **look（整體視覺／外殼）**：雙端分工——**玩家遊戲端**沿 ＜C.(A)＞ 之 [techStyle童話手繪粉彩] 全幅手繪視覺（不套管理網站皮、不出現任何管理／dev 入口）；**維護者管理端**採 MD3 管理網站基座（Top App Bar＋左 Navigation Drawer＋Main），錨 [hmiIntf通用視覺規範]、套同一主題種子 token。二端共用品牌色種子、粉彩色域、字體鏈與語氣分工。
+* **look（整體視覺／外殼）**：雙端分工——**玩家遊戲端**沿 ＜C.(A)＞ 之 [techStyle童話手繪粉彩] 全幅手繪視覺（不套管理網站皮、不出現任何管理／dev 入口）；**維護者管理端**採 MD3 管理網站基座（Top App Bar 帳號／說明選單＋primary tabs 帳號/設定＋Main；線上管理僅 2 目的地、依 MD3 用 tabs 非 Drawer，dev 內容工具因層級深另用左 Drawer 依資料包分層），錨 [hmiIntf通用視覺規範]、套同一主題種子 token。二端共用品牌色種子、粉彩色域、字體鏈與語氣分工。
 
 ### (D) 部署做法
 
@@ -100,8 +100,8 @@ HOST -->|"param整包 image＋chart 部署"| SYS
 * **spec#6-可選擇與命名自己的公主**：讓玩家選定公主外觀（Lumi、Yumi、Rosa 三位可辨識）、命名並確認識別色與背景花紋，之後可重選或調整而不影響既有進度。
 * **spec#7-可以自架伺服器形態部署並模組化擴充內容**：能以「靜態遊戲殼＋node API 核」自架伺服器形態部署遊玩，且地區、角色、可玩公主與衣物等內容可以 raster 內容包模組化新增與調整。
 * **spec#8-可用伺服器帳號分離不同玩家進度**：讓同一自架伺服器上多位玩家各自擁有帳號、每次進入先登入，使不同玩家的進度與換裝成果互不混用。
-* **spec#9-可限制每次遊玩時長並強制休息以護眼**：連續遊玩達設定時長後自動結算並進入強制休息，休息屆滿前不可續玩；預設遊玩／休息各 15 分鐘，可由玩家調整、亦可由維護者對個別帳號覆寫並鎖定。
-* **spec#10-可查看作品版權與版本沿革**：於設定 About 頁呈現作品版權宣告與歷次版本中文短主旨，使玩家與家長識別來源並了解版本演進。
+* **spec#9-可限制每次遊玩時長並強制休息以護眼**：連續遊玩達設定時長後自動結算並進入強制休息，休息屆滿前不可續玩；預設遊玩／休息各 15 分鐘，可由玩家調整、亦可由維護者對個別帳號覆寫並鎖定。護眼鎖定為 per-account 伺服器端計、屬家長輔助非防駭防線——兒童可自助註冊新帳號繞過，故建議維護者於初裝成員到齊後關閉註冊（spec#26）。
+* **spec#10-可查看作品版權與版本沿革**：於設定 About 頁呈現作品版權宣告、授權條款（PolyForm Noncommercial 1.0.0）與歷次版本中文短主旨，使玩家與家長識別來源並了解版本演進。
 * **spec#11-可依場景情境分流生活聊天與打工任務並給予不同回饋**：各可互動場景可提供生活聊天（2 選項、答對提升心情並延長當次可玩時間）與打工任務（3 選項、切合場景之勞務、以 coins 回饋），使精神回饋與勞動所得明確分流。
 * **spec#12-可依透明角色輪廓強化角色立繪圖地分離**：以角色透明輪廓為基準提供常態描邊與自然陰影，讓角色在複雜背景中維持清楚辨識，且與互動狀態光暈語意分離。
 * **spec#13-可由維護者依內容資料包結構維護與擴充各項組態**：讓維護者依內容資料包（公主、衣物、地圖場景、聲音、遊戲規則）及其相依關係集中檢視、調整與擴充各包可設定項；僅於本機開發環境提供、不出現於公開遊玩端。
@@ -250,7 +250,7 @@ HOST -->|"param整包 image＋chart 部署"| SYS
 
 ### (C) 人機介面
 
-* **IA（功能分配／導覽）**：導覽由 SOP 三層機械衍生——orgSop→Drawer 主項（L1）、teamSop→次層群組（L2）、prsnSop→第三層 leaf（L3）；玩家遊戲端採全幅場景導覽（登入→選角→地圖→場景選單→第二層互動之兩層動線），管理端採 MD3 adaptive navigation（Top App Bar 帳號／說明選單＋左 Drawer 帳號管理／執行期設定分組），行動視口 Drawer 收 overlay、表格降級卡片列。反擁擠：一階段一主題一頁，不把多功能塞單頁。
+* **IA（功能分配／導覽）**：導覽由 SOP 三層機械衍生——orgSop→Drawer 主項（L1）、teamSop→次層群組（L2）、prsnSop→第三層 leaf（L3）；玩家遊戲端採全幅場景導覽（登入→選角→地圖→場景選單→第二層互動之兩層動線），管理端僅帳號／執行期設定 2 目的地、依 MD3 adaptive navigation 用 primary tabs（非 Drawer；Top App Bar 帳號選單含登出、說明選單含使用說明／關於）；dev 內容資料包管理頁因層級深另用左 Drawer 依資料包分層。行動視口表格降級卡片列。反擁擠：一階段一主題一頁，不把多功能塞單頁。
 
 ### (D) 部署做法
 
@@ -384,10 +384,13 @@ API ==>|"comIntf自訂資料庫連線<br/>apiIntf標準Postgres連線"| DB
 | 設定頁 | 時間管控·作品資訊／teamSop#3.2·7.1 | 分頁表單：時長設定（可唯讀鎖定）＋About（版權／版本沿革）＋帳號／登出 | #3.2.1·#7.1.1 | 遊戲殼 |
 | [通用管理登入頁] | 線上管理／teamSop#5.1 | 表單：admin 帳密登入（MD3 管理基座） | #5.1.1 | 管理台 |
 | 玩家帳號管理頁 | 線上管理／teamSop#5.1 | list-detail：帳號 DataGrid（清單／重設密碼／撤銷 session／刪除二次確認）＋詳情 | #5.1.1 | 管理台 |
-| 執行期設定頁 | 線上管理·時間管控／teamSop#5.2·3.2 | 表單：新帳號預設時長／個別帳號鎖定／註冊開關（儲存即生效） | #5.2.1·#3.2.2 | 管理台 |
+| 執行期設定頁 | 線上管理·時間管控／teamSop#5.2·3.2 | 表單：新帳號預設時長／個別帳號鎖定／註冊開關（儲存即生效；未儲存離頁 MD3 確認） | #5.2.1·#3.2.2 | 管理台 |
 | 內容資料包管理頁 | 內容維護／teamSop#6.1·6.3 | list-detail：左資料包導覽 Drawer＋右各包編輯（衣物／地圖場景／對話／語音／公主預設）＋未儲存防護 | #6.1.1·#6.3.1 | 管理設定工具（dev-only） |
 | 衣物調整工具頁 | 內容維護／teamSop#6.2 | 舞台＋滑桿：衣物 layer 對位／旋轉即時預覽＋數值輸入＋還原 | #6.2.1 | 管理設定工具（dev-only） |
 | （CLI／helm，非頁） | 部署營運／teamSop#4.1·4.2 | 命令列：`helm install／upgrade／uninstall`、`pg_dump`／`psql` | #4.1.1·#4.2.1 | CLI |
+
+> **通用管理常規（掛 admin shell Top App Bar、各管理頁共用、非域功能，承 orgSop#7 延伸至 admin 端）**：帳號資訊／**登出**（帳號選單）、**使用說明**／**關於**（版權·版本沿革·PolyForm Noncommercial 授權，說明選單）；玩家自助改密不提供（改密走 admin 代重設，spec#25）。
+> **衣物調整雙表面邊界**：衣物調整頁（overlay，玩家於衣櫃即時微調、正式端不寫回）與衣物調整工具頁（dev，維護者系統化內容維護、寫回 sidecar）職責分離、非重複建置。
 
 **逐頁示意圖（設計期參考稿·待 code 以實際截圖替換；以文字規格為準，硬規則⑤）**：既有登入與管理端 4 頁示意圖如下；其餘玩家遊戲端具名頁（選角命名、世界／地區地圖、場景選單、場景對話、換裝商店、衣物調整 overlay、遊玩結算休息、設定）與 dev 工具頁之示意圖**列緩製**——本增量為既有已部署產品之改名／格式升版、非新 UI 設計，玩家端實際運行畫面即參考，最終態真實截圖由 code 段 Q3 產品手冊逐頁補入 [README.md]。
 
@@ -424,6 +427,7 @@ APP ==>|"comIntf自訂資料庫連線<br/>apiIntf標準Postgres連線"| PG
 * **建置指令**：遊戲殼無打包（靜態收集）；modApi `cd sysApi && npm ci && npm run build`（TypeScript→`dist/`）；正式 image 根目錄 Dockerfile 多階段 `docker build -t ghcr.io/twstellerwhale-ocean2/sollingoworld:<VERSION> .`（非 root、COPY 對齊靜態 allowlist、`tool/`／測試不入包、`linux/amd64`）；chart `helm package deploy/helm`（chart `version`／`appVersion` 與 `VERSION` 同源）。
 * **部署指令**：正式＝`helm install luminara <chart> -f secrets.yaml`／`helm upgrade luminara <chart>`／`helm uninstall luminara`（PVC keep）；備份 `kubectl exec <db-pod> -- pg_dump -U luminara luminara > backup.sql`、還原 `kubectl exec -i <db-pod> -- psql -U luminara luminara < backup.sql`；admin 忘密後門 `kubectl exec <app-pod> -- npm run reset-password -- <username> <new-password>`。開發期＝`docker compose -f deploy/compose.yaml up -d`（port 5433）＋`cd sysApi && npm start`。
 * **發行物命名（收斂）**：container image＝`ghcr.io/twstellerwhale-ocean2/sollingoworld`＋helm chart＝`sollingoworld`（單一 sys、image 與 chart 同一 `sollingoworld` 名幹，取代舊 image `solkidgalgame1`／chart `solkidgalgame` 之不一致；registry push 與 GitHub Release 由發佈列車執行，本 repo 增量只交付可發行 build 產物）。
+* **命名層對照（四名並存、各有其位）**：方案／repo codename＝`solLingoWorld`（本增量自 `solKidGalGame` 改名）｜發行物 slug＝`sollingoworld`（image＋chart，自 `solkidgalgame1`／`solkidgalgame` 收斂）｜helm release／DB／測試 ns＝`luminara`／`luminara_test`／`luminara-e2e`（沿用不改）｜玩家端品牌＝`Luminara — Princess English Adventure`（遊戲內顯示，沿用不改）。
 * **版號（單一 SSOT）**：根目錄 `VERSION`（JSON：`version`／`date`／`copyright`／`history[]`）為唯一事實來源；`game-engine/build/version.js`／`CHANGELOG.md` 由 `node scripts/genVersion.mjs` 投影生成（禁手改，`--check` 守門）；chart `name`／`version`／image 名亦自此投影；版號釘選於 merge（feat→minor／fix→patch／breaking→major）。
 
 ## D. 規格效益
