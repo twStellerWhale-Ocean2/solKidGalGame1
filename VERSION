@@ -1,8 +1,16 @@
 {
-  "version": "0.64.3",
+  "version": "0.64.4",
   "date": "2026-07-14",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.64.4",
+      "date": "2026-07-14",
+      "type": "refactor",
+      "playerVisible": false,
+      "issue": "#326",
+      "summaryZh": "helm chart 發行名由 sollingoworld 改為 sollingoworld-chart：與同名 container image 分屬同一 GHCR OCI path 同 tag 會相撞（v0.64.3 首發時 chart 被迫只掛 GitHub Release、無法上 OCI），依發佈列車命名紀律為 chart 加 -chart 後綴使 image 保留最短結構名、chart 亦能正常上 OCI；chart name 走 genVersion.mjs 投影源、design.md 發行物宣告與 README 部署說明同步。純發行物改名／deploy-only，遊戲行為與 helm release／DB 名 luminara 零變更；本版未重發、隨下次發車上架"
+    },
     {
       "version": "0.64.3",
       "date": "2026-07-14",
