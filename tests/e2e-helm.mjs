@@ -8,7 +8,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-const pkg = await import("file:///C:/Users/User/Documents/Github/solLingoWorld/.codex/tools/pw/node_modules/playwright-core/index.js");
+const pkg = await import("file:///C:/Users/User/Documents/Github/solKidGalGame1/.codex/tools/pw/node_modules/playwright-core/index.js");
 const { chromium } = pkg.default || pkg;
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -20,7 +20,7 @@ const RELEASE = "lume2e";
 const NODE_PORT = 30419; // 避開正式預設 30418，e2e 專用
 // BASE 用 127.0.0.2（非 dev-host 白名單）：證據截圖不混入 dev-only 管理工具鈕（#309 審查 B2 慣例）。
 const BASE = `http://127.0.0.2:${NODE_PORT}`;
-const IMAGE = "solkidgal-e2e";
+const IMAGE = "sollingoworld-e2e";
 const TAG_A = `${suffix}a`;
 const TAG_B = `${suffix}b`;
 const adminUser = `adm${suffix}`.slice(0, 16);
