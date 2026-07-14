@@ -33,7 +33,7 @@ Write-Host "* URL: $toolUrl"
 Write-Host '## B.前置檢查 --------------------------------' -ForegroundColor Cyan
 
 if (-not (Test-Path -LiteralPath $serverScript)) {
-  Write-Host '* 找不到 server.mjs，請確認你是在 solKidGalGame repo 內使用此工具。' -ForegroundColor Red
+  Write-Host '* 找不到 server.mjs，請確認你是在 solLingoWorld repo 內使用此工具。' -ForegroundColor Red
   exit 1
 }
 

@@ -107,8 +107,8 @@ function genChartYaml(data) {
   return [
     "# 由 scripts/genVersion.mjs 自根目錄 VERSION 投影生成——禁止手改（防漂移：genVersion --check）。",
     "apiVersion: v2",
-    "name: solkidgalgame",
-    "description: solKidGalGame 整包自架部署（遊戲殼＋帳號存檔 API＋/admin/ 線上管理＋PostgreSQL；spec#27）",
+    "name: sollingoworld",
+    "description: solLingoWorld 整包自架部署（遊戲殼＋帳號存檔 API＋/admin/ 線上管理＋PostgreSQL；spec#27）",
     "type: application",
     `version: ${data.version}`,
     `appVersion: "${data.version}"`,

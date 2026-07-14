@@ -1,7 +1,7 @@
 ---
 name: hmiIntf自訂角色尺度與美術規範
 date: 2026/6/19
-description: solKidGalGame 紙娃娃與 ADV 場景的角色自然尺度、共用 rig、可玩角色 base 分層、透明輪廓描邊、GPT 童話手繪 raster 素材與正式美術資產規範（自 README ch2.7 拆出之 contract-local 契約）。
+description: solLingoWorld 紙娃娃與 ADV 場景的角色自然尺度、共用 rig、可玩角色 base 分層、透明輪廓描邊、GPT 童話手繪 raster 素材與正式美術資產規範（自 README ch2.7 拆出之 contract-local 契約）。
 ---
 
 # I. 主旨目的

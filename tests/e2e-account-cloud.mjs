@@ -4,7 +4,7 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-const pkg = await import("file:///C:/Users/User/Documents/Github/solKidGalGame1/.codex/tools/pw/node_modules/playwright-core/index.js");
+const pkg = await import("file:///C:/Users/User/Documents/Github/solLingoWorld/.codex/tools/pw/node_modules/playwright-core/index.js");
 const { chromium } = pkg.default || pkg;
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."); // 本檔位於 tests/，repo 根在上一層
 const PORT = 4182;

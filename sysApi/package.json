@@ -2,7 +2,7 @@
   "name": "luminara-sysapi",
   "private": true,
   "version": "0.0.0",
-  "description": "solKidGalGame sysApi — 帳號、session 與雲端存檔 API，並同站服務遊戲殼靜態檔（issue #309）",
+  "description": "solLingoWorld sysApi — 帳號、session 與雲端存檔 API，並同站服務遊戲殼靜態檔（issue #309）",
   "type": "commonjs",
   "main": "dist/server.js",
   "scripts": {
