@@ -1,7 +1,7 @@
-# solKidGalGame — Princess English Adventure
+# solLingoWorld — Princess English Adventure
 
 > 本 README 是本專案的**產品手冊（productReadme）**，從玩家與家長／維護者「實際怎麼用」的角度撰寫。
-> 內部設計與架構的單一事實來源為 [docs/design.md](docs/design.md)（formatVersion 2.0）；本檔隨已完成的 dev 項目逐步校準。
+> 內部設計與架構的單一事實來源為 [docs/design.md](docs/design.md)（formatVersion 3.3）；本檔隨已完成的 dev 項目逐步校準。
 
 陪 Princess Lumi 到不同地點和角色用一句短英文對話，答對拿 coins、日記與學到的單字，再把 coins 換成看得見的髮型、衣服、鞋帽與配件。**學英文與換裝獎勵是同一個正向循環。**
 
@@ -27,7 +27,7 @@
 
 **正式路徑：helm 整包（建議）**——前置需求：一台有 Kubernetes 的家庭主機（單節點即可，如 k3s／rancher-desktop／docker-desktop——**需有預設 StorageClass**，上述三者內建都有）、`helm` 與 `kubectl` 指令。一個 chart 就把整套（遊戲網頁＋帳號存檔 API＋線上管理頁＋PostgreSQL 資料庫）裝起來：
 
-1. 取得發行物：chart `solkidgalgame` 取自發佈列車隨版本發行的 chart 套件（GitHub Release 附件 `.tgz` 或 OCI registry；正式發行前的驗測可直接用本 repo 的 `deploy/helm/`）；容器 image `ghcr.io/twstellerwhale-ocean2/solkidgalgame1` 為公開 image、不需登入即可拉取。
+1. 取得發行物：chart `sollingoworld` 取自發佈列車隨版本發行的 chart 套件（GitHub Release 附件 `.tgz` 或 OCI registry；正式發行前的驗測可直接用本 repo 的 `deploy/helm/`）；容器 image `ghcr.io/twstellerwhale-ocean2/sollingoworld` 為公開 image、不需登入即可拉取。
 2. 準備秘密檔 `secrets.yaml`（**不要**用 `--set` 直接把密碼打在指令上——會留在指令歷史裡）：
 
    ```yaml
@@ -291,6 +291,7 @@
 
 - **開啟方式**：點畫面右上角 ⚙ 開啟設定選單，切到 **About** 頁籤。
 - **版權宣告**：`carlton0521@gmail.com, copyright reserved, 2026`。
+- **授權條款**：本作品採 [PolyForm Noncommercial License 1.0.0](LICENSE)（非商業用途、姓名標示）——可自架自用與非商業散佈，商業使用需另洽。
 - **版本沿革**：以中文短主旨列出歷次版本「改了什麼」，方便家長與孩子了解每次更新（預設呈現最近 10 個版本）。
 - 原本顯示在 Settings 的版本與建置時間，改併入 About 一併呈現，Settings 不再另列版本卡。
 
@@ -375,6 +376,9 @@
 
 ## B. 修訂紀錄
 
+- 2026-07-14（issue #322）：**改名收斂＋文件升版**，遊戲玩法零變更、玩家無感。repo 遠端改名後全面對齊——方案 codename `solKidGalGame`→`solLingoWorld`，對外發行物 container image 與 helm chart 收斂為**單一名幹 `sollingoworld`**（汰換舊 image `solkidgalgame1`／chart `solkidgalgame` 之不一致；**維護者若曾以舊 `solkidgalgame` 名腳本化拉取 chart／image，請改用 `sollingoworld`**）；遊戲內品牌 `Luminara — Princess English Adventure` 與 helm release／資料庫名 `luminara` 沿用不改。同時把 [docs/design.md](docs/design.md) 由 formatVersion 2.0 完整升 3.3（正典三章四件套、SOP 三錨、四層技術選型綁層宣告、系統模型矯正為單一 sys＋4 mod）。本項已於 dev 完成並全測試驗證（sysApi 單元 52·涵蓋率 91.87%／整合／chartLint／e2e-helm 23 檢核全綠／docLint 0），待 opr 終驗。
+- 2026-07-10（issue #320）：發行 image 內建 npm CLI 升級（deploy-only、遊戲行為零變更），修補 base image 隨附 npm 之兩筆 HIGH 依賴漏洞（發佈列車 Trivy 成品掃描攔下後循修復快車道處置）；app 依賴不受影響。
+- 2026-07-10（issue #317）：登入畫面帳號卡可「自本裝置移除」（點兩次確認、僅移除本機卡片、伺服器帳號與進度不受影響、重新登入即回復）；線上管理頁分頁支援鍵盤方向鍵切換，未儲存就切分頁或登出改以頁面一致確認框攔下，頁尾顯示實際版號；部署包補 app 容器資源預設與安全性硬化。
 - 2026-07-10（issue #311）：**對外發行改制**——正式散佈單位改為「容器 image＋helm chart 整包」：具 Kubernetes 的家庭主機可 `helm install` 一鍵部署整套（遊戲＋API＋管理頁＋資料庫）、`helm upgrade` 升級不失資料（PVC 持久化）、`helm uninstall` 預設保留資料卷；備份還原程序文件化。原 GitHub Pages 公開站（自 #309 起實質不可玩）**正式關閉下線**、README 移除公開網址；compose＋npm 動線降級為開發期路徑。design.md 新增 spec#27、研改 spec#7，並依技術選型四層改制矯正宣告（單一 sys＝techApp遊戲webApp；資料庫升列 techStackPostgres）。本項已於 dev 實作並以本機 k3s 真裝驗證（chartLint 機判＋e2e-helm 22 檢核全綠：安裝→升級資料保全→備份毀損還原實走→uninstall 保留→重裝續用），待 opr 終驗。
 - 2026-07-10（issue #310）：設計**維護者線上管理**——新增 `/admin/` 線上管理頁：帳號管理（清單、線上重設密碼、撤銷登入、刪除帳號；孩子忘記密碼不再需要伺服器指令，CLI 降級為 admin 自身忘記密碼之離線後門）與執行期遊戲設定（新帳號預設遊玩／休息時長、個別帳號時長覆寫與鎖定之家長管控、註冊開關），設定存資料庫、儲存即生效不需重佈；admin 帳號由部署環境變數建立，管理 API 一律驗 admin 身分；並收斂 #309 審查後續辦理之伺服器防護三項（速率限制僅計失敗、過期 session 清理、存檔形狀校驗）。新增 design.md spec#25／spec#26、研改 spec#8／#9／#23。本項已於 dev 實作並驗證（sysApi 單元 52＋admin 整合 55 檢核、真堆疊管理 e2e 22 檢核、全套 22 selftest 綠；測試改用專用 `luminara_test` 資料庫不污染營運庫），待 opr 終驗。
 - 2026-07-09（issue #309）：**方向轉換**——由「純靜態 GitHub Pages＋瀏覽器本機存檔」轉為「**自架伺服器＋帳號雲端存檔**」：玩家以小寫英文帳號＋至少 6 位密碼註冊登入（家長可協助），進度以帳號為單位存於伺服器（PostgreSQL）、跨裝置還原；遊戲端維持靜態無框架網頁（「靜態遊戲殼＋node API 核」），新增 node API 建置單元承接註冊、登入、session 與存檔；舊存檔可經 Markdown 匯入或登入畫面「匯入本機舊進度」一鍵遷移；玩家端不提供刪除帳號（帳號管理屬維護者，於 #310 提供）。GitHub Pages 免安裝版不保留（維護者裁決）——公開網址自本增量起不再可玩，Pages 於 #311 隨 helm 整包發行正式關閉退場。廢改 design.md spec#7／spec#8、新增 spec#23／spec#24。本項已於 dev 實作並以真堆疊端對端驗證（sysApi 單元 31＋整合 27、全套 22 selftest、跨裝置 e2e 10 檢核全綠），待 opr 終驗。

@@ -1,8 +1,16 @@
 {
-  "version": "0.64.2",
-  "date": "2026-07-10",
+  "version": "0.64.3",
+  "date": "2026-07-14",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.64.3",
+      "date": "2026-07-14",
+      "type": "refactor",
+      "playerVisible": false,
+      "issue": "#322",
+      "summaryZh": "repo 全面對齊遠端新名 solLingoWorld、design.md 由 formatVersion 2.0 完整升 3.3、發行物 image／chart 收斂為單一 sollingoworld 名幹（矯正舊 solkidgalgame1／solkidgalgame 不一致），系統模型矯正為單一 sys＋4 mod；遊戲品牌 Luminara 與 helm release／DB luminara 沿用不改。純改名／文件重構，遊戲行為零變更"
+    },
     {
       "version": "0.64.2",
       "date": "2026-07-10",

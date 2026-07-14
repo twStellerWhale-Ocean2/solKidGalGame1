@@ -1,10 +1,10 @@
-{{/* 統一命名：資源名以 release 名為前綴（chart 名固定 solkidgalgame，family 部署一般 release=luminara）。 */}}
+{{/* 統一命名：資源名以 release 名為前綴（chart 名固定 sollingoworld，family 部署一般 release=luminara）。 */}}
 {{- define "solkidgal.name" -}}
 {{ .Release.Name }}
 {{- end }}
 
 {{- define "solkidgal.labels" -}}
-app.kubernetes.io/name: solkidgalgame
+app.kubernetes.io/name: sollingoworld
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}

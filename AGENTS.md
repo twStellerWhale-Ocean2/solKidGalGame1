@@ -23,7 +23,7 @@
 
 ## 專案入口
 
-- 專案路徑：`C:\Users\User\Documents\Github\solKidGalGame`
+- 專案路徑：`C:\Users\User\Documents\Github\solLingoWorld`
 - 主要發布目標：GitHub Pages。
 - 主要遊玩裝置：手機瀏覽器；修改 UI/操作時必須優先考慮手機螢幕、觸控操作與直向/小螢幕可讀性。
 - 本地 server：`server.mjs`

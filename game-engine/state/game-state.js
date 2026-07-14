@@ -322,7 +322,7 @@ export function buildSaveMarkdown(state) {
     ? state.diary.map((entry) => `| ${entry.title} | ${entry.body.replaceAll("|", "/")} | ${entry.result || ""} |`).join("\n")
     : "| - | - | - |";
   const payload = JSON.stringify(exportState, null, 2);
-  return `# solKidGalGame Save
+  return `# solLingoWorld Save
 
 - Saved at: ${new Date().toLocaleString("en-US")}
 - Coins: ${state.coins}

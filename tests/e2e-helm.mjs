@@ -20,7 +20,7 @@ const RELEASE = "lume2e";
 const NODE_PORT = 30419; // 避開正式預設 30418，e2e 專用
 // BASE 用 127.0.0.2（非 dev-host 白名單）：證據截圖不混入 dev-only 管理工具鈕（#309 審查 B2 慣例）。
 const BASE = `http://127.0.0.2:${NODE_PORT}`;
-const IMAGE = "solkidgal-e2e";
+const IMAGE = "sollingoworld-e2e";
 const TAG_A = `${suffix}a`;
 const TAG_B = `${suffix}b`;
 const adminUser = `adm${suffix}`.slice(0, 16);

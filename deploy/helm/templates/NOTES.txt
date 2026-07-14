@@ -1,4 +1,4 @@
-solKidGalGame {{ .Chart.AppVersion }} 已部署（release: {{ .Release.Name }}）。
+solLingoWorld {{ .Chart.AppVersion }} 已部署（release: {{ .Release.Name }}）。
 
 1. 確認就緒：kubectl get pods -l app.kubernetes.io/instance={{ .Release.Name }}
    （全部 Ready 即完成；app 會等資料庫就緒才啟動）

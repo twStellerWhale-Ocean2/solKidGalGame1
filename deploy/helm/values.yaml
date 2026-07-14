@@ -1,8 +1,8 @@
-# solKidGalGame helm chart values（明確欄位 schema；語意正本對照 sysApi/.env.example 與
+# solLingoWorld helm chart values（明確欄位 schema；語意正本對照 sysApi/.env.example 與
 # docs/design.md ＜II.A (D)＞ HelmChart參數-values.yaml。不設萬能 key-value 影子組態。）
 
 image:
-  repository: ghcr.io/twstellerwhale-ocean2/solkidgalgame1
+  repository: ghcr.io/twstellerwhale-ocean2/sollingoworld
   # 留空＝隨 chart appVersion（即根目錄 VERSION，版本鏈防漂移守門）。
   tag: ""
   pullPolicy: IfNotPresent

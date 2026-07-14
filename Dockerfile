@@ -1,4 +1,4 @@
-# solKidGalGame 整包發行 image（issue #311，spec#27）——單一 app 容器：
+# solLingoWorld 整包發行 image（issue #311，spec#27）——單一 app 容器：
 # sysApi（modApi）＋遊戲殼靜態 allowlist（modShell）＋ /admin/ 管理頁（modAdmin）。
 # COPY 範圍以 sysApi/src/app.ts 之靜態 allowlist（GAME_SHELL_DIRS＋admin-console）為 SSOT 對齊；
 # dev 工具（tool/、server.mjs）、測試、docs 與 repo 內部檔案一律不入包（intTest#79 步驟 4 守門）。
