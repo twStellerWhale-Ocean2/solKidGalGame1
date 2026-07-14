@@ -1,4 +1,4 @@
-{{/* 統一命名：資源名以 release 名為前綴（chart 名固定 sollingoworld，family 部署一般 release=luminara）。 */}}
+{{/* 統一命名：資源名以 release 名為前綴（chart 套件名 sollingoworld-chart、app 名 sollingoworld，family 部署一般 release=luminara）。 */}}
 {{- define "solkidgal.name" -}}
 {{ .Release.Name }}
 {{- end }}

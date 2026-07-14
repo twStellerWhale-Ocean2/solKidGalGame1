@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.64.4 — 2026-07-14 _(internal)_
+- refactor (#326): helm chart 發行名由 sollingoworld 改為 sollingoworld-chart：與同名 container image 分屬同一 GHCR OCI path 同 tag 會相撞（v0.64.3 首發時 chart 被迫只掛 GitHub Release、無法上 OCI），依發佈列車命名紀律為 chart 加 -chart 後綴使 image 保留最短結構名、chart 亦能正常上 OCI；chart name 走 genVersion.mjs 投影源、design.md 發行物宣告與 README 部署說明同步。純發行物改名／deploy-only，遊戲行為與 helm release／DB 名 luminara 零變更；本版未重發、隨下次發車上架
+
 ## 0.64.3 — 2026-07-14 _(internal)_
 - refactor (#322): repo 全面對齊遠端新名 solLingoWorld、design.md 由 formatVersion 2.0 完整升 3.3、發行物 image／chart 收斂為單一 sollingoworld 名幹（矯正舊 solkidgalgame1／solkidgalgame 不一致），系統模型矯正為單一 sys＋4 mod；遊戲品牌 Luminara 與 helm release／DB luminara 沿用不改。純改名／文件重構，遊戲行為零變更
 

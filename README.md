@@ -27,7 +27,7 @@
 
 **正式路徑：helm 整包（建議）**——前置需求：一台有 Kubernetes 的家庭主機（單節點即可，如 k3s／rancher-desktop／docker-desktop——**需有預設 StorageClass**，上述三者內建都有）、`helm` 與 `kubectl` 指令。一個 chart 就把整套（遊戲網頁＋帳號存檔 API＋線上管理頁＋PostgreSQL 資料庫）裝起來：
 
-1. 取得發行物：chart `sollingoworld` 取自發佈列車隨版本發行的 chart 套件（GitHub Release 附件 `.tgz` 或 OCI registry；正式發行前的驗測可直接用本 repo 的 `deploy/helm/`）；容器 image `ghcr.io/twstellerwhale-ocean2/sollingoworld` 為公開 image、不需登入即可拉取。
+1. 取得發行物：chart `sollingoworld-chart` 取自發佈列車隨版本發行的 chart 套件（GitHub Release 附件 `.tgz` 或 OCI registry；正式發行前的驗測可直接用本 repo 的 `deploy/helm/`）；容器 image `ghcr.io/twstellerwhale-ocean2/sollingoworld` 為公開 image、不需登入即可拉取（image 與 chart 分屬兩名——chart 帶 `-chart` 後綴以免與 image 撞同一 OCI path）。
 2. 準備秘密檔 `secrets.yaml`（**不要**用 `--set` 直接把密碼打在指令上——會留在指令歷史裡）：
 
    ```yaml
