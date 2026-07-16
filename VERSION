@@ -1,8 +1,16 @@
 {
-  "version": "0.65.0",
+  "version": "0.66.0",
   "date": "2026-07-16",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.66.0",
+      "date": "2026-07-16",
+      "type": "feat",
+      "playerVisible": false,
+      "issue": "#329",
+      "summaryZh": "支援公網正式部署（deploy-only、遊戲行為零變更）：helm chart 預設啟用 Ingress（host 預設 sollingoworld.local、baseDomain/host 可覆寫）、TLS 兩模式（自架 ingress-nginx＋cert-manager／外部邊緣終結如 Cloudflare Tunnel）；README 部署章新增安裝前環境檢查腳本（bash＋PowerShell，偵測預設 IngressClass 防孤兒 404）、公網部署指引（trustProxy 跳數對照、/admin/ 安全注意、升級註記）；「家庭內網 only、勿轉發公網」舊定位除役（README／values／NOTES／ingress 模板四處），公網一律經 TLS 終結入口"
+    },
     {
       "version": "0.65.0",
       "date": "2026-07-16",
