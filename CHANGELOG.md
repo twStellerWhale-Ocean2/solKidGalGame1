@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.66.1 — 2026-07-16 _(internal)_
+- test (#338): 發車測試 fixture 修正（test-only、產品行為零變更）：helm e2e 之玩家密碼測試值改合 #330 新規（8 碼含數字小寫）——v0.66.0 首班發車測試 422 假敗即此因，發車環硬 gate 攔下後修正、本批改發 v0.66.1
+
 ## 0.66.0 — 2026-07-16 _(internal)_
 - feat (#329): 支援公網正式部署（deploy-only、遊戲行為零變更）：helm chart 預設啟用 Ingress（host 預設 sollingoworld.local、baseDomain/host 可覆寫）、TLS 兩模式（自架 ingress-nginx＋cert-manager／外部邊緣終結如 Cloudflare Tunnel）；README 部署章新增安裝前環境檢查腳本（bash＋PowerShell，偵測預設 IngressClass 防孤兒 404）、公網部署指引（trustProxy 跳數對照、/admin/ 安全注意、升級註記）；「家庭內網 only、勿轉發公網」舊定位除役（README／values／NOTES／ingress 模板四處），公網一律經 TLS 終結入口
 

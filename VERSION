@@ -1,8 +1,16 @@
 {
-  "version": "0.66.0",
+  "version": "0.66.1",
   "date": "2026-07-16",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.66.1",
+      "date": "2026-07-16",
+      "type": "test",
+      "playerVisible": false,
+      "issue": "#338",
+      "summaryZh": "發車測試 fixture 修正（test-only、產品行為零變更）：helm e2e 之玩家密碼測試值改合 #330 新規（8 碼含數字小寫）——v0.66.0 首班發車測試 422 假敗即此因，發車環硬 gate 攔下後修正、本批改發 v0.66.1"
+    },
     {
       "version": "0.66.0",
       "date": "2026-07-16",
