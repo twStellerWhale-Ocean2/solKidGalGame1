@@ -101,6 +101,8 @@
 
    ![首次進入：建立新帳號（空狀態）](docs/manual-assets/issue309-01-register-empty-state.png)
 
+   ![送出被擋時：⚠ 錯誤顯示在按鈕上方、欄位標紅（手機視口）](docs/manual-assets/issue331-01-register-error-mobile.png)
+
 3. 之後每次進入，在登入畫面點自己的**帳號卡**（有公主大頭照、名字與帳號）、輸入密碼即可繼續冒險；**最後登入的帳號**在同一台裝置可直接「Continue」免重輸密碼（也可在卡片上登出）。同一帳號在手機、平板、電腦上進度一致。
 
    ![登入畫面：帳號卡與免密續玩](docs/manual-assets/issue309-07-login-cards.png)

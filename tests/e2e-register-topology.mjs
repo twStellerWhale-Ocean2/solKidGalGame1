@@ -4,11 +4,14 @@
 // 前置：deploy/compose.yaml 之 db 已啟動；sysApi 已 build；本腳本自行 spawn sysApi（TRUST_PROXY=2）。
 // 埠可參數化（E2E_PORT，預設 4187）；起服務後先驗服務身分（healthz）再開跑（GATE ＜2節＞ 埠隔離）。
 import { spawn } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 const pkg = await import("file:///C:/Users/User/Documents/Github/solKidGalGame1/.codex/tools/pw/node_modules/playwright-core/index.js");
 const { chromium } = pkg.default || pkg;
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const SHOTS = path.join(repoRoot, "docs", "manual-assets");
+fs.mkdirSync(SHOTS, { recursive: true });
 const PORT = Number(process.env.E2E_PORT) || 4187;
 const BASE = `http://127.0.0.2:${PORT}`; // 127.0.0.2：非 dev-host 白名單、不混入 dev-only 工具鈕
 const suffix = Date.now().toString(36);
@@ -96,6 +99,7 @@ try {
     return rect.top >= 0 && rect.bottom <= window.innerHeight && rect.height > 0;
   });
   check("error message is inside the mobile viewport (375x812)", inViewport);
+  await page.screenshot({ path: path.join(SHOTS, "issue331-01-register-error-mobile.png") }); // GATE ＜2.5節＞ 證據
   const buttonBelowError = await page.evaluate(() => {
     const err = document.querySelector(".login-error").getBoundingClientRect();
     const btn = document.querySelector(".login-enter").getBoundingClientRect();
