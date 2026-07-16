@@ -11,11 +11,11 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { assetStandards, classifyAssetPath, assetSizeExemptions } from "../content-package/_shared/asset-standards.js";
+import { assetStandards, classifyAssetPath, assetSizeExemptions } from "../sysLingoWorld/modShell/content-package/_shared/asset-standards.js";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const IMG = /\.(webp|png|jpe?g)$/i;
-const ROOTS = ["content-base", "content-package"];
+const ROOTS = ["sysLingoWorld/modShell/content-base", "sysLingoWorld/modShell/content-package"];
 
 function walk(dir, acc) {
   let entries;

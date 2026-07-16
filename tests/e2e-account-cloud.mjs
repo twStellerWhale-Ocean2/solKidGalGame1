@@ -32,13 +32,14 @@ async function waitHealthy() {
   return false;
 }
 
-const server = spawn(process.execPath, [path.join(repoRoot, "sysApi", "dist", "server.js")], {
+const server = spawn(process.execPath, [path.join(repoRoot, "sysLingoWorld", "modApi", "dist", "server.js")], {
   env: {
     ...process.env,
     PORT: String(PORT),
     DATABASE_URL: process.env.DATABASE_URL || "postgres://luminara:luminara@127.0.0.1:5433/luminara_test",
     SESSION_SECRET: "e2e-pepper",
-    STATIC_ROOT: repoRoot
+    STATIC_ROOT: path.join(repoRoot, "sysLingoWorld", "modShell"),
+    ADMIN_ROOT: path.join(repoRoot, "sysLingoWorld", "modAdmin")
   },
   stdio: ["ignore", "pipe", "pipe"]
 });

@@ -11,9 +11,9 @@
     "skipLibCheck": true
   },
   "include": [
-    "game-engine/**/*.js",
-    "content-package/**/*.js",
-    "content-base/**/*.js",
+    "sysLingoWorld/modShell/game-engine/**/*.js",
+    "sysLingoWorld/modShell/content-package/**/*.js",
+    "sysLingoWorld/modShell/content-base/**/*.js",
     "server.mjs"
   ],
   "exclude": [

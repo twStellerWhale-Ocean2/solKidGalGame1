@@ -430,8 +430,9 @@ if ($fmt -eq '3.3') {
   }
 }
 
-# ---------- D08：發行物命名結構合規（trainFlow FORMAT ＜4節＞；design 端機判）----------
-# 發行名＝依 sol／sys／mod 結構算出：image `sol[-sys[-mod]]`、chart `sol-chart`（-chart 後綴防與同層 image 撞 OCI path）；
+# ---------- D08：發行物命名結構合規（trainFlow FORMAT ＜4節＞；design 端機判；2026-07-16 補中段嚴驗）----------
+# 發行名須**恰為**結構窮舉：image `sol`／`sol-sys`／`sol-sys-mod`、chart 同路徑＋`-chart`；sys／mod 段對照
+# design 宣告詞彙（sys[A-Z]…／mod[A-Z]… 設計名小寫 slug）——只驗頭尾曾放行 pack（非結構詞彙）與 sol-mod（省略 sys 段）。
 # 全小寫、自設計名算出（禁 repo 消歧尾碼）。僅於 design 宣告 GHCR image／chart 時檢查（純靜態／桌面／無 registry 者跳過）。
 $solSlug = ''
 if ($fmEnd -ge 0) {
@@ -439,20 +440,37 @@ if ($fmEnd -ge 0) {
   if ($fmNameM.Success) { $solSlug = ($fmNameM.Groups[1].Value.ToLower() -replace '[^a-z0-9]', '') }
 }
 if ($solSlug) {
+  $sysSlugs8 = [System.Collections.Generic.HashSet[string]]::new()
+  foreach ($m in [regex]::Matches($raw, '\bsys[A-Z][A-Za-z0-9]*')) { [void]$sysSlugs8.Add($m.Value.ToLower()) }
+  $modSlugs8 = [System.Collections.Generic.HashSet[string]]::new()
+  foreach ($m in [regex]::Matches($raw, '\bmod[A-Z][A-Za-z0-9]*')) { [void]$modSlugs8.Add($m.Value.ToLower()) }
+  function Test-D08Name([string]$name, [bool]$isChart) {
+    $body = $name
+    if ($isChart) {
+      if (-not $name.EndsWith('-chart')) { return "chart 發行名「$name」須帶 -chart 後綴——防與同層 image 撞同一 OCI path 同 tag（FORMAT ＜4節＞）" }
+      $body = $name.Substring(0, $name.Length - 6)
+    }
+    if ($body -eq $solSlug) { return '' }
+    if (-not $body.StartsWith($solSlug + '-')) { return "發行名「$name」未以方案名幹「$solSlug-」起始——自 sol／sys／mod 設計名算出、禁抓 repo 名或消歧尾碼（FORMAT ＜4節＞）" }
+    $parts = @($body.Substring($solSlug.Length + 1) -split '-')
+    if (-not $sysSlugs8.Contains($parts[0])) { return "發行名「$name」段「$($parts[0])」非 design 宣告之 sys——結構詞彙只有 sol/sys/mod/cmp、無第四種形（如 pack；FORMAT ＜4節＞ 窮舉之外無形）" }
+    if ($parts.Count -eq 1) { return '' }
+    if ($parts.Count -eq 2) { if ($modSlugs8.Contains($parts[1])) { return '' } else { return "發行名「$name」段「$($parts[1])」非 design 宣告之 mod" } }
+    return "發行名「$name」路徑段超過 sol-sys-mod 三層（cmp 不入發行名）"
+  }
   $imgNames = [System.Collections.Generic.HashSet[string]]::new()
-  foreach ($m in [regex]::Matches($raw, 'ghcr\.io/[a-z0-9._-]+/([a-z0-9._-]+)')) { [void]$imgNames.Add($m.Groups[1].Value) }
+  foreach ($m in [regex]::Matches($raw, 'ghcr\.io/[a-z0-9._-]+/([a-z0-9._-]+?)(?::[a-z0-9._-]+)?[\s`）)]')) { [void]$imgNames.Add($m.Groups[1].Value) }
   $chartNames = [System.Collections.Generic.HashSet[string]]::new()
   foreach ($m in [regex]::Matches($raw, '(?:helm |param)?[Cc]hart(?:Name)?\s*[＝=]\s*`([a-z0-9._-]+)`')) { [void]$chartNames.Add($m.Groups[1].Value) }
-  if ($imgNames.Count -gt 0 -or $chartNames.Count -gt 0) {
-    foreach ($img in $imgNames) {
-      if (-not $img.StartsWith($solSlug)) { Add-V 'D08' 1 ("image 發行名「{0}」未以方案名幹「{1}」起始——發行名須自 sol／sys／mod 設計名算出、禁抓 repo 名或消歧尾碼（FORMAT ＜4節＞）" -f $img, $solSlug) }
-      elseif ($img -match ('^' + [regex]::Escape($solSlug) + '\d')) { Add-V 'D08' 1 ("image 發行名「{0}」疑帶 repo 消歧尾碼（方案名幹後直接接數字）；須為乾淨結構路徑 sol[-sys[-mod]]" -f $img) }
-    }
-    foreach ($ch in $chartNames) {
-      if (-not $ch.EndsWith('-chart')) { Add-V 'D08' 1 ("chart 發行名「{0}」須帶 -chart 後綴——防與同層 image 撞同一 OCI path 同 tag（FORMAT ＜4節＞）" -f $ch) }
-      if (-not $ch.StartsWith($solSlug)) { Add-V 'D08' 1 ("chart 發行名「{0}」未以方案名幹「{1}」起始" -f $ch, $solSlug) }
-      if ($imgNames.Contains($ch)) { Add-V 'D08' 1 ("chart 發行名「{0}」與 image 同名——OCI 同 path 同 tag 會撞；chart 須加 -chart 後綴" -f $ch) }
-    }
+  foreach ($img in $imgNames) {
+    if (-not $img.StartsWith($solSlug)) { continue }   # 非本方案 image（第三方/基底）不驗
+    $r8 = Test-D08Name $img $false
+    if ($r8 -ne '') { Add-V 'D08' 1 $r8 }
+  }
+  foreach ($ch in $chartNames) {
+    $r8 = Test-D08Name $ch $true
+    if ($r8 -ne '') { Add-V 'D08' 1 $r8 }
+    if ($imgNames.Contains($ch)) { Add-V 'D08' 1 ("chart 發行名「{0}」與 image 同名——OCI 同 path 同 tag 會撞；chart 須加 -chart 後綴" -f $ch) }
   }
 }
 

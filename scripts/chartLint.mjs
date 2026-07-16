@@ -10,7 +10,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
-const chartDir = join(root, "deploy", "helm");
+const chartDir = join(root, "sysLingoWorld", "deploy", "helm");
 const errors = [];
 
 function helm(args, opts = {}) {
@@ -82,11 +82,12 @@ try {
   if (!msg.includes("必填")) errors.push(`必填秘密缺席之報錯訊息不明確：${msg.slice(0, 200)}`);
 }
 
-// ⑤ image 內容邊界：Dockerfile COPY 對齊 sysApi 靜態 allowlist（單一事實來源）
-const appTs = readFileSync(join(root, "sysApi", "src", "app.ts"), "utf8");
+// ⑤ image 內容邊界：Dockerfile COPY 對齊 modApi 靜態 allowlist（單一事實來源）。
+// issue #342 後源路徑住 sysLingoWorld/（modShell 殼、modAdmin 管理頁、modApi 服務）；image 內佈局不變。
+const appTs = readFileSync(join(root, "sysLingoWorld", "modApi", "src", "app.ts"), "utf8");
 const dirsMatch = appTs.match(/GAME_SHELL_DIRS = \[([^\]]+)\]/);
 if (!dirsMatch) {
-  errors.push("sysApi/src/app.ts 找不到 GAME_SHELL_DIRS（allowlist SSOT 位置變動，請同步本檢查）");
+  errors.push("sysLingoWorld/modApi/src/app.ts 找不到 GAME_SHELL_DIRS（allowlist SSOT 位置變動，請同步本檢查）");
 } else {
   const allow = dirsMatch[1].split(",").map((s) => s.trim().replace(/["']/g, "")).filter(Boolean);
   const dockerfile = readFileSync(join(root, "Dockerfile"), "utf8");
@@ -94,11 +95,12 @@ if (!dirsMatch) {
   const copies = [...dockerfile.matchAll(/^COPY (?!--from)(.+)$/gm)]
     .flatMap((m) => m[1].trim().split(/\s+/).slice(0, -1))
     .map((s) => s.replace(/^\.\//, ""));
-  const expected = [...allow, "index.html", "admin-console"];
+  const SHELL = "sysLingoWorld/modShell/";
+  const expected = [...allow.map((d) => `${SHELL}${d}`), `${SHELL}index.html`, "sysLingoWorld/modAdmin"];
   for (const dir of expected) {
     if (!copies.includes(dir)) errors.push(`Dockerfile 缺 allowlist 項 COPY：${dir}`);
   }
-  const service = ["sysApi/package.json", "sysApi/tsconfig.json", "sysApi/src", "sysApi/package-lock.json"];
+  const service = ["sysLingoWorld/modApi/package.json", "sysLingoWorld/modApi/tsconfig.json", "sysLingoWorld/modApi/src", "sysLingoWorld/modApi/package-lock.json"];
   for (const c of copies) {
     if (!expected.includes(c) && !service.includes(c)) errors.push(`Dockerfile COPY 超出 allowlist＋服務本體邊界：${c}（dev 工具與內部檔案不入包）`);
   }

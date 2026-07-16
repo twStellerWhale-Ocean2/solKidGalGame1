@@ -35,6 +35,7 @@ async function main() {
     sessionSecret: config.sessionSecret,
     sessionTtlMs: config.sessionTtlMs,
     staticRoot: config.staticRoot,
+    adminRoot: config.adminRoot || null,
     rateLimiter: createRateLimiter({ max: config.rateLimitMax, windowMs: config.rateLimitWindowMs }),
     trustProxy: config.trustProxy
   });

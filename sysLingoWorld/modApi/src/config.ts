@@ -8,6 +8,8 @@ export interface Config {
   sessionSecret: string;
   sessionTtlMs: number;
   staticRoot: string;
+  /** ADMIN_ROOT（#342）：/admin/ 靜態根；空＝沿 staticRoot/admin-console（image 佈局）。 */
+  adminRoot: string;
   rateLimitMax: number;
   rateLimitWindowMs: number;
   /** paramAdminBootstrap（#310）：兩者皆設才啟用 admin 起始帳號建立；未設僅告警（管理頁將無法登入）。 */
@@ -29,6 +31,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     sessionTtlMs: (Number(env.SESSION_TTL_DAYS) || 30) * 24 * 60 * 60 * 1000,
     // 遊戲殼靜態檔根目錄＝repo 根（sysApi 之上一層）；同站服務、免 CORS。
     staticRoot: env.STATIC_ROOT || path.resolve(__dirname, "..", ".."),
+    adminRoot: env.ADMIN_ROOT || "",
     rateLimitMax: Number(env.RATE_LIMIT_MAX) || 10,
     rateLimitWindowMs: Number(env.RATE_LIMIT_WINDOW_MS) || 10 * 60 * 1000,
     adminUsername: env.ADMIN_USERNAME || "",

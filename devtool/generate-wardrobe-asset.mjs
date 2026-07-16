@@ -14,7 +14,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSy
 import { join } from "node:path";
 
 const ROOT = process.cwd();
-const WARDROBE = join(ROOT, "content-package", "wardrobe");
+const WARDROBE = join(ROOT, "sysLingoWorld", "modShell", "content-package", "wardrobe");
 const TMP = join(ROOT, "devtool", "_gen-tmp");
 const PREVIEW = join(ROOT, "devtool", "_gen-preview");
 const ART_STYLE = join(WARDROBE, "_shared", "art-style.json");

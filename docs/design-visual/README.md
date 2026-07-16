@@ -1,6 +1,6 @@
 # design-visual — 品牌視覺參考與主題種子
 
-> 本目錄為設計期視覺參考（非契約）。主題 token 由種子經 Material Theme Builder 生成、commit 為定本後唯讀引用、不重生（避免色彩漂移）；元件與版型通則見 `[hmiIntf通用視覺規範]`（`contract-common/`，MD3 基座）。
+> 本目錄為設計期視覺參考（非契約）。主題 token 由種子經 Material Theme Builder 生成、commit 為定本後唯讀引用、不重生（避免色彩漂移）；元件與版型通則見 `[hmiIntf通用視覺規範]`（`docs/shared-contracts/`，MD3 基座）。
 
 ## 適用對象
 
@@ -14,4 +14,4 @@
 
 ## 待辦（code 階段）
 
-- 以上述種子於 Material Theme Builder 產生 MD3 token，輸出 `--md-sys-color-*` CSS 變數定本（置 `contract-local` 或前端 `theme/`），供管理工具套用；附防漂移檢查（lint／gate 斷言與種子一致）。
+- 以上述種子於 Material Theme Builder 產生 MD3 token，輸出 `--md-sys-color-*` CSS 變數定本（置 `docs/design.md` 自訂設計文字或前端 `theme/`），供管理工具套用；附防漂移檢查（lint／gate 斷言與種子一致）。

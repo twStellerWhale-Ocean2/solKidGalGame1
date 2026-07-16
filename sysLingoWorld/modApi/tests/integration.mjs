@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const sysApiRoot = path.resolve(here, "..");
-const repoRoot = path.resolve(sysApiRoot, "..");
+const sysRoot = path.resolve(sysApiRoot, ".."); // sysLingoWorld/（#342 結構後 modApi 之上一層）
 const PORT = Number(process.env.TEST_PORT) || 4181;
 const BASE = `http://127.0.0.1:${PORT}`;
 const DATABASE_URL = process.env.DATABASE_URL || "postgres://luminara:luminara@127.0.0.1:5433/luminara_test";
@@ -64,7 +64,8 @@ async function main() {
       PORT: String(PORT),
       DATABASE_URL,
       SESSION_SECRET,
-      STATIC_ROOT: repoRoot,
+      STATIC_ROOT: path.join(sysRoot, "modShell"),
+      ADMIN_ROOT: path.join(sysRoot, "modAdmin"),
       RATE_LIMIT_MAX: "5",
       RATE_LIMIT_WINDOW_MS: "60000",
       ADMIN_USERNAME: adminUser,

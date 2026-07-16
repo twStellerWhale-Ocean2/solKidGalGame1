@@ -14,13 +14,13 @@ const MAIN_JS_BUDGET = 500; // main.js 收斂為組裝與調度
 
 // 具名豁免（路徑 → 理由）；豁免僅涵蓋行數上限，不豁免 CSS 重複規則塊。
 const EXEMPT = new Map([
-  ["game-engine/testing/selftests.js", "行為層守門檔（22 個 selftest 套件單檔集中）；拆分另案處理"]
+  ["sysLingoWorld/modShell/game-engine/testing/selftests.js", "行為層守門檔（22 個 selftest 套件單檔集中）；拆分另案處理"]
   // devtool/wardrobe-tuner.css 豁免已由 issue #297 收斂移除：工具樣式依分頁解體為
   // tool-shell／tool-wardrobe／tool-stage／tool-map-scene／tool-voice-defaults 五個 ≤800 行分層檔。
 ]);
 
 // 掃描範圍：引擎、樣式、腳本、伺服器與維護工具；排除生成檔（*.generated.js）與第三方。
-const SCAN_DIRS = ["game-engine", "styles", "scripts", "devtool", "content-package", "content-base"];
+const SCAN_DIRS = ["sysLingoWorld/modShell/game-engine", "sysLingoWorld/modShell/styles", "scripts", "devtool", "sysLingoWorld/modShell/content-package", "sysLingoWorld/modShell/content-base"];
 const SCAN_FILES = ["server.mjs"];
 
 function walk(dir, out = []) {
@@ -50,7 +50,7 @@ for (const full of files) {
   const rel = relative(ROOT, full).replaceAll("\\", "/");
   if (/\.generated\.(js|mjs)$/.test(rel)) continue; // 生成投影檔不計（防漂移由 genWardrobeIndex/genVersion gate 把關）
   const lines = readFileSync(full, "utf8").split("\n").length;
-  const budget = rel === "game-engine/main.js" ? MAIN_JS_BUDGET : (rel.endsWith(".css") ? CSS_LINE_BUDGET : JS_LINE_BUDGET);
+  const budget = rel === "sysLingoWorld/modShell/game-engine/main.js" ? MAIN_JS_BUDGET : (rel.endsWith(".css") ? CSS_LINE_BUDGET : JS_LINE_BUDGET);
   if (lines > budget) {
     if (EXEMPT.has(rel)) continue;
     violations.push(`[L01] ${rel}：${lines} 行 > 上限 ${budget}（單檔行數上限；豁免須具名登記）`);
