@@ -13,6 +13,8 @@ export interface Config {
   /** paramAdminBootstrap（#310）：兩者皆設才啟用 admin 起始帳號建立；未設僅告警（管理頁將無法登入）。 */
   adminUsername: string;
   adminPassword: string;
+  /** paramTrustProxy（#331）：Express trust proxy 跳數；預設 0＝直連。依實際代理跳數設定（僅 ingress=1、tunnel→ingress=2），限流才以真實 client IP 計。 */
+  trustProxy: number;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -30,6 +32,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     rateLimitMax: Number(env.RATE_LIMIT_MAX) || 10,
     rateLimitWindowMs: Number(env.RATE_LIMIT_WINDOW_MS) || 10 * 60 * 1000,
     adminUsername: env.ADMIN_USERNAME || "",
-    adminPassword: env.ADMIN_PASSWORD || ""
+    adminPassword: env.ADMIN_PASSWORD || "",
+    trustProxy: Math.max(0, Math.trunc(Number(env.TRUST_PROXY) || 0))
   };
 }
