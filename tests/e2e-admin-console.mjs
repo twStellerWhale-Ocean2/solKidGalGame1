@@ -16,7 +16,7 @@ const suffix = Date.now().toString(36);
 const adminUser = `mom${suffix}`.slice(0, 16);
 const adminPassword = "adminpw9";
 const kidUser = `kid${suffix}`.slice(0, 16);
-const kidPassword = "secret6";
+const kidPassword = "secret66";
 const disposableUser = `old${suffix}`.slice(0, 16);
 
 let failures = 0;
@@ -119,13 +119,13 @@ try {
   // 線上重設密碼（spec#25）：走 UI dialog。
   await admin.click(`.account-row[data-username="${kidUser}"] .account-actions .btn`);
   await admin.waitForSelector("#dialog[open] input", { timeout: 5000 });
-  await admin.fill("#dialog input", "fresh66");
+  await admin.fill("#dialog input", "fresh6678");
   await hideSnackbar(admin);
   await admin.screenshot({ path: path.join(SHOTS, "issue310-03-admin-reset-password.png") });
   await admin.click("#dialog .btn-filled");
   await admin.waitForSelector("#snackbar:not([hidden])", { timeout: 5000 });
   check("reset password: old rejected", (await api("/api/auth/login", { method: "POST", body: { username: kidUser, password: kidPassword } })).status === 401);
-  check("reset password: new accepted", (await api("/api/auth/login", { method: "POST", body: { username: kidUser, password: "fresh66" } })).status === 200);
+  check("reset password: new accepted", (await api("/api/auth/login", { method: "POST", body: { username: kidUser, password: "fresh6678" } })).status === 200);
 
   // 時長覆寫與鎖定（spec#26 (b)）：⋮ → dialog → 鎖定 10/20/12。
   await admin.click(`.account-row[data-username="${kidUser}"] .menu-button`);
@@ -160,7 +160,7 @@ try {
   await kid.click("text=Other account");
   await kid.waitForSelector("#loginOtherUsername", { timeout: 8000 });
   await kid.fill("#loginOtherUsername", kidUser);
-  await kid.fill("#loginOtherPassword", "fresh66");
+  await kid.fill("#loginOtherPassword", "fresh6678");
   await kid.click(".login-enter");
   await kid.waitForSelector("#accountSelect.show", { state: "detached", timeout: 15000 }).catch(() => {});
   await kid.waitForTimeout(800);
@@ -234,7 +234,7 @@ try {
   const registerFormAbsent = await fresh.evaluate(() => !document.getElementById("registerUsername"));
   check("no create-account entry while closed", newButtonHidden);
   check("no register form while closed (empty state)", registerFormAbsent);
-  check("registration closed API rejects", (await api("/api/auth/register", { method: "POST", body: { username: `new${suffix}`.slice(0, 16), password: "secret6" } })).status === 403);
+  check("registration closed API rejects", (await api("/api/auth/register", { method: "POST", body: { username: `new${suffix}`.slice(0, 16), password: "secret66" } })).status === 403);
   await fresh.screenshot({ path: path.join(SHOTS, "issue310-07-registration-closed.png") });
 
   // ── 管理端：刪除帳號（二次確認、error 色） ──
@@ -288,7 +288,7 @@ try {
   await kidLogin2.click(".login-remove-card");
   await kidLogin2.waitForSelector(`.account-pick[data-username="${kidUser}"]`, { state: "detached", timeout: 8000 });
   check("armed tap removes card from device", true);
-  const kidStillOnServer = await api("/api/auth/login", { method: "POST", body: { username: kidUser, password: "fresh66" } }); // 密碼已於前段線上重設
+  const kidStillOnServer = await api("/api/auth/login", { method: "POST", body: { username: kidUser, password: "fresh6678" } }); // 密碼已於前段線上重設
   check("server account untouched after card removal", kidStillOnServer.status === 200, `status=${kidStillOnServer.status}`);
   const sessionCleared = await kidLogin2.evaluate(() => !localStorage.getItem("luminara-princess-english-session"));
   check("device session cache cleared on card removal (#317 must-fix)", sessionCleared);

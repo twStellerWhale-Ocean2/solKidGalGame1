@@ -121,8 +121,9 @@ function runCloudAuthSelfTest(api) {
       }
       if (pathname === "/api/auth/register" && init.method === "POST") {
         if (!registrationOpen) return json(403, { error: { code: "registration-closed" } });
-        if (!/^[a-z][a-z0-9]{2,15}$/.test(body.username || "")) return json(422, { error: { code: "invalid-username" } });
-        if (typeof body.password !== "string" || body.password.length < 6) return json(422, { error: { code: "password-too-short" } });
+        if (!/^(?=.*[a-z])[a-z0-9]{3,16}$/.test(body.username || "")) return json(422, { error: { code: "invalid-username" } });
+        if (typeof body.password !== "string" || body.password.length < 8) return json(422, { error: { code: "password-too-short" } });
+        if (!/[0-9]/.test(body.password) || !/[a-z]/.test(body.password)) return json(422, { error: { code: "password-needs-mix" } });
         if (accounts.has(body.username)) return json(409, { error: { code: "username-taken" } });
         accounts.set(body.username, { password: body.password, createdAt: clock });
         const newToken = "tok-" + body.username + "-" + clock;
@@ -186,7 +187,7 @@ function runCloudAuthSelfTest(api) {
       if (cloudAuth.validatePasswordInput("12345") !== "password-too-short") errors.push("front-end accepted short password");
 
       // 2) 註冊即登入＋session 快取（spec#23）
-      const reg = await cloudAuth.register("mimi", "secret6");
+      const reg = await cloudAuth.register("mimi", "secret66");
       if (!reg.ok) errors.push("register failed: " + reg.code);
       if (!cloudAuth.isActive()) errors.push("cloud not active after register");
       const cached = cloudAuth.loadCachedSession();
@@ -232,7 +233,7 @@ function runCloudAuthSelfTest(api) {
       if (cloudAuth.loadCachedSession()) errors.push("session cache not cleared on logout");
       const badLogin = await cloudAuth.login("mimi", "wrong66");
       if (badLogin.ok || badLogin.code !== "invalid-credentials") errors.push("wrong password not rejected with invalid-credentials");
-      const relogin = await cloudAuth.login("mimi", "secret6");
+      const relogin = await cloudAuth.login("mimi", "secret66");
       if (!relogin.ok || !relogin.state || relogin.state.coins !== 555) errors.push("re-login did not restore latest cloud state");
 
       // 7) 本機舊帳號遷移資料流（intTest#74 核心）：normalizeState（含 sol→lumi）→ 上傳成功後才標記
@@ -288,7 +289,7 @@ function runCloudAuthSelfTest(api) {
 
       // 9) 時長政策（issue #310 spec#26／sysCase#16.1）：鎖定→執行值取政策、欄位唯讀、state 不被改寫；PUT 回應解除即回復。
       fake.policies.set("mimi", { locked: true, playMinutes: 10, restMinutes: 20, playMaxMinutes: 12 });
-      const lockedLogin = await cloudAuth.login("mimi", "secret6");
+      const lockedLogin = await cloudAuth.login("mimi", "secret66");
       if (!lockedLogin.ok) errors.push("locked login failed: " + lockedLogin.code);
       api.state = api.normalizeState(lockedLogin.state || {});
       if (!cloudAuth.playLimitLocked()) errors.push("play-limit policy not applied on login");
@@ -313,7 +314,7 @@ function runCloudAuthSelfTest(api) {
 
       // 10) 註冊開關（spec#26 (c)／sysCase#16.2）：關閉→register 403、登入畫面無建立入口＋友善說明。
       fake.setRegistrationOpen(false);
-      const closedReg = await cloudAuth.register("newkid1", "secret6");
+      const closedReg = await cloudAuth.register("newkid1", "secret66");
       if (closedReg.ok || closedReg.code !== "registration-closed") errors.push("closed registration not rejected with registration-closed");
       cloudAuth.upsertRecentAccount("mimi", { playerName: "CloudMimi", characterId: "lumi", coins: 555, outfit: api.state.outfit, playLimit: api.state.playLimit, lastPlayedAt: Date.now() });
       cloudAuth.openLoginScreen({ mustChoose: false });

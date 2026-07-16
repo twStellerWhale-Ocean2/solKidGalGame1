@@ -393,7 +393,7 @@ function openResetPasswordDialog(account) {
     note.textContent = self
       ? "變更後其他裝置會被登出，這台裝置維持登入。"
       : "重設後這個帳號的所有裝置都要用新密碼重新登入。";
-    const { label, input } = fieldInput("新密碼（至少 6 個字元）", { type: "password", minLength: 6, maxLength: 72 });
+    const { label, input } = fieldInput("新密碼（至少 8 個字元，須含一個數字與一個小寫英文）", { type: "password", minLength: 8, maxLength: 72 });
     // 顯示／隱藏切換（替孩子設新密碼須可目視驗證，避免打錯字把孩子鎖在門外）。
     const passwordWrap = document.createElement("span");
     passwordWrap.className = "password-wrap";
@@ -413,8 +413,13 @@ function openResetPasswordDialog(account) {
     const error = dialogError();
     const cancel = makeButton("取消", "btn-outlined", () => els.dialog.close());
     const submit = makeButton("重設密碼", "btn-filled", async () => {
-      if (input.value.length < 6) {
-        error.textContent = "密碼至少要 6 個字元";
+      if (input.value.length < 8) {
+        error.textContent = "密碼至少要 8 個字元";
+        error.hidden = false;
+        return;
+      }
+      if (!/[0-9]/.test(input.value) || !/[a-z]/.test(input.value)) {
+        error.textContent = "密碼須含至少一個數字與一個小寫英文";
         error.hidden = false;
         return;
       }

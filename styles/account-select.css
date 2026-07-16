@@ -226,6 +226,28 @@
   margin: 0;
   color: #c0325a;
   font-size: 0.86rem;
+  /* #331 錯誤回饋通則：固定高度預留（空值仍佔位、錯誤出現不推擠送出鈕）＋醒目呈現（非僅色彩，訊息帶 ⚠ 前綴） */
+  min-height: 1.35em;
+  font-weight: 600;
+  outline: none;
+}
+.login-error:not(:empty) {
+  background: #fdeef2;
+  border-left: 3px solid #c0325a;
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+/* #331 欄位級錯誤狀態（aria-invalid 同步設定、輸入即清除） */
+.login-input.input-error,
+.login-password-wrap .input-error {
+  border-color: #c0325a;
+  box-shadow: 0 0 0 2px rgba(192, 50, 90, 0.25);
+}
+/* #331 送出忙碌狀態：disabled＋進行中字樣 */
+.login-enter.is-busy,
+.login-continue.is-busy {
+  opacity: 0.7;
+  cursor: progress;
 }
 .login-enter,
 .login-continue,

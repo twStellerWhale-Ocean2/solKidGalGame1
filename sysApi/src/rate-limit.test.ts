@@ -23,4 +23,15 @@ describe("rate limiter", () => {
     limiter.reset("a");
     expect(limiter.isLimited("a", 2)).toBe(false);
   });
+
+  it("retryAfterMs reports remaining lockout only while limited (#331)", () => {
+    const limiter = createRateLimiter({ max: 2, windowMs: 1000 });
+    const t0 = 5_000;
+    expect(limiter.retryAfterMs("k", t0)).toBe(0); // 未累積
+    limiter.recordFailure("k", t0);
+    expect(limiter.retryAfterMs("k", t0 + 10)).toBe(0); // 未達上限
+    limiter.recordFailure("k", t0 + 20);
+    expect(limiter.retryAfterMs("k", t0 + 100)).toBe(900); // 鎖定中：resetAt(t0+1000) − now
+    expect(limiter.retryAfterMs("k", t0 + 1001)).toBe(0); // 窗口過後解除
+  });
 });

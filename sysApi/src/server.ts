@@ -35,7 +35,8 @@ async function main() {
     sessionSecret: config.sessionSecret,
     sessionTtlMs: config.sessionTtlMs,
     staticRoot: config.staticRoot,
-    rateLimiter: createRateLimiter({ max: config.rateLimitMax, windowMs: config.rateLimitWindowMs })
+    rateLimiter: createRateLimiter({ max: config.rateLimitMax, windowMs: config.rateLimitWindowMs }),
+    trustProxy: config.trustProxy
   });
   app.listen(config.port, () => {
     console.log(`sysApi listening on http://0.0.0.0:${config.port}/ (game shell + /api + /admin)`);

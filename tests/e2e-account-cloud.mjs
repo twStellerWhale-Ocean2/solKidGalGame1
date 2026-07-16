@@ -13,7 +13,7 @@ const SHOTS = path.join(repoRoot, "docs", "manual-assets");
 fs.mkdirSync(SHOTS, { recursive: true });
 const suffix = Date.now().toString(36);
 const username = `mimi${suffix}`.slice(0, 16);
-const password = "secret6";
+const password = "secret66";
 
 let failures = 0;
 function check(name, condition, detail = "") {
@@ -98,9 +98,11 @@ try {
   await pageB.fill("#loginOtherUsername", username);
   await pageB.fill("#loginOtherPassword", "wrong66");
   await pageB.click(".login-enter");
-  await pageB.waitForSelector(".login-error:not([hidden])", { timeout: 10000 });
+  // #331 後錯誤行常駐佔位（固定高度、不再以 hidden 切換）：等「非空」而非「非 hidden」。
+  await pageB.waitForSelector(".login-error:not(:empty)", { timeout: 10000 });
   const errText = await pageB.textContent(".login-error");
   check("wrong password shows unified inline error", /incorrect/i.test(errText || ""), errText || "");
+  check("inline error carries non-color cue (⚠ prefix, #331)", /^⚠/.test((errText || "").trim()), errText || "");
   await pageB.screenshot({ path: path.join(SHOTS, "issue309-05-login-error.png") });
   await pageB.fill("#loginOtherPassword", password);
   await pageB.click(".login-enter");
