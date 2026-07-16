@@ -86,7 +86,9 @@ HOST -->|"param整包 image＋chart 部署"| SYS
 
 ### (D) 部署做法
 
-* 正式路徑＝**helm 整包**（單一 release，依 [comIntf通用K8sHelm部署格式]）：單一 app image（同站服務遊戲殼靜態檔、`/admin/` 管理頁與 `/api/*` 端點）＋PostgreSQL（資料落 PVC 持久化），維護者於自有 K8s `helm install`／`helm upgrade`／`helm uninstall`。開發期路徑＝docker compose（PostgreSQL）＋node 本機執行。內網 HTTP 過渡態明文風險可接受、勿轉發公網；chart 提供選配 Ingress／TLS。
+* 正式路徑＝**helm 整包**（單一 release，依 [comIntf通用K8sHelm部署格式]）：單一 app image（同站服務遊戲殼靜態檔、`/admin/` 管理頁與 `/api/*` 端點）＋PostgreSQL（資料落 PVC 持久化），維護者於自有 K8s `helm install`／`helm upgrade`／`helm uninstall`。開發期路徑＝docker compose（PostgreSQL）＋node 本機執行。
+* **支援公網正式部署**（2026-07-16 USR 定調，issue #329——舊「家庭內網 only、勿轉發公網」定位除役）：chart 預設展開即含 Ingress（web 可達性 GATE、檢核表第 11 項），host 慣例 `sollingoworld.<baseDomain>`（baseDomain 預設 `local`、預設可展開）；TLS 兩模式——①自架 ingress-nginx＋cert-manager（chart 帶 tls 段＋issuer annotation）②外部邊緣終結（如 Cloudflare Tunnel，chart 免 tls）；**公網部署須配 TLS 終結**（帳密不得過公網明文），純內網部署仍可 NodePort HTTP。README K8s 安裝段內嵌 bash＋pwsh 環境檢查腳本（偵測預設 IngressClass，防孤兒 Ingress 無聲 404，檢核表第 12 項）。
+* **除役變更面（issue #329，交付物語句一致性）**：「勿轉發公網」語句四處除役——`README.md`（部署共通注意）、`deploy/helm/values.yaml` 註解、`templates/NOTES.txt`、`templates/ingress.yaml` 頭註；NOTES.txt 增 ingress 啟用分支輸出 `https://<host>/` 服務網址。README 部署段補：公網 profile 之 `api.trustProxy` 對照表（僅 ingress=1／tunnel→ingress=2，接 #331）、`/admin/` 公網暴露安全注意（管理操作建議自內網或加 IP allowlist annotation）、既有 NodePort 用戶升級註記（有預設 IngressClass 之叢集升級後將新增 host 路由，暴露面仍限叢集所在網段、對外仍取決於防火牆/轉發）。
 
 ## D. 規格效益
 
@@ -239,7 +241,7 @@ HOST -->|"param整包 image＋chart 部署"| SYS
   * **最低能力清單（六簇，逐項落為 orgSop／teamSop／prsnSop 與具名頁）**：① 玩家帳號與雲端存檔（註冊／登入／登出、session 續玩、跨裝置還原、樂觀併發不靜默覆蓋、離線韌性）；② 兒童端可用性（手機直向第一視口、觸控 ≥44px、兒童友善錯誤、家長協助輸入）；③ 護眼／家長管控（時長限制強制休息、個別帳號鎖定）；④ 維護者線上管理（登入登出、帳號清單、重設密碼、撤銷登入、刪除帳號二次確認防自鎖、執行期設定即時生效、關於／版本、使用說明）；⑤ 安全基線（密碼單向雜湊、統一錯誤不洩存在性、速率限制僅計失敗、受保護 API 驗 session、管理 API 驗 admin、靜態 allowlist）；⑥ 維運（`/healthz`／`/readyz`、備份還原記入手冊）。
   * **介面 bar（雙端）**：玩家遊戲端＝沿 techStyle 全幅童話手繪視覺、不得出現任何管理／dev 入口；管理端＝MD3 管理網站基座＋techStyle token、行動視口可用、危險操作 error 色＋二次確認、回饋 snackbar、未儲存防護。不合格樣式：兒童端曝露管理入口、管理端硬寫色／原生 alert、截圖混入 dev-only 元素、鎖定／唯讀無視覺標示。
   * **標準 mod 組成（逐 mod 設計見 ＜III＞）**：modShell（`techStack: StaticWeb`，遊戲殼＋內容包）＋modAdmin（`techStack: StaticWeb`，`/admin/` 線上管理頁）＋modApi（`techStack: NodeSvr`，帳號／存檔／管理 API＋靜態服務 allowlist）＋modDb（`techStack: Postgres`，玩家資料與執行期設定、所有權屬本 sys）。
-  * **單一 release 部署組成**：`deployHelm`——一個 sys＝一個 helm chart；modApi image 烘入 modShell／modAdmin 靜態包（同站免 CORS）＋modDb（chart 內 StatefulSet）；內網 HTTP 過渡態明文風險、勿轉發公網，TLS 選配藏 gateway 後終結。
+  * **單一 release 部署組成**：`deployHelm`——一個 sys＝一個 helm chart；modApi image 烘入 modShell／modAdmin 靜態包（同站免 CORS）＋modDb（chart 內 StatefulSet）；chart 預設展開含 Ingress（host `sollingoworld.<baseDomain>`，issue #329），TLS 兩模式（自架 ingress-nginx＋cert-manager／外部邊緣終結如 Cloudflare Tunnel）——公網部署須 TLS 終結、純內網 NodePort HTTP 仍可用。
   * **點名強制 techItem**：無——語音走瀏覽器內建 Web Speech；若日後引入外部 TTS／發音評分再於 ＜III.C.(A)＞ 點名對應 techItem。
 
 ### (B) 關鍵參數
@@ -346,7 +348,7 @@ API ==>|"comIntf自訂資料庫連線<br/>apiIntf標準Postgres連線"| DB
 
 ### (D) 軟硬項目
 
-* **部署元件清單**：modApi container image（Node.js LTS＋TypeScript，烘入 modShell／modAdmin 靜態包）、modDb PostgreSQL 16（StatefulSet 單副本、資料落 PVC）、helm chart（`deploy/helm/`）、選配 Ingress／TLS。部署拓樸圖見 ＜C.(D)＞。
+* **部署元件清單**：modApi container image（Node.js LTS＋TypeScript，烘入 modShell／modAdmin 靜態包）、modDb PostgreSQL 16（StatefulSet 單副本、資料落 PVC）、helm chart（`deploy/helm/`，**預設含 Ingress**、TLS 兩模式選配，issue #329）。部署拓樸圖見 ＜C.(D)＞。
 
 ## C. 組態設定
 
@@ -362,7 +364,7 @@ API ==>|"comIntf自訂資料庫連線<br/>apiIntf標準Postgres連線"| DB
 ### (B) 關鍵參數
 
 * **[etyCfg自訂modShell組態]**（內容與遊玩，values.yaml）：`paramDefaultArea=castle`、`paramDefaultCharacter=lumi`、`paramPlayableCharacters=lumi,yumi,rosa`、`paramProfileColorPalette=8 pastel`、`paramBackgroundPatterns=8`、`paramInitialThemeRandomization=profileColor,backgroundPattern`、`paramPlayMinutes=15`、`paramRestMinutes=15`、`paramPlayMaxMinutes=20`、`paramMoodMinutesPerPoint=1`、`paramChatChoiceCount=2`、`paramJobChoiceCount=3`、`paramRewardSecondTryRatio=0.5`、`paramSpeechRateScale=0.8`、`paramSpeechLeadingPad=8 full-width spaces`、`paramWardrobeLayerBounds=type defaults`、`paramCharacterSilhouetteFilter=outline+depth-shadow`、`paramAssetStandards`（各類圖像像素尺寸與檔重預算 SSOT：角色 body／head／NPC 512×768、場景 1024×1024、地區／世界地圖 1536×1536、衣物單品 512×512、UI 1280×720）。
-* **[etyCfg自訂modApi組態]**（Env→K8s Secret 與 values）：`paramApiPort=4180`、`paramServiceType=NodePort(30418)`、`paramUsernamePattern=^[a-z][a-z0-9]{2,15}$`、`paramPasswordMinLength=6`、`paramPasswordHash=bcrypt cost≥10`、`paramSessionTtlDays=30`、`paramAdminBootstrap=ADMIN_USERNAME+ADMIN_PASSWORD env`、`paramRegistrationOpenDefault=true`、`paramDefaultPlayLimit=play15/rest15/max20`、Secret＝`DATABASE_URL`／`SESSION_SECRET`／`ADMIN_USERNAME`／`ADMIN_PASSWORD`／`POSTGRES_PASSWORD`。
+* **[etyCfg自訂modApi組態]**（Env→K8s Secret 與 values）：`paramApiPort=4180`、`paramServiceType=NodePort(30418)`、`paramIngress=enabled 預設 true（預設展開即含 Ingress，web 可達性 GATE）／className 留空＝交叢集預設（README 環境檢查把關）／baseDomain 預設 local——host 缺值時算出 sollingoworld.<baseDomain>（預設 sollingoworld.local，內網以 hosts 檔或 mDNS 可用、公網改自有網域）、ingress.host 顯式覆寫優先、預設值保證 helm template 可展開不 required 紅／tls=[{hosts,secretName}] 選配（自架模式由 ingress.annotations 供 cert-manager issuer；外部邊緣終結模式 tls 留空）／公網 profile 連動（issue #331 交接）：enabled=true 時 README 對照表載明 api.trustProxy 建議值（僅 ingress=1、tunnel→ingress=2）——chart 不自動連動（代理跳數僅部署者可知），機制歸 #331、建議值文件歸本單`、`paramUsernamePattern=^[a-z][a-z0-9]{2,15}$`、`paramPasswordMinLength=6`、`paramPasswordHash=bcrypt cost≥10`、`paramSessionTtlDays=30`、`paramAdminBootstrap=ADMIN_USERNAME+ADMIN_PASSWORD env`、`paramRegistrationOpenDefault=true`、`paramDefaultPlayLimit=play15/rest15/max20`、Secret＝`DATABASE_URL`／`SESSION_SECRET`／`ADMIN_USERNAME`／`ADMIN_PASSWORD`／`POSTGRES_PASSWORD`。
 * **[etyCfg自訂modDb組態]**：`paramDbName=luminara`、`paramDbImage=postgres:16`、`paramDbStorage=PVC 1Gi（helm.sh/resource-policy: keep）`、測試庫 `luminara_test`、helm-e2e namespace `luminara-e2e`（測試禁觸營運庫 `luminara`）。
 * **[etyCfg自訂devServer組態]**（dev-only 工具，不入正式部署）：`paramServerHost=0.0.0.0（HOST 覆寫）`、`paramServerPort=4174`。
 
@@ -411,6 +413,7 @@ ADM["[prsn家長維護者]"]
 
 subgraph HOST["[etyCfg自架主機平台]（Kubernetes 單節點）"]
   subgraph REL["helm release：luminara"]
+    ING["Ingress（預設啟用，issue #329）<br/>host：sollingoworld.baseDomain<br/>TLS：自架 cert-manager 或外部邊緣終結"]
     APP["[modApi模組]<br/>組態：etyCfg自訂modApi組態<br/>techStack：techStackNodeSvr<br/>（烘入 modShell／modAdmin 靜態包）"]
     PG["[modDb模組]<br/>組態：etyCfg自訂modDb組態<br/>techStack：techStackPostgres<br/>StatefulSet＋PVC keep"]
   end
@@ -418,7 +421,9 @@ end
 
 ADM -.->|"setWi自訂部署網站（helm install）"| REL
 ADM -.->|"setWi自訂資料庫備份還原（pg_dump／psql）"| PG
-APP -->|"param同站服務 4180／NodePort 30418"| APP
+APP -->|"param同站服務 4180／NodePort 30418（內網）"| APP
+ADM ==>|"comIntf通用HTTPS連線<br/>（TLS 終結於 Ingress／邊緣）"| ING
+ING ==>|"轉發 4180（叢集內 HTTP）"| APP
 APP ==>|"comIntf自訂資料庫連線<br/>apiIntf標準Postgres連線"| PG
 ```
 
@@ -453,7 +458,7 @@ APP ==>|"comIntf自訂資料庫連線<br/>apiIntf標準Postgres連線"| PG
 | 08 | 內容擴充：新增內容包→registry 重生→即時預覽；資產尺寸／檔重 lint |
 | 09 | 線上帳號管理：清單／重設密碼／撤銷 session／刪除、admin 自刪擋下、非 admin 403 |
 | 10 | 執行期設定：新帳號預設時長／個別鎖定／註冊開關，儲存即生效、DB 缺值程式預設遞補 |
-| 11 | helm chart 機判：`helm lint` 0、manifest 探針／固定 nodePort／StatefulSet／PVC keep／缺秘密負向／版本鏈三源／Dockerfile COPY 對齊 allowlist |
+| 11 | helm chart 機判：`helm lint` 0、manifest 探針／固定 nodePort／StatefulSet／PVC keep／缺秘密負向／版本鏈三源／Dockerfile COPY 對齊 allowlist／**預設展開含 `kind: Ingress`＋host 慣例＋README 環境檢查碼塊（bash＋pwsh 各含 `ingressclass` 關鍵字；web 可達性，issue #329）** |
 | 12 | helm 真裝 e2e（單節點叢集）：install→smoke→upgrade 資料保全→pg_dump 備份還原→uninstall keep→同名重裝續用 |
 
 ### (B) 效益指標
