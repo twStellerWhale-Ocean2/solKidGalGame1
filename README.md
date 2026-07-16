@@ -25,7 +25,35 @@
 
 ### (A) 部署（自架伺服器）
 
-**正式路徑：helm 整包（建議）**——前置需求：一台有 Kubernetes 的家庭主機（單節點即可，如 k3s／rancher-desktop／docker-desktop——**需有預設 StorageClass**，上述三者內建都有）、`helm` 與 `kubectl` 指令。一個 chart 就把整套（遊戲網頁＋帳號存檔 API＋線上管理頁＋PostgreSQL 資料庫）裝起來：
+**正式路徑：helm 整包（建議）**——前置需求：一台有 Kubernetes 的主機（單節點即可，如 k3s／rancher-desktop／docker-desktop——**需有預設 StorageClass**，上述三者內建都有）、`helm` 與 `kubectl` 指令。一個 chart 就把整套（遊戲網頁＋帳號存檔 API＋線上管理頁＋PostgreSQL 資料庫）裝起來。
+
+**安裝前先跑環境檢查**（bash 或 PowerShell 擇一，整段複製執行；每行都應印 OK，出現「注意／缺」先照提示處理再安裝）：
+
+```bash
+# solLingoWorld 部署前環境檢查（bash）
+command -v kubectl >/dev/null && echo "OK: kubectl" || echo "缺 kubectl"
+command -v helm >/dev/null && echo "OK: helm" || echo "缺 helm"
+kubectl get nodes >/dev/null 2>&1 && echo "OK: 叢集可連" || echo "缺：叢集連不上（kubeconfig／權限）"
+kubectl get storageclass -o jsonpath='{.items[*].metadata.annotations.storageclass\.kubernetes\.io/is-default-class}' 2>/dev/null | grep -q true \
+  && echo "OK: 有預設 StorageClass" || echo "注意：沒有預設 StorageClass——資料卷會生不出來，請先設定"
+if kubectl get ingressclass -o jsonpath='{.items[*].metadata.annotations.ingressclass\.kubernetes\.io/is-default-class}' 2>/dev/null | grep -q true; then
+  echo "OK: 叢集有預設 IngressClass（values 的 ingress.className 可留空）"
+else
+  echo "注意：叢集沒有標記預設 IngressClass——安裝時請加 --set ingress.className=<名稱>（kubectl get ingressclass 查看；ingress-nginx 官方安裝預設不標），否則 Ingress 沒人接、網址會無聲 404"
+fi
+```
+
+```powershell
+# solLingoWorld 部署前環境檢查（PowerShell 7）
+if (Get-Command kubectl -ErrorAction SilentlyContinue) { "OK: kubectl" } else { "缺 kubectl" }
+if (Get-Command helm -ErrorAction SilentlyContinue) { "OK: helm" } else { "缺 helm" }
+kubectl get nodes *> $null; if ($LASTEXITCODE -eq 0) { "OK: 叢集可連" } else { "缺：叢集連不上（kubeconfig／權限）" }
+$sc = (kubectl get storageclass -o json 2>$null | ConvertFrom-Json).items | Where-Object { $_.metadata.annotations.'storageclass.kubernetes.io/is-default-class' -eq 'true' }
+if ($sc) { "OK: 有預設 StorageClass（$($sc[0].metadata.name)）" } else { "注意：沒有預設 StorageClass——資料卷會生不出來，請先設定" }
+$ic = (kubectl get ingressclass -o json 2>$null | ConvertFrom-Json).items | Where-Object { $_.metadata.annotations.'ingressclass.kubernetes.io/is-default-class' -eq 'true' }
+if ($ic) { "OK: 叢集有預設 IngressClass（$($ic[0].metadata.name)；values 的 ingress.className 可留空）" }
+else { "注意：叢集沒有標記預設 IngressClass——安裝時請加 --set ingress.className=<名稱>（kubectl get ingressclass 查看；ingress-nginx 官方安裝預設不標），否則 Ingress 沒人接、網址會無聲 404" }
+```
 
 1. 取得發行物：chart `sollingoworld-chart` 取自發佈列車隨版本發行的 chart 套件（GitHub Release 附件 `.tgz` 或 OCI registry；正式發行前的驗測可直接用本 repo 的 `deploy/helm/`）；容器 image `ghcr.io/twstellerwhale-ocean2/sollingoworld` 為公開 image、不需登入即可拉取（image 與 chart 分屬兩名——chart 帶 `-chart` 後綴以免與 image 撞同一 OCI path）。
 2. 準備秘密檔 `secrets.yaml`（**不要**用 `--set` 直接把密碼打在指令上——會留在指令歷史裡）：
@@ -43,7 +71,10 @@
    helm install luminara <chart 來源> -f secrets.yaml
    ```
 
-4. 確認就緒與取得網址：`kubectl get pods` 全部 Ready 即完成；服務網址為 `http://<主機IP>:30418/`（chart 預設固定 port `30418`，安裝完成訊息也會印出網址）。瀏覽器開網址即可遊玩；線上管理頁在 `/admin/`。
+4. 確認就緒與取得網址：`kubectl get pods` 全部 Ready 即完成（安裝完成訊息也會印出網址）。兩條入口**同時可用**：
+   - **網域入口（Ingress，預設啟用）**：`http://sollingoworld.local/`——chart 預設 host 為 `sollingoworld.<baseDomain>`（baseDomain 預設 `local`）。內網桌機在 hosts 檔（Windows：`C:\Windows\System32\drivers\etc\hosts`，需系統管理員）把 `sollingoworld.local` 指到主機 IP；**手機平板改不了 hosts**，請用下方 NodePort 直連（或在路由器 DNS 設定網域）；要換網域用 `--set ingress.baseDomain=<你的網域>`（或直接 `--set ingress.host=…`）。
+   - **內網直連（NodePort）**：`http://<主機IP>:30418/`（chart 預設固定 port `30418`）。
+   瀏覽器開網址即可遊玩；線上管理頁在 `/admin/`。
 
    ![helm 部署後首次進入：遊戲登入畫面](docs/manual-assets/issue311-01-helm-game-login.png)
 
@@ -64,6 +95,22 @@
    （PowerShell 不支援 `<` 導入，還原一律用上面的 `Get-Content … |` 管線寫法；還原完成後重新整理頁面即可。）原本用 compose 路徑跑的伺服器要改用 helm 時，也是用同一套「compose 版備份 → helm 版還原」把全家進度搬過去。
    另外：**不要手動刪除叢集裡的 `luminara-secrets`**——資料庫實際密碼在首次安裝時已寫進資料卷，這個 Secret 與資料卷同壽命，刪掉重裝會連不上既有資料。
 8. **admin 自己忘記密碼**（唯一無法用網頁自救的情況）：`kubectl exec <服務pod> -- npm run reset-password -- <帳號> <新密碼>`。
+
+**公網正式部署**（讓家人在外面也能玩；**務必配 TLS**——帳號密碼不可以走公網明文）：
+
+- **模式①：自架邊緣（ingress-nginx＋cert-manager）**——適合有公網 IP 與自有網域的主機：叢集裝好 ingress-nginx 與 cert-manager 後，安裝時給網域與憑證設定（`--set-json` 需 PowerShell 7.3+；嫌引號麻煩可把同組設定寫進 values 檔、與 secrets.yaml 同法 `-f` 供給）：
+
+  ```powershell
+  helm install luminara <chart 來源> -f secrets.yaml --set ingress.baseDomain=<你的網域> --set api.trustProxy=1 `
+    --set-json 'ingress.tls=[{"hosts":["sollingoworld.<你的網域>"],"secretName":"sollingoworld-tls"}]' `
+    --set-json 'ingress.annotations={"cert-manager.io/cluster-issuer":"<你的 issuer 名>"}'
+  ```
+
+- **模式②：外部邊緣終結（Cloudflare Tunnel 等）**——不需公網 IP、憑證在邊緣供應商：chart 免 tls 設定（`ingress.tls` 留空即可），tunnel 指向叢集入口並帶 host header；此拓撲為兩跳代理，設 `--set api.trustProxy=2`（且 ingress-nginx 須開啟 forwarded headers）。
+- **`api.trustProxy` 跳數對照**（登入／註冊失敗限流以真實來源計，見遊玩注意事項）：純內網直連＝不設（0）；只有 Ingress＝`1`；Tunnel→Ingress＝`2`。
+- **`/admin/` 管理頁安全注意**：公網化後管理頁與遊戲同網址入口。管理操作建議自內網進行；要更保險可在 `ingress.annotations` 加來源 IP allowlist（如 ingress-nginx 的 `nginx.ingress.kubernetes.io/whitelist-source-range`）限制 `/admin/`。
+- **已裝內網、想轉公網**：不用重裝——`helm upgrade luminara <chart 來源> --set …` 帶上同組公網參數即可（秘密不需重給）；要順便關掉 NodePort 直連入口加 `--set service.type=ClusterIP`（公網部署以 Ingress 為唯一入口時建議）。
+- **既有用戶升級註記**：升級到本版後 Ingress 預設啟用——若你的叢集有預設 IngressClass（如 k3s 內建 traefik），會新增 `sollingoworld.local` 的 host 路由；暴露面仍限叢集所在網段，對外是否可達仍取決於你的防火牆／轉發設定。不想要 Ingress 可 `--set ingress.enabled=false`。
 
 **開發期路徑：compose＋npm**（開發與輕量試用；不是正式散佈動線）：
 
@@ -87,7 +134,7 @@
 
 兩條路徑共通的注意事項：
 
-- 家庭內網走 HTTP——**請勿把這個服務的 port 轉發到公網**：密碼與登入狀態（含管理帳號）在內網是明文傳輸的，只適合家庭內部使用（chart 留有選配的 Ingress／TLS 欄位，有憑證與網域的維護者可自行啟用）。
+- **傳輸安全定位**：純內網部署可走 HTTP（NodePort 或 `sollingoworld.local`）；**要開放到公網一律經 TLS 終結的入口**（見上「公網正式部署」兩模式）——明文 HTTP 的 port 不要直接轉發到公網，密碼（含管理帳號）會裸奔。
 - **定期備份你的資料庫**：全家的帳號與進度都存在 PostgreSQL 裡；玩家也可各自在遊戲內匯出 Markdown 備份。
 - **線上管理**：瀏覽器開 `http://<主機IP>:<port>/admin/`（helm 路徑預設 port `30418`、開發路徑 `4180`）、以 admin 帳密登入，即可線上管理帳號（孩子忘記密碼在這裡重設、刪除不用的帳號）與執行期遊戲設定（預設遊玩時長、鎖定孩子時長、關閉註冊），儲存即生效、不需重佈——見 [III.J 線上管理](#j-線上管理維護者)。
 - **admin 自己忘記密碼**（唯一無法用網頁自救的情況）：開發路徑在伺服器端執行 `cd sysApi && npm run reset-password -- <帳號> <新密碼>`；helm 部署見正式路徑步驟 8（`kubectl exec`）。
