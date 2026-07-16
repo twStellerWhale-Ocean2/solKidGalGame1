@@ -1,4 +1,4 @@
-// issue #245：場景題庫 IO 純函式的可重跑測試（node tool/scene-bank-io.test.mjs）。
+// issue #245：場景題庫 IO 純函式的可重跑測試（node devtool/scene-bank-io.test.mjs）。
 // 對四地區真實 manifest 做 reconstruct → serialize → 重新 import 的 round-trip 等價比對，
 // 固化「GUI 寫回不破壞題庫結構」之不變式；另測 validateBank 守門與 parseDialogJson／buildScenePrompt。
 import { writeFile, unlink } from "node:fs/promises";

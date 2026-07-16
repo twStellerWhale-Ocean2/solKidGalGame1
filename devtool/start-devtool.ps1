@@ -7,7 +7,7 @@ $ErrorActionPreference = 'Stop'
 
 #region I.主旨目的 ================================
 Write-Host '# I.主旨目的 ================================' -ForegroundColor Blue
-Write-Host '* 啟動本機靜態開發 server，並開啟 Wardrobe Tuner。'
+Write-Host '* 啟動本機開發 server，並開啟管理設定工具（devtool）。'
 Write-Host '* 這不是正式架站，只是讓 Chrome 用 http://127.0.0.1 讀取 repo 靜態檔案。'
 #endregion
 
@@ -20,7 +20,7 @@ Write-Host '## A.參數準備 --------------------------------' -ForegroundColor
 $toolRoot = $PSScriptRoot
 $repoRoot = Resolve-Path -LiteralPath (Join-Path $toolRoot '..')
 $serverScript = Join-Path $repoRoot 'server.mjs'
-$toolUrl = "http://127.0.0.1:$Port/tool/wardrobe-tuner.html"
+$toolUrl = "http://127.0.0.1:$Port/devtool/wardrobe-tuner.html"
 $serverReady = $false
 
 Write-Host "* Repo: $repoRoot"
@@ -118,7 +118,7 @@ if ($NoOpen) {
 }
 else {
   Start-Process $toolUrl
-  Write-Host '* 已開啟 Wardrobe Tuner。' -ForegroundColor Green
+  Write-Host '* 已開啟管理設定工具。' -ForegroundColor Green
 }
 
 #endregion

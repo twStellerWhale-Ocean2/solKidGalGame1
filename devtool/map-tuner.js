@@ -186,7 +186,7 @@ async function savePositions() {
   setStatus(dom.saveStatus, "儲存中…", "");
   try {
     const positions = map.items.map((it) => ({ id: it.id, x: fmt(it.x), y: fmt(it.y) }));
-    const d = await postJson("/tool/save-map-positions", { file: map.file, positions });
+    const d = await postJson("/devtool/save-map-positions", { file: map.file, positions });
     if (!d.ok) throw new Error(d.error);
     setDirty(`map:${map.key}`, false); // 僅清這張地圖的 dirty，其他張未存仍受離頁保護
     setStatus(dom.saveStatus, `已儲存 ${d.updated} 個座標 → ${map.file}。重新整理遊戲即可看到。`, "ok");
@@ -204,7 +204,7 @@ async function uploadMap(e) {
   setStatus(dom.uploadStatus, "上傳轉檔中…", "");
   try {
     const imageData = await readFileAsDataUrl(file);
-    const d = await postJson("/tool/upload-map", { target: map.key, imageData });
+    const d = await postJson("/devtool/upload-map", { target: map.key, imageData });
     if (!d.ok) throw new Error(d.error);
     setStatus(dom.uploadStatus, `已換圖並調整到 ${map.imageSize.width}×${map.imageSize.height}。`, "ok");
     dom.image.src = `${assetUrl(map.image).split("?")[0]}?t=${Date.now()}`; // cache-bust 重新載入

@@ -7,7 +7,7 @@
 Open from the local server:
 
 ```text
-http://127.0.0.1:4174/tool/wardrobe-tuner.html
+http://127.0.0.1:4174/devtool/wardrobe-tuner.html
 ```
 
 On Windows, you can start the local server and open the tool with:
@@ -24,7 +24,7 @@ module loading restrictions during development.
 When the game itself is opened from a **local dev host** (`location.hostname` is
 `127.0.0.1`, `localhost` or `[::1]`), the princess **Choose your princess** dialog
 shows a **衣物調整工具** button right below the `Start` button — clicking it
-navigates to `tool/wardrobe-tuner.html`. This entry is **dev-only**: it is gated by
+navigates to `devtool/wardrobe-tuner.html`. This entry is **dev-only**: it is gated by
 front-end environment detection and never appears on the public GitHub Pages site.
 Full apply/manage actions still require the dev server (`node server.mjs`).
 
@@ -78,7 +78,7 @@ canvas; `data-audit` only warns, and errors only if it leaves the canvas).
 ## Apply your tuning
 
 **✓ 套用到檔案 (Apply)** (bottom of the right pane) writes both layers straight
-back to disk via the local `server.mjs` dev endpoint (`POST /tool/apply-wardrobe`)
+back to disk via the local `server.mjs` dev endpoint (`POST /devtool/apply-wardrobe`)
 — no copy-paste. It only rewrites the `wardrobeLayerBoundsByType` block in
 `rules.js` and the `assetTargetOverrides` block in `asset-target-overrides.js`
 (whitelisted files), preserving each file's line endings. Reload the game to see
@@ -108,13 +108,13 @@ The page reloads after add/delete so the manifests are re-read.
 
 ## Regenerating wardrobe art
 
-`tool/generate-wardrobe-asset.mjs` builds each prompt from the shared house style,
+`devtool/generate-wardrobe-asset.mjs` builds each prompt from the shared house style,
 the pack `style.json` and the item description, then writes one `512×512`
 transparent WebP used by both the wardrobe layer and shop preview.
 
 ```powershell
-node tool/generate-wardrobe-asset.mjs castle --item hairstyle-crown-braided-updo
-node tool/generate-wardrobe-asset.mjs castle --apply --quality medium
+node devtool/generate-wardrobe-asset.mjs castle --item hairstyle-crown-braided-updo
+node devtool/generate-wardrobe-asset.mjs castle --apply --quality medium
 ```
 
 The official generation path always uses a chroma-key mannequin guide first:
@@ -126,7 +126,7 @@ wardrobe layers unless the design rules are changed.
 
 ## Trim tool
 
-`node tool/trim-wardrobe-assets.mjs` (dry-run) measures every layer asset's
+`node devtool/trim-wardrobe-assets.mjs` (dry-run) measures every layer asset's
 content box; `--apply` trims the transparent margins in place and regenerates
 `asset-content-box.generated.js`. Requires ImageMagick (`magick`).
 
@@ -140,11 +140,11 @@ each area — **Castle / Urban / Rural / Wild** (`<area>Area.nodes` in that area
 - **Drag a marker** on the map, or type into the **x / y** boxes on the right —
   both stay in sync. The left list selects/highlights a node.
 - **✓ 儲存座標到檔案** writes the changed x / y straight back via the dev endpoint
-  `POST /tool/save-map-positions`. It only rewrites the first `x:` / `y:` after each
+  `POST /devtool/save-map-positions`. It only rewrites the first `x:` / `y:` after each
   `id: "<id>"` (whitelisted to the five map files), preserving line endings.
 - **更換地圖** uploads a replacement image; the server cover-fits it to that map's
   exact size/resolution (world `1024×1536`, areas `1536×1536`) with ImageMagick and
-  overwrites the map webp (`POST /tool/upload-map`). Reload the game to see it.
+  overwrites the map webp (`POST /devtool/upload-map`). Reload the game to see it.
 
 Like the wardrobe apply/manage actions, map save/upload require the dev server
 (`node server.mjs`) and never run on the public GitHub Pages site.
@@ -173,12 +173,12 @@ life-chat dialogue).
   and a box to paste the JSON back (📋 copy / 解析貼回 parse). Either way the result
   is schema-validated and shown for review — it is **not** written until you save.
 - **✓ 儲存對話到檔案** writes the whole area's dialogue back via
-  `POST /tool/save-scene-dialog`. It only rewrites the
+  `POST /devtool/save-scene-dialog`. It only rewrites the
   `const <area>LessonBank/ChatLessonBank = Object.freeze({…})` blocks in that
   area's `manifest.js` (whitelisted to the four areas), keeps `reward` as a
   variable reference, and preserves line endings. Reload the game to see it.
 
 The pure serialize/validate/prompt helpers live in `scene-bank-io.mjs` and are
-covered by `node tool/scene-bank-io.test.mjs` (round-trip against every area's
+covered by `node devtool/scene-bank-io.test.mjs` (round-trip against every area's
 real banks). Like the other tabs, this tab requires the dev server
 (`node server.mjs`) and never runs on the public GitHub Pages site.

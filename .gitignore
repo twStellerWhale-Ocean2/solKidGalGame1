@@ -3,8 +3,8 @@
 .playwright-mcp/
 
 # issue #196 wardrobe 影像生成之暫存/預覽（非交付物）
-tool/_gen-preview/
-tool/_gen-tmp/
+devtool/_gen-preview/
+devtool/_gen-tmp/
 sysApi/node_modules/
 sysApi/dist/
 sysApi/coverage/

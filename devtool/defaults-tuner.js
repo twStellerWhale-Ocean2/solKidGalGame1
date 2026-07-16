@@ -1,5 +1,5 @@
 // 「👑 公主預設」分頁：編輯新遊戲公主的起始 coins／owned／outfit，即時預覽紙娃娃，
-// 按「套用」由 dev server 寫回 game-engine/state/default-state.js（白名單 /tool/save-defaults）。
+// 按「套用」由 dev server 寫回 game-engine/state/default-state.js（白名單 /devtool/save-defaults）。
 // issue #297：三欄版面（左＝已有金錢＋擁有清單、依「素材包-名稱」排序；中＝衣物配置下拉；右上＝資訊＋套用、右下＝人物照片），各欄可拖寬。
 // 維持「穿著⊆擁有」不變式——穿著下拉僅列已擁有、取消擁有自動脫下正穿之該件；勾選擁有時該部位若空著則預設直接穿上。
 import {
@@ -217,7 +217,7 @@ function initDefaultsTab() {
     ensureEquippedOwned();
     setStatus("儲存中…");
     try {
-      const res = await fetch("/tool/save-defaults", {
+      const res = await fetch("/devtool/save-defaults", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ coins: state.coins, owned: [...state.owned], outfit: state.outfit })

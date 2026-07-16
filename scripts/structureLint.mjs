@@ -15,12 +15,12 @@ const MAIN_JS_BUDGET = 500; // main.js 收斂為組裝與調度
 // 具名豁免（路徑 → 理由）；豁免僅涵蓋行數上限，不豁免 CSS 重複規則塊。
 const EXEMPT = new Map([
   ["game-engine/testing/selftests.js", "行為層守門檔（22 個 selftest 套件單檔集中）；拆分另案處理"]
-  // tool/wardrobe-tuner.css 豁免已由 issue #297 收斂移除：工具樣式依分頁解體為
+  // devtool/wardrobe-tuner.css 豁免已由 issue #297 收斂移除：工具樣式依分頁解體為
   // tool-shell／tool-wardrobe／tool-stage／tool-map-scene／tool-voice-defaults 五個 ≤800 行分層檔。
 ]);
 
 // 掃描範圍：引擎、樣式、腳本、伺服器與維護工具；排除生成檔（*.generated.js）與第三方。
-const SCAN_DIRS = ["game-engine", "styles", "scripts", "tool", "content-package", "content-base"];
+const SCAN_DIRS = ["game-engine", "styles", "scripts", "devtool", "content-package", "content-base"];
 const SCAN_FILES = ["server.mjs"];
 
 function walk(dir, out = []) {

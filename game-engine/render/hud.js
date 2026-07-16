@@ -257,7 +257,7 @@ export function renderSettings() {
   renderAbout(elements, { copyright, versionHistory });
 }
 
-// issue #246：角色語音指定的設定 UI 已自玩家 Settings 移至管理設定工具的「聲音管理」頁籤（tool/voice-tuner.js），
+// issue #246：角色語音指定的設定 UI 已自玩家 Settings 移至管理設定工具的「聲音管理」頁籤（devtool/voice-tuner.js），
 // 沿用 render/settings.js 的 renderVoiceSettings 與本檔 speechManager 同一套指定 store；遊戲端僅保留 Voice On/Off 開關，
 // 不再於 Settings 渲染角色語音清單（公開遊玩端未指定者一律自動依性別與語言選用）。
 

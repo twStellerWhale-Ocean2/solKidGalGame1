@@ -216,7 +216,7 @@ function assetOfItem(item) { const m = /assets\/(?:layers|thumbs)\/([^/]+)\.webp
 
 async function openItemFolder(item) {
   try {
-    const d = await postJson("/tool/open-folder", { pack: packOfItem(item) });
+    const d = await postJson("/devtool/open-folder", { pack: packOfItem(item) });
     if (!d.ok) snack(`開啟資料夾失敗：${d.error}`, "err");
   } catch (e) { snack(`開啟資料夾失敗：${e.message}`, "err"); }
 }
@@ -231,7 +231,7 @@ async function deleteItem(item) {
   });
   if (!ok) return;
   try {
-    const d = await postJson("/tool/delete-item", { pack: packOfItem(item), asset: assetOfItem(item), itemId: item.id });
+    const d = await postJson("/devtool/delete-item", { pack: packOfItem(item), asset: assetOfItem(item), itemId: item.id });
     if (!d.ok) { snack(`刪除失敗：${d.error}`, "err"); return; }
     const key = keyFromSrc(item.layers?.[0]?.src);
     if (key) { delete workingItemBox[key]; delete workingRotation[key]; }
@@ -252,7 +252,7 @@ async function deleteItem(item) {
 async function editItemMeta(item) {
   let meta = { name: item.name || "", cost: Number.isFinite(item.cost) ? item.cost : 0, desc: "" };
   try {
-    const cur = await postJson("/tool/get-item-meta", { pack: packOfItem(item), asset: assetOfItem(item), itemId: item.id });
+    const cur = await postJson("/devtool/get-item-meta", { pack: packOfItem(item), asset: assetOfItem(item), itemId: item.id });
     if (cur.ok) meta = { name: cur.name ?? meta.name, cost: cur.cost ?? meta.cost, desc: cur.desc ?? "" };
   } catch { /* 讀取失敗：用本地既有 name/cost、描述詞留空 */ }
   const next = await uiFormDialog({
@@ -266,7 +266,7 @@ async function editItemMeta(item) {
   });
   if (!next) return;
   try {
-    const d = await postJson("/tool/save-item-meta", {
+    const d = await postJson("/devtool/save-item-meta", {
       pack: packOfItem(item), asset: assetOfItem(item), itemId: item.id,
       name: next.name, cost: next.cost, desc: next.desc
     });
@@ -288,7 +288,7 @@ async function regenItem(item) {
   if (!ok) return;
   status(dom.applyStatus, "重生中（約 30–60 秒）…", "");
   try {
-    const d = await postJson("/tool/regenerate-wardrobe", { pack: packOfItem(item), asset: assetOfItem(item) });
+    const d = await postJson("/devtool/regenerate-wardrobe", { pack: packOfItem(item), asset: assetOfItem(item) });
     if (!d.ok) { snack(`重生失敗：${d.error}`, "err"); return; }
     bustItemImage(item);
     renderAll();
@@ -320,9 +320,9 @@ async function submitAddItem(e) {
     let d;
     if (file) {
       const imageData = await readFileAsDataUrl(file);
-      d = await postJson("/tool/upload-item", { ...body, imageData, overwrite: dom.addOverwrite.checked });
+      d = await postJson("/devtool/upload-item", { ...body, imageData, overwrite: dom.addOverwrite.checked });
     } else {
-      d = await postJson("/tool/add-item", body);
+      d = await postJson("/devtool/add-item", body);
     }
     if (!d.ok) { status(dom.addStatus, `失敗：${d.error}`, "err"); return; }
     const newItem = cloneItem(buildWardrobeItem({
@@ -687,7 +687,7 @@ async function applyToFiles() {
   status(dom.applyStatus, "套用中…", "");
   try {
     const boxes = buildItemBoxes();
-    const res = await fetch("/tool/apply-wardrobe", {
+    const res = await fetch("/devtool/apply-wardrobe", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ rules: buildRulesSnippet(), boxes })
     });
