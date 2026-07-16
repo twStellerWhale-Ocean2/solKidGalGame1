@@ -474,7 +474,7 @@ function buildRegisterForm() {
   userInput.id = "registerUsername";
   userInput.autocomplete = "off";
   userInput.placeholder = "Username (e.g. mimi2018)";
-  const { wrap, input } = passwordField({ id: "registerPassword", placeholder: "Password (8+ chars, letters + a number)" });
+  const { wrap, input } = passwordField({ id: "registerPassword", placeholder: "Password (8+, number + lowercase)" });
   userInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") input.focus();
   });

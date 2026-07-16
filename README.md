@@ -34,7 +34,7 @@
    secrets:
      sessionSecret: "<一段隨機長字串>"   # 例：PowerShell 執行 -join ((48..57)+(97..122) | Get-Random -Count 32 | % {[char]$_})
      adminUsername: "<維護者帳號>"        # 服務第一次啟動會用它建立維護者管理帳號；帳號已存在時不會覆寫
-     adminPassword: "<維護者密碼>"
+     adminPassword: "<維護者密碼>"      # 至少 8 位、含一個數字與一個小寫英文（規則同玩家密碼）
    ```
 
 3. 安裝，然後把 `secrets.yaml` 刪掉（秘密已存入叢集）：
@@ -73,7 +73,7 @@
    docker compose -f deploy/compose.yaml up -d
    ```
 
-2. 設定環境變數：複製 `sysApi/.env.example` 為 `sysApi/.env`，把 `SESSION_SECRET` 改成一段自己的隨機長字串（`DATABASE_URL` 預設即對應上面的 compose 資料庫）；並設定 `ADMIN_USERNAME` 與 `ADMIN_PASSWORD`——服務**第一次啟動**時會用它建立**維護者管理帳號**，供登入線上管理頁（見 [III.J 線上管理](#j-線上管理維護者)）；帳號已存在時不會覆寫（你在管理頁改過的密碼不會被重啟洗掉）。
+2. 設定環境變數：複製 `sysApi/.env.example` 為 `sysApi/.env`，把 `SESSION_SECRET` 改成一段自己的隨機長字串（`DATABASE_URL` 預設即對應上面的 compose 資料庫）；並設定 `ADMIN_USERNAME` 與 `ADMIN_PASSWORD`（密碼至少 8 位、含一個數字與一個小寫英文）——服務**第一次啟動**時會用它建立**維護者管理帳號**，供登入線上管理頁（見 [III.J 線上管理](#j-線上管理維護者)）；帳號已存在時不會覆寫（你在管理頁改過的密碼不會被重啟洗掉）。
 3. 啟動遊戲伺服器（同站提供遊戲網頁與 `/api/*` 帳號存檔端點，預設 port `4180`）：
 
    ```powershell
