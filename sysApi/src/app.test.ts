@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import request from "supertest";
+import bcrypt from "bcryptjs";
 import { createApp } from "./app";
 import { createMemoryStore } from "./memory-store";
 import { createRateLimiter } from "./rate-limit";
@@ -27,7 +28,7 @@ beforeEach(() => {
   clock = { value: 1_000_000 };
 });
 
-async function register(app: ReturnType<typeof createApp>, username = "mimi", password = "secret6") {
+async function register(app: ReturnType<typeof createApp>, username = "mimi", password = "secret66") {
   return request(app).post("/api/auth/register").send({ username, password });
 }
 
@@ -57,10 +58,18 @@ describe("register", () => {
   });
 
   it("rejects invalid username / short password / long password with 422 codes", async () => {
-    const app = makeApp();
-    expect((await register(app, "BAD", "secret6")).body.error.code).toBe("invalid-username");
+    // 四連拒會觸本檔預設 max=3 之 register 限流，放寬供規則斷言（限流行為另有專測）。
+    const app = makeApp({ rateLimiter: createRateLimiter({ max: 10, windowMs: 60_000 }) });
+    expect((await register(app, "BAD", "secret66")).body.error.code).toBe("invalid-username");
     expect((await register(app, "mimi", "12345")).body.error.code).toBe("password-too-short");
     expect((await register(app, "mimi", "x".repeat(73))).body.error.code).toBe("password-too-long");
+    expect((await register(app, "mimi", "abcdefgh")).body.error.code).toBe("password-needs-mix"); // #330 純字母
+  });
+
+  it("accepts digit-leading usernames (#330)", async () => {
+    const res = await register(makeApp(), "2018mimi", "secret66");
+    expect(res.status).toBe(201);
+    expect(res.body.account.username).toBe("2018mimi");
   });
 
   it("rejects duplicate usernames with 409 username-taken", async () => {
@@ -75,7 +84,7 @@ describe("register", () => {
     await register(makeApp());
     const account = await store.getAccountByUsername("mimi");
     expect(account?.passwordHash).toMatch(/^\$2[aby]\$/);
-    expect(account?.passwordHash).not.toContain("secret6");
+    expect(account?.passwordHash).not.toContain("secret66");
   });
 });
 
@@ -83,15 +92,23 @@ describe("login", () => {
   it("logs in with correct credentials", async () => {
     const app = makeApp();
     await register(app);
-    const res = await request(app).post("/api/auth/login").send({ username: "mimi", password: "secret6" });
+    const res = await request(app).post("/api/auth/login").send({ username: "mimi", password: "secret66" });
     expect(res.status).toBe(200);
     expect(res.body.token).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  // #330 相容鐵則：登入預檢凍結舊制下限——既有 6–7 碼舊密碼（不合新規）仍可登入。
+  it("existing legacy 6-7 char passwords can still sign in (#330 compatibility)", async () => {
+    const app = makeApp();
+    await store.createAccount("oldkid", bcrypt.hashSync("secret", 4), clock.value); // 6 碼、無數字之既有帳號
+    const res = await request(app).post("/api/auth/login").send({ username: "oldkid", password: "secret" });
+    expect(res.status).toBe(200);
   });
 
   it("returns identical 401 for unknown user and wrong password (no account disclosure)", async () => {
     const app = makeApp();
     await register(app);
-    const unknown = await request(app).post("/api/auth/login").send({ username: "nobody", password: "secret6" });
+    const unknown = await request(app).post("/api/auth/login").send({ username: "nobody", password: "secret66" });
     const wrong = await request(app).post("/api/auth/login").send({ username: "mimi", password: "wrong66" });
     expect(unknown.status).toBe(401);
     expect(wrong.status).toBe(401);
@@ -104,7 +121,7 @@ describe("login", () => {
     for (let i = 0; i < 3; i += 1) {
       await request(app).post("/api/auth/login").send({ username: "mimi", password: "wrong66" });
     }
-    const limited = await request(app).post("/api/auth/login").send({ username: "mimi", password: "secret6" });
+    const limited = await request(app).post("/api/auth/login").send({ username: "mimi", password: "secret66" });
     expect(limited.status).toBe(429);
     expect(limited.body.error.code).toBe("rate-limited");
   });
@@ -139,7 +156,7 @@ describe("rate limit topology (#331)", () => {
     await register(trusted, "taken3");
     const viaProxy = (xff: string) =>
       request(trusted).post("/api/auth/register").set("X-Forwarded-For", xff)
-        .send({ username: "taken3", password: "secret6" });
+        .send({ username: "taken3", password: "secret66" });
     for (let i = 0; i < 3; i += 1) await viaProxy("203.0.113.7, 10.0.0.1");
     expect((await viaProxy("203.0.113.7, 10.0.0.1")).status).toBe(429); // 同真實 client 同名：鎖
     expect((await viaProxy("198.51.100.9, 10.0.0.1")).status).toBe(409); // 不同真實 client：不受鎖、正常回撞名
@@ -149,7 +166,7 @@ describe("rate limit topology (#331)", () => {
     await register(untrusted, "taken4");
     const forged = (xff: string) =>
       request(untrusted).post("/api/auth/register").set("X-Forwarded-For", xff)
-        .send({ username: "taken4", password: "secret6" });
+        .send({ username: "taken4", password: "secret66" });
     for (let i = 0; i < 3; i += 1) await forged(`203.0.113.${i}`); // 每次偽造不同來源
     expect((await forged("203.0.113.99")).status).toBe(429); // 偽 XFF 不被採信：仍按實際 socket 來源累計而鎖
   });
@@ -236,8 +253,8 @@ describe("cloud save", () => {
 
   it("keeps saves isolated per account (no cross-account access)", async () => {
     const app = makeApp();
-    const tokenA = (await register(app, "aaa", "secret6")).body.token;
-    const tokenB = (await register(app, "bbb", "secret6")).body.token;
+    const tokenA = (await register(app, "aaa", "secret66")).body.token;
+    const tokenB = (await register(app, "bbb", "secret66")).body.token;
     await request(app).put("/api/save").set("Authorization", `Bearer ${tokenA}`)
       .send({ state: { coins: 7 }, baseUpdatedAt: null });
     const b = await request(app).get("/api/save").set("Authorization", `Bearer ${tokenB}`);

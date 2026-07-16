@@ -226,7 +226,7 @@ async function enterGame(serverState, { isNew = false } = {}) {
 async function submitLogin(username, password, errorEl, button = null, usernameField = null) {
   if (busy) return;
   if (!validateUsernameInput(username)) {
-    showError(errorEl, "Username: 3-16 lowercase letters and digits, starting with a letter.", usernameField);
+    showError(errorEl, "Username: 3-16 lowercase letters and digits, with at least one letter.", usernameField);
     return;
   }
   busy = true;
@@ -252,14 +252,16 @@ async function submitLogin(username, password, errorEl, button = null, usernameF
 async function submitRegister(username, password, errorEl, button = null, usernameField = null, pwdInput = null) {
   if (busy) return;
   if (!validateUsernameInput(username)) {
-    showError(errorEl, "Username: 3-16 lowercase letters and digits, starting with a letter.", usernameField);
+    showError(errorEl, "Username: 3-16 lowercase letters and digits, with at least one letter.", usernameField);
     return;
   }
   const passwordError = validatePasswordInput(password);
   if (passwordError) {
     showError(errorEl, passwordError === "password-too-short"
       ? `Password must be at least ${PASSWORD_MIN_LENGTH} characters.`
-      : "Password is too long (max 72 characters).", pwdInput);
+      : passwordError === "password-needs-mix"
+        ? "Password needs at least one number and one lowercase letter."
+        : "Password is too long (max 72 characters).", pwdInput);
     return;
   }
   busy = true;
@@ -465,14 +467,14 @@ function buildRegisterForm() {
   heading.textContent = "Create new account";
   const hint = document.createElement("p");
   hint.className = "login-hint";
-  hint.textContent = "Username: 3-16 lowercase letters/digits, starts with a letter. Password: at least 6 characters. A parent can help type.";
+  hint.textContent = "Username: 3-16 lowercase letters/digits (can start with a digit). Password: 8+ characters with a number and a lowercase letter. A parent can help type.";
   const userInput = document.createElement("input");
   userInput.type = "text";
   userInput.className = "login-input";
   userInput.id = "registerUsername";
   userInput.autocomplete = "off";
   userInput.placeholder = "Username (e.g. mimi2018)";
-  const { wrap, input } = passwordField({ id: "registerPassword", placeholder: "Password (6+ characters)" });
+  const { wrap, input } = passwordField({ id: "registerPassword", placeholder: "Password (8+, number + lowercase)" });
   userInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") input.focus();
   });

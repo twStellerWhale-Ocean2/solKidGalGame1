@@ -32,19 +32,19 @@ beforeEach(() => {
 });
 
 async function makeAdmin(app: ReturnType<typeof createApp>, username = "mom01") {
-  await bootstrapAdmin(store, username, "adminpw", clock.value, 4);
-  const login = await request(app).post("/api/auth/login").send({ username, password: "adminpw" });
+  await bootstrapAdmin(store, username, "adminpw8", clock.value, 4);
+  const login = await request(app).post("/api/auth/login").send({ username, password: "adminpw8" });
   return { token: login.body.token as string, auth: { Authorization: `Bearer ${login.body.token}` }, id: login.body.account.id as string };
 }
 
 async function makePlayer(app: ReturnType<typeof createApp>, username = "amy2019") {
-  const res = await request(app).post("/api/auth/register").send({ username, password: "secret6" });
+  const res = await request(app).post("/api/auth/register").send({ username, password: "secret66" });
   return { token: res.body.token as string, auth: { Authorization: `Bearer ${res.body.token}` }, id: res.body.account.id as string };
 }
 
 describe("admin bootstrap (paramAdminBootstrap)", () => {
   it("creates the admin only when missing; keeps DB password on restart", async () => {
-    expect(await bootstrapAdmin(store, "mom01", "adminpw", clock.value, 4)).toBe("created");
+    expect(await bootstrapAdmin(store, "mom01", "adminpw8", clock.value, 4)).toBe("created");
     // admin 於線上改密後（模擬）重啟：不覆寫既有密碼。
     await store.updatePassword("mom01", bcrypt.hashSync("newerpw", 4));
     expect(await bootstrapAdmin(store, "mom01", "old-env-pw", clock.value, 4)).toBe("exists");
@@ -55,12 +55,20 @@ describe("admin bootstrap (paramAdminBootstrap)", () => {
   it("fails startup when the username collides with a player account", async () => {
     const app = makeApp();
     await makePlayer(app, "kid01");
-    await expect(bootstrapAdmin(store, "kid01", "adminpw", clock.value, 4)).rejects.toThrow(/collides/);
+    await expect(bootstrapAdmin(store, "kid01", "adminpw8", clock.value, 4)).rejects.toThrow(/collides/);
   });
 
   it("rejects invalid admin username or password", async () => {
-    await expect(bootstrapAdmin(store, "BAD", "adminpw", clock.value, 4)).rejects.toThrow(/ADMIN_USERNAME/);
+    await expect(bootstrapAdmin(store, "BAD", "adminpw8", clock.value, 4)).rejects.toThrow(/ADMIN_USERNAME/);
     await expect(bootstrapAdmin(store, "mom01", "123", clock.value, 4)).rejects.toThrow(/ADMIN_PASSWORD/);
+    await expect(bootstrapAdmin(store, "mom01", "adminonly", clock.value, 4)).rejects.toThrow(/ADMIN_PASSWORD/); // 無數字（#330 新規）
+  });
+
+  // #330 相容鐵則：先查存在、僅建立時驗新規——升級部署沿用舊制 ADMIN_PASSWORD 不得 CrashLoop。
+  it("skips new-rule validation when the admin already exists (#330: upgrade must not crash-loop)", async () => {
+    expect(await bootstrapAdmin(store, "mom01", "adminpw8", clock.value, 4)).toBe("created");
+    // 舊制 7 碼無數字之 env 值：帳號已存在 → 不驗新規、直接回 exists。
+    expect(await bootstrapAdmin(store, "mom01", "adminpw", clock.value, 4)).toBe("exists");
   });
 });
 
@@ -112,11 +120,11 @@ describe("admin account management (sysCase#4.2)", () => {
     const admin = await makeAdmin(app);
     const player = await makePlayer(app);
     const res = await request(app).post(`/api/admin/accounts/${player.id}/reset-password`).set(admin.auth)
-      .send({ newPassword: "fresh66" });
+      .send({ newPassword: "fresh6678" });
     expect(res.status).toBe(204);
     expect((await request(app).get("/api/save").set(player.auth)).status).toBe(401);
-    expect((await request(app).post("/api/auth/login").send({ username: "amy2019", password: "secret6" })).status).toBe(401);
-    expect((await request(app).post("/api/auth/login").send({ username: "amy2019", password: "fresh66" })).status).toBe(200);
+    expect((await request(app).post("/api/auth/login").send({ username: "amy2019", password: "secret66" })).status).toBe(401);
+    expect((await request(app).post("/api/auth/login").send({ username: "amy2019", password: "fresh6678" })).status).toBe(200);
   });
 
   it("keeps the current admin session when the admin resets their own password", async () => {
@@ -159,7 +167,7 @@ describe("admin account management (sysCase#4.2)", () => {
     const res = await request(app).delete(`/api/admin/accounts/${player.id}`).set(admin.auth);
     expect(res.status).toBe(204);
     expect((await request(app).get("/api/save").set(player.auth)).status).toBe(401);
-    expect((await request(app).post("/api/auth/login").send({ username: "amy2019", password: "secret6" })).status).toBe(401);
+    expect((await request(app).post("/api/auth/login").send({ username: "amy2019", password: "secret66" })).status).toBe(401);
     expect((await request(app).delete(`/api/admin/accounts/${player.id}`).set(admin.auth)).status).toBe(404);
   });
 });
@@ -227,10 +235,10 @@ describe("runtime settings (spec#26)", () => {
     const player = await makePlayer(app);
     await request(app).put("/api/admin/settings").set(admin.auth)
       .send({ registrationOpen: false, defaultPlayMinutes: 15, defaultRestMinutes: 15, defaultPlayMaxMinutes: 20 });
-    const denied = await request(app).post("/api/auth/register").send({ username: "newkid", password: "secret6" });
+    const denied = await request(app).post("/api/auth/register").send({ username: "newkid", password: "secret66" });
     expect(denied.status).toBe(403);
     expect(denied.body.error.code).toBe("registration-closed");
-    expect((await request(app).post("/api/auth/login").send({ username: "amy2019", password: "secret6" })).status).toBe(200);
+    expect((await request(app).post("/api/auth/login").send({ username: "amy2019", password: "secret66" })).status).toBe(200);
     void player;
   });
 
@@ -255,7 +263,7 @@ describe("server hardening (#309 review A5/A7/B9)", () => {
     const app = makeApp();
     await makePlayer(app);
     for (let i = 0; i < 5; i += 1) {
-      const ok = await request(app).post("/api/auth/login").send({ username: "amy2019", password: "secret6" });
+      const ok = await request(app).post("/api/auth/login").send({ username: "amy2019", password: "secret66" });
       expect(ok.status).toBe(200);
     }
   });
@@ -266,7 +274,7 @@ describe("server hardening (#309 review A5/A7/B9)", () => {
     const expiredHash = hashToken(player.token, SECRET);
     await request(app).post("/api/auth/logout").set(player.auth); // revoked row
     clock.value += 1000;
-    await request(app).post("/api/auth/login").send({ username: "amy2019", password: "secret6" });
+    await request(app).post("/api/auth/login").send({ username: "amy2019", password: "secret66" });
     expect(await store.getSession(expiredHash)).toBeNull();
   });
 

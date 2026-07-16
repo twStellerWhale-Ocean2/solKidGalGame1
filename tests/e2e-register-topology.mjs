@@ -64,19 +64,19 @@ try {
 
   // ── A. API 層：限流 key 含帳號名＋兩跳 XFF 真實 IP 隔離＋429 等待秒數 ──
   const taken = `taken${suffix}`.slice(0, 16);
-  const first = await viaProxy("203.0.113.7", { username: taken, password: "secret6" });
+  const first = await viaProxy("203.0.113.7", { username: taken, password: "secret66" });
   check("register succeeds via two-hop proxy (201)", first.status === 201, String(first.status));
   for (let i = 0; i < 3; i += 1) {
-    await viaProxy("203.0.113.7", { username: taken, password: "secret6" }); // 同 client 同名重複撞名（409 記失敗）
+    await viaProxy("203.0.113.7", { username: taken, password: "secret66" }); // 同 client 同名重複撞名（409 記失敗）
   }
-  const sameClientSameName = await viaProxy("203.0.113.7", { username: taken, password: "secret6" });
+  const sameClientSameName = await viaProxy("203.0.113.7", { username: taken, password: "secret66" });
   check("same client + same username hits 429", sameClientSameName.status === 429, String(sameClientSameName.status));
   const limitedBody = await sameClientSameName.json();
   check("429 body carries retryAfterSeconds > 0", Number(limitedBody?.error?.retryAfterSeconds) > 0, JSON.stringify(limitedBody));
   check("429 sets Retry-After header", Number(sameClientSameName.headers.get("retry-after")) > 0);
-  const otherClientSameName = await viaProxy("198.51.100.9", { username: taken, password: "secret6" });
+  const otherClientSameName = await viaProxy("198.51.100.9", { username: taken, password: "secret66" });
   check("different real client (XFF) not locked by neighbour (409, not 429)", otherClientSameName.status === 409, String(otherClientSameName.status));
-  const sameClientOtherName = await viaProxy("203.0.113.7", { username: `kid${suffix}`.slice(0, 16), password: "secret6" });
+  const sameClientOtherName = await viaProxy("203.0.113.7", { username: `kid${suffix}`.slice(0, 16), password: "secret66" });
   check("same client + different username not locked (201)", sameClientOtherName.status === 201, String(sameClientOtherName.status));
 
   // ── B. 瀏覽器層（手機視口）：錯誤於視野內可見＋欄位級 error＋忙碌狀態 ──
@@ -86,8 +86,8 @@ try {
   page.on("pageerror", (e) => pageErrors.push(e.message));
   await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
   await page.waitForSelector("#registerUsername", { timeout: 15000 }); // 空狀態直落註冊表單
-  await page.fill("#registerUsername", "123kid"); // 數字開頭：被帳號規則擋（#330 另案調規則；此處驗回饋）
-  await page.fill("#registerPassword", "secret6");
+  await page.fill("#registerUsername", "123456"); // 純數字（無字母）：被帳號規則擋（#330 後數字開頭已合法；此處驗回饋）
+  await page.fill("#registerPassword", "secret66");
   await page.click(".login-enter"); // Create and play
   await page.waitForSelector(".login-error:not(:empty)", { timeout: 5000 });
   const errText = (await page.textContent(".login-error")) || "";

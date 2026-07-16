@@ -96,11 +96,11 @@ async function main() {
     check("protected endpoint without session → 401", noSession.status === 401);
 
     // 註冊規則（intTest#14 後端層）
-    check("register rejects invalid username (422)", (await api("/api/auth/register", { method: "POST", body: { username: "BAD", password: "secret6" } })).status === 422);
+    check("register rejects invalid username (422)", (await api("/api/auth/register", { method: "POST", body: { username: "BAD", password: "secret66" } })).status === 422);
     check("register rejects short password (422)", (await api("/api/auth/register", { method: "POST", body: { username: userA, password: "123" } })).status === 422);
-    const regA = await api("/api/auth/register", { method: "POST", body: { username: userA, password: "secret6" } });
+    const regA = await api("/api/auth/register", { method: "POST", body: { username: userA, password: "secret66" } });
     check("register succeeds (201 + token)", regA.status === 201 && /^[0-9a-f]{64}$/.test(regA.body?.token || ""));
-    check("duplicate username rejected (409)", (await api("/api/auth/register", { method: "POST", body: { username: userA, password: "secret6" } })).status === 409);
+    check("duplicate username rejected (409)", (await api("/api/auth/register", { method: "POST", body: { username: userA, password: "secret66" } })).status === 409);
 
     // 登入與帳號存在性遮蔽（intTest#13/#72）
     const wrongPw = await api("/api/auth/login", { method: "POST", body: { username: userA, password: "wrong66" } });
@@ -125,12 +125,12 @@ async function main() {
     check("newer save not overwritten by stale writer", afterStale.body?.state?.coins === 50);
 
     // 跨帳號隔離（intTest#71）
-    const regB = await api("/api/auth/register", { method: "POST", body: { username: userB, password: "secret6" } });
+    const regB = await api("/api/auth/register", { method: "POST", body: { username: userB, password: "secret66" } });
     const emptyB = await api("/api/save", { token: regB.body.token });
     check("accounts isolated (B sees no save)", emptyB.body.state === null);
 
     // SQL 注入字串（intTest#72）
-    const inject = await api("/api/auth/login", { method: "POST", body: { username: "' OR 1=1--", password: "secret6" } });
+    const inject = await api("/api/auth/login", { method: "POST", body: { username: "' OR 1=1--", password: "secret66" } });
     check("SQL-injection-looking username handled safely (401, no 500)", inject.status === 401);
 
     // 登出撤銷（intTest#15/#70）
@@ -141,7 +141,7 @@ async function main() {
 
     // 速率限制（intTest#72 步驟5；RATE_LIMIT_MAX=5）
     const limitedUser = `itl${suffix}`;
-    await api("/api/auth/register", { method: "POST", body: { username: limitedUser, password: "secret6" } });
+    await api("/api/auth/register", { method: "POST", body: { username: limitedUser, password: "secret66" } });
     let rateLimited = false;
     for (let i = 0; i < 7; i += 1) {
       const attempt = await api("/api/auth/login", { method: "POST", body: { username: limitedUser, password: "wrong66" } });
@@ -156,7 +156,7 @@ async function main() {
     check("reset-password CLI exits 0", reset.status === 0, String(reset.stderr));
     const reLogin = await api("/api/auth/login", { method: "POST", body: { username: userB, password: "newpass6" } });
     check("login works with reset password", reLogin.status === 200);
-    const oldLogin = await api("/api/auth/login", { method: "POST", body: { username: userB, password: "secret6" } });
+    const oldLogin = await api("/api/auth/login", { method: "POST", body: { username: userB, password: "secret66" } });
     check("old password no longer accepted", oldLogin.status === 401);
 
     // ── issue #310：維護者線上管理（intTest#75/#76 之 API 面）──
@@ -205,7 +205,7 @@ async function main() {
 
     // 註冊開關（spec#26 (c)）：關閉→register 403＋/api/config 反映；既有帳號登入不受影響；復原。
     await api("/api/admin/settings", { method: "PUT", token: adminToken, body: { ...DEFAULT_SETTINGS, registrationOpen: false } });
-    const closedReg = await api("/api/auth/register", { method: "POST", body: { username: `itc${suffix}`, password: "secret6" } });
+    const closedReg = await api("/api/auth/register", { method: "POST", body: { username: `itc${suffix}`, password: "secret66" } });
     check("registration closed → 403 registration-closed", closedReg.status === 403 && closedReg.body?.error?.code === "registration-closed");
     const config = await api("/api/config");
     check("GET /api/config mirrors registrationOpen=false", config.status === 200 && config.body.registrationOpen === false && config.body.defaultPlayLimit.playMinutes === 15);
@@ -217,12 +217,12 @@ async function main() {
     const selfDelete = await api(`/api/admin/accounts/${selfRow.id}`, { method: "DELETE", token: adminToken });
     check("admin self-delete rejected (409)", selfDelete.status === 409 && selfDelete.body?.error?.code === "cannot-delete-self");
     const disposable = `itd${suffix}`;
-    const regD = await api("/api/auth/register", { method: "POST", body: { username: disposable, password: "secret6" } });
+    const regD = await api("/api/auth/register", { method: "POST", body: { username: disposable, password: "secret66" } });
     await api("/api/save", { method: "PUT", token: regD.body.token, body: { state: { coins: 9 }, baseUpdatedAt: null } });
     const rowD = (await api("/api/admin/accounts", { token: adminToken })).body.accounts.find((row) => row.username === disposable);
     const del = await api(`/api/admin/accounts/${rowD.id}`, { method: "DELETE", token: adminToken });
     check("delete account → 204", del.status === 204);
-    check("deleted account cannot log in", (await api("/api/auth/login", { method: "POST", body: { username: disposable, password: "secret6" } })).status === 401);
+    check("deleted account cannot log in", (await api("/api/auth/login", { method: "POST", body: { username: disposable, password: "secret66" } })).status === 401);
     check("deleted account session revoked", (await api("/api/save", { token: regD.body.token })).status === 401);
 
     // B9 存檔形狀校驗（#309 審查）：非法頂層型別 422、不落庫。

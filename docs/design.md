@@ -77,7 +77,7 @@ HOST -->|"param整包 image＋chart 部署"| SYS
 ### (B) 關鍵參數
 
 * 遊玩偏好：預設每次遊玩／休息時長（各 15 分鐘，維護者可調）、護眼上限、心情延長換算。
-* 帳號偏好：帳號為小寫英數 3–16 字、密碼至少 6 字；家長協助輸入動線（大欄位、就地錯誤提示、觸控友善）。
+* 帳號偏好：帳號為小寫英數 3–16 字（**可數字開頭**、至少含一個英文字母）、密碼 8–72 字且**須含至少一個數字與一個小寫英文**（開頭字元不限；2026-07-16 USR 核定調整，issue #330——家長替小孩取帳密的直覺優先，如生日開頭帳號）；家長協助輸入動線（大欄位、就地錯誤提示、觸控友善）。既有帳號之舊密碼仍可登入，新規僅適用建立密碼時點（詳 ＜II.C.(B)＞ 相容鐵則）。
 * 內容結構偏好：內容以資料包為模組化單位（公主、衣物、地圖與場景、聲音、遊戲規則），可沿既有結構擴充。
 
 ### (C) 人機介面
@@ -154,7 +154,7 @@ HOST -->|"param整包 image＋chart 部署"| SYS
 * **spec#20**：對話場景 coins 指示與 state 同步正確率、桌機寬視口衣櫃面板品項完整呈現合格率、公主立繪未被面板遮擋 QA 通過率、窄屏面板可用性合格率。
 * **spec#21**：新局預設得體造型正確率、新局擁有等於所穿品項正確率、已移除角色品項殘留檢出率（應 0%）、新局可購外觀品項數（保留成長空間）。
 * **spec#22**：未儲存變更攔截生效率、成功寫回整頁重載發生率（應 0%）、原生 alert／confirm 殘留數（應 0）、危險操作確認覆蓋率、deep link 回工作點正確率、觸控目標 ≥44px 合格率、品質清單修正完成率。
-* **spec#23**：註冊成功率、非法帳號／短密碼前後端雙層擋下率、登入失敗統一訊息（不洩漏帳號存在性）合格率、資料庫／日誌明文密碼檢出率（應 0%）、session 免重輸續玩成功率、登出後 token 失效率。
+* **spec#23**：註冊成功率、非法帳號／不合規密碼前後端雙層擋下率、登入失敗統一訊息（不洩漏帳號存在性）合格率、資料庫／日誌明文密碼檢出率（應 0%）、session 免重輸續玩成功率、登出後 token 失效率。
 * **spec#24**：跨裝置還原欄位完整度、關鍵事件即時寫入成功率、伺服器不可達不 crash 率、同步狀態提示正確率、樂觀鎖過期寫入被拒（不靜默覆蓋）正確率、遷移成功率。
 * **spec#25**：admin 登入成功率、帳號清單欄位正確率、重設密碼後舊 session 失效率、刪除帳號連帶消失率、admin 自刪擋下率、非 admin 存取管理端點拒絕率、回應含敏感欄位檢出率（應 0%）。
 * **spec#26**：設定儲存後即時生效率（不需重啟）、新帳號預設時長套用正確率、鎖定帳號強制值與唯讀正確率、解除鎖定回復自調率、註冊關閉時 API 拒絕與入口隱藏率、DB 缺值程式預設遞補正確率、非法值拒絕率。
@@ -245,7 +245,8 @@ HOST -->|"param整包 image＋chart 部署"| SYS
 ### (B) 關鍵參數
 
 * sys 對外契約埠：`paramApiPort`＝`4180`（同站服務遊戲殼／`/admin/`／`/api/*`）；正式 `paramServiceType`＝`NodePort` 固定 `30418`（重裝穩定）。
-* 帳號安全基線：`paramUsernamePattern`＝`^[a-z][a-z0-9]{2,15}$`、`paramPasswordMinLength`＝`6`、`paramPasswordHash`＝`bcrypt cost≥10`、`paramSessionTtlDays`＝`30`。
+* 帳號安全基線：`paramUsernamePattern`＝`^(?=.*[a-z])[a-z0-9]{3,16}$`（可數字開頭、至少含一英文字母，issue #330）、`paramPasswordMinLength`＝`8`、`paramPasswordMix`＝`須含至少一數字與一小寫英文`（長度以 ASCII 字元計、上限 72 對應 bcrypt 72 bytes 有效輸入）、`paramPasswordHash`＝`bcrypt cost≥10`、`paramSessionTtlDays`＝`30`。
+* 新規適用邊界（issue #330 相容鐵則）：新規僅適用**建立密碼之時點**——註冊、線上管理頁重設（含 admin 自改）、CLI `reset-password`、admin bootstrap **首次建立**；**登入之格式預檢維持舊制下限（6–72 長度）不隨新規收緊**（既有 6–7 碼舊密碼仍可登入）；**admin bootstrap 先查帳號存在、僅於建立時驗新規**（既有部署升級後沿用舊 `ADMIN_PASSWORD` 不得啟動失敗／CrashLoop）。
 * 起始與執行期預設：`paramAdminBootstrap`（`ADMIN_USERNAME`／`ADMIN_PASSWORD` 僅於帳號不存在時建立唯一 admin、不覆寫既有）、`paramRegistrationOpenDefault`＝`true`、`paramDefaultPlayLimit`＝`play 15／rest 15／max 20 分鐘`。
 
 ### (C) 人機介面
@@ -362,7 +363,7 @@ API ==>|"comIntf自訂資料庫連線<br/>apiIntf標準Postgres連線"| DB
 ### (B) 關鍵參數
 
 * **[etyCfg自訂modShell組態]**（內容與遊玩，values.yaml）：`paramDefaultArea=castle`、`paramDefaultCharacter=lumi`、`paramPlayableCharacters=lumi,yumi,rosa`、`paramProfileColorPalette=8 pastel`、`paramBackgroundPatterns=8`、`paramInitialThemeRandomization=profileColor,backgroundPattern`、`paramPlayMinutes=15`、`paramRestMinutes=15`、`paramPlayMaxMinutes=20`、`paramMoodMinutesPerPoint=1`、`paramChatChoiceCount=2`、`paramJobChoiceCount=3`、`paramRewardSecondTryRatio=0.5`、`paramSpeechRateScale=0.8`、`paramSpeechLeadingPad=8 full-width spaces`、`paramWardrobeLayerBounds=type defaults`、`paramCharacterSilhouetteFilter=outline+depth-shadow`、`paramAssetStandards`（各類圖像像素尺寸與檔重預算 SSOT：角色 body／head／NPC 512×768、場景 1024×1024、地區／世界地圖 1536×1536、衣物單品 512×512、UI 1280×720）。
-* **[etyCfg自訂modApi組態]**（Env→K8s Secret 與 values）：`paramApiPort=4180`、`paramServiceType=NodePort(30418)`、`paramUsernamePattern=^[a-z][a-z0-9]{2,15}$`、`paramPasswordMinLength=6`、`paramPasswordHash=bcrypt cost≥10`、`paramSessionTtlDays=30`、`paramAdminBootstrap=ADMIN_USERNAME+ADMIN_PASSWORD env`、`paramRegistrationOpenDefault=true`、`paramDefaultPlayLimit=play15/rest15/max20`、`paramTrustProxy=TRUST_PROXY env（Express trust proxy 跳數；預設 0；依實際代理跳數設定——僅 ingress=1、tunnel→ingress=2（且 ingress 須開 use-forwarded-headers 否則 XFF 被覆寫）；helm values 欄位 api.trustProxy 投影此 env；公網 profile 之連動預設由 #329 交付。警語：≥1 時 XFF 可被可直連者偽造，公網部署應以 ingress 為唯一對外入口；因限流 key 含帳號（見 paramRateLimitKey）且僅計失敗，偽造收益有限）`、`paramRateLimitKey=register:{ip}:{username}／login:{ip}:{username}（key 一律含嘗試帳號名——同名重試才累計，代理／NodePort SNAT／家庭 NAT 共用 IP 情境下鄰居失敗不再鎖死他人註冊（issue #331）；429 回應附等待秒數）`、Secret＝`DATABASE_URL`／`SESSION_SECRET`／`ADMIN_USERNAME`／`ADMIN_PASSWORD`／`POSTGRES_PASSWORD`。
+* **[etyCfg自訂modApi組態]**（Env→K8s Secret 與 values）：`paramApiPort=4180`、`paramServiceType=NodePort(30418)`、`paramUsernamePattern=^(?=.*[a-z])[a-z0-9]{3,16}$（可數字開頭、至少含一英文字母，issue #330）`、`paramPasswordMinLength=8`、`paramPasswordMix=須含至少一數字與一小寫英文（僅適用建立密碼時點，詳 II.C.(B) 相容鐵則）`、`paramPasswordHash=bcrypt cost≥10`、`paramSessionTtlDays=30`、`paramAdminBootstrap=ADMIN_USERNAME+ADMIN_PASSWORD env（先查帳號存在、僅於首次建立時依新規驗證——升級部署沿用舊值不得 CrashLoop，issue #330）`、`paramRegistrationOpenDefault=true`、`paramDefaultPlayLimit=play15/rest15/max20`、`paramTrustProxy=TRUST_PROXY env（Express trust proxy 跳數；預設 0；依實際代理跳數設定——僅 ingress=1、tunnel→ingress=2（且 ingress 須開 use-forwarded-headers 否則 XFF 被覆寫）；helm values 欄位 api.trustProxy 投影此 env；公網 profile 之連動預設由 #329 交付。警語：≥1 時 XFF 可被可直連者偽造，公網部署應以 ingress 為唯一對外入口；因限流 key 含帳號（見 paramRateLimitKey）且僅計失敗，偽造收益有限）`、`paramRateLimitKey=register:{ip}:{username}／login:{ip}:{username}（key 一律含嘗試帳號名——同名重試才累計，代理／NodePort SNAT／家庭 NAT 共用 IP 情境下鄰居失敗不再鎖死他人註冊（issue #331）；429 回應附等待秒數）`、Secret＝`DATABASE_URL`／`SESSION_SECRET`／`ADMIN_USERNAME`／`ADMIN_PASSWORD`／`POSTGRES_PASSWORD`。
 * **[etyCfg自訂modDb組態]**：`paramDbName=luminara`、`paramDbImage=postgres:16`、`paramDbStorage=PVC 1Gi（helm.sh/resource-policy: keep）`、測試庫 `luminara_test`、helm-e2e namespace `luminara-e2e`（測試禁觸營運庫 `luminara`）。
 * **[etyCfg自訂devServer組態]**（dev-only 工具，不入正式部署）：`paramServerHost=0.0.0.0（HOST 覆寫）`、`paramServerPort=4174`。
 
