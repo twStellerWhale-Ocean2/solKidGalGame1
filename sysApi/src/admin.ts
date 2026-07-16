@@ -106,18 +106,20 @@ export async function bootstrapAdmin(
   bcryptCost: number
 ): Promise<"created" | "exists"> {
   if (!validateUsername(username)) {
-    throw new Error(`ADMIN_USERNAME "${username}" is invalid (3-16 chars, lowercase letters and digits, starting with a letter).`);
+    throw new Error(`ADMIN_USERNAME "${username}" is invalid (3-16 chars, lowercase letters and digits, with at least one letter).`);
   }
-  const passwordError = validatePassword(password);
-  if (passwordError) {
-    throw new Error("ADMIN_PASSWORD is invalid (6-72 characters).");
-  }
+  // #330 相容鐵則（design II.C.(B)）：先查帳號存在、僅於首次建立時驗新規——
+  // 既有部署升級後沿用舊 ADMIN_PASSWORD 不得啟動失敗（CrashLoop）。
   const existing = await store.getAccountByUsername(username);
   if (existing) {
     if (existing.role !== "admin") {
       throw new Error(`ADMIN_USERNAME "${username}" collides with an existing player account. Pick another admin username.`);
     }
     return "exists";
+  }
+  const passwordError = validatePassword(password);
+  if (passwordError) {
+    throw new Error("ADMIN_PASSWORD is invalid (8-72 characters, with at least one number and one lowercase letter).");
   }
   const created = await store.createAccount(username, bcrypt.hashSync(password, bcryptCost), now, "admin");
   if (created === "taken") {

@@ -13,7 +13,7 @@ const SHOTS = path.join(repoRoot, "docs", "manual-assets");
 fs.mkdirSync(SHOTS, { recursive: true });
 const suffix = Date.now().toString(36);
 const username = `mimi${suffix}`.slice(0, 16);
-const password = "secret6";
+const password = "secret66";
 
 let failures = 0;
 function check(name, condition, detail = "") {

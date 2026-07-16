@@ -3,7 +3,7 @@ import path from "node:path";
 import bcrypt from "bcryptjs";
 import { generateToken, hashToken } from "./tokens";
 import { createRateLimiter, type RateLimiter } from "./rate-limit";
-import { validateRegistration, validateUsername, validatePassword } from "./validation";
+import { validateRegistration, validateUsername, validatePassword, validateLoginPassword } from "./validation";
 import { derivePlayStatus, resolveSettings, UNLOCKED_POLICY, validatePlayLimitInput, validateSettingsInput } from "./admin";
 import type { AccountRecord, PlayLimitPolicy, Store } from "./store";
 
@@ -127,7 +127,9 @@ export function createApp(options: AppOptions) {
         return fail(res, 429, "rate-limited", "Too many attempts. Please wait and try again.");
       }
       // 登入失敗統一訊息與時序：帳號不存在時仍比對假雜湊，避免時間差洩漏帳號存在性。
-      const account = validateUsername(username) && validatePassword(password) === null
+      // 預檢用 validateLoginPassword（舊制下限 6–72，#330 相容鐵則）：新規僅適用建立密碼時點，
+      // 既有 6–7 碼舊密碼仍可登入。
+      const account = validateUsername(username) && validateLoginPassword(password)
         ? await store.getAccountByUsername(username)
         : null;
       const passwordOk = account
@@ -380,11 +382,13 @@ function validateStateShape(state: unknown): string | null {
 function validationMessage(code: string): string {
   switch (code) {
     case "invalid-username":
-      return "Username must be 3-16 characters: lowercase letters and digits, starting with a letter.";
+      return "Username must be 3-16 characters: lowercase letters and digits, with at least one letter.";
     case "password-too-short":
-      return "Password must be at least 6 characters.";
+      return "Password must be at least 8 characters.";
     case "password-too-long":
       return "Password must be at most 72 characters.";
+    case "password-needs-mix":
+      return "Password needs at least one number and one lowercase letter.";
     default:
       return "Invalid input.";
   }
