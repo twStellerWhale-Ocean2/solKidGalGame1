@@ -72,7 +72,7 @@ else { "注意：叢集沒有標記預設 IngressClass——安裝時請加 --se
    ```
 
 4. 確認就緒與取得網址：`kubectl get pods` 全部 Ready 即完成（安裝完成訊息也會印出網址）。兩條入口**同時可用**：
-   - **網域入口（Ingress，預設啟用）**：`http://sollingoworld.local/`——chart 預設 host 為 `sollingoworld.<baseDomain>`（baseDomain 預設 `local`）。內網使用時在各裝置的 hosts 檔把 `sollingoworld.local` 指到主機 IP 即可；要換網域用 `--set ingress.baseDomain=<你的網域>`（或直接 `--set ingress.host=…`）。
+   - **網域入口（Ingress，預設啟用）**：`http://sollingoworld.local/`——chart 預設 host 為 `sollingoworld.<baseDomain>`（baseDomain 預設 `local`）。內網桌機在 hosts 檔（Windows：`C:\Windows\System32\drivers\etc\hosts`，需系統管理員）把 `sollingoworld.local` 指到主機 IP；**手機平板改不了 hosts**，請用下方 NodePort 直連（或在路由器 DNS 設定網域）；要換網域用 `--set ingress.baseDomain=<你的網域>`（或直接 `--set ingress.host=…`）。
    - **內網直連（NodePort）**：`http://<主機IP>:30418/`（chart 預設固定 port `30418`）。
    瀏覽器開網址即可遊玩；線上管理頁在 `/admin/`。
 
@@ -98,7 +98,7 @@ else { "注意：叢集沒有標記預設 IngressClass——安裝時請加 --se
 
 **公網正式部署**（讓家人在外面也能玩；**務必配 TLS**——帳號密碼不可以走公網明文）：
 
-- **模式①：自架邊緣（ingress-nginx＋cert-manager）**——適合有公網 IP 與自有網域的主機：叢集裝好 ingress-nginx 與 cert-manager 後，安裝時給網域與憑證設定：
+- **模式①：自架邊緣（ingress-nginx＋cert-manager）**——適合有公網 IP 與自有網域的主機：叢集裝好 ingress-nginx 與 cert-manager 後，安裝時給網域與憑證設定（`--set-json` 需 PowerShell 7.3+；嫌引號麻煩可把同組設定寫進 values 檔、與 secrets.yaml 同法 `-f` 供給）：
 
   ```powershell
   helm install luminara <chart 來源> -f secrets.yaml --set ingress.baseDomain=<你的網域> --set api.trustProxy=1 `
@@ -109,6 +109,7 @@ else { "注意：叢集沒有標記預設 IngressClass——安裝時請加 --se
 - **模式②：外部邊緣終結（Cloudflare Tunnel 等）**——不需公網 IP、憑證在邊緣供應商：chart 免 tls 設定（`ingress.tls` 留空即可），tunnel 指向叢集入口並帶 host header；此拓撲為兩跳代理，設 `--set api.trustProxy=2`（且 ingress-nginx 須開啟 forwarded headers）。
 - **`api.trustProxy` 跳數對照**（登入／註冊失敗限流以真實來源計，見遊玩注意事項）：純內網直連＝不設（0）；只有 Ingress＝`1`；Tunnel→Ingress＝`2`。
 - **`/admin/` 管理頁安全注意**：公網化後管理頁與遊戲同網址入口。管理操作建議自內網進行；要更保險可在 `ingress.annotations` 加來源 IP allowlist（如 ingress-nginx 的 `nginx.ingress.kubernetes.io/whitelist-source-range`）限制 `/admin/`。
+- **已裝內網、想轉公網**：不用重裝——`helm upgrade luminara <chart 來源> --set …` 帶上同組公網參數即可（秘密不需重給）；要順便關掉 NodePort 直連入口加 `--set service.type=ClusterIP`（公網部署以 Ingress 為唯一入口時建議）。
 - **既有用戶升級註記**：升級到本版後 Ingress 預設啟用——若你的叢集有預設 IngressClass（如 k3s 內建 traefik），會新增 `sollingoworld.local` 的 host 路由；暴露面仍限叢集所在網段，對外是否可達仍取決於你的防火牆／轉發設定。不想要 Ingress 可 `--set ingress.enabled=false`。
 
 **開發期路徑：compose＋npm**（開發與輕量試用；不是正式散佈動線）：
