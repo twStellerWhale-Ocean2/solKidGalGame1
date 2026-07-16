@@ -1,11 +1,17 @@
 {{- if .Values.ingress.enabled }}
-# 選配 TLS／Ingress（design ＜IV.A＞ 傳輸層定位）：未啟用時沿家庭內網 HTTP、勿轉發公網。
+# Ingress（issue #329 公網正式部署；design ＜I.C.(D)＞）：預設啟用、預設展開即含（web 可達性 GATE）。
+# host 缺值時算出 sollingoworld.<baseDomain>（baseDomain 預設 local，公網部署改自有網域）；
+# TLS 兩模式——自架 cert-manager（tls 段＋annotations 供 issuer）／外部邊緣終結（tls 留空）。
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Release.Name }}-app
   labels:
     {{- include "solkidgal.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   {{- with .Values.ingress.className }}
   ingressClassName: {{ . }}
@@ -15,7 +21,7 @@ spec:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   rules:
-    - host: {{ required "ingress.host 為必填（啟用 ingress 時）" .Values.ingress.host }}
+    - host: {{ .Values.ingress.host | default (printf "sollingoworld.%s" .Values.ingress.baseDomain) }}
       http:
         paths:
           - path: /

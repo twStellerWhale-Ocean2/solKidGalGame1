@@ -55,7 +55,17 @@ if (manifest) {
   if (keepCount < 2) errors.push(`resource-policy: keep 註記數 ${keepCount} < 2（PVC 與 Secret 須各自掛 keep）`);
   const nonRootCount = (manifest.match(/runAsNonRoot: true/g) || []).length;
   if (nonRootCount < 2) errors.push(`runAsNonRoot 註記數 ${nonRootCount} < 2（app 與 init 容器須各自硬化，#317）`);
+  // ②b web 可達性（issue #329／GATE 1.20-1.21）：預設展開即含 Ingress＋host 慣例 sollingoworld.<baseDomain>。
+  if (!manifest.includes("kind: Ingress")) errors.push("預設 helm template 不含 kind: Ingress（web 可達性 GATE：web app chart 預設展開即須含）");
+  if (!manifest.includes("host: sollingoworld.local")) errors.push("預設 host 非 sollingoworld.local（baseDomain 預設值鏈斷裂——host 慣例 sollingoworld.<baseDomain>）");
 }
+
+// ②c README 環境檢查碼塊（issue #329／GATE 1.21 檢核表第 12 項）：bash＋pwsh 各含 ingressclass 關鍵字。
+const readme = readFileSync(join(root, "README.md"), "utf8");
+const bashBlocks = [...readme.matchAll(/```bash\r?\n([\s\S]*?)```/g)].map((m) => m[1]);
+const pwshBlocks = [...readme.matchAll(/```powershell\r?\n([\s\S]*?)```/g)].map((m) => m[1]);
+if (!bashBlocks.some((b) => /ingressclass/i.test(b))) errors.push("README 缺 bash 環境檢查碼塊（須含 ingressclass 偵測，GATE 1.21）");
+if (!pwshBlocks.some((b) => /ingressclass/i.test(b))) errors.push("README 缺 pwsh 環境檢查碼塊（須含 ingressclass 偵測，GATE 1.21）");
 
 // ③ 版本鏈：Chart.yaml 與 VERSION 同源
 const version = JSON.parse(readFileSync(join(root, "VERSION"), "utf8")).version;

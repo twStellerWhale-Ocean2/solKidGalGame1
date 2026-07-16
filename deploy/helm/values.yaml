@@ -33,11 +33,20 @@ secrets:
 initImage: busybox:1.36 # wait-for-db initContainer（airgap／mirror 環境可覆寫）
 
 ingress:
-  # 選配 TLS／Ingress：有憑證與網域的維護者可啟用；未啟用沿家庭內網 HTTP 定位（勿轉發公網）。
-  enabled: false
+  # 公網正式部署（issue #329）：預設啟用、預設展開即含 Ingress（web 可達性 GATE）。
+  # 公網部署務必配 TLS 終結（帳密不得過公網明文）；純內網仍可走 NodePort HTTP。
+  enabled: true
+  # 留空＝交叢集預設 IngressClass（安裝前先跑 README 的環境檢查腳本確認叢集有標預設，否則指名）。
   className: ""
+  # host 顯式覆寫優先；留空＝算出 sollingoworld.<baseDomain>（預設 sollingoworld.local——
+  # 內網以 hosts 檔／mDNS 可用；公網部署把 baseDomain 換成自有網域）。
   host: ""
+  baseDomain: "local"
+  # TLS 兩模式：①自架 ingress-nginx＋cert-manager——填 tls: [{hosts: [<host>], secretName: <名>}]
+  #   並以 annotations 供 issuer（如 cert-manager.io/cluster-issuer: letsencrypt）；
+  # ②外部邊緣終結（Cloudflare Tunnel 等）——tls 留空、憑證在邊緣。
   tls: []
+  annotations: {}
 
 # app 容器資源預設（家庭單機保守值，可覆寫；#317 paramAppHardening）。
 resources:
