@@ -80,9 +80,10 @@ function adoptSession(username, token, account, save) {
 // 登入（sysCase#6.1）：成功後取回雲端存檔（state 可為 null＝新局）。
 export async function cloudLogin(username, password) {
   const res = await apiLogin(username, password);
-  if (res.status !== 200) return { ok: false, status: res.status, code: res.body?.error?.code || "error" };
+  // retryAfterSeconds：429 附可再試等待秒數（#331），前端據以組「幾分鐘後再試」訊息。
+  if (res.status !== 200) return { ok: false, status: res.status, code: res.body?.error?.code || "error", retryAfterSeconds: res.body?.error?.retryAfterSeconds };
   const save = await apiGetSave(res.body.token);
-  if (save.status !== 200) return { ok: false, status: save.status, code: save.body?.error?.code || "error" };
+  if (save.status !== 200) return { ok: false, status: save.status, code: save.body?.error?.code || "error", retryAfterSeconds: save.body?.error?.retryAfterSeconds };
   applyServerTime(save.body.serverTime);
   adoptSession(username, res.body.token, res.body.account, save.body.updatedAt !== null ? { updatedAt: save.body.updatedAt } : null);
   applyPlayLimitPolicy(save.body.playLimitPolicy);
@@ -92,7 +93,7 @@ export async function cloudLogin(username, password) {
 // 註冊（sysCase#6.2）：成功即自動登入（無存檔、由呼叫端建立新局並首寫）。
 export async function cloudRegister(username, password) {
   const res = await apiRegister(username, password);
-  if (res.status !== 201) return { ok: false, status: res.status, code: res.body?.error?.code || "error" };
+  if (res.status !== 201) return { ok: false, status: res.status, code: res.body?.error?.code || "error", retryAfterSeconds: res.body?.error?.retryAfterSeconds };
   adoptSession(username, res.body.token, res.body.account, null);
   applyPlayLimitPolicy(null); // 新帳號無覆寫
   return { ok: true, state: null };

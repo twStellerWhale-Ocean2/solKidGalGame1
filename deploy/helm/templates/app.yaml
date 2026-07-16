@@ -71,6 +71,11 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-secrets
                   key: adminPassword
+            {{- if gt (int .Values.api.trustProxy) 0 }}
+            # paramTrustProxy（#331）：依實際代理跳數採信 XFF，限流以真實 client IP 計。
+            - name: TRUST_PROXY
+              value: {{ .Values.api.trustProxy | quote }}
+            {{- end }}
           ports:
             - containerPort: 4180
           livenessProbe:

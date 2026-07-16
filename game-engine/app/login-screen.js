@@ -125,10 +125,51 @@ function formatLastPlayed(timestamp) {
 function errorLine(message = "") {
   const line = document.createElement("p");
   line.className = "login-error";
-  line.setAttribute("role", "alert");
+  line.setAttribute("role", "alert"); // 隱含 aria-live=assertive
+  line.setAttribute("tabindex", "-1"); // 供 showError 聚焦報讀
+  // 固定高度預留（#331）：不以 hidden 切換——空值時仍佔位（CSS min-height），
+  // 錯誤出現不推擠送出鈕、手指已對準的位置不位移。
   line.textContent = message;
-  line.hidden = !message;
   return line;
+}
+
+// ── #331 錯誤回饋通則（design III.C.(C)）：任何送出被拒一律就地醒目呈現且保證在視野內──
+// 錯誤行置於送出鈕上方（手機軟鍵盤展開時鈕下內容常在畫面外）、⚠ 前綴（非僅色彩）、
+// 捲入視野＋聚焦報讀；格式類錯誤同時把肇事欄位標為 error 狀態（aria-invalid，輸入即清除）。
+function showError(errorEl, message, field = null) {
+  errorEl.textContent = `⚠ ${message}`;
+  if (field) {
+    field.classList.add("input-error");
+    field.setAttribute("aria-invalid", "true");
+    field.addEventListener("input", () => {
+      field.classList.remove("input-error");
+      field.removeAttribute("aria-invalid");
+    }, { once: true });
+  }
+  errorEl.scrollIntoView({ block: "nearest" });
+  errorEl.focus({ preventScroll: true });
+}
+
+// 送出中鈕面忙碌狀態（#331）：disabled＋進行中字樣，杜絕「按了沒反應」感受；回傳還原函式。
+function buttonBusy(button, label) {
+  if (!button) return () => {};
+  const original = button.textContent;
+  button.disabled = true;
+  button.classList.add("is-busy");
+  button.textContent = label;
+  return () => {
+    button.disabled = false;
+    button.classList.remove("is-busy");
+    button.textContent = original;
+  };
+}
+
+// 429 訊息附可再試等待時間（#331）：以伺服器 retryAfterSeconds 組句，缺值退回泛句。
+function rateLimitMessage(result) {
+  const seconds = Number(result?.retryAfterSeconds) || 0;
+  if (seconds > 90) return `Too many attempts. Please wait ${Math.ceil(seconds / 60)} minutes and try again.`;
+  if (seconds > 0) return `Too many attempts. Please wait ${seconds} seconds and try again.`;
+  return "Too many attempts. Please wait a moment and try again.";
 }
 
 function passwordField({ id, placeholder = "Password" }) {
@@ -182,74 +223,70 @@ async function enterGame(serverState, { isNew = false } = {}) {
   tickPlayClock();
 }
 
-async function submitLogin(username, password, errorEl) {
+async function submitLogin(username, password, errorEl, button = null, usernameField = null) {
   if (busy) return;
   if (!validateUsernameInput(username)) {
-    errorEl.textContent = "Username: 3-16 lowercase letters and digits, starting with a letter.";
-    errorEl.hidden = false;
+    showError(errorEl, "Username: 3-16 lowercase letters and digits, starting with a letter.", usernameField);
     return;
   }
   busy = true;
+  const restore = buttonBusy(button, "Signing in…");
   try {
     const result = await cloudLogin(username, password);
     if (!result.ok) {
-      errorEl.textContent = result.code === "rate-limited"
-        ? "Too many attempts. Please wait a moment and try again."
-        : "Username or password is incorrect.";
-      errorEl.hidden = false;
+      showError(errorEl, result.code === "rate-limited"
+        ? rateLimitMessage(result)
+        : "Username or password is incorrect.");
       return;
     }
     await enterGame(result.state);
   } catch (error) {
-    errorEl.textContent = "Cannot reach the server. Check the connection and try again.";
-    errorEl.hidden = false;
+    showError(errorEl, "Cannot reach the server. Check the connection and try again.");
     console.warn("login failed", error);
   } finally {
     busy = false;
+    restore();
   }
 }
 
-async function submitRegister(username, password, errorEl) {
+async function submitRegister(username, password, errorEl, button = null, usernameField = null, pwdInput = null) {
   if (busy) return;
   if (!validateUsernameInput(username)) {
-    errorEl.textContent = "Username: 3-16 lowercase letters and digits, starting with a letter.";
-    errorEl.hidden = false;
+    showError(errorEl, "Username: 3-16 lowercase letters and digits, starting with a letter.", usernameField);
     return;
   }
   const passwordError = validatePasswordInput(password);
   if (passwordError) {
-    errorEl.textContent = passwordError === "password-too-short"
+    showError(errorEl, passwordError === "password-too-short"
       ? `Password must be at least ${PASSWORD_MIN_LENGTH} characters.`
-      : "Password is too long (max 72 characters).";
-    errorEl.hidden = false;
+      : "Password is too long (max 72 characters).", pwdInput);
     return;
   }
   busy = true;
+  const restore = buttonBusy(button, "Creating…");
   try {
     const result = await cloudRegister(username, password);
     if (!result.ok) {
       // 停留於註冊表單期間才被關閉、送出方知（sysCase#6.2）：同一句友善說明就地呈現。
       if (result.code === "registration-closed") {
         serverConfig.registrationOpen = false;
-        errorEl.textContent = "This server is not taking new accounts right now. Please ask your grown-up to open it.";
-        errorEl.hidden = false;
+        showError(errorEl, "This server is not taking new accounts right now. Please ask your grown-up to open it.");
         return;
       }
-      errorEl.textContent = result.code === "username-taken"
+      showError(errorEl, result.code === "username-taken"
         ? "This username is already taken. Try another one."
         : result.code === "rate-limited"
-          ? "Too many attempts. Please wait a moment and try again."
-          : "Could not create the account. Please check the inputs.";
-      errorEl.hidden = false;
+          ? rateLimitMessage(result)
+          : "Could not create the account. Please check the inputs.");
       return;
     }
     await enterGame(null, { isNew: true });
   } catch (error) {
-    errorEl.textContent = "Cannot reach the server. Check the connection and try again.";
-    errorEl.hidden = false;
+    showError(errorEl, "Cannot reach the server. Check the connection and try again.");
     console.warn("register failed", error);
   } finally {
     busy = false;
+    restore();
   }
 }
 
@@ -310,8 +347,7 @@ function buildAccountCard(entry, cachedUsername) {
             return;
           }
           if (resumed?.offline) {
-            error.textContent = "Cannot reach the server. Check the connection and try again.";
-            error.hidden = false;
+            showError(error, "Cannot reach the server. Check the connection and try again.");
             return;
           }
           // session 已失效：改為輸入密碼
@@ -329,7 +365,7 @@ function buildAccountCard(entry, cachedUsername) {
         await cloudLogout();
         buildLoginScreen();
       });
-      panel.append(continueBtn, logoutBtn, error);
+      panel.append(error, continueBtn, logoutBtn); // 錯誤行置鈕上方（#331）
     }
     if (!isResume || !loadCachedSession()) {
       const { wrap, input } = passwordField({ id: `loginPassword-${entry.username}` });
@@ -337,12 +373,12 @@ function buildAccountCard(entry, cachedUsername) {
       enter.type = "button";
       enter.className = "primary-button login-enter";
       enter.textContent = "Enter";
-      const submit = () => submitLogin(entry.username, input.value, error);
+      const submit = () => submitLogin(entry.username, input.value, error, enter);
       enter.addEventListener("click", submit);
       input.addEventListener("keydown", (event) => {
         if (event.key === "Enter") submit();
       });
-      panel.append(wrap, enter, error);
+      panel.append(wrap, error, enter); // 錯誤行置送出鈕上方（#331）
       setTimeout(() => input.focus({ preventScroll: true }), 0);
     }
     // 自本裝置移除卡片（#317／spec#8）：僅清本機快取摘要、不動伺服器帳號與存檔（重新登入即重建）；
@@ -408,16 +444,17 @@ function buildOtherLoginForm() {
   enter.type = "button";
   enter.className = "primary-button login-enter";
   enter.textContent = "Sign in";
-  enter.addEventListener("click", () => submitLogin(userInput.value.trim(), input.value, error));
+  const submit = () => submitLogin(userInput.value.trim(), input.value, error, enter, userInput);
+  enter.addEventListener("click", submit);
   input.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") submitLogin(userInput.value.trim(), input.value, error);
+    if (event.key === "Enter") submit();
   });
   const back = document.createElement("button");
   back.type = "button";
   back.className = "soft-button";
   back.textContent = "Back";
   back.addEventListener("click", () => loginScreenSetMode("cards"));
-  form.append(heading, userInput, wrap, enter, error, back);
+  form.append(heading, userInput, wrap, error, enter, back); // 錯誤行置送出鈕上方（#331）
   return form;
 }
 
@@ -444,16 +481,17 @@ function buildRegisterForm() {
   create.type = "button";
   create.className = "primary-button login-enter";
   create.textContent = "Create and play";
-  create.addEventListener("click", () => submitRegister(userInput.value.trim(), input.value, error));
+  const submit = () => submitRegister(userInput.value.trim(), input.value, error, create, userInput, input);
+  create.addEventListener("click", submit);
   input.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") submitRegister(userInput.value.trim(), input.value, error);
+    if (event.key === "Enter") submit();
   });
   const back = document.createElement("button");
   back.type = "button";
   back.className = "soft-button";
   back.textContent = "Back";
   back.addEventListener("click", () => loginScreenSetMode("cards"));
-  form.append(heading, hint, userInput, wrap, create, error, back);
+  form.append(heading, hint, userInput, wrap, error, create, back); // 錯誤行置送出鈕上方（#331）
   return form;
 }
 
