@@ -110,6 +110,51 @@ describe("login", () => {
   });
 });
 
+// #331 客戶模擬拓撲之單元層：limiter key 含帳號、429 附等待秒數、trust proxy 之 XFF 採信邊界。
+describe("rate limit topology (#331)", () => {
+  it("register limiter is keyed per username: neighbour failures do not lock others", async () => {
+    const app = makeApp();
+    await register(app, "taken1");
+    for (let i = 0; i < 3; i += 1) {
+      await register(app, "taken1"); // 同一來源 IP 對同名重複撞名（409 記失敗）
+    }
+    const sameName = await register(app, "taken1");
+    expect(sameName.status).toBe(429); // 同名重試被擋
+    const otherName = await register(app, "newkid9");
+    expect(otherName.status).toBe(201); // 換名（＝別的孩子）不受鄰居失敗牽連
+  });
+
+  it("429 carries retryAfterSeconds body field and matching Retry-After header", async () => {
+    const app = makeApp();
+    await register(app, "taken2");
+    for (let i = 0; i < 3; i += 1) await register(app, "taken2");
+    const limited = await register(app, "taken2");
+    expect(limited.status).toBe(429);
+    expect(limited.body.error.retryAfterSeconds).toBeGreaterThan(0);
+    expect(Number(limited.headers["retry-after"])).toBe(limited.body.error.retryAfterSeconds);
+  });
+
+  it("trustProxy=2 resolves real client IP from two-hop XFF; default 0 ignores forged XFF", async () => {
+    const trusted = makeApp({ trustProxy: 2 });
+    await register(trusted, "taken3");
+    const viaProxy = (xff: string) =>
+      request(trusted).post("/api/auth/register").set("X-Forwarded-For", xff)
+        .send({ username: "taken3", password: "secret6" });
+    for (let i = 0; i < 3; i += 1) await viaProxy("203.0.113.7, 10.0.0.1");
+    expect((await viaProxy("203.0.113.7, 10.0.0.1")).status).toBe(429); // 同真實 client 同名：鎖
+    expect((await viaProxy("198.51.100.9, 10.0.0.1")).status).toBe(409); // 不同真實 client：不受鎖、正常回撞名
+
+    store = createMemoryStore();
+    const untrusted = makeApp({ trustProxy: 0 });
+    await register(untrusted, "taken4");
+    const forged = (xff: string) =>
+      request(untrusted).post("/api/auth/register").set("X-Forwarded-For", xff)
+        .send({ username: "taken4", password: "secret6" });
+    for (let i = 0; i < 3; i += 1) await forged(`203.0.113.${i}`); // 每次偽造不同來源
+    expect((await forged("203.0.113.99")).status).toBe(429); // 偽 XFF 不被採信：仍按實際 socket 來源累計而鎖
+  });
+});
+
 describe("session protection", () => {
   it("rejects missing and forged tokens with 401", async () => {
     const app = makeApp();

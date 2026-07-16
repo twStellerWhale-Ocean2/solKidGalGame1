@@ -25,4 +25,11 @@ describe("loadConfig", () => {
     expect(config.rateLimitMax).toBe(3);
     expect(config.staticRoot).toBe("/srv/game");
   });
+
+  it("parses TRUST_PROXY hops defensively (#331): default 0, integer pass-through, garbage/negative→0", () => {
+    expect(loadConfig(base).trustProxy).toBe(0);
+    expect(loadConfig({ ...base, TRUST_PROXY: "2" }).trustProxy).toBe(2);
+    expect(loadConfig({ ...base, TRUST_PROXY: "abc" }).trustProxy).toBe(0);
+    expect(loadConfig({ ...base, TRUST_PROXY: "-1" }).trustProxy).toBe(0);
+  });
 });

@@ -13,6 +13,12 @@ service:
   port: 4180
   nodePort: 30418
 
+api:
+  # paramTrustProxy（#331）：Express trust proxy 跳數（投影 TRUST_PROXY env）。預設 0＝直連不信任 XFF。
+  # 依實際代理跳數設定：僅 Ingress=1；Cloudflare Tunnel→Ingress=2（且 ingress-nginx 須開 use-forwarded-headers）。
+  # 設 ≥1 的公網部署應以 Ingress 為唯一對外入口（勿同時把 NodePort 暴露到公網——可直連者能偽造 XFF）。
+  trustProxy: 0
+
 db:
   # PG major pin（postgres:16 系列）——PG major 升級屬手動 dump/restore，不隨 helm upgrade 自動發生。
   image: postgres:16-alpine
