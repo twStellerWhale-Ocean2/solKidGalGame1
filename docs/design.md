@@ -363,7 +363,7 @@ API ==>|"comIntf自訂資料庫連線<br/>apiIntf標準Postgres連線"| DB
 ### (B) 關鍵參數
 
 * **[etyCfg自訂modShell組態]**（內容與遊玩，values.yaml）：`paramDefaultArea=castle`、`paramDefaultCharacter=lumi`、`paramPlayableCharacters=lumi,yumi,rosa`、`paramProfileColorPalette=8 pastel`、`paramBackgroundPatterns=8`、`paramInitialThemeRandomization=profileColor,backgroundPattern`、`paramPlayMinutes=15`、`paramRestMinutes=15`、`paramPlayMaxMinutes=20`、`paramMoodMinutesPerPoint=1`、`paramChatChoiceCount=2`、`paramJobChoiceCount=3`、`paramRewardSecondTryRatio=0.5`、`paramSpeechRateScale=0.8`、`paramSpeechLeadingPad=8 full-width spaces`、`paramWardrobeLayerBounds=type defaults`、`paramCharacterSilhouetteFilter=outline+depth-shadow`、`paramAssetStandards`（各類圖像像素尺寸與檔重預算 SSOT：角色 body／head／NPC 512×768、場景 1024×1024、地區／世界地圖 1536×1536、衣物單品 512×512、UI 1280×720）。
-* **[etyCfg自訂modApi組態]**（Env→K8s Secret 與 values）：`paramApiPort=4180`、`paramServiceType=NodePort(30418)`、`paramUsernamePattern=^(?=.*[a-z])[a-z0-9]{3,16}$（可數字開頭、至少含一英文字母，issue #330）`、`paramPasswordMinLength=8`、`paramPasswordMix=須含至少一數字與一小寫英文（僅適用建立密碼時點，詳 II.C.(B) 相容鐵則）`、`paramPasswordHash=bcrypt cost≥10`、`paramSessionTtlDays=30`、`paramAdminBootstrap=ADMIN_USERNAME+ADMIN_PASSWORD env（先查帳號存在、僅於首次建立時依新規驗證——升級部署沿用舊值不得 CrashLoop，issue #330）`、`paramRegistrationOpenDefault=true`、`paramDefaultPlayLimit=play15/rest15/max20`、Secret＝`DATABASE_URL`／`SESSION_SECRET`／`ADMIN_USERNAME`／`ADMIN_PASSWORD`／`POSTGRES_PASSWORD`。
+* **[etyCfg自訂modApi組態]**（Env→K8s Secret 與 values）：`paramApiPort=4180`、`paramServiceType=NodePort(30418)`、`paramUsernamePattern=^(?=.*[a-z])[a-z0-9]{3,16}$（可數字開頭、至少含一英文字母，issue #330）`、`paramPasswordMinLength=8`、`paramPasswordMix=須含至少一數字與一小寫英文（僅適用建立密碼時點，詳 II.C.(B) 相容鐵則）`、`paramPasswordHash=bcrypt cost≥10`、`paramSessionTtlDays=30`、`paramAdminBootstrap=ADMIN_USERNAME+ADMIN_PASSWORD env（先查帳號存在、僅於首次建立時依新規驗證——升級部署沿用舊值不得 CrashLoop，issue #330）`、`paramRegistrationOpenDefault=true`、`paramDefaultPlayLimit=play15/rest15/max20`、`paramTrustProxy=TRUST_PROXY env（Express trust proxy 跳數；預設 0；依實際代理跳數設定——僅 ingress=1、tunnel→ingress=2（且 ingress 須開 use-forwarded-headers 否則 XFF 被覆寫）；helm values 欄位 api.trustProxy 投影此 env；公網 profile 之連動預設由 #329 交付。警語：≥1 時 XFF 可被可直連者偽造，公網部署應以 ingress 為唯一對外入口；因限流 key 含帳號（見 paramRateLimitKey）且僅計失敗，偽造收益有限）`、`paramRateLimitKey=register:{ip}:{username}／login:{ip}:{username}（key 一律含嘗試帳號名——同名重試才累計，代理／NodePort SNAT／家庭 NAT 共用 IP 情境下鄰居失敗不再鎖死他人註冊（issue #331）；429 回應附等待秒數）`、Secret＝`DATABASE_URL`／`SESSION_SECRET`／`ADMIN_USERNAME`／`ADMIN_PASSWORD`／`POSTGRES_PASSWORD`。
 * **[etyCfg自訂modDb組態]**：`paramDbName=luminara`、`paramDbImage=postgres:16`、`paramDbStorage=PVC 1Gi（helm.sh/resource-policy: keep）`、測試庫 `luminara_test`、helm-e2e namespace `luminara-e2e`（測試禁觸營運庫 `luminara`）。
 * **[etyCfg自訂devServer組態]**（dev-only 工具，不入正式部署）：`paramServerHost=0.0.0.0（HOST 覆寫）`、`paramServerPort=4174`。
 
@@ -373,7 +373,7 @@ API ==>|"comIntf自訂資料庫連線<br/>apiIntf標準Postgres連線"| DB
 
 | 頁面 | 導覽 orgSop／teamSop（L1／L2） | 版型（MD3）＋主要元件 | prsnSop（L3 leaf） | surface |
 | --- | --- | --- | --- | --- |
-| [通用登入頁] | 帳號存檔／teamSop#2.1 | feed：帳號卡清單（頭胸照＋識別色底＋摘要）＋密碼欄＋切換／註冊 | #2.1.1 | 遊戲殼 |
+| [通用登入頁] | 帳號存檔／teamSop#2.1 | feed：帳號卡清單（頭胸照＋識別色底＋摘要）＋密碼欄＋切換／註冊＋就地錯誤回饋（見表下錯誤回饋通則） | #2.1.1 | 遊戲殼 |
 | 選角命名頁 | 兒童遊玩／teamSop#1.3 | 對話框：三公主選擇＋名字 TextField＋識別色／花紋 picker | #1.3.1 | 遊戲殼 |
 | 世界地圖頁 | 兒童遊玩／teamSop#1.2 | 全幅場景：世界地圖＋公主 token＋地區入口 | #1.2.1 | 遊戲殼 |
 | 地區地圖頁 | 兒童遊玩／teamSop#1.2 | 全幅場景：地區地圖＋地點 hotspot＋公主 token | #1.2.1 | 遊戲殼 |
@@ -391,6 +391,7 @@ API ==>|"comIntf自訂資料庫連線<br/>apiIntf標準Postgres連線"| DB
 | （CLI／helm，非頁） | 部署營運／teamSop#4.1·4.2 | 命令列：`helm install／upgrade／uninstall`、`pg_dump`／`psql` | #4.1.1·#4.2.1 | CLI |
 
 > **通用管理常規（掛 admin shell Top App Bar、各管理頁共用、非域功能，承 orgSop#7 延伸至 admin 端）**：帳號資訊／**登出**（帳號選單）、**使用說明**／**關於**（版權·版本沿革·PolyForm Noncommercial 授權，說明選單）；玩家自助改密不提供（改密走 admin 代重設，spec#25）。
+> **錯誤回饋通則（登入／註冊表單，issue #331）**：任何送出被拒（驗證不符、撞名、限流、連線失敗）之錯誤訊息一律**就地醒目呈現且保證在視野內**——錯誤行置於送出鈕**上方**之**固定高度預留容器**（不推擠按鈕、無 layout shift；手機軟鍵盤展開時鈕下內容常在畫面外）、出現時捲入視野、聚焦錯誤行並以 `aria-live=assertive` 通報；格式類錯誤同時將肇事欄位置為 error 狀態（MD3 supporting text＋`aria-invalid`／`aria-describedby` 關聯）；訊息不得僅以色彩區辨（前綴 ⚠ 圖示）、限流訊息附可再試等待時間、用語為家長可讀之簡句；送出中鈕面呈忙碌狀態（disabled＋進行中字樣），杜絕「按了沒反應」感受。
 > **衣物調整雙表面邊界**：衣物調整頁（overlay，玩家於衣櫃即時微調、正式端不寫回）與衣物調整工具頁（dev，維護者系統化內容維護、寫回 sidecar）職責分離、非重複建置。
 
 **逐頁示意圖（設計期參考稿·待 code 以實際截圖替換；以文字規格為準，硬規則⑤）**：既有登入與管理端 4 頁示意圖如下；其餘玩家遊戲端具名頁（選角命名、世界／地區地圖、場景選單、場景對話、換裝商店、衣物調整 overlay、遊玩結算休息、設定）與 dev 工具頁之示意圖**列緩製**——本增量為既有已部署產品之改名／格式升版、非新 UI 設計，玩家端實際運行畫面即參考，最終態真實截圖由 code 段 Q3 產品手冊逐頁補入 [README.md]。
@@ -426,7 +427,7 @@ APP ==>|"comIntf自訂資料庫連線<br/>apiIntf標準Postgres連線"| PG
 > 圖例（三線通則）：`==>` 粗＝運行（系統／裝置間通訊，標 comIntf／apiIntf）｜`-.->` 虛＝人員操作（維護者部署營運）｜`-->` 細＝部署設定。
 
 * **建置指令**：遊戲殼無打包（靜態收集）；modApi `cd sysApi && npm ci && npm run build`（TypeScript→`dist/`）；正式 image 根目錄 Dockerfile 多階段 `docker build -t ghcr.io/twstellerwhale-ocean2/sollingoworld:<VERSION> .`（非 root、COPY 對齊靜態 allowlist、`tool/`／測試不入包、`linux/amd64`）；chart `helm package deploy/helm`（chart `version`／`appVersion` 與 `VERSION` 同源）。
-* **測試指令**：sysApi 單元 `cd sysApi && npm test`（vitest，涵蓋率 ≥80%）＋整合 `npm run integration`（compose PostgreSQL 專用測試庫 `luminara_test`）＋依賴安全 `npm audit`；方案層端對端 `node tests/e2e-account-cloud.mjs`／`node tests/e2e-admin-console.mjs`（含證據截圖）；helm 機判 `node scripts/chartLint.mjs`＋真裝 e2e `node tests/e2e-helm.mjs`（k8s 專用 ns `luminara-e2e`）；結構守門 `node scripts/structureLint.mjs`、`pwsh scripts/docLint.ps1 -Path docs/design.md`、`pwsh scripts/repoLint.ps1 -Path .`；版號防漂移 `node scripts/genVersion.mjs --check`。**設計約束：任何測試一律指向專用測試庫（`luminara_test`／ns `luminara-e2e`）、禁對營運庫 `luminara` 讀寫**。
+* **測試指令**：sysApi 單元 `cd sysApi && npm test`（vitest，涵蓋率 ≥80%）＋整合 `npm run integration`（compose PostgreSQL 專用測試庫 `luminara_test`）＋依賴安全 `npm audit`；方案層端對端 `node tests/e2e-account-cloud.mjs`／`node tests/e2e-admin-console.mjs`（含證據截圖）／`node tests/e2e-register-topology.mjs`（intTest#13 客戶模擬拓撲：代理標頭限流隔離＋手機視口錯誤回饋可見性）；helm 機判 `node scripts/chartLint.mjs`＋真裝 e2e `node tests/e2e-helm.mjs`（k8s 專用 ns `luminara-e2e`）；結構守門 `node scripts/structureLint.mjs`、`pwsh scripts/docLint.ps1 -Path docs/design.md`、`pwsh scripts/repoLint.ps1 -Path .`；版號防漂移 `node scripts/genVersion.mjs --check`。**設計約束：任何測試一律指向專用測試庫（`luminara_test`／ns `luminara-e2e`）、禁對營運庫 `luminara` 讀寫**。
 * **部署指令**：正式＝`helm install luminara <chart> -f secrets.yaml`／`helm upgrade luminara <chart>`／`helm uninstall luminara`（PVC keep）；備份 `kubectl exec <db-pod> -- pg_dump -U luminara luminara > backup.sql`、還原 `kubectl exec -i <db-pod> -- psql -U luminara luminara < backup.sql`；admin 忘密後門 `kubectl exec <app-pod> -- npm run reset-password -- <username> <new-password>`。開發期＝`docker compose -f deploy/compose.yaml up -d`（port 5433）＋`cd sysApi && npm start`。
 * **發行物命名（結構化）**：container image＝`ghcr.io/twstellerwhale-ocean2/sollingoworld`（單一 sys＝方案級 image，取最短結構名幹 `sollingoworld`）＋helm chart＝`sollingoworld-chart`（涵蓋層路徑＋`-chart` 後綴）。**image 與 chart 同名會撞同一 GHCR OCI path 同 tag**（v0.64.3 首發時兩者皆 `sollingoworld`，chart 被迫只掛 GitHub Release、無法上 OCI）；chart 加 `-chart` 使 image 保留最短名、chart 亦能正常上 OCI，兩者分流不撞。發行名依發佈列車命名紀律（image `sol[-sys[-mod]]`／chart `sol-chart` 結構）算出、於此宣告定案（取代舊 image `solkidgalgame1`／chart `solkidgalgame` 之不一致；registry push 與 GitHub Release 由發佈列車執行，本 repo 增量只交付可發行 build 產物）。
 * **命名層對照（四名並存、各有其位）**：方案／repo codename＝`solLingoWorld`（自 `solKidGalGame` 改名）｜發行物名＝image `sollingoworld` ＋ chart `sollingoworld-chart`（同一結構名幹 `sollingoworld`、chart 帶 `-chart` 後綴分流 OCI；自舊 `solkidgalgame1`／`solkidgalgame` 收斂）｜helm release／DB／測試 ns＝`luminara`／`luminara_test`／`luminara-e2e`（沿用不改）｜玩家端品牌＝`Luminara — Princess English Adventure`（遊戲內顯示，沿用不改）。
@@ -456,6 +457,7 @@ APP ==>|"comIntf自訂資料庫連線<br/>apiIntf標準Postgres連線"| PG
 | 10 | 執行期設定：新帳號預設時長／個別鎖定／註冊開關，儲存即生效、DB 缺值程式預設遞補 |
 | 11 | helm chart 機判：`helm lint` 0、manifest 探針／固定 nodePort／StatefulSet／PVC keep／缺秘密負向／版本鏈三源／Dockerfile COPY 對齊 allowlist |
 | 12 | helm 真裝 e2e（單節點叢集）：install→smoke→upgrade 資料保全→pg_dump 備份還原→uninstall keep→同名重裝續用 |
+| 13 | 客戶模擬拓撲（issue #331）：限流 key 含帳號名——共用來源 IP（代理／SNAT 模擬）下甲的失敗不鎖乙的註冊、同名重試才累計且 429 附等待秒數；`TRUST_PROXY=2` 兩跳 XFF 鏈解出真實 client IP、`TRUST_PROXY=0` 預設行為不變；手機視口（375×812）註冊／登入被拒時錯誤訊息**於視野內**可見（viewport 斷言）、欄位級 error 狀態、送出中鈕面忙碌狀態 |
 
 ### (B) 效益指標
 

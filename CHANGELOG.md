@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.64.5 — 2026-07-16
+- fix (#331): 修正「建立帳號按下按鈕像沒反應」：登入／註冊表單錯誤訊息改顯示在送出鈕上方固定位置（手機鍵盤展開也看得到）、加 ⚠ 前綴與欄位標紅、送出中按鈕顯示處理中；被擋次數過多時顯示還要等幾秒。伺服器失敗限流改按「來源＋帳號」計（同帳號重試才會被擋，經代理／分享網路部署時鄰居的失敗不再鎖住別人註冊），新增 TRUST_PROXY／helm values api.trustProxy 供反向代理部署辨識真實來源
+
 ## 0.64.4 — 2026-07-14 _(internal)_
 - refactor (#326): helm chart 發行名由 sollingoworld 改為 sollingoworld-chart：與同名 container image 分屬同一 GHCR OCI path 同 tag 會相撞（v0.64.3 首發時 chart 被迫只掛 GitHub Release、無法上 OCI），依發佈列車命名紀律為 chart 加 -chart 後綴使 image 保留最短結構名、chart 亦能正常上 OCI；chart name 走 genVersion.mjs 投影源、design.md 發行物宣告與 README 部署說明同步。純發行物改名／deploy-only，遊戲行為與 helm release／DB 名 luminara 零變更；本版未重發、隨下次發車上架
 

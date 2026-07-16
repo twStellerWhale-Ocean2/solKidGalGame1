@@ -22,6 +22,8 @@ export interface AppOptions {
   rateLimiter?: RateLimiter;
   now?: () => number;
   bcryptCost?: number;
+  /** paramTrustProxy（#331）：Express trust proxy 跳數；預設 0＝直連不信任 XFF。 */
+  trustProxy?: number;
 }
 
 interface AuthedRequest extends Request {
@@ -37,15 +39,26 @@ export function createApp(options: AppOptions) {
     staticRoot = null,
     rateLimiter = createRateLimiter({ max: 10, windowMs: 10 * 60 * 1000 }),
     now = Date.now,
-    bcryptCost = BCRYPT_COST
+    bcryptCost = BCRYPT_COST,
+    trustProxy = 0
   } = options;
 
   const app = express();
   app.disable("x-powered-by");
+  // paramTrustProxy（#331）：依實際代理跳數信任 XFF（僅 ingress=1、tunnel→ingress=2），限流以真實
+  // client IP 計；預設 0＝不信任（可直連者偽造 XFF 不被採信）。公網部署應以 ingress 為唯一對外入口。
+  if (trustProxy > 0) app.set("trust proxy", trustProxy);
   app.use(express.json({ limit: JSON_BODY_LIMIT }));
 
-  function fail(res: Response, status: number, code: string, message: string) {
-    res.status(status).json({ error: { code, message } });
+  function fail(res: Response, status: number, code: string, message: string, extra?: Record<string, unknown>) {
+    res.status(status).json({ error: { code, message, ...(extra || {}) } });
+  }
+
+  // 429 統一出口（#331）：附可再試等待秒數（前端據以顯示「幾分鐘後再試」）。
+  function failRateLimited(res: Response, key: string) {
+    const retryAfterSeconds = Math.max(1, Math.ceil(rateLimiter.retryAfterMs(key, now()) / 1000));
+    res.setHeader("Retry-After", String(retryAfterSeconds));
+    return fail(res, 429, "rate-limited", "Too many attempts. Please wait and try again.", { retryAfterSeconds });
   }
 
   // liveness／readiness（techStackNodeSvr 健康檢查；不受保護）。
@@ -90,24 +103,27 @@ export function createApp(options: AppOptions) {
 
   app.post("/api/auth/register", async (req, res, nextFn) => {
     try {
-      const ip = req.ip || "unknown";
-      if (rateLimiter.isLimited(`register:${ip}`, now())) {
-        return fail(res, 429, "rate-limited", "Too many attempts. Please wait and try again.");
+      // 限流 key 一律含嘗試帳號名（paramRateLimitKey，#331）：同名重試才累計——代理／NodePort SNAT／
+      // 家庭 NAT 共用來源 IP 時，甲的失敗不再鎖死乙的註冊。
+      const { username, password } = req.body || {};
+      const usernameKey = validateUsername(username) ? username : "invalid";
+      const limiterKey = `register:${req.ip || "unknown"}:${usernameKey}`;
+      if (rateLimiter.isLimited(limiterKey, now())) {
+        return failRateLimited(res, limiterKey);
       }
       const settings = resolveSettings(await store.getSettings());
       if (!settings.registrationOpen) {
         return fail(res, 403, "registration-closed", "This server is not accepting new accounts right now.");
       }
-      const { username, password } = req.body || {};
       const validationError = validateRegistration(username, password);
       if (validationError) {
-        rateLimiter.recordFailure(`register:${ip}`, now());
+        rateLimiter.recordFailure(limiterKey, now());
         return fail(res, 422, validationError, validationMessage(validationError));
       }
       const passwordHash = bcrypt.hashSync(password, bcryptCost);
       const account = await store.createAccount(username, passwordHash, now());
       if (account === "taken") {
-        rateLimiter.recordFailure(`register:${ip}`, now());
+        rateLimiter.recordFailure(limiterKey, now());
         return fail(res, 409, "username-taken", "This username is already taken.");
       }
       await store.touchLastLogin(account.accountId, now());
@@ -124,7 +140,7 @@ export function createApp(options: AppOptions) {
       const usernameKey = validateUsername(username) ? username : "invalid";
       const limiterKey = `login:${req.ip || "unknown"}:${usernameKey}`;
       if (rateLimiter.isLimited(limiterKey, now())) {
-        return fail(res, 429, "rate-limited", "Too many attempts. Please wait and try again.");
+        return failRateLimited(res, limiterKey);
       }
       // 登入失敗統一訊息與時序：帳號不存在時仍比對假雜湊，避免時間差洩漏帳號存在性。
       // 預檢用 validateLoginPassword（舊制下限 6–72，#330 相容鐵則）：新規僅適用建立密碼時點，
