@@ -26,7 +26,7 @@ const TAG_B = `${suffix}b`;
 const adminUser = `adm${suffix}`.slice(0, 16);
 const adminPassword = "helmadminpw1";
 const kidUser = `hk${suffix}`.slice(0, 16);
-const kidPassword = "kidpw6";
+const kidPassword = "kidpw2026";
 
 let failures = 0;
 function check(name, condition, detail = "") {
