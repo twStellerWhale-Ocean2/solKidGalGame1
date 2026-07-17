@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.66.8 — 2026-07-17
+- fix (#352): 首次初始設定（選公主／顏色／花紋）期間，背景畫面不再先出現預設公主：側欄頭胸照與地圖上的公主棋子留空，按 Start 確認後所選公主才登場；選角卡內三位公主預覽照常
+
 ## 0.66.7 — 2026-07-17
 - fix (#350): Lumi 與 Rosa 頭像對調為美術指定版（USR 手動調整入版控）：Lumi 改棕眼笑臉、Rosa 改紫眼——先前調整僅存於工作機未隨 v0.66.6 發行，本 hotfix 補正
 

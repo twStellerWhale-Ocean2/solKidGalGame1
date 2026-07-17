@@ -118,3 +118,11 @@
 .bust-doll .paper-doll-layer {
   filter: none;
 }
+
+/* #352：首次初始設定（first-run 選角）期間，背景畫面公主立繪留空——
+   側欄頭胸照與地圖棋子以 visibility 隱藏（保留佔位、不跳版）；選角卡內預覽不受影響。
+   確認（Start）後 body class 移除、所選公主即登場。 */
+body.first-run-select #sideProfileAvatar,
+body.first-run-select .map-doll {
+  visibility: hidden;
+}

@@ -73,6 +73,15 @@ try {
   check("register auto-signs-in and opens character select", true);
   await pageA.screenshot({ path: path.join(SHOTS, "issue309-03-character-select.png") });
 
+  // ── issue #352：first-run 初始設定期間背景立繪留空（側欄頭胸照＋地圖棋子 hidden；卡內預覽照常） ──
+  const emptyStage = await pageA.evaluate(() => ({
+    flag: document.body.classList.contains("first-run-select"),
+    side: getComputedStyle(document.querySelector("#sideProfileAvatar")).visibility,
+    cardPreviews: document.querySelectorAll("#characterSelect .character-portrait .paper-doll-stage").length
+  }));
+  check("first-run empty stage: sidebar bust hidden (#352)", emptyStage.flag && emptyStage.side === "hidden", JSON.stringify(emptyStage));
+  check("select-card previews unaffected (#352)", emptyStage.cardPreviews === 3, String(emptyStage.cardPreviews));
+
   // ── issue #340：Profile color 變更 → Background pattern chips 即時連動（花紋選擇保留、只換色） ──
   await pageA.click('.background-pattern-swatch[data-pattern]'); // 先選一個非 none 花紋
   const beforeColor = await pageA.evaluate(() => document.querySelector(".background-pattern-swatch").style.getPropertyValue("--profile-color"));
@@ -91,6 +100,12 @@ try {
   await pageA.fill("#playerNameInput", "Mimi");
   await pageA.click("#characterConfirm");
   await pageA.waitForTimeout(500);
+  // #352：Start 確認後所選公主即登場（旗標移除、側欄頭胸照恢復可見）。
+  const stageAfter = await pageA.evaluate(() => ({
+    flag: document.body.classList.contains("first-run-select"),
+    side: getComputedStyle(document.querySelector("#sideProfileAvatar")).visibility
+  }));
+  check("princess appears after Start (#352)", stageAfter.flag === false && stageAfter.side === "visible", JSON.stringify(stageAfter));
   // 遊玩：以測試 hook 改變狀態並保存（等值於答題得幣後 persist）
   await pageA.evaluate(() => window.LuminaraTest.setCoins(777));
   await pageA.waitForTimeout(2600); // 節流窗口
