@@ -234,8 +234,9 @@ try {
   const registerFormAbsent = await fresh.evaluate(() => !document.getElementById("registerUsername"));
   check("no create-account entry while closed", newButtonHidden);
   check("no register form while closed (empty state)", registerFormAbsent);
-  // #357 Q3 二審 N1 回歸：註冊關閉＋空狀態時，uiMode 收斂順序若寫反會落入「0 卡又無登入表單」死角。
-  check("closed + empty state still shows sign-in form (#357 N1)", await fresh.evaluate(() => Boolean(document.getElementById("loginOtherUsername"))));
+  // #357：註冊關閉之空狀態仍須是可用的登入畫面（本頁未經 register 模式，故**不覆蓋** N1 死角——
+  //   N1 之真守門需「config 延遲回 closed＋窗內點註冊連結」之 route 模擬或收斂單元測試，已列次批）。
+  check("closed + empty state still shows sign-in form", await fresh.evaluate(() => Boolean(document.getElementById("loginOtherUsername"))));
   check("closed state offers no create-account link (#357)", await fresh.evaluate(() => !document.querySelector(".login-link")));
   check("registration closed API rejects", (await api("/api/auth/register", { method: "POST", body: { username: `new${suffix}`.slice(0, 16), password: "secret66" } })).status === 403);
   await fresh.screenshot({ path: path.join(SHOTS, "issue310-07-registration-closed.png") });
