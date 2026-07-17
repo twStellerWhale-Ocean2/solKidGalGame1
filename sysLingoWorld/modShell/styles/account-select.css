@@ -310,3 +310,34 @@ body.cloud-offline #statusMessage {
   border-color: #c98484;
   background: #fdf1f1;
 }
+
+/* #357：次要出口——auth 卡慣例為「一個主要動作＋一條次要連結」，不並列第二顆大鈕 */
+.login-secondary {
+  margin: 2px 0 0;
+  text-align: center;
+}
+.login-link {
+  min-height: 44px; /* 觸控目標 */
+  padding: 0 8px;
+  border: none;
+  background: transparent;
+  color: var(--rose-dark);
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.login-link:hover,
+.login-link:focus-visible {
+  color: #a02a52;
+}
+
+/* #358：產品版本（頁尾小字、低調不搶童趣視覺；值＝VERSION SSOT 投影） */
+.login-version {
+  margin: 2px 0 0;
+  text-align: center;
+  /* 維運可讀即本項之目的（#358）：不用 --muted×opacity（實測約 3:1、低於 WCAG AA 小字 4.5:1），
+     改足夠對比之深色、僅以字級收斂存在感（Q3 審查 F2）。 */
+  color: #6b5560;
+  font-size: 0.75rem;
+}

@@ -29,6 +29,7 @@ import { apiLogout } from "../system/api-client.js";
 import { freshState, loadAccountState, normalizeState } from "../state/game-state.js";
 import { listAccounts } from "../state/accounts.js";
 import { playableCharacterById, normalizeBackgroundPattern } from "../data/game-data.js";
+import { buildInfo } from "../build/version.js"; // #358：登入卡產品識別之版本值（VERSION SSOT 投影，不另存第二份）
 import { princessName, profileColorFor, render, renderBustInto } from "../render/hud.js";
 import { changeView } from "./views.js";
 import { clockNow, formatClock, tickPlayClock } from "../state/play-session.js";
@@ -85,9 +86,13 @@ export function openLoginScreen({ mustChoose = true } = {}) {
   uiMode = "cards";
   expandedUsername = "";
   const els = overlayEls();
-  if (els.title) els.title.textContent = "Sign in to play";
-  if (els.intro) els.intro.textContent = "Pick your card and type your password. Progress is saved on your family server.";
+  // #358 產品識別：卡片頂端＝軟體名稱（品牌）；版本以小字置頁尾（見 buildLoginScreen）。
+  // #359：副標精簡為一句——規則不前置攤開，改由 placeholder 與 #331 就地錯誤漸進揭露。
+  if (els.title) els.title.textContent = "Luminara";
+  if (els.intro) els.intro.textContent = "Princess English Adventure — sign in to play. A parent can help type.";
   if (els.newButton) els.newButton.textContent = "Create new account";
+  // #358 後標題＝品牌名，對話框 accessible name 由「用途」變「品牌」；以 describedby 指向副標補回用途（Q3 審查 F1）。
+  els.card?.setAttribute("aria-describedby", "accountSelectIntro");
   void refreshServerConfig();
   buildLoginScreen();
   els.overlay.classList.add("show");
@@ -428,11 +433,26 @@ function buildAccountCard(entry, cachedUsername) {
   return row;
 }
 
+// 次要出口（#357）：auth 卡之慣例——一個主要動作＋一條次要連結（非並列大鈕）。
+function secondaryLink(text, onClick) {
+  const wrap = document.createElement("p");
+  wrap.className = "login-secondary";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "login-link";
+  button.textContent = text;
+  button.addEventListener("click", onClick);
+  wrap.appendChild(button);
+  return wrap;
+}
+
+// #357：登入表單＝預設態（帳號存伺服器，新裝置的既有玩家必須先能登入、而非被導去重建帳號）。
 function buildOtherLoginForm() {
+  const hasCards = loadRecentAccounts().length > 0;
   const form = document.createElement("div");
   form.className = "login-form";
   const heading = document.createElement("h3");
-  heading.textContent = "Sign in with another account";
+  heading.textContent = hasCards ? "Sign in with another account" : "Sign in";
   const userInput = document.createElement("input");
   userInput.type = "text";
   userInput.className = "login-input";
@@ -453,23 +473,30 @@ function buildOtherLoginForm() {
   input.addEventListener("keydown", (event) => {
     if (event.key === "Enter") submit();
   });
-  const back = document.createElement("button");
-  back.type = "button";
-  back.className = "soft-button";
-  back.textContent = "Back";
-  back.addEventListener("click", () => loginScreenSetMode("cards"));
-  form.append(heading, userInput, wrap, error, enter, back); // 錯誤行置送出鈕上方（#331）
+  form.append(heading, userInput, wrap, error, enter); // 錯誤行置送出鈕上方（#331）
+  // #357：Back 只在真有上一步（此裝置有帳號卡）時出現——空狀態的 root auth 畫面無處可回、不放返回。
+  if (hasCards) {
+    const back = document.createElement("button");
+    back.type = "button";
+    back.className = "soft-button";
+    back.textContent = "Back";
+    back.addEventListener("click", () => loginScreenSetMode("cards"));
+    form.appendChild(back);
+  }
+  // #357：註冊降為次要出口（註冊關閉時不出現，spec#26 (c)）。
+  if (serverConfig.registrationOpen) {
+    form.appendChild(secondaryLink("First time here? Create an account", () => loginScreenSetMode("register")));
+  }
   return form;
 }
 
 function buildRegisterForm() {
+  const hasCards = loadRecentAccounts().length > 0;
   const form = document.createElement("div");
   form.className = "login-form";
   const heading = document.createElement("h3");
   heading.textContent = "Create new account";
-  const hint = document.createElement("p");
-  hint.className = "login-hint";
-  hint.textContent = "Username: 3-16 lowercase letters/digits (can start with a digit). Password: 8+ characters with a number and a lowercase letter. A parent can help type.";
+  // #359：規則不再前置攤開——欄位 placeholder 精簡提示、違規時走 #331 之 ⚠ 就地錯誤（精確訊息在那）。
   const userInput = document.createElement("input");
   userInput.type = "text";
   userInput.className = "login-input";
@@ -490,12 +517,17 @@ function buildRegisterForm() {
   input.addEventListener("keydown", (event) => {
     if (event.key === "Enter") submit();
   });
-  const back = document.createElement("button");
-  back.type = "button";
-  back.className = "soft-button";
-  back.textContent = "Back";
-  back.addEventListener("click", () => loginScreenSetMode("cards"));
-  form.append(heading, hint, userInput, wrap, error, create, back); // 錯誤行置送出鈕上方（#331）
+  form.append(heading, userInput, wrap, error, create); // 錯誤行置送出鈕上方（#331）
+  if (hasCards) { // #357：同上，有卡片才有「回卡片列表」這個上一步
+    const back = document.createElement("button");
+    back.type = "button";
+    back.className = "soft-button";
+    back.textContent = "Back";
+    back.addEventListener("click", () => loginScreenSetMode("cards"));
+    form.appendChild(back);
+  }
+  // #357：註冊頁之次要出口＝回登入（新裝置的既有玩家誤入註冊時的退路）。
+  form.appendChild(secondaryLink("Already have an account? Sign in", () => loginScreenSetMode("login")));
   return form;
 }
 
@@ -566,38 +598,43 @@ export async function migrateLocalAccount(localId, container) {
 export function buildLoginScreen() {
   const els = overlayEls();
   if (!els.list) return;
+  renderLoginVersion(); // #358
   els.list.innerHTML = "";
   if (els.back) els.back.hidden = true; // 登入 gate：不可關閉
   const cached = loadCachedSession();
   const recents = loadRecentAccounts();
   const registrationOpen = serverConfig.registrationOpen;
-  // 註冊關閉（spec#26 (c)）：不渲染任何「建立新帳號」入口（含空狀態表單），改顯示友善說明。
-  if (els.newButton) els.newButton.hidden = !registrationOpen || uiMode === "register" || (uiMode === "cards" && recents.length === 0);
-  if (els.empty) {
-    els.empty.hidden = recents.length > 0 || uiMode !== "cards";
-    els.empty.textContent = registrationOpen
-      ? "No players on this device yet. Create a new account to start your adventure!"
-      : "No players on this device yet. Sign in with your account below.";
-  }
+  // #357：無帳號卡＝預設登入表單。**須在算 newButton／empty 之前收斂 uiMode**——否則首繪（config 未回時）
+  // 與「移除最後一張卡」路徑會以 cards 模式算出可見的大鈕、與 Sign in 表單並列（註冊與登入同權復活），
+  // 且後者無後續重繪可救＝永久殘留（Q3 審查 M2）。
+  // 順序有意義：「無卡 ⟹ login」是 #357 的不變式，**必須是最後一道收斂**——
+  // 若先跑它、再由 register→cards 降級，降級產出的 cards 就無人收斂，空狀態會落入
+  // 「0 張卡又沒有登入表單」的死角（Q3 二審 N1：註冊關閉＋config RTT 窗內點註冊連結即可達）。
   if (uiMode === "register" && !registrationOpen) uiMode = "cards";
+  if (uiMode === "cards" && recents.length === 0) uiMode = "login";
+  // 註冊關閉（spec#26 (c)）：不渲染任何「建立新帳號」入口（含空狀態表單），改顯示友善說明。
+  // #357：「Create new account」大鈕只留在卡片列表（＝家庭新增另一位玩家之主要動作）；
+  // 登入／註冊表單模式下改由表單內之次要連結出入，不並列第二顆主要鈕（否則註冊仍與登入同權，改了等於沒改）。
+  if (els.newButton) els.newButton.hidden = !registrationOpen || uiMode !== "cards";
+  // #357（Q3 二審 N2）：登入畫面不再需要「此裝置尚無玩家」旁白——收斂後「無卡」必為 login 模式，
+  // 登入表單本身就是空狀態的答案（#359 亦要求少字）。此處恆隱藏；`#accountEmpty` 元素保留供本機模式
+  // （select-screens 之 openAccountSelect）使用，故只關顯示、不刪 DOM。
+  if (els.empty) els.empty.hidden = true;
   if (uiMode === "login") {
     els.list.appendChild(buildOtherLoginForm());
+    // spec#26 (c)：註冊關閉之友善說明——#357 後 login 為空狀態預設模式，此分支亦須呈現
+    // （config 非同步回來後之重繪走這裡，漏了就只剩登入表單、說明消失）。
+    if (!registrationOpen) els.list.appendChild(registrationClosedNotice());
+    if (recents.length === 0) {
+      const emptyMigrate = buildMigrationEntry();
+      if (emptyMigrate) els.list.appendChild(emptyMigrate);
+    }
     return;
   }
   if (uiMode === "register") {
-    els.list.appendChild(buildRegisterForm());
+    els.list.appendChild(buildRegisterForm()); // 回登入之次要出口已內建於表單（#357）
     if (recents.length === 0) {
-      // 空狀態（#309 審查 C2）：register 模式仍保留「其他帳號登入」與遷移入口——
-      // 含 config 查詢完成後之重建（#310），不因 rebuild 而消失。
-      const emptyActions = document.createElement("div");
-      emptyActions.className = "login-actions";
-      const otherEntry = document.createElement("button");
-      otherEntry.type = "button";
-      otherEntry.className = "soft-button";
-      otherEntry.textContent = "Other account";
-      otherEntry.addEventListener("click", () => loginScreenSetMode("login"));
-      emptyActions.appendChild(otherEntry);
-      els.list.appendChild(emptyActions);
+      // 空狀態（#309 審查 C2）：保留遷移入口——含 config 查詢完成後之重建（#310），不因 rebuild 而消失。
       const emptyMigrate = buildMigrationEntry();
       if (emptyMigrate) els.list.appendChild(emptyMigrate);
     }
@@ -616,30 +653,19 @@ export function buildLoginScreen() {
   if (!registrationOpen) els.list.appendChild(registrationClosedNotice());
   const migrate = buildMigrationEntry();
   if (migrate) els.list.appendChild(migrate);
-  if (recents.length === 0 && registrationOpen) loginScreenSetModeSilently();
 }
 
-// 空狀態（[hmiIntf自訂登入註冊頁] (a)）：無任何帳號卡時預設聚焦建立新帳號表單，
-// 並保留「其他帳號登入」入口（此裝置沒卡片但伺服器可能已有帳號）。
-function loginScreenSetModeSilently() {
-  if (uiMode === "cards" && loadRecentAccounts().length === 0) {
-    uiMode = "register";
-    const els = overlayEls();
-    els.list.innerHTML = "";
-    if (els.empty) els.empty.hidden = false;
-    els.list.appendChild(buildRegisterForm());
-    const actions = document.createElement("div");
-    actions.className = "login-actions";
-    const other = document.createElement("button");
-    other.type = "button";
-    other.className = "soft-button";
-    other.textContent = "Other account";
-    other.addEventListener("click", () => loginScreenSetMode("login"));
-    actions.appendChild(other);
-    els.list.appendChild(actions);
-    const migrate = buildMigrationEntry();
-    if (migrate) els.list.appendChild(migrate);
+// #358：登入卡頁尾版本（值取自 VERSION SSOT 之投影 buildInfo，不手寫第二份）。
+function renderLoginVersion() {
+  const card = document.querySelector(".account-select-card");
+  if (!card) return;
+  let footer = card.querySelector(".login-version");
+  if (!footer) {
+    footer = document.createElement("p");
+    footer.className = "login-version";
+    card.appendChild(footer);
   }
+  footer.textContent = `Luminara v${buildInfo.version}`; // 玩家端品牌＋版本（design ＜命名層對照＞：codename solLingoWorld 不外露）
 }
 
 export function removeRecent(username) {

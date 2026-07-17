@@ -158,8 +158,7 @@ try {
   const kid = await kidCtx.newPage();
   await kid.goto(`${BASE}/`, { waitUntil: "networkidle" });
   await kid.waitForSelector("#accountSelect.show", { timeout: 15000 });
-  await kid.click("text=Other account");
-  await kid.waitForSelector("#loginOtherUsername", { timeout: 8000 });
+  await kid.waitForSelector("#loginOtherUsername", { timeout: 8000 }); // #357：空狀態預設即登入表單（不再需要點 Other account）
   await kid.fill("#loginOtherUsername", kidUser);
   await kid.fill("#loginOtherPassword", "fresh6678");
   await kid.click(".login-enter");
@@ -235,6 +234,10 @@ try {
   const registerFormAbsent = await fresh.evaluate(() => !document.getElementById("registerUsername"));
   check("no create-account entry while closed", newButtonHidden);
   check("no register form while closed (empty state)", registerFormAbsent);
+  // #357：註冊關閉之空狀態仍須是可用的登入畫面（本頁未經 register 模式，故**不覆蓋** N1 死角——
+  //   N1 之真守門需「config 延遲回 closed＋窗內點註冊連結」之 route 模擬或收斂單元測試，已列次批）。
+  check("closed + empty state still shows sign-in form", await fresh.evaluate(() => Boolean(document.getElementById("loginOtherUsername"))));
+  check("closed state offers no create-account link (#357)", await fresh.evaluate(() => !document.querySelector(".login-link")));
   check("registration closed API rejects", (await api("/api/auth/register", { method: "POST", body: { username: `new${suffix}`.slice(0, 16), password: "secret66" } })).status === 403);
   await fresh.screenshot({ path: path.join(SHOTS, "issue310-07-registration-closed.png") });
 

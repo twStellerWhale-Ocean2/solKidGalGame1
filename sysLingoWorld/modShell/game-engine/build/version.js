@@ -4,6 +4,7 @@
 export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
+  { version: "0.67.0", buildDateTime: "2026-07-17", summaryZh: "登入畫面依業界慣例重整（家長回饋）：新裝置進來預設是「登入」表單而非「建立新帳號」——帳號存在家用伺服器上，換手機或平板的既有玩家直接登入即可帶回進度，不會被導去重建帳號（原動線會產生重複帳號、進度分裂）；第一次玩的新玩家點表單下方「First time here? Create an account」建立。卡片頂端顯示遊戲名稱、頁尾顯示服務版本（維護者不必登入即可確認版本）；帳密規則不再一次攤成大段說明，改由欄位提示與送出後的就地錯誤呈現；移除空狀態那顆按了無處可回的 Back 鈕。既有帳號卡動線、免密續玩、註冊關閉說明皆不變" },
   { version: "0.66.8", buildDateTime: "2026-07-17", summaryZh: "首次初始設定（選公主／顏色／花紋）期間，背景畫面不再先出現預設公主：側欄頭胸照與地圖上的公主棋子留空，按 Start 確認後所選公主才登場；選角卡內三位公主預覽照常" },
   { version: "0.66.7", buildDateTime: "2026-07-17", summaryZh: "Lumi 與 Rosa 頭像對調為美術指定版（USR 手動調整入版控）：Lumi 改棕眼笑臉、Rosa 改紫眼——先前調整僅存於工作機未隨 v0.66.6 發行，本 hotfix 補正" },
   { version: "0.66.4", buildDateTime: "2026-07-17", summaryZh: "選角頁「Profile color 選色」與「Background pattern 花紋」即時連動：點色票、自訂調色或切換公主改變主色時，下方花紋選項與公主卡預覽立即換成新色（原本停留舊色、要靠其他操作才更新）；已選的花紋不會因換色被重置" },
@@ -51,8 +52,8 @@ export const versionHistory = [
 ];
 
 export const buildInfo = {
-  version: "0.66.9",
+  version: "0.67.0",
   buildDate: "2026-07-17",
   buildDateTime: "2026-07-17",
-  issues: ["#355"]
+  issues: ["#357"]
 };
