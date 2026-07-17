@@ -1,8 +1,6 @@
 // AUTO-GENERATED FROM /VERSION — DO NOT EDIT BY HAND.
-// 版號／版本沿革唯一 SSOT＝repo 根目錄 VERSION（semver＋date＋copyright＋history）；本檔為其投影。
-// 改沿革：編輯 VERSION → `node scripts/genVersion.mjs`（重生本檔與 CHANGELOG.md）。
-// 防漂移：`node scripts/genVersion.mjs --check`（docs/design.md＜IV.A＞測試指令）。
-// 玩家可見沿革＝VERSION.history 中 playerVisible 之投影；buildInfo 之 commit SHA 於 build 當下由 git 取、不入 VERSION。
+// 版號 SSOT＝repo 根目錄 VERSION；本檔為其投影（incrFlow genVersion，SSOT 工具、repo 不落副本）。
+// 改沿革：編輯 VERSION → 執行 skill 之 genVersion.mjs（指令見 docs/design.md 建置指令）；防漂移：--check。
 export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
@@ -53,8 +51,8 @@ export const versionHistory = [
 ];
 
 export const buildInfo = {
-  version: "0.66.8",
+  version: "0.66.9",
   buildDate: "2026-07-17",
   buildDateTime: "2026-07-17",
-  issues: ["#352"]
+  issues: ["#355"]
 };
