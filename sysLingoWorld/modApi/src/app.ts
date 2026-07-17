@@ -363,8 +363,11 @@ export function createApp(options: AppOptions) {
       if (error) fail(res, 404, "not-found", "Game shell not found.");
     }));
     // issue #362：**只對圖像資產**放寬快取——express.static 預設 `Cache-Control: max-age=0`，
-    // 使每次進場景即使圖已在快取仍須先發條件請求驗證（拿 304 才敢用）＝每進一次場景就多一趟 RTT，
-    // 手機 WiFi 上即為「圖要等一下」之感受（非首訪問題、重複進場照樣慢）。
+    // 使圖片即使已在磁碟快取，**每個新 document** 仍須先發條件請求驗證（拿 304 才敢用）＝每張圖多一趟 RTT。
+    // 效益落點＝**跨頁載入**（孩子隔天再開遊戲／重新整理＝新 document，此時每張場景圖省一趟 RTT）。
+    // **勿誤解**：同一分頁內重進同一場景本由瀏覽器記憶體快取接住、與本標頭無關——#362 節流實測
+    // （Fast-3G）證實修前修後皆 0 筆請求、差 10 ms；玩家原始抱怨「進場景要等圖」之主解方為預抓
+    // （scene/scene-art.js 之 prefetchSceneArt），本標頭為輔。
     // `stale-while-revalidate`：新鮮期內零網路；過期後**先用快取即時畫、背景再更新**，故升級後最多
     // 一次舊圖、下次即新——畫面永不阻塞等網路。
     // **不含 JS／CSS／HTML**（content-package 內尚有 manifest.js／rules.js 等程式碼；game-engine／styles

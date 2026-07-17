@@ -139,28 +139,38 @@ try {
   }));
   check("princess appears after Start (#352)", stageAfter.flag === false && stageAfter.side === "visible", JSON.stringify(stageAfter));
 
-  // ── issue #362：場景圖預抓與快取（互動模型：第一次點聚焦、第二次點進場）──
+  // ── issue #362：場景圖預抓（互動模型：第一次點聚焦、第二次點進場）──
+  // 量測法（Q3 二審 M5 建議）：節流至 Fast-3G 後於**同一 run、同一頁**讀 resource timing——
+  //   `duration` ＝ 該圖在此網速之實際下載耗時 ＝ **沒有預抓時，玩家按下去還要乾等的時間**（修前等效）；
+  //   `responseEnd - 進場時刻` ＝ 修後玩家實際等待（預抓已完成則 ≤0）。免 reload、免第二台 server。
   await pageA.waitForSelector("#castleStage .map-marker.hotspot", { timeout: 15000 });
+  const cdp362 = await deviceA.newCDPSession(pageA);
+  await cdp362.send("Network.enable");
+  await cdp362.send("Network.emulateNetworkConditions", { offline: false, latency: 150, downloadThroughput: 180 * 1024, uploadThroughput: 84 * 1024 }); // Fast-3G 近似
   const spot = pageA.locator("#castleStage .map-marker.hotspot").nth(1);
   const sceneEntries = () => pageA.evaluate(() => performance.getEntriesByType("resource").filter((e) => /scenes\/.*-1024\.webp/.test(e.name)).length);
-  await spot.click();
-  await pageA.waitForTimeout(1200);
+  await spot.click(); // 第一次點＝聚焦（預抓啟動）
+  await pageA.waitForFunction(() => performance.getEntriesByType("resource").some((e) => /scenes\/.*-1024\.webp/.test(e.name) && e.responseEnd > 0), { timeout: 60000 });
   check("#362 聚焦即預抓場景圖（進場前已下載）", (await sceneEntries()) > 0);
   check("#362 聚焦不進場（互動模型未變）", !(await pageA.$(".adv-modal.show")));
-  await spot.click();
-  await pageA.waitForFunction(() => Boolean(document.querySelector(".adv-modal.show")), { timeout: 10000 });
+  const enterAt362 = await pageA.evaluate(() => performance.now());
+  await spot.click(); // 第二次點＝進場
+  await pageA.waitForFunction(() => Boolean(document.querySelector(".adv-modal.show")), { timeout: 30000 });
   await pageA.waitForTimeout(900);
   check("#362 進場面板正常渲染（對話選項在）", (await pageA.$$("#choiceList button")).length > 0);
+  await pageA.screenshot({ path: path.join(SHOTS, "issue362-01-scene-prefetched.png") }); // GATE ＜2.5節＞ 證據：**modal 開啟中**之場景畫面
+  const perf362 = await pageA.evaluate((t0) => {
+    const e = performance.getEntriesByType("resource").filter((x) => /scenes\/.*-1024\.webp/.test(x.name))[0];
+    return e ? { downloadMs: Math.round(e.duration), waitedMs: Math.round(Math.max(0, e.responseEnd - t0)), bytes: e.encodedBodySize } : null;
+  }, enterAt362);
+  console.log(`  [#362 量測 @Fast-3G] 場景圖 ${perf362?.bytes} bytes：無預抓時玩家須乾等 ≈${perf362?.downloadMs} ms；有預抓時實際等待 ${perf362?.waitedMs} ms`);
+  check("#362 預抓確有提前量（進場時圖已就緒）", perf362 !== null && perf362.waitedMs === 0, JSON.stringify(perf362));
+  check("#362 量得無預抓之等待成本（供 issue 前後對照）", (perf362?.downloadMs || 0) > 0, JSON.stringify(perf362));
+  await cdp362.send("Network.emulateNetworkConditions", { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 }); // 解除節流，不影響後續案例
   await pageA.locator("#advActionFooter button").last().click({ timeout: 5000 }).catch(() => {});
   await pageA.keyboard.press("Escape").catch(() => {});
   await pageA.waitForFunction(() => !document.querySelector(".adv-modal.show"), { timeout: 10000 });
-  // 註：**不在此斷言「重進場零下載」**——同分頁內重進同一場景由瀏覽器記憶體快取接住，
-  //   與 Cache-Control 無關（實測：修前修後皆 0 筆請求）。那樣的斷言沒有本增量也會綠＝假守門。
-  //   快取政策之真守門＝上方標頭斷言（改回 max-age=0 即紅）；跨頁載入之效益見 issue #362 分析。
-  await pageA.screenshot({ path: path.join(SHOTS, "issue362-01-scene-cached.png") }); // GATE ＜2.5節＞ 證據
-  await pageA.locator("#advActionFooter button").last().click({ timeout: 5000 }).catch(() => {});
-  await pageA.keyboard.press("Escape").catch(() => {});
-  await pageA.waitForFunction(() => !document.querySelector(".adv-modal.show"), { timeout: 10000 });
+
   // 遊玩：以測試 hook 改變狀態並保存（等值於答題得幣後 persist）
   await pageA.evaluate(() => window.LuminaraTest.setCoins(777));
   await pageA.waitForTimeout(2600); // 節流窗口
