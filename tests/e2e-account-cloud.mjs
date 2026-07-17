@@ -71,6 +71,22 @@ try {
   await pageA.waitForSelector("#characterSelect.show", { timeout: 15000 });
   check("register auto-signs-in and opens character select", true);
   await pageA.screenshot({ path: path.join(SHOTS, "issue309-03-character-select.png") });
+
+  // ── issue #340：Profile color 變更 → Background pattern chips 即時連動（花紋選擇保留、只換色） ──
+  await pageA.click('.background-pattern-swatch[data-pattern]'); // 先選一個非 none 花紋
+  const beforeColor = await pageA.evaluate(() => document.querySelector(".background-pattern-swatch").style.getPropertyValue("--profile-color"));
+  // 挑「非目前選中」的色票：初始色隨機（randomizeTheme），固定第 n 格有 1/8 撞色＝假紅（Q3 審查抓出）。
+  await pageA.click('.profile-color-swatch:not([aria-checked="true"])');
+  const sync = await pageA.evaluate(() => {
+    const chosen = document.querySelector('.profile-color-swatch[aria-checked="true"]').style.getPropertyValue("--profile-color");
+    const chips = [...document.querySelectorAll(".background-pattern-swatch")].map((el) => el.style.getPropertyValue("--profile-color"));
+    const kept = document.querySelector('.background-pattern-swatch[aria-checked="true"]');
+    return { chosen, allSynced: chips.every((c) => c === chosen), patternKept: Boolean(kept?.dataset.pattern) };
+  });
+  check("pattern chips re-tint live on profile color change (#340)", sync.allSynced && sync.chosen !== beforeColor, JSON.stringify({ beforeColor, ...sync }));
+  check("selected pattern survives color change (#340)", sync.patternKept);
+  await pageA.screenshot({ path: path.join(SHOTS, "issue340-01-color-pattern-sync.png") }); // GATE ＜2.5節＞ 證據
+
   await pageA.fill("#playerNameInput", "Mimi");
   await pageA.click("#characterConfirm");
   await pageA.waitForTimeout(500);

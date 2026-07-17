@@ -342,6 +342,7 @@ function buildAccountCard(entry, cachedUsername) {
       continueBtn.addEventListener("click", async () => {
         if (busy) return;
         busy = true;
+        const restore = buttonBusy(continueBtn, "Signing in…"); // 忙碌視覺與登入/註冊鈕同規（#336 B-1）
         try {
           const resumed = await cloudResume();
           if (resumed?.ok) {
@@ -356,6 +357,7 @@ function buildAccountCard(entry, cachedUsername) {
           expandedUsername = entry.username;
           buildLoginScreen();
         } finally {
+          restore();
           busy = false;
         }
       });

@@ -1,6 +1,8 @@
 // issue #331 客戶模擬拓撲 e2e（intTest#13）：
 //   A. API 層——TRUST_PROXY=2 兩跳 XFF 鏈解真實 client IP、限流 key 含帳號名（甲失敗不鎖乙）、429 附等待秒數。
 //   B. 瀏覽器層（手機視口 375×812）——送出被拒時錯誤訊息於視野內可見（⚠ 前綴、欄位級 error）、送出中鈕面忙碌狀態。
+//   C. 登入回饋三小項（issue #336）——撞名 409／限流 429／連線失敗三類錯誤之瀏覽器層呈現、
+//      帳號卡展開面板（Enter 路徑）錯誤行位置、Continue（免密續玩）忙碌視覺、錯誤盒 12px 圓角。
 // 前置：deploy/compose.yaml 之 db 已啟動；sysApi 已 build；本腳本自行 spawn sysApi（TRUST_PROXY=2）。
 // 埠可參數化（E2E_PORT，預設 4187）；起服務後先驗服務身分（healthz）再開跑（GATE ＜2節＞ 埠隔離）。
 import { spawn } from "node:child_process";
@@ -124,6 +126,88 @@ try {
   check("submit button shows busy state while pending", busyState.disabled === true && /creating/i.test(busyState.text), JSON.stringify(busyState));
   await page.waitForSelector("#characterSelect.show", { timeout: 15000 });
   check("valid register still enters character select", true);
+
+  // ── C. 登入回饋三小項（issue #336） ──
+  const mimiName = `mimi${suffix}`.slice(0, 16);
+
+  // C-409＋C-1 圓角：撞名於註冊表單就地呈現（taken 已於 A 段註冊；全新 context＝空狀態直落註冊表單）。
+  const phone2 = await browser.newContext({ viewport: { width: 375, height: 812 } });
+  const page2 = await phone2.newPage();
+  page2.on("pageerror", (e) => pageErrors.push(e.message));
+  await page2.goto(`${BASE}/`, { waitUntil: "networkidle" });
+  await page2.waitForSelector("#registerUsername", { timeout: 15000 });
+  await page2.fill("#registerUsername", taken);
+  await page2.fill("#registerPassword", "secret66");
+  await page2.click(".login-enter");
+  await page2.waitForSelector(".login-error:not(:empty)", { timeout: 5000 });
+  const takenText = ((await page2.textContent(".login-error")) || "").trim();
+  check("409 duplicate username shows inline error (browser layer)", /already taken/i.test(takenText) && /^⚠/.test(takenText), takenText);
+  const errRadius = await page2.evaluate(() => getComputedStyle(document.querySelector(".login-error")).borderRadius);
+  check("error box uses 12px radius (matches form language)", errRadius === "12px", errRadius);
+  await phone2.close();
+
+  // C-B1：Continue（免密續玩）忙碌視覺——延遲 resume 讀檔請求，按下瞬間鈕面 disabled＋Signing in…。
+  await page.unroute("**/api/auth/register");
+  await page.reload({ waitUntil: "networkidle" });
+  await page.waitForSelector(`#accountList .account-pick[data-username="${mimiName}"]`, { timeout: 15000 });
+  await page.route("**/api/save**", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    await route.continue();
+  });
+  await page.click(`#accountList .account-pick[data-username="${mimiName}"]`);
+  await page.waitForSelector(".login-continue", { timeout: 10000 });
+  await page.click(".login-continue");
+  await page.waitForTimeout(150);
+  const continueBusy = await page.evaluate(() => {
+    const btn = document.querySelector(".login-continue");
+    return btn ? { disabled: btn.disabled, text: btn.textContent } : null;
+  });
+  check("Continue button shows busy state while resuming", continueBusy?.disabled === true && /signing/i.test(continueBusy?.text || ""), JSON.stringify(continueBusy));
+  await page.waitForFunction(() => !document.querySelector("#accountSelect.show"), { timeout: 15000 });
+  await page.unroute("**/api/save**");
+
+  // C-Enter 路徑準備：登出清 session 快取 → 帳號卡展開改為密碼＋Enter 面板。
+  await page.reload({ waitUntil: "networkidle" });
+  await page.waitForSelector(`#accountList .account-pick[data-username="${mimiName}"]`, { timeout: 15000 });
+  await page.click(`#accountList .account-pick[data-username="${mimiName}"]`);
+  await page.waitForSelector(".login-logout", { timeout: 10000 });
+  await page.click(".login-logout");
+  await page.waitForFunction(() => !document.querySelector(".login-logout"), { timeout: 10000 }); // 登出後重繪完成
+  if (!(await page.$(`.login-expand #loginPassword-${mimiName}`))) {
+    await page.click(`#accountList .account-pick[data-username="${mimiName}"]`);
+  }
+  await page.waitForSelector(`.login-expand #loginPassword-${mimiName}`, { timeout: 10000 });
+  check("card Log out clears cached session (dead-button regression)", !(await page.$(".login-continue")));
+
+  // C-offline：連線失敗於面板就地呈現（route abort＝伺服器不可達）。
+  await page.route("**/api/auth/login", (route) => route.abort("connectionrefused"));
+  await page.fill(`.login-expand #loginPassword-${mimiName}`, "wrong123");
+  await page.click(".login-expand .login-enter");
+  await page.waitForSelector(".login-expand .login-error:not(:empty)", { timeout: 5000 });
+  const offlineText = ((await page.textContent(".login-expand .login-error")) || "").trim();
+  check("connection failure shows inline error (browser layer)", /cannot reach the server/i.test(offlineText) && /^⚠/.test(offlineText), offlineText);
+  await page.unroute("**/api/auth/login");
+
+  // C-Enter 位置：展開面板內錯誤行在 Enter 鈕上方且於視野內。
+  const panelLayout = await page.evaluate(() => {
+    const err = document.querySelector(".login-expand .login-error").getBoundingClientRect();
+    const btn = document.querySelector(".login-expand .login-enter").getBoundingClientRect();
+    return { above: err.top < btn.top, inView: err.top >= 0 && err.bottom <= window.innerHeight && err.height > 0 };
+  });
+  check("expanded-panel error line sits above Enter and in viewport", panelLayout.above && panelLayout.inView, JSON.stringify(panelLayout));
+
+  // C-429：三次錯密（401 記失敗）後第四次觸發限流，瀏覽器顯示等待秒數句。
+  for (let i = 0; i < 3; i += 1) {
+    await page.fill(`.login-expand #loginPassword-${mimiName}`, "wrong123");
+    await page.click(".login-expand .login-enter");
+    await page.waitForSelector(".login-expand .login-error:not(:empty)", { timeout: 5000 });
+  }
+  await page.fill(`.login-expand #loginPassword-${mimiName}`, "wrong123");
+  await page.click(".login-expand .login-enter");
+  await page.waitForFunction(() => /wait \d+ (seconds|minutes?)/i.test(document.querySelector(".login-expand .login-error")?.textContent || ""), { timeout: 5000 });
+  const limitText = ((await page.textContent(".login-expand .login-error")) || "").trim();
+  check("429 shows wait-seconds message (browser layer)", /^⚠/.test(limitText), limitText);
+  await page.screenshot({ path: path.join(SHOTS, "issue336-01-login-429-mobile.png") }); // GATE ＜2.5節＞ 證據
 
   check("no page errors", pageErrors.length === 0, pageErrors[0] || "");
 } finally {

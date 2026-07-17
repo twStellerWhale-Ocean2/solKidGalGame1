@@ -121,13 +121,24 @@ export async function cloudResume() {
 }
 
 // 登出（sysCase#6.3）：先 flush 一次即時保存，再撤銷 session、清 token 快取（保留最近帳號摘要）。
+// 登入畫面（session 未 adopt、cloudActive false）之帳號卡登出同樣有效：撤銷快取 token 之伺服器
+// session 並清快取——原「!cloudActive 即 return」使卡面 Log out 成死按鈕（#336 e2e 抓出）。
 export async function cloudLogout() {
-  if (!cloudActive()) return;
-  try {
-    await flushCloudSave();
-    await apiLogout(cloud.token);
-  } catch {
-    // 離線登出：本地清除即可，伺服器端 session 到期自然失效。
+  if (cloudActive()) {
+    try {
+      await flushCloudSave();
+      await apiLogout(cloud.token);
+    } catch {
+      // 離線登出：本地清除即可，伺服器端 session 到期自然失效。
+    }
+  } else {
+    const cached = loadCachedSession();
+    if (!cached) return;
+    try {
+      await apiLogout(cached.token);
+    } catch {
+      // 同上：離線時本地清除即可。
+    }
   }
   cloud.username = null;
   cloud.token = null;

@@ -11,6 +11,10 @@ COPY sysApi/src ./src
 RUN npm run build && npm prune --omit=dev
 
 FROM node:22-alpine
+# OCI 標準標籤（issue #343）：source 使 GHCR package 自動關聯本 repo（權限沿用、package 頁顯示 README）。
+LABEL org.opencontainers.image.source="https://github.com/twStellerWhale-Ocean2/solLingoWorld" \
+      org.opencontainers.image.description="solLingoWorld family self-host bundle: game shell + account/save API + /admin/ console" \
+      org.opencontainers.image.licenses="PolyForm-Noncommercial-1.0.0"
 ENV NODE_ENV=production
 # base 內建 npm CLI（10.x）帶有已公告 HIGH 漏洞之 bundled 依賴（picomatch CVE-2026-33671、
 # sigstore CVE-2026-48815；issue #320，發佈列車 #313 Trivy 發車掃描攔下）——升級至 pin 版修補。
