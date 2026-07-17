@@ -1,8 +1,16 @@
 {
-  "version": "0.66.4",
+  "version": "0.66.5",
   "date": "2026-07-17",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.66.5",
+      "date": "2026-07-17",
+      "type": "refactor",
+      "playerVisible": false,
+      "issue": "#341",
+      "summaryZh": "維護者本地內容編修動線改善（dev-only、遊戲行為零變更）：管理設定工具目錄 tool/ 改名 devtool/（名字直接宣告開發環境專用、與 /admin/ 線上管理分界自明），寫回端點同步改 /devtool/*、舊 /tool/* 書籤 301 相容轉址；新增一鍵啟動 devtool/start-devtool.cmd（檔案總管雙擊即起本機 server 並開工具頁、已在跑則複用），啟動腳本通用化為 start-devtool.ps1；README 本地管理節改主推一鍵動線"
+    },
     {
       "version": "0.66.4",
       "date": "2026-07-17",

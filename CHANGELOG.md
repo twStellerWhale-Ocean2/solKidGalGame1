@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.66.5 — 2026-07-17 _(internal)_
+- refactor (#341): 維護者本地內容編修動線改善（dev-only、遊戲行為零變更）：管理設定工具目錄 tool/ 改名 devtool/（名字直接宣告開發環境專用、與 /admin/ 線上管理分界自明），寫回端點同步改 /devtool/*、舊 /tool/* 書籤 301 相容轉址；新增一鍵啟動 devtool/start-devtool.cmd（檔案總管雙擊即起本機 server 並開工具頁、已在跑則複用），啟動腳本通用化為 start-devtool.ps1；README 本地管理節改主推一鍵動線
+
 ## 0.66.4 — 2026-07-17
 - fix (#340): 選角頁「Profile color 選色」與「Background pattern 花紋」即時連動：點色票、自訂調色或切換公主改變主色時，下方花紋選項與公主卡預覽立即換成新色（原本停留舊色、要靠其他操作才更新）；已選的花紋不會因換色被重置
 
