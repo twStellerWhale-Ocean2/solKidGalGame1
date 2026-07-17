@@ -61,7 +61,7 @@ try {
   await pageA.waitForSelector("#loginOtherUsername", { timeout: 10000 });
   check("#357 新裝置空狀態預設為登入表單（非註冊）", !(await pageA.$("#registerUsername")));
   check("#357 空狀態無 Back 鈕（root auth 無上一步）", await pageA.evaluate(() => ![...document.querySelectorAll("#accountList button")].some((b) => b.textContent.trim() === "Back")));
-  check("#357 空狀態不出現「Create new account」大鈕（首繪即不得閃現）", await pageA.evaluate(() => document.getElementById("accountNewButton")?.hidden === true));
+  check("#357 空狀態不出現「Create new account」大鈕", await pageA.evaluate(() => document.getElementById("accountNewButton")?.hidden === true));
   check("#358 登入卡顯示產品名＋版本（值＝buildInfo，無第二份）", await pageA.evaluate(async () => {
     const v = (await import("/game-engine/build/version.js")).buildInfo.version;
     const foot = document.querySelector(".login-version")?.textContent || "";

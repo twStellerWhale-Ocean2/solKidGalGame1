@@ -607,17 +607,19 @@ export function buildLoginScreen() {
   // #357：無帳號卡＝預設登入表單。**須在算 newButton／empty 之前收斂 uiMode**——否則首繪（config 未回時）
   // 與「移除最後一張卡」路徑會以 cards 模式算出可見的大鈕、與 Sign in 表單並列（註冊與登入同權復活），
   // 且後者無後續重繪可救＝永久殘留（Q3 審查 M2）。
-  if (uiMode === "cards" && recents.length === 0) uiMode = "login";
+  // 順序有意義：「無卡 ⟹ login」是 #357 的不變式，**必須是最後一道收斂**——
+  // 若先跑它、再由 register→cards 降級，降級產出的 cards 就無人收斂，空狀態會落入
+  // 「0 張卡又沒有登入表單」的死角（Q3 二審 N1：註冊關閉＋config RTT 窗內點註冊連結即可達）。
   if (uiMode === "register" && !registrationOpen) uiMode = "cards";
+  if (uiMode === "cards" && recents.length === 0) uiMode = "login";
   // 註冊關閉（spec#26 (c)）：不渲染任何「建立新帳號」入口（含空狀態表單），改顯示友善說明。
   // #357：「Create new account」大鈕只留在卡片列表（＝家庭新增另一位玩家之主要動作）；
   // 登入／註冊表單模式下改由表單內之次要連結出入，不並列第二顆主要鈕（否則註冊仍與登入同權，改了等於沒改）。
   if (els.newButton) els.newButton.hidden = !registrationOpen || uiMode !== "cards";
-  if (els.empty) {
-    els.empty.hidden = recents.length > 0 || uiMode !== "cards";
-    // #357：文案不再導向註冊（預設已是登入表單）；此訊息於 cards 模式才顯示。
-    els.empty.textContent = "No players on this device yet. Sign in with your account below.";
-  }
+  // #357（Q3 二審 N2）：登入畫面不再需要「此裝置尚無玩家」旁白——收斂後「無卡」必為 login 模式，
+  // 登入表單本身就是空狀態的答案（#359 亦要求少字）。此處恆隱藏；`#accountEmpty` 元素保留供本機模式
+  // （select-screens 之 openAccountSelect）使用，故只關顯示、不刪 DOM。
+  if (els.empty) els.empty.hidden = true;
   if (uiMode === "login") {
     els.list.appendChild(buildOtherLoginForm());
     // spec#26 (c)：註冊關閉之友善說明——#357 後 login 為空狀態預設模式，此分支亦須呈現
