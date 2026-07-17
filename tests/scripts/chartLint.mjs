@@ -9,7 +9,7 @@ import { execFileSync } from "node:child_process";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = dirname(dirname(fileURLToPath(import.meta.url)));
+const root = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
 const chartDir = join(root, "sysLingoWorld", "deploy", "helm");
 const errors = [];
 

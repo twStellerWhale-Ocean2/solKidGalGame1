@@ -143,7 +143,7 @@ function layersDir(pack) { return join(packDir(pack), "assets", "layers"); }
 function sidecarFile(pack, asset) { return join(layersDir(pack), `${safeName(asset, "asset")}.metadata.json`); }
 async function readSidecar(pack, asset) { return JSON.parse(await readFile(sidecarFile(pack, asset), "utf8")); }
 async function writeSidecar(pack, asset, meta) { await writeFile(sidecarFile(pack, asset), JSON.stringify(meta, null, 2) + "\n"); }
-async function regenWardrobeIndex() { await runNode(["scripts/genWardrobeIndex.mjs"]); }
+async function regenWardrobeIndex() { await runNode(["devtool/genWardrobeIndex.mjs"]); }
 function magick(args) {
   return new Promise((resolve, reject) => execFile("magick", args, { encoding: "utf8" }, (err, out) => (err ? reject(err) : resolve(out))));
 }

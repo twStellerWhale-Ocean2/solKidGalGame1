@@ -1,7 +1,10 @@
 # Changelog
 
-本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
-版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
+本檔自 repo 根目錄 `VERSION` 投影產生（incrFlow genVersion，SSOT 工具）；請勿手改，改沿革請編輯 `VERSION`。
+版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更。
+
+## 0.66.9 — 2026-07-17 _(internal)_
+- refactor (#355): 方案層工具歸位（內部重構、遊戲與部署行為零變更）：五支機判 lint 併入 tests/scripts/（與測試同屬品質守門）、衣物索引生成器歸隊 devtool/（內容編修管線）、版號投影工具改用 kdbUserSkills 之 SSOT 版（repo 不再自帶副本、以 VERSION.projections 宣告投影目標）——根目錄 scripts/ 資料夾功成身退
 
 ## 0.66.8 — 2026-07-17
 - fix (#352): 首次初始設定（選公主／顏色／花紋）期間，背景畫面不再先出現預設公主：側欄頭胸照與地圖上的公主棋子留空，按 Start 確認後所選公主才登場；選角卡內三位公主預覽照常

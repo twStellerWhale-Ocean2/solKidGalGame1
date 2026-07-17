@@ -479,6 +479,6 @@ else { "注意：叢集沒有標記預設 IngressClass——安裝時請加 --se
 - 2026-06-14（issue #93）：設計新增角色差異化配音——不同場景人物依特性以各自聲音念對白與開場，公主作答時以其聲音唸出所選選項；沿用既有 Voice 開關。本項為 2plan 初稿，待 dev／opr 校準。
 - 2026-06-14（issue #106）：移除既有 Help 提示功能與 OpenAI 設定入口；英文練習改由地點內的 Practice 動作直接開始。
 - 2026-06-14（issue #73）：新增中文協助與獎勵階梯——題目與各選項可撥放英文或中文，未用中文且越早答對獎勵越高，用過中文或第三次以後答對則該題無獎勵。已於 dev 實作（四地區全雙語、`?selftest=chinese-reward`），待 opr 終驗。
-- 2026-06-13（issue #88）：導入 2tech 設計方法論——新增內部設計 SSOT [docs/design.md](docs/design.md) 與 [scripts/docLint.ps1](scripts/docLint.ps1)；README 改寫為產品手冊；角色尺度與美術規則拆入 contract-local 契約。先前的詳細內容見 git 歷史。
+- 2026-06-13（issue #88）：導入 2tech 設計方法論——新增內部設計 SSOT [docs/design.md](docs/design.md) 與 [tests/scripts/docLint.ps1](tests/scripts/docLint.ps1)；README 改寫為產品手冊；角色尺度與美術規則拆入 contract-local 契約。先前的詳細內容見 git 歷史。
 - 2026-06-13（issue #63）：設計新增本機多帳號（Account Select）——進入遊戲先選帳號，可新增／刪除，各帳號進度互不混用；明確不做網路登入／密碼／雲端同步。本項為 2plan 初稿，待 dev／opr 校準。
 - 2026-06-13（issue #6）：設計新增遊玩時間限制與護眼休息——連續遊玩達設定時長會結算並進入強制休息，休息結束前不可續玩；遊玩時間即各帳號的 energy 預算、各帳號各自計算。本項為 2plan 初稿，待 dev／opr 校準。

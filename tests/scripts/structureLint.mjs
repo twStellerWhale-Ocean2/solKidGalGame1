@@ -6,7 +6,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
-const ROOT = new URL("..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
+const ROOT = new URL("../..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"); // 本檔住 tests/scripts/（#355）
 
 const JS_LINE_BUDGET = 800;
 const CSS_LINE_BUDGET = 800;
@@ -19,8 +19,8 @@ const EXEMPT = new Map([
   // tool-shell／tool-wardrobe／tool-stage／tool-map-scene／tool-voice-defaults 五個 ≤800 行分層檔。
 ]);
 
-// 掃描範圍：引擎、樣式、腳本、伺服器與維護工具；排除生成檔（*.generated.js）與第三方。
-const SCAN_DIRS = ["sysLingoWorld/modShell/game-engine", "sysLingoWorld/modShell/styles", "scripts", "devtool", "sysLingoWorld/modShell/content-package", "sysLingoWorld/modShell/content-base"];
+// 掃描範圍：引擎、樣式、測試（含 tests/scripts 機判）、伺服器與維護工具；排除生成檔（*.generated.js）與第三方。
+const SCAN_DIRS = ["sysLingoWorld/modShell/game-engine", "sysLingoWorld/modShell/styles", "tests", "devtool", "sysLingoWorld/modShell/content-package", "sysLingoWorld/modShell/content-base"];
 const SCAN_FILES = ["server.mjs"];
 
 function walk(dir, out = []) {

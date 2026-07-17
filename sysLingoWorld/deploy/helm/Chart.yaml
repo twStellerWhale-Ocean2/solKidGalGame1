@@ -1,7 +1,7 @@
-# 由 scripts/genVersion.mjs 自根目錄 VERSION 投影生成——禁止手改（防漂移：genVersion --check）。
+# 由 incrFlow genVersion（SSOT 工具）自根目錄 VERSION 投影生成——禁止手改（防漂移：--check）。
 apiVersion: v2
 name: sollingoworld-chart
 description: solLingoWorld 整包自架部署（遊戲殼＋帳號存檔 API＋/admin/ 線上管理＋PostgreSQL；spec#27）
 type: application
-version: 0.66.8
-appVersion: "0.66.8"
+version: 0.66.9
+appVersion: "0.66.9"

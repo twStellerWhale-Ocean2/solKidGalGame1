@@ -1,8 +1,16 @@
 {
-  "version": "0.66.8",
+  "version": "0.66.9",
   "date": "2026-07-17",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.66.9",
+      "date": "2026-07-17",
+      "type": "refactor",
+      "playerVisible": false,
+      "issue": "#355",
+      "summaryZh": "方案層工具歸位（內部重構、遊戲與部署行為零變更）：五支機判 lint 併入 tests/scripts/（與測試同屬品質守門）、衣物索引生成器歸隊 devtool/（內容編修管線）、版號投影工具改用 kdbUserSkills 之 SSOT 版（repo 不再自帶副本、以 VERSION.projections 宣告投影目標）——根目錄 scripts/ 資料夾功成身退"
+    },
     {
       "version": "0.66.8",
       "date": "2026-07-17",
@@ -509,6 +517,23 @@
       "playerVisible": true,
       "issue": "#6",
       "summaryZh": "遊玩時間限制與護眼休息"
+    }
+  ],
+  "projections": [
+    {
+      "type": "changelog",
+      "path": "CHANGELOG.md"
+    },
+    {
+      "type": "chartYaml",
+      "path": "sysLingoWorld/deploy/helm/Chart.yaml",
+      "name": "sollingoworld-chart",
+      "description": "solLingoWorld 整包自架部署（遊戲殼＋帳號存檔 API＋/admin/ 線上管理＋PostgreSQL；spec#27）"
+    },
+    {
+      "type": "esmHistory",
+      "path": "sysLingoWorld/modShell/game-engine/build/version.js",
+      "filter": "playerVisible"
     }
   ]
 }
