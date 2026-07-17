@@ -6,6 +6,7 @@
 export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
+  { version: "0.66.7", buildDateTime: "2026-07-17", summaryZh: "Lumi 與 Rosa 頭像對調為美術指定版（USR 手動調整入版控）：Lumi 改棕眼笑臉、Rosa 改紫眼——先前調整僅存於工作機未隨 v0.66.6 發行，本 hotfix 補正" },
   { version: "0.66.4", buildDateTime: "2026-07-17", summaryZh: "選角頁「Profile color 選色」與「Background pattern 花紋」即時連動：點色票、自訂調色或切換公主改變主色時，下方花紋選項與公主卡預覽立即換成新色（原本停留舊色、要靠其他操作才更新）；已選的花紋不會因換色被重置" },
   { version: "0.66.3", buildDateTime: "2026-07-17", summaryZh: "登入回饋收尾（承 #331 審查遺項）：免密續玩 Continue 鈕送出中顯示處理中（與登入/註冊鈕同規、杜絕慢網路按了沒反應感）；錯誤提示盒圓角加大融入表單語彙；並修正登入畫面帳號卡「Log out」按了沒作用的問題——現會確實撤銷該裝置的免密續玩並要求重新輸入密碼；撞名/限流/連線失敗三類錯誤補瀏覽器層自動化驗證與證據截圖" },
   { version: "0.65.0", buildDateTime: "2026-07-16", summaryZh: "帳號密碼規則調整（家長回饋）：帳號開放數字開頭（仍限小寫英文與數字 3–16 字、至少含一個英文字母，如生日開頭帳號可用）；密碼改為至少 8 位且須含一個數字與一個小寫英文（維護者線上重設與伺服器指令重設同規）。既有帳號的舊密碼完全不受影響、照常登入；升級部署沿用原 admin 密碼也不受影響。表單提示、管理頁文案與產品手冊同步新規" },
@@ -51,8 +52,8 @@ export const versionHistory = [
 ];
 
 export const buildInfo = {
-  version: "0.66.6",
+  version: "0.66.7",
   buildDate: "2026-07-17",
   buildDateTime: "2026-07-17",
-  issues: ["#342"]
+  issues: ["#350"]
 };

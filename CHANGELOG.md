@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.66.7 — 2026-07-17
+- fix (#350): Lumi 與 Rosa 頭像對調為美術指定版（USR 手動調整入版控）：Lumi 改棕眼笑臉、Rosa 改紫眼——先前調整僅存於工作機未隨 v0.66.6 發行，本 hotfix 補正
+
 ## 0.66.6 — 2026-07-17 _(internal)_
 - refactor (#342): repo 結構正規化（內部重構、遊戲與部署行為零變更）：GitHub Pages 時代散於根目錄的遊戲殼歸位 sysLingoWorld/modShell/、API 服務改 modApi、管理頁改 modAdmin、helm chart 移 sysLingoWorld/deploy/，契約副本遷 docs/shared-contracts/（repoStructVersion 2.1）；發行 image 內部佈局與所有網址路徑不變；開發伺服器與 API 服務自動偵測新舊佈局，照 README 開發路徑啟動免額外設定
 
