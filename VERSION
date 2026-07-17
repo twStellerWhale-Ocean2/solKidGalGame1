@@ -1,8 +1,16 @@
 {
-  "version": "0.66.5",
+  "version": "0.66.6",
   "date": "2026-07-17",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.66.6",
+      "date": "2026-07-17",
+      "type": "refactor",
+      "playerVisible": false,
+      "issue": "#342",
+      "summaryZh": "repo 結構正規化（內部重構、遊戲與部署行為零變更）：GitHub Pages 時代散於根目錄的遊戲殼歸位 sysLingoWorld/modShell/、API 服務改 modApi、管理頁改 modAdmin、helm chart 移 sysLingoWorld/deploy/，契約副本遷 docs/shared-contracts/（repoStructVersion 2.1）；發行 image 內部佈局與所有網址路徑不變；開發伺服器與 API 服務自動偵測新舊佈局，照 README 開發路徑啟動免額外設定"
+    },
     {
       "version": "0.66.5",
       "date": "2026-07-17",
