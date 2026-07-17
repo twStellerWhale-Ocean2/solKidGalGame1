@@ -3,6 +3,18 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.66.5 — 2026-07-17 _(internal)_
+- refactor (#341): 維護者本地內容編修動線改善（dev-only、遊戲行為零變更）：管理設定工具目錄 tool/ 改名 devtool/（名字直接宣告開發環境專用、與 /admin/ 線上管理分界自明），寫回端點同步改 /devtool/*、舊 /tool/* 書籤 301 相容轉址；新增一鍵啟動 devtool/start-devtool.cmd（檔案總管雙擊即起本機 server 並開工具頁、已在跑則複用），啟動腳本通用化為 start-devtool.ps1；README 本地管理節改主推一鍵動線
+
+## 0.66.4 — 2026-07-17
+- fix (#340): 選角頁「Profile color 選色」與「Background pattern 花紋」即時連動：點色票、自訂調色或切換公主改變主色時，下方花紋選項與公主卡預覽立即換成新色（原本停留舊色、要靠其他操作才更新）；已選的花紋不會因換色被重置
+
+## 0.66.3 — 2026-07-17
+- fix (#336): 登入回饋收尾（承 #331 審查遺項）：免密續玩 Continue 鈕送出中顯示處理中（與登入/註冊鈕同規、杜絕慢網路按了沒反應感）；錯誤提示盒圓角加大融入表單語彙；並修正登入畫面帳號卡「Log out」按了沒作用的問題——現會確實撤銷該裝置的免密續玩並要求重新輸入密碼；撞名/限流/連線失敗三類錯誤補瀏覽器層自動化驗證與證據截圖
+
+## 0.66.2 — 2026-07-17 _(internal)_
+- fix (#343): 發行 image 補 OCI 標準標籤（deploy-only、產品行為零變更）：org.opencontainers.image.source 指向本 repo——GHCR package 自此自動關聯 repo（package 頁顯示來源與 README、權限沿用），並補 description 與 licenses（PolyForm-Noncommercial-1.0.0）標籤
+
 ## 0.66.1 — 2026-07-16 _(internal)_
 - test (#338): 發車測試 fixture 修正（test-only、產品行為零變更）：helm e2e 之玩家密碼測試值改合 #330 新規（8 碼含數字小寫）——v0.66.0 首班發車測試 422 假敗即此因，發車環硬 gate 攔下後修正、本批改發 v0.66.1
 

@@ -112,6 +112,7 @@ export function selectPendingCharacter(characterId) {
     applyCardPattern(portrait, card.dataset.characterId === characterId ? session.pendingBackgroundPattern : "none");
   });
   buildProfileColorChoices();
+  buildBackgroundPatternChoices(); // #340：切換公主（未自訂色時重設預設色）花紋列同步換色
   if (!session.playerNameEdited) {
     elements.playerNameInput.value = playableCharacterById(characterId)?.defaultName || "";
   }
@@ -132,6 +133,7 @@ export function buildProfileColorChoices() {
       session.pendingProfileColor = color;
       session.profileColorEdited = true;
       buildProfileColorChoices();
+      buildBackgroundPatternChoices(); // #340：花紋 swatch 取建構時色值，變色必須連動重繪
       buildCharacterCards();
     });
     elements.profileColorGrid.appendChild(button);
@@ -145,6 +147,7 @@ export function buildProfileColorChoices() {
       session.pendingProfileColor = event.target.value;
       session.profileColorEdited = true;
       buildProfileColorChoices();
+      buildBackgroundPatternChoices(); // #340：自訂色同規連動
       buildCharacterCards();
     };
   }

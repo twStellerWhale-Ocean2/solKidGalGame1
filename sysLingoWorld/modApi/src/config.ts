@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 
 // 組態一律由環境變數供給（.env／compose；正式 K8s Secret 於 #311 helm 化）。
@@ -19,6 +20,17 @@ export interface Config {
   trustProxy: number;
 }
 
+// #342 佈局感知預設根（dist 之上兩層＝image 的 /app 或 dev 的 sysLingoWorld/）。
+const layoutBase = path.resolve(__dirname, "..", "..");
+const devShell = path.join(layoutBase, "modShell");
+function defaultStaticRoot(): string {
+  return fs.existsSync(path.join(devShell, "index.html")) ? devShell : layoutBase;
+}
+function defaultAdminRoot(): string {
+  const devAdmin = path.join(layoutBase, "modAdmin");
+  return fs.existsSync(path.join(devAdmin, "index.html")) ? devAdmin : ""; // 空＝沿 staticRoot/admin-console（image 佈局）
+}
+
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const databaseUrl = env.DATABASE_URL || "";
   const sessionSecret = env.SESSION_SECRET || "";
@@ -29,9 +41,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     databaseUrl,
     sessionSecret,
     sessionTtlMs: (Number(env.SESSION_TTL_DAYS) || 30) * 24 * 60 * 60 * 1000,
-    // 遊戲殼靜態檔根目錄＝repo 根（sysApi 之上一層）；同站服務、免 CORS。
-    staticRoot: env.STATIC_ROOT || path.resolve(__dirname, "..", ".."),
-    adminRoot: env.ADMIN_ROOT || "",
+    // 遊戲殼靜態檔根目錄（#342 佈局感知，同站服務、免 CORS）：
+    // image 佈局＝/app 平鋪（dist 之上兩層即含 index.html＋admin-console）；
+    // dev 源樹＝modApi 之上一層為 sysLingoWorld/，遊戲殼在同層 modShell/、管理頁在 modAdmin/——
+    // 依 modShell/index.html 存在與否自動擇根，README 開發路徑 npm start 免設環境變數即可服務遊戲殼。
+    staticRoot: env.STATIC_ROOT || defaultStaticRoot(),
+    adminRoot: env.ADMIN_ROOT || defaultAdminRoot(),
     rateLimitMax: Number(env.RATE_LIMIT_MAX) || 10,
     rateLimitWindowMs: Number(env.RATE_LIMIT_WINDOW_MS) || 10 * 60 * 1000,
     adminUsername: env.ADMIN_USERNAME || "",
