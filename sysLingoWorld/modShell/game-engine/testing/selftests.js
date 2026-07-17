@@ -426,16 +426,16 @@ function runSceneCoinsSelfTest(api) {
   document.body.prepend(result);
 }
 
-// issue #289 spec#21：新局得體入門造型與精簡起始擁有。
-// ①新局預設穿著＝castlePearlWhiteBallGown、髮型/鞋維持既有；②owned 恰等於所穿三件；③owned 不含已移除角色殘留。
+// issue #289 spec#21：新局得體入門造型與精簡起始擁有（#367：預設造型隨 #364 改為雙辮＋金色宮廷裙）。
+// ①新局預設穿著＝castleGoldCourtGown＋urbanTwinBraids、鞋維持既有；②owned 恰等於所穿三件；③owned 不含已移除角色殘留。
 function runStarterOutfitSelfTest(api) {
   const params = new URLSearchParams(location.search);
   if (params.get("selftest") !== "starter-outfit") return;
   const errors = [];
   const start = princessStart;
 
-  if (start.outfit.outfit !== "castlePearlWhiteBallGown") errors.push(`新局預設 outfit = "${start.outfit.outfit}"，預期 castlePearlWhiteBallGown`);
-  if (start.outfit.hairstyle !== "countrysideLowPonytail") errors.push(`新局預設 hairstyle = "${start.outfit.hairstyle}"，預期維持 countrysideLowPonytail`);
+  if (start.outfit.outfit !== "castleGoldCourtGown") errors.push(`新局預設 outfit = "${start.outfit.outfit}"，預期 castleGoldCourtGown`);
+  if (start.outfit.hairstyle !== "urbanTwinBraids") errors.push(`新局預設 hairstyle = "${start.outfit.hairstyle}"，預期 urbanTwinBraids`);
   if (start.outfit.shoes !== "countrysideWoodenClogs") errors.push(`新局預設 shoes = "${start.outfit.shoes}"，預期維持 countrysideWoodenClogs`);
 
   // owned 恰等於所穿三件（hairstyle/outfit/shoes），無其他預先擁有品項。
