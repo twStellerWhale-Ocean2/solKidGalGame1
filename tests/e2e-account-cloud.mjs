@@ -49,6 +49,17 @@ const browser = await chromium.launch({ headless: true, channel: "chrome" });
 try {
   check("sysApi healthy", await waitHealthy());
 
+  // ── issue #362：靜態資產傳輸層（圖像可快取、程式碼不得長效——升級後不得新引擎配舊資料）──
+  {
+    const cc = async (p) => (await fetch(`${BASE}${p}`)).headers.get("cache-control") || "";
+    const imgCC = await cc("/content-package/areas/castle/assets/scenes/king-hall-1024.webp");
+    check("#362 圖像資產可快取（max-age＋stale-while-revalidate）", /max-age=\d{2,}/.test(imgCC) && /stale-while-revalidate/.test(imgCC), imgCC);
+    for (const [label, p] of [["content-package 之 JS", "/content-package/wardrobe/manifest.js"], ["引擎 JS", "/game-engine/main.js"], ["CSS", "/styles/adv.css"]]) {
+      const v = await cc(p);
+      check(`#362 ${label} 不得長效快取（升級即生效）`, !/max-age=\d{2,}/.test(v), `${p} → ${v}`);
+    }
+  }
+
   // ── 裝置 A：首次進入 → 空狀態註冊 → 選角 → 遊玩 → 雲端保存 ──
   const deviceA = await browser.newContext({ viewport: { width: 412, height: 880 } });
   const pageA = await deviceA.newPage();
@@ -123,6 +134,34 @@ try {
     side: getComputedStyle(document.querySelector("#sideProfileAvatar")).visibility
   }));
   check("princess appears after Start (#352)", stageAfter.flag === false && stageAfter.side === "visible", JSON.stringify(stageAfter));
+
+  // ── issue #362：場景圖預抓與快取（互動模型：第一次點聚焦、第二次點進場）──
+  await pageA.waitForSelector("#castleStage .map-marker.hotspot", { timeout: 15000 });
+  const spot = pageA.locator("#castleStage .map-marker.hotspot").nth(1);
+  const sceneEntries = () => pageA.evaluate(() => performance.getEntriesByType("resource").filter((e) => /scenes\/.*-1024\.webp/.test(e.name)).length);
+  await spot.click();
+  await pageA.waitForTimeout(1200);
+  check("#362 聚焦即預抓場景圖（進場前已下載）", (await sceneEntries()) > 0);
+  check("#362 聚焦不進場（互動模型未變）", !(await pageA.$(".adv-modal.show")));
+  await spot.click();
+  await pageA.waitForFunction(() => Boolean(document.querySelector(".adv-modal.show")), { timeout: 10000 });
+  await pageA.waitForTimeout(900);
+  check("#362 進場面板正常渲染（對話選項在）", (await pageA.$$("#choiceList button")).length > 0);
+  await pageA.locator("#advActionFooter button").last().click({ timeout: 5000 }).catch(() => {});
+  await pageA.keyboard.press("Escape").catch(() => {});
+  await pageA.waitForFunction(() => !document.querySelector(".adv-modal.show"), { timeout: 10000 });
+  const before362 = await sceneEntries();
+  await spot.click(); // 仍聚焦態＝單擊即再進場
+  await pageA.waitForFunction(() => Boolean(document.querySelector(".adv-modal.show")), { timeout: 10000 });
+  await pageA.waitForTimeout(900);
+  const added362 = await pageA.evaluate((n) => performance.getEntriesByType("resource")
+    .filter((e) => /scenes\/.*-1024\.webp/.test(e.name)).slice(n).map((e) => e.transferSize), before362);
+  check("#362 重進同一場景：圖不再走網路（零新下載／transferSize=0）",
+    added362.length === 0 || added362.every((v) => v === 0), JSON.stringify(added362));
+  await pageA.screenshot({ path: path.join(SHOTS, "issue362-01-scene-cached.png") }); // GATE ＜2.5節＞ 證據
+  await pageA.locator("#advActionFooter button").last().click({ timeout: 5000 }).catch(() => {});
+  await pageA.keyboard.press("Escape").catch(() => {});
+  await pageA.waitForFunction(() => !document.querySelector(".adv-modal.show"), { timeout: 10000 });
   // 遊玩：以測試 hook 改變狀態並保存（等值於答題得幣後 persist）
   await pageA.evaluate(() => window.LuminaraTest.setCoins(777));
   await pageA.waitForTimeout(2600); // 節流窗口

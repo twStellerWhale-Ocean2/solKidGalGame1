@@ -1,8 +1,16 @@
 {
-  "version": "0.67.0",
+  "version": "0.67.1",
   "date": "2026-07-17",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.67.1",
+      "date": "2026-07-17",
+      "type": "fix",
+      "playerVisible": true,
+      "issue": "#362",
+      "summaryZh": "進場景不再等圖（手機尤其明顯）：場景背景圖改為可快取——原本每次進場景都得先回伺服器問一次才敢用已下載的圖，現在第二次以後即時呈現；並在你走到地點旁邊時就先偷偷把該場景的圖抓好，按下去即開。遊戲程式與資料不受快取影響，升級照樣立即生效"
+    },
     {
       "version": "0.67.0",
       "date": "2026-07-17",

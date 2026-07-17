@@ -362,8 +362,21 @@ export function createApp(options: AppOptions) {
     app.get(["/", "/index.html"], (_req, res) => res.sendFile(indexFile, (error) => {
       if (error) fail(res, 404, "not-found", "Game shell not found.");
     }));
+    // issue #362：**只對圖像資產**放寬快取——express.static 預設 `Cache-Control: max-age=0`，
+    // 使每次進場景即使圖已在快取仍須先發條件請求驗證（拿 304 才敢用）＝每進一次場景就多一趟 RTT，
+    // 手機 WiFi 上即為「圖要等一下」之感受（非首訪問題、重複進場照樣慢）。
+    // `stale-while-revalidate`：新鮮期內零網路；過期後**先用快取即時畫、背景再更新**，故升級後最多
+    // 一次舊圖、下次即新——畫面永不阻塞等網路。
+    // **不含 JS／CSS／HTML**（content-package 內尚有 manifest.js／rules.js 等程式碼；game-engine／styles
+    // 為引擎本體）：那些一律維持 revalidate，否則升級後會出現「新引擎配舊資料／舊殼」之版本錯配。
+    const IMAGE_ASSET = /\.(webp|png|jpe?g|gif|svg|ico)$/i;
+    const IMAGE_CACHE_CONTROL = "public, max-age=600, stale-while-revalidate=86400";
     GAME_SHELL_DIRS.forEach((dir) => {
-      app.use(`/${dir}`, express.static(path.resolve(staticRoot, dir)));
+      app.use(`/${dir}`, express.static(path.resolve(staticRoot, dir), {
+        setHeaders: (res, filePath) => {
+          if (IMAGE_ASSET.test(filePath)) res.setHeader("Cache-Control", IMAGE_CACHE_CONTROL);
+        }
+      }));
     });
     // `/admin/` 線上管理頁（spec#25；頁面本身可公開取得、資料一律經受 admin 保護之 `/api/admin/*`）。
     app.use("/admin", express.static(adminRoot ? path.resolve(adminRoot) : path.resolve(staticRoot, "admin-console")));

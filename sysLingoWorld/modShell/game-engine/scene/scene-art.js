@@ -28,6 +28,23 @@ export function applyAdvSceneArt(element, sceneArt, options = {}) {
   else delete element.dataset.sceneArtAtlas;
 }
 
+// issue #362：進場前預抓——互動模型為「第一次點聚焦、第二次點進場」，聚焦到進場之間即天然預抓窗口。
+// 只抓「當前聚焦地點」之場景圖與 NPC 圖（**不整區掃**，全部場景圖合計 15.9 MB）。
+// 紀律：fire-and-forget——預抓失敗（離線／404）不得影響進場，故不 await、不拋、不記狀態。
+const prefetched = new Set();
+export function prefetchSceneArt(scene, options = {}) {
+  const assetUrl = options.assetUrl || ((src) => src);
+  [scene?.sceneArt?.src, scene?.npcImage].forEach((src) => {
+    if (!src || prefetched.has(src)) return;
+    prefetched.add(src);
+    try {
+      const img = new Image();
+      img.decoding = "async";
+      img.src = assetUrl(src); // 只求進瀏覽器快取；不掛 DOM、不理成敗
+    } catch { /* 預抓永不阻斷遊玩 */ }
+  });
+}
+
 export function clearAdvSceneArt(element) {
   if (!element) return;
   element.style.backgroundImage = "";
