@@ -1,8 +1,16 @@
 {
-  "version": "0.67.1",
+  "version": "0.68.0",
   "date": "2026-07-17",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.68.0",
+      "date": "2026-07-17",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#364",
+      "summaryZh": "新局公主預設造型更新：改為雙辮髮型（Twin braids）搭配金色刺繡宮廷裙（Gold embroidered court gown），木鞋不變；新局預先擁有的三件同步為身上所穿（規則不變：其餘外觀仍以答題所得金幣購買）。既有存檔與進度完全不受影響，只影響新開局的起始造型"
+    },
     {
       "version": "0.67.1",
       "date": "2026-07-17",
