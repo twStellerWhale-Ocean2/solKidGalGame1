@@ -1,8 +1,16 @@
 {
-  "version": "0.66.2",
+  "version": "0.66.3",
   "date": "2026-07-17",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.66.3",
+      "date": "2026-07-17",
+      "type": "fix",
+      "playerVisible": true,
+      "issue": "#336",
+      "summaryZh": "登入回饋收尾（承 #331 審查遺項）：免密續玩 Continue 鈕送出中顯示處理中（與登入/註冊鈕同規、杜絕慢網路按了沒反應感）；錯誤提示盒圓角加大融入表單語彙；並修正登入畫面帳號卡「Log out」按了沒作用的問題——現會確實撤銷該裝置的免密續玩並要求重新輸入密碼；撞名/限流/連線失敗三類錯誤補瀏覽器層自動化驗證與證據截圖"
+    },
     {
       "version": "0.66.2",
       "date": "2026-07-17",
