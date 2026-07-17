@@ -1,8 +1,16 @@
 {
-  "version": "0.66.3",
+  "version": "0.66.4",
   "date": "2026-07-17",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.66.4",
+      "date": "2026-07-17",
+      "type": "fix",
+      "playerVisible": true,
+      "issue": "#340",
+      "summaryZh": "選角頁「Profile color 選色」與「Background pattern 花紋」即時連動：點色票、自訂調色或切換公主改變主色時，下方花紋選項與公主卡預覽立即換成新色（原本停留舊色、要靠其他操作才更新）；已選的花紋不會因換色被重置"
+    },
     {
       "version": "0.66.3",
       "date": "2026-07-17",
