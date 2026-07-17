@@ -468,9 +468,16 @@ createServer(async (request, response) => {
     await WARDROBE_ROUTES[url.pathname](request, response);
     return;
   }
-  // 便利轉址：/tool 與 /devtool/ → Wardrobe Tuner（避免目錄路徑 404）。
+  // 便利轉址：/devtool 與 /devtool/ → Wardrobe Tuner（避免目錄路徑 404）。
   if (request.method === "GET" && (url.pathname === "/devtool" || url.pathname === "/devtool/")) {
     response.writeHead(302, { Location: "/devtool/wardrobe-tuner.html" });
+    response.end();
+    return;
+  }
+  // 舊名相容轉址（#341 tool→devtool）：維護者舊書籤 /tool/* 以 301 導新址、不留死路。
+  if (request.method === "GET" && (url.pathname === "/tool" || url.pathname.startsWith("/tool/"))) {
+    const target = url.pathname === "/tool" || url.pathname === "/tool/" ? "/devtool/wardrobe-tuner.html" : url.pathname.replace(/^\/tool\//, "/devtool/");
+    response.writeHead(301, { Location: target });
     response.end();
     return;
   }

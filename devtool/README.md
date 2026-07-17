@@ -13,7 +13,8 @@ http://127.0.0.1:4174/devtool/wardrobe-tuner.html
 On Windows, you can start the local server and open the tool with:
 
 ```powershell
-.\tool\start-wardrobe-tuner.ps1
+# 一鍵（檔案總管雙擊 start-devtool.cmd 亦可）
+.\devtool\start-devtool.ps1
 ```
 
 This is still a static site flow. The local server only avoids Chrome `file://`
