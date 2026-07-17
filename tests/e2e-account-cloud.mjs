@@ -52,11 +52,15 @@ try {
   // ── issue #362：靜態資產傳輸層（圖像可快取、程式碼不得長效——升級後不得新引擎配舊資料）──
   {
     const cc = async (p) => (await fetch(`${BASE}${p}`)).headers.get("cache-control") || "";
-    const imgCC = await cc("/content-package/areas/castle/assets/scenes/king-hall-1024.webp");
-    check("#362 圖像資產可快取（max-age＋stale-while-revalidate）", /max-age=\d{2,}/.test(imgCC) && /stale-while-revalidate/.test(imgCC), imgCC);
-    for (const [label, p] of [["content-package 之 JS", "/content-package/wardrobe/manifest.js"], ["引擎 JS", "/game-engine/main.js"], ["CSS", "/styles/adv.css"]]) {
+    // 判準：max-age 非 0 即視為「長效」——`\d{2,}` 會漏掉 max-age=5 之回歸（審查 F3）。
+    const cachedLong = (v) => /max-age=([1-9]\d*)/.test(v);
+    for (const [label, p] of [["場景圖", "/content-package/areas/castle/assets/scenes/king-hall-1024.webp"], ["UI 圖（content-base）", "/content-base/ui/diary-book.webp"]]) {
       const v = await cc(p);
-      check(`#362 ${label} 不得長效快取（升級即生效）`, !/max-age=\d{2,}/.test(v), `${p} → ${v}`);
+      check(`#362 ${label}可快取（max-age＋stale-while-revalidate）`, cachedLong(v) && /stale-while-revalidate/.test(v), `${p} → ${v}`);
+    }
+    for (const [label, p] of [["content-package 之 JS", "/content-package/wardrobe/manifest.js"], ["引擎 JS", "/game-engine/main.js"], ["CSS", "/styles/adv.css"], ["入口 index.html（走 sendFile 另一路徑）", "/index.html"]]) {
+      const v = await cc(p);
+      check(`#362 ${label} 不得長效快取（升級即生效）`, !cachedLong(v), `${p} → ${v}`);
     }
   }
 
@@ -150,14 +154,9 @@ try {
   await pageA.locator("#advActionFooter button").last().click({ timeout: 5000 }).catch(() => {});
   await pageA.keyboard.press("Escape").catch(() => {});
   await pageA.waitForFunction(() => !document.querySelector(".adv-modal.show"), { timeout: 10000 });
-  const before362 = await sceneEntries();
-  await spot.click(); // 仍聚焦態＝單擊即再進場
-  await pageA.waitForFunction(() => Boolean(document.querySelector(".adv-modal.show")), { timeout: 10000 });
-  await pageA.waitForTimeout(900);
-  const added362 = await pageA.evaluate((n) => performance.getEntriesByType("resource")
-    .filter((e) => /scenes\/.*-1024\.webp/.test(e.name)).slice(n).map((e) => e.transferSize), before362);
-  check("#362 重進同一場景：圖不再走網路（零新下載／transferSize=0）",
-    added362.length === 0 || added362.every((v) => v === 0), JSON.stringify(added362));
+  // 註：**不在此斷言「重進場零下載」**——同分頁內重進同一場景由瀏覽器記憶體快取接住，
+  //   與 Cache-Control 無關（實測：修前修後皆 0 筆請求）。那樣的斷言沒有本增量也會綠＝假守門。
+  //   快取政策之真守門＝上方標頭斷言（改回 max-age=0 即紅）；跨頁載入之效益見 issue #362 分析。
   await pageA.screenshot({ path: path.join(SHOTS, "issue362-01-scene-cached.png") }); // GATE ＜2.5節＞ 證據
   await pageA.locator("#advActionFooter button").last().click({ timeout: 5000 }).catch(() => {});
   await pageA.keyboard.press("Escape").catch(() => {});

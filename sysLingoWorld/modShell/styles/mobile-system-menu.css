@@ -88,7 +88,7 @@
   /* issue #103 專家會審: 此 id 規則優先於 .system-menu-body .simple-panel，須在此提高不透明度，否則 Diary 仍透出書本裝飾文字 */
   background:
     linear-gradient(90deg, rgba(255, 250, 246, 0.95), rgba(255, 250, 246, 0.9)),
-    url("../content-base/ui/diary-book.webp") center / cover no-repeat;
+    url("../content-base/ui/diary-book.webp?v=20260717-issue362-r1") center / cover no-repeat;
   border: 6px solid rgba(255, 244, 224, 0.96);
 }
 
@@ -98,7 +98,7 @@
     /* issue #103 專家會審: 窄螢幕下亦提高不透明度，避免 Diary/Settings 書本裝飾文字透出 */
     background:
       linear-gradient(180deg, rgba(255, 250, 246, 0.95), rgba(255, 250, 246, 0.9)),
-      url("../content-base/ui/diary-book.webp") center / cover no-repeat;
+      url("../content-base/ui/diary-book.webp?v=20260717-issue362-r1") center / cover no-repeat;
   }
 
 #settingsView .simple-panel {
@@ -137,7 +137,7 @@
   border-radius: var(--radius);
   background:
     linear-gradient(90deg, rgba(255, 250, 246, 0.9), rgba(255, 250, 246, 0.78)),
-    url("../content-base/ui/diary-book.webp") center / cover no-repeat;
+    url("../content-base/ui/diary-book.webp?v=20260717-issue362-r1") center / cover no-repeat;
   box-shadow: 0 26px 58px rgba(45, 28, 37, 0.34);
 }
 
@@ -219,7 +219,7 @@
   border-width: 4px;
   background:
     linear-gradient(90deg, rgba(255, 250, 246, 0.95), rgba(255, 250, 246, 0.9)),
-    url("../content-base/ui/diary-book.webp") center / cover no-repeat;
+    url("../content-base/ui/diary-book.webp?v=20260717-issue362-r1") center / cover no-repeat;
 }
 
 #settingsView .simple-panel {
@@ -227,7 +227,7 @@
 
   background:
     linear-gradient(90deg, rgba(255, 250, 246, 0.95), rgba(255, 250, 246, 0.9)),
-    url("../content-base/ui/settings-book.webp") center / cover no-repeat;
+    url("../content-base/ui/settings-book.webp?v=20260717-issue362-r1") center / cover no-repeat;
 }
 
 .save-book-panel {

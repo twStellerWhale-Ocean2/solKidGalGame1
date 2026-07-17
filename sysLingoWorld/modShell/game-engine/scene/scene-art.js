@@ -37,11 +37,15 @@ export function prefetchSceneArt(scene, options = {}) {
   [scene?.sceneArt?.src, scene?.npcImage].forEach((src) => {
     if (!src || prefetched.has(src)) return;
     prefetched.add(src);
-    try {
-      const img = new Image();
-      img.decoding = "async";
-      img.src = assetUrl(src); // 只求進瀏覽器快取；不掛 DOM、不理成敗
-    } catch { /* 預抓永不阻斷遊玩 */ }
+    const img = new Image();
+    // **低優先級為硬性**（Q3 審查 M2）：預抓與「玩家當下正在看的圖」（如剛進區時仍在下載的
+    // map-1536，543 KB）共用連線——預設優先級會讓本優化反而拖慢當前畫面。fetchPriority 不支援
+    // 之瀏覽器會忽略此屬性（安全降級）。decoding 只影響解碼、不影響網路優先級，故兩者皆設。
+    img.fetchPriority = "low";
+    img.decoding = "async";
+    img.src = assetUrl(src); // 只求進瀏覽器快取；不掛 DOM、不理成敗
+    // 失敗（404／離線）只在 img 上觸發 error 事件、無 listener 即靜默丟棄，
+    // 不會冒出 unhandled；new Image()／.src 本身不拋，故毋須 try/catch（審查 A5）。
   });
 }
 

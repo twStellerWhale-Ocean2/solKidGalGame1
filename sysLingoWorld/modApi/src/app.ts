@@ -369,17 +369,23 @@ export function createApp(options: AppOptions) {
     // 一次舊圖、下次即新——畫面永不阻塞等網路。
     // **不含 JS／CSS／HTML**（content-package 內尚有 manifest.js／rules.js 等程式碼；game-engine／styles
     // 為引擎本體）：那些一律維持 revalidate，否則升級後會出現「新引擎配舊資料／舊殼」之版本錯配。
+    // max-age 取 7 天（非 10 分鐘）：**本專案之圖像 URL 全數帶版號**（`?v=…`，見 areas/*/manifest.js、
+    // characters/manifest.js、paper-doll-assets.js、mobile-*.css），換圖必改版號＝新 URL，故長新鮮期無陳舊風險。
+    // 反之壓成 600s 會讓「單次遊玩上限 20 分」內第 11 分起症狀復發——Safari／WebKit 未實作
+    // stale-while-revalidate（iOS 全瀏覽器皆 WebKit），忽略 SWR 後即退回阻塞式條件請求（Q3 審查 M3/M4）。
+    // SWR 同設 7 天：支援之瀏覽器於過期後仍先用快取即時繪、背景更新，畫面永不阻塞。
     const IMAGE_ASSET = /\.(webp|png|jpe?g|gif|svg|ico)$/i;
-    const IMAGE_CACHE_CONTROL = "public, max-age=600, stale-while-revalidate=86400";
+    const IMAGE_CACHE_CONTROL = "public, max-age=604800, stale-while-revalidate=604800";
+    const staticOptions = {
+      setHeaders: (res: Response, filePath: string) => {
+        if (IMAGE_ASSET.test(filePath)) res.setHeader("Cache-Control", IMAGE_CACHE_CONTROL);
+      }
+    };
     GAME_SHELL_DIRS.forEach((dir) => {
-      app.use(`/${dir}`, express.static(path.resolve(staticRoot, dir), {
-        setHeaders: (res, filePath) => {
-          if (IMAGE_ASSET.test(filePath)) res.setHeader("Cache-Control", IMAGE_CACHE_CONTROL);
-        }
-      }));
+      app.use(`/${dir}`, express.static(path.resolve(staticRoot, dir), staticOptions));
     });
     // `/admin/` 線上管理頁（spec#25；頁面本身可公開取得、資料一律經受 admin 保護之 `/api/admin/*`）。
-    app.use("/admin", express.static(adminRoot ? path.resolve(adminRoot) : path.resolve(staticRoot, "admin-console")));
+    app.use("/admin", express.static(adminRoot ? path.resolve(adminRoot) : path.resolve(staticRoot, "admin-console"), staticOptions)); // #362 審查 F2：共用同一快取政策（今日無圖、防日後不一致）
     app.use((_req, res) => fail(res, 404, "not-found", "Not served."));
   }
 

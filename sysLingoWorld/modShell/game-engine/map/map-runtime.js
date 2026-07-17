@@ -443,6 +443,7 @@ export function focusTravelHotspot(hotspotId, areaId = activeTravelMapArea()) {
   const hotspot = locationsForArea(areaId).find((item) => item.id === hotspotId);
   const node = nodeMapForArea(areaId)[hotspot?.node];
   if (!hotspot || !node) return;
+  prefetchSceneArt(sceneConfigFor(hotspot), { assetUrl: domAssetUrl }); // #362：四區一致（非僅城堡）
   session.state.area = areaId;
   session.state.playerNode = node.id;
   session.state.player = { x: node.x, y: node.y };
@@ -581,6 +582,7 @@ export function travelActionLabel(hotspot) {
 
 export function updateNearbyHotspot() {
   session.activeHotspot = nearbyHotspot();
+  if (session.activeHotspot) prefetchSceneArt(sceneConfigFor(session.activeHotspot), { assetUrl: domAssetUrl }); // #362
   updateHotspotFocus();
 }
 
