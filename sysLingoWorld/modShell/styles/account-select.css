@@ -336,7 +336,8 @@ body.cloud-offline #statusMessage {
 .login-version {
   margin: 2px 0 0;
   text-align: center;
-  color: var(--muted);
-  font-size: 0.72rem;
-  opacity: 0.75;
+  /* 維運可讀即本項之目的（#358）：不用 --muted×opacity（實測約 3:1、低於 WCAG AA 小字 4.5:1），
+     改足夠對比之深色、僅以字級收斂存在感（Q3 審查 F2）。 */
+  color: #6b5560;
+  font-size: 0.75rem;
 }

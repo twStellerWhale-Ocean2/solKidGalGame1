@@ -61,16 +61,22 @@ try {
   await pageA.waitForSelector("#loginOtherUsername", { timeout: 10000 });
   check("#357 新裝置空狀態預設為登入表單（非註冊）", !(await pageA.$("#registerUsername")));
   check("#357 空狀態無 Back 鈕（root auth 無上一步）", await pageA.evaluate(() => ![...document.querySelectorAll("#accountList button")].some((b) => b.textContent.trim() === "Back")));
+  check("#357 空狀態不出現「Create new account」大鈕（首繪即不得閃現）", await pageA.evaluate(() => document.getElementById("accountNewButton")?.hidden === true));
   check("#358 登入卡顯示產品名＋版本（值＝buildInfo，無第二份）", await pageA.evaluate(async () => {
     const v = (await import("/game-engine/build/version.js")).buildInfo.version;
+    const foot = document.querySelector(".login-version")?.textContent || "";
+    // 玩家端只露品牌（design ＜命名層對照＞）：codename solLingoWorld 不得出現於遊戲畫面
     return /Luminara/.test(document.querySelector("#accountSelectTitle")?.textContent || "")
-      && (document.querySelector(".login-version")?.textContent || "").includes(v);
+      && foot.includes(v) && /Luminara/.test(foot) && !/solLingoWorld/i.test(foot);
   }));
+  await pageA.screenshot({ path: path.join(SHOTS, "issue357-01-signin-default.png") }); // GATE ＜2.5節＞ 證據：登入預設態（**須在點連結前拍**）
   await pageA.click(".login-link"); // #357 次要出口：First time here? Create an account
   await pageA.waitForSelector("#registerUsername", { timeout: 10000 });
   await pageA.screenshot({ path: path.join(SHOTS, "issue357-02-register-secondary.png") }); // GATE ＜2.5節＞ 證據（次要出口後之註冊表單）
   check("#359 註冊表單不再前置攤開帳密規則長句", await pageA.evaluate(() => !/3-16 lowercase/.test(document.querySelector(".login-form")?.textContent || "")));
-  await pageA.screenshot({ path: path.join(SHOTS, "issue357-01-signin-default.png") }); // GATE ＜2.5節＞ 證據（#357 空狀態＝登入表單）
+  check("#357 註冊表單有回登入之次要出口", await pageA.evaluate(() => /Already have an account/i.test(document.querySelector(".login-link")?.textContent || "")));
+  check("#357 註冊模式亦不出現大鈕", await pageA.evaluate(() => document.getElementById("accountNewButton")?.hidden === true));
+
   await pageA.fill("#registerUsername", username);
   await pageA.fill("#registerPassword", password);
   // 顯示密碼切換
@@ -159,6 +165,13 @@ try {
   await pageB.waitForSelector("#accountSelect.show", { timeout: 15000 });
   await pageB.waitForSelector(`#accountList .account-pick[data-username="${username}"]`, { timeout: 10000 });
   await pageB.screenshot({ path: path.join(SHOTS, "issue309-07-login-cards.png") });
+  check("#357 有帳號卡＝cards 模式，大鈕（新增玩家）可見", await pageB.evaluate(() => document.getElementById("accountNewButton")?.hidden === false));
+  await pageB.click(".login-actions .soft-button"); // Other account
+  await pageB.waitForSelector("#loginOtherUsername", { timeout: 8000 });
+  check("#357 有上一步時 Back 出現（自子表單回卡片列表）", await pageB.evaluate(() => [...document.querySelectorAll("#accountList button")].some((b) => b.textContent.trim() === "Back")));
+  check("#357 子表單模式下大鈕收起（不與登入同權）", await pageB.evaluate(() => document.getElementById("accountNewButton")?.hidden === true));
+  await pageB.click("#accountList button:has-text('Back')");
+  await pageB.waitForSelector(`#accountList .account-pick[data-username="${username}"]`, { timeout: 8000 });
   await pageB.click(`#accountList .account-pick[data-username="${username}"]`);
   await pageB.waitForSelector(".login-continue", { timeout: 10000 });
   await pageB.screenshot({ path: path.join(SHOTS, "issue309-08-continue-session.png") });

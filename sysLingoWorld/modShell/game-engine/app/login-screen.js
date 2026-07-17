@@ -91,6 +91,8 @@ export function openLoginScreen({ mustChoose = true } = {}) {
   if (els.title) els.title.textContent = "Luminara";
   if (els.intro) els.intro.textContent = "Princess English Adventure — sign in to play. A parent can help type.";
   if (els.newButton) els.newButton.textContent = "Create new account";
+  // #358 後標題＝品牌名，對話框 accessible name 由「用途」變「品牌」；以 describedby 指向副標補回用途（Q3 審查 F1）。
+  els.card?.setAttribute("aria-describedby", "accountSelectIntro");
   void refreshServerConfig();
   buildLoginScreen();
   els.overlay.classList.add("show");
@@ -602,17 +604,20 @@ export function buildLoginScreen() {
   const cached = loadCachedSession();
   const recents = loadRecentAccounts();
   const registrationOpen = serverConfig.registrationOpen;
+  // #357：無帳號卡＝預設登入表單。**須在算 newButton／empty 之前收斂 uiMode**——否則首繪（config 未回時）
+  // 與「移除最後一張卡」路徑會以 cards 模式算出可見的大鈕、與 Sign in 表單並列（註冊與登入同權復活），
+  // 且後者無後續重繪可救＝永久殘留（Q3 審查 M2）。
+  if (uiMode === "cards" && recents.length === 0) uiMode = "login";
+  if (uiMode === "register" && !registrationOpen) uiMode = "cards";
   // 註冊關閉（spec#26 (c)）：不渲染任何「建立新帳號」入口（含空狀態表單），改顯示友善說明。
   // #357：「Create new account」大鈕只留在卡片列表（＝家庭新增另一位玩家之主要動作）；
   // 登入／註冊表單模式下改由表單內之次要連結出入，不並列第二顆主要鈕（否則註冊仍與登入同權，改了等於沒改）。
   if (els.newButton) els.newButton.hidden = !registrationOpen || uiMode !== "cards";
   if (els.empty) {
     els.empty.hidden = recents.length > 0 || uiMode !== "cards";
-    els.empty.textContent = registrationOpen
-      ? "No players on this device yet. Create a new account to start your adventure!"
-      : "No players on this device yet. Sign in with your account below.";
+    // #357：文案不再導向註冊（預設已是登入表單）；此訊息於 cards 模式才顯示。
+    els.empty.textContent = "No players on this device yet. Sign in with your account below.";
   }
-  if (uiMode === "register" && !registrationOpen) uiMode = "cards";
   if (uiMode === "login") {
     els.list.appendChild(buildOtherLoginForm());
     // spec#26 (c)：註冊關閉之友善說明——#357 後 login 為空狀態預設模式，此分支亦須呈現
@@ -646,8 +651,6 @@ export function buildLoginScreen() {
   if (!registrationOpen) els.list.appendChild(registrationClosedNotice());
   const migrate = buildMigrationEntry();
   if (migrate) els.list.appendChild(migrate);
-  // #357：空狀態預設登入表單（不再是註冊）；註冊關閉時亦同——伺服器可能已有帳號，登入永遠是對的預設。
-  if (recents.length === 0) loginScreenSetModeSilently();
 }
 
 // #358：登入卡頁尾版本（值取自 VERSION SSOT 之投影 buildInfo，不手寫第二份）。
@@ -660,24 +663,7 @@ function renderLoginVersion() {
     footer.className = "login-version";
     card.appendChild(footer);
   }
-  footer.textContent = `solLingoWorld v${buildInfo.version}`;
-}
-
-// 空狀態（#357 修正 #309 (a) 之預設）：無任何帳號卡時預設呈現**登入表單**——帳號存在伺服器、
-// 不在裝置，新裝置進來的既有玩家必須先能登入；預設導向註冊會使他重建帳號、進度分裂。
-// 註冊改為表單內之次要出口（見 buildOtherLoginForm）。
-function loginScreenSetModeSilently() {
-  if (uiMode === "cards" && loadRecentAccounts().length === 0) {
-    uiMode = "login";
-    const els = overlayEls();
-    els.list.innerHTML = "";
-    if (els.empty) els.empty.hidden = false;
-    els.list.appendChild(buildOtherLoginForm());
-    // spec#26 (c)：註冊關閉之友善說明於空狀態亦須呈現——本函式會清空重繪，故此處補回（否則被洗掉）。
-    if (!serverConfig.registrationOpen) els.list.appendChild(registrationClosedNotice());
-    const migrate = buildMigrationEntry();
-    if (migrate) els.list.appendChild(migrate);
-  }
+  footer.textContent = `Luminara v${buildInfo.version}`; // 玩家端品牌＋版本（design ＜命名層對照＞：codename solLingoWorld 不外露）
 }
 
 export function removeRecent(username) {
