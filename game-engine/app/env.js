@@ -6,8 +6,8 @@
 // 不含區網 IP 或自訂網域：過寬會把 dev 入口洩漏到正式站。
 const LOCAL_DEV_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
 
-// dev 入口導向之相對路徑——不寫死埠號／主機，與 tool/start-wardrobe-tuner.ps1 解耦。
-export const WARDROBE_TUNER_DEV_PATH = "tool/wardrobe-tuner.html";
+// dev 入口導向之相對路徑——不寫死埠號／主機，與 devtool/start-devtool.ps1 解耦。
+export const WARDROBE_TUNER_DEV_PATH = "devtool/wardrobe-tuner.html";
 
 // issue #309：雲端模式（伺服器帳號＋雲端存檔）為正式遊玩預設；
 // selftest 模式沿用本機帳號後端作為測試替身（?selftest=auth 另以注入 fake fetch 驗雲端路徑）。

@@ -1,7 +1,7 @@
 // issue #272: cloth alignment overlay (<dialog>).
 // Left panel: zoomable/pannable paper-doll preview with SVG drag handles.
 // Right panel: sliders (Center X/Y, Width, Height, Rotate) synced bidirectionally.
-// Actions: Cancel | Reset | Save (POST /tool/apply-wardrobe).
+// Actions: Cancel | Reset | Save (POST /devtool/apply-wardrobe).
 
 const CANVAS_W  = 512;
 const CANVAS_H  = 768;
@@ -319,7 +319,7 @@ export function openAdjustOverlay({ item, outfit, renderer, getCharacter, onSave
     const payload      = { ...newTargetBox, ...(newRotation !== 0 ? { rotation: newRotation } : {}) };
 
     try {
-      const res    = await fetch("/tool/apply-wardrobe", {
+      const res    = await fetch("/devtool/apply-wardrobe", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ boxes: { [packKey]: payload } }),
       });

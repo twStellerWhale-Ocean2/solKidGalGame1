@@ -7,7 +7,7 @@
 // a single 512x512 transparent WebP that is used for both wardrobe layer and shop
 // preview.
 //
-//   node tool/generate-wardrobe-asset.mjs <packId> [--item <asset>] [--apply] [--quality high|medium|low] [--direct]
+//   node devtool/generate-wardrobe-asset.mjs <packId> [--item <asset>] [--apply] [--quality high|medium|low] [--direct]
 //
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
@@ -15,8 +15,8 @@ import { join } from "node:path";
 
 const ROOT = process.cwd();
 const WARDROBE = join(ROOT, "content-package", "wardrobe");
-const TMP = join(ROOT, "tool", "_gen-tmp");
-const PREVIEW = join(ROOT, "tool", "_gen-preview");
+const TMP = join(ROOT, "devtool", "_gen-tmp");
+const PREVIEW = join(ROOT, "devtool", "_gen-preview");
 const ART_STYLE = join(WARDROBE, "_shared", "art-style.json");
 let activeKeyColor = "#00ff00";
 const MAX_KEY_RESIDUAL_PIXELS = 48;
@@ -29,7 +29,7 @@ function arg(flag, def = null) {
 
 const packId = process.argv[2];
 if (!packId || packId.startsWith("--")) {
-  console.error("usage: node tool/generate-wardrobe-asset.mjs <packId> [--item <asset>] [--apply] [--quality high|medium|low] [--direct]");
+  console.error("usage: node devtool/generate-wardrobe-asset.mjs <packId> [--item <asset>] [--apply] [--quality high|medium|low] [--direct]");
   process.exit(1);
 }
 const onlyItem = arg("--item");
@@ -460,7 +460,7 @@ const items = [...itemMeta.entries()]
   .map(([asset, meta]) => [asset, meta.prompt || ""])
   .filter(([asset]) => !onlyItem || asset === onlyItem);
 
-console.log(`gen ${items.length} item(s) of [${packId}] quality=${quality} mode=${useGuide ? "guide-edit" : "direct-transparent-experiment"} → ${apply ? "APPLY layers/" : "preview tool/_gen-preview/"}`);
+console.log(`gen ${items.length} item(s) of [${packId}] quality=${quality} mode=${useGuide ? "guide-edit" : "direct-transparent-experiment"} → ${apply ? "APPLY layers/" : "preview devtool/_gen-preview/"}`);
 const done = [];
 for (const [asset, desc] of items) {
   process.stdout.write(`  ${asset} … `);

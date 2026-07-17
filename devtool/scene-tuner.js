@@ -258,7 +258,7 @@ async function generateDialog() {
   dom.genBtn.disabled = true;
   status(dom.genStatus, "生成中…", "");
   try {
-    const d = await postJson("/tool/generate-scene-dialog", { prompt });
+    const d = await postJson("/devtool/generate-scene-dialog", { prompt });
     if (d.ok) {
       previewGenerated(kind, s.place, d.text);
       status(dom.genStatus, `已用 ${d.model} 生成，請於下方對照後按「採納」。`, "ok");
@@ -354,8 +354,8 @@ async function saveDialog() {
   status(dom.saveStatus, "儲存中…", "");
   try {
     const results = [];
-    if (jobs) results.push(await postJson("/tool/save-scene-dialog", { area: a.key, kind: "job", bank: a.jobBank }));
-    if (chats) results.push(await postJson("/tool/save-scene-dialog", { area: a.key, kind: "chat", bank: a.chatBank }));
+    if (jobs) results.push(await postJson("/devtool/save-scene-dialog", { area: a.key, kind: "job", bank: a.jobBank }));
+    if (chats) results.push(await postJson("/devtool/save-scene-dialog", { area: a.key, kind: "chat", bank: a.chatBank }));
     const bad = results.find((r) => !r.ok);
     if (bad) throw new Error(bad.error);
     setDirty(`scene:${a.key}`, false); // 僅清這區的 dirty，其他區未存仍受離頁保護

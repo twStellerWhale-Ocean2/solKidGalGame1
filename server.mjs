@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { spawn, execFile } from "node:child_process";
 import { networkInterfaces } from "node:os";
 import { outfitSlots } from "./content-package/wardrobe/_shared/rules.js";
-import { SCENE_AREA_KEYS, SCENE_DIALOG_KINDS, bankConstName, rewardVarFor, serializeBank, validateBank } from "./tool/scene-bank-io.mjs";
+import { SCENE_AREA_KEYS, SCENE_DIALOG_KINDS, bankConstName, rewardVarFor, serializeBank, validateBank } from "./devtool/scene-bank-io.mjs";
 
 const root = dirname(fileURLToPath(import.meta.url));
 const rootPrefix = root.endsWith(sep) ? root : `${root}${sep}`;
@@ -250,7 +250,7 @@ async function handleRegenerateWardrobe(request, response) {
   try {
     const { pack, asset } = JSON.parse(await readBody(request) || "{}");
     safeName(pack, "pack"); safeName(asset, "asset");
-    const out = await runNode(["tool/generate-wardrobe-asset.mjs", pack, "--item", asset, "--apply"]);
+    const out = await runNode(["devtool/generate-wardrobe-asset.mjs", pack, "--item", asset, "--apply"]);
     json(response, 200, { ok: true, log: out.trim().split("\n").slice(-2).join(" | ") });
   } catch (e) { json(response, 400, { ok: false, error: String(e?.message || e) }); }
 }
@@ -398,7 +398,7 @@ async function handleSaveDefaults(request, response) {
 
 // ===== issue #245：場景對話題庫編修＋AI 生成（dev only，僅綁 127.0.0.1）=====
 // 白名單僅四地區 manifest；就地替換 `const <area>LessonBank/ChatLessonBank = Object.freeze({…});`
-// 區塊，reward 維持變數參照、保留原檔 EOL、不動其他欄位。序列化／驗證委派 tool/scene-bank-io.mjs。
+// 區塊，reward 維持變數參照、保留原檔 EOL、不動其他欄位。序列化／驗證委派 devtool/scene-bank-io.mjs。
 async function handleSaveSceneDialog(request, response) {
   try {
     const { area, kind, bank } = JSON.parse(await readBody(request) || "{}");
@@ -442,25 +442,25 @@ async function handleGenerateSceneDialog(request, response) {
 }
 
 const WARDROBE_ROUTES = {
-  "/tool/save-defaults": handleSaveDefaults,
-  "/tool/save-scene-dialog": handleSaveSceneDialog,
-  "/tool/generate-scene-dialog": handleGenerateSceneDialog,
-  "/tool/open-folder": handleOpenFolder,
-  "/tool/delete-item": handleDeleteItem,
-  "/tool/add-item": handleAddItem,
-  "/tool/upload-item": handleUploadItem,
-  "/tool/get-wardrobe-desc": handleGetWardrobeDesc,
-  "/tool/save-wardrobe-desc": handleSaveWardrobeDesc,
-  "/tool/regenerate-wardrobe": handleRegenerateWardrobe,
-  "/tool/get-item-meta": handleGetItemMeta,
-  "/tool/save-item-meta": handleSaveItemMeta,
-  "/tool/save-map-positions": handleSaveMapPositions,
-  "/tool/upload-map": handleUploadMap
+  "/devtool/save-defaults": handleSaveDefaults,
+  "/devtool/save-scene-dialog": handleSaveSceneDialog,
+  "/devtool/generate-scene-dialog": handleGenerateSceneDialog,
+  "/devtool/open-folder": handleOpenFolder,
+  "/devtool/delete-item": handleDeleteItem,
+  "/devtool/add-item": handleAddItem,
+  "/devtool/upload-item": handleUploadItem,
+  "/devtool/get-wardrobe-desc": handleGetWardrobeDesc,
+  "/devtool/save-wardrobe-desc": handleSaveWardrobeDesc,
+  "/devtool/regenerate-wardrobe": handleRegenerateWardrobe,
+  "/devtool/get-item-meta": handleGetItemMeta,
+  "/devtool/save-item-meta": handleSaveItemMeta,
+  "/devtool/save-map-positions": handleSaveMapPositions,
+  "/devtool/upload-map": handleUploadMap
 };
 
 createServer(async (request, response) => {
   const url = new URL(request.url, `http://${request.headers.host}`);
-  if (request.method === "POST" && url.pathname === "/tool/apply-wardrobe") {
+  if (request.method === "POST" && url.pathname === "/devtool/apply-wardrobe") {
     await handleApplyWardrobe(request, response);
     return;
   }
@@ -468,9 +468,16 @@ createServer(async (request, response) => {
     await WARDROBE_ROUTES[url.pathname](request, response);
     return;
   }
-  // 便利轉址：/tool 與 /tool/ → Wardrobe Tuner（避免目錄路徑 404）。
-  if (request.method === "GET" && (url.pathname === "/tool" || url.pathname === "/tool/")) {
-    response.writeHead(302, { Location: "/tool/wardrobe-tuner.html" });
+  // 便利轉址：/devtool 與 /devtool/ → Wardrobe Tuner（避免目錄路徑 404）。
+  if (request.method === "GET" && (url.pathname === "/devtool" || url.pathname === "/devtool/")) {
+    response.writeHead(302, { Location: "/devtool/wardrobe-tuner.html" });
+    response.end();
+    return;
+  }
+  // 舊名相容轉址（#341 tool→devtool）：維護者舊書籤 /tool/* 以 301 導新址、不留死路。
+  if (request.method === "GET" && (url.pathname === "/tool" || url.pathname.startsWith("/tool/"))) {
+    const target = url.pathname === "/tool" || url.pathname === "/tool/" ? "/devtool/wardrobe-tuner.html" : url.pathname.replace(/^\/tool\//, "/devtool/");
+    response.writeHead(301, { Location: target });
     response.end();
     return;
   }

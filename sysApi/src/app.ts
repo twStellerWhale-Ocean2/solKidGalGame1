@@ -352,7 +352,7 @@ export function createApp(options: AppOptions) {
 
   if (staticRoot) {
     // 遊戲殼同站服務（sysCase#3.1）——**allowlist 靜態子樹**：只對外提供遊戲殼所需資產與 `/admin/` 管理頁，
-    // 內部文件（docs/、deploy/、contract-*、scripts/、tool/、server.mjs、sysApi/ 原始碼樹等）一律不服務
+    // 內部文件（docs/、deploy/、contract-*、scripts/、devtool/、server.mjs、sysApi/ 原始碼樹等）一律不服務
     // （#309 業界審查 B1：正式自架端不得外洩原始碼樹與維護工具頁）。
     const GAME_SHELL_DIRS = ["game-engine", "content-package", "content-base", "styles"];
     const indexFile = path.resolve(staticRoot, "index.html");
