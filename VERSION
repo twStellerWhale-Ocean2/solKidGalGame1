@@ -1,8 +1,16 @@
 {
-  "version": "0.68.0",
+  "version": "0.68.1",
   "date": "2026-07-17",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.68.1",
+      "date": "2026-07-17",
+      "type": "fix",
+      "playerVisible": false,
+      "issue": "#367",
+      "summaryZh": "修正 starter-outfit 引擎自測仍斷言舊預設造型（#364 改組態未同步回歸守門，發佈列車釋出前測試攔下）：預設 ID 斷言更新為雙辮髮型＋金色宮廷裙，owned＝所穿三件等不變量斷言不變；純測試修正，遊戲行為零變更"
+    },
     {
       "version": "0.68.0",
       "date": "2026-07-17",
