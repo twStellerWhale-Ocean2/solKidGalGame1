@@ -1,19 +1,20 @@
-# 只有 Dockerfile COPY 指名的路徑會入包；本檔縮小 build context 並防呆。
+# 只有 Dockerfile COPY 指名的路徑會入包；本檔縮小 build context 並防呆（issue #342 對齊 repoStructVersion 2.1 佈局）。
 .git
 .claude
 node_modules
-sysApi/node_modules
-sysApi/dist
-sysApi/coverage
+sysLingoWorld/modApi/node_modules
+sysLingoWorld/modApi/dist
+sysLingoWorld/modApi/coverage
+sysLingoWorld/modApi/.env
+sysLingoWorld/deploy
 docs
 deploy
-contract-common
-contract-local
 scripts
 tests
-tool
+devtool
 server.mjs
 *.png
+*.tgz
 AGENTS.md
 CHANGELOG.md
 README.md

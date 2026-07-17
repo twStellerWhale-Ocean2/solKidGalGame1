@@ -1,13 +1,14 @@
 # solLingoWorld 整包發行 image（issue #311，spec#27）——單一 app 容器：
-# sysApi（modApi）＋遊戲殼靜態 allowlist（modShell）＋ /admin/ 管理頁（modAdmin）。
-# COPY 範圍以 sysApi/src/app.ts 之靜態 allowlist（GAME_SHELL_DIRS＋admin-console）為 SSOT 對齊；
+# modApi（帳號存檔 API）＋遊戲殼靜態 allowlist（modShell）＋ /admin/ 管理頁（modAdmin）。
+# 原始碼樹依 repoStructVersion 2.1 住 sysLingoWorld/（issue #342）；image 內部佈局不變（/app 平鋪），runtime 零差異。
+# COPY 範圍以 modApi/src/app.ts 之靜態 allowlist（GAME_SHELL_DIRS＋admin-console）為 SSOT 對齊；
 # dev 工具（devtool/、server.mjs）、測試、docs 與 repo 內部檔案一律不入包（intTest#79 步驟 4 守門）。
 FROM node:22-alpine AS builder
 WORKDIR /build/sysApi
-COPY sysApi/package.json sysApi/package-lock.json ./
+COPY sysLingoWorld/modApi/package.json sysLingoWorld/modApi/package-lock.json ./
 RUN npm ci
-COPY sysApi/tsconfig.json ./
-COPY sysApi/src ./src
+COPY sysLingoWorld/modApi/tsconfig.json ./
+COPY sysLingoWorld/modApi/src ./src
 RUN npm run build && npm prune --omit=dev
 
 FROM node:22-alpine
@@ -23,13 +24,13 @@ RUN npm install -g npm@12.0.0
 WORKDIR /app
 COPY --from=builder /build/sysApi/dist ./sysApi/dist
 COPY --from=builder /build/sysApi/node_modules ./sysApi/node_modules
-COPY sysApi/package.json ./sysApi/package.json
-COPY index.html ./index.html
-COPY game-engine ./game-engine
-COPY content-base ./content-base
-COPY content-package ./content-package
-COPY styles ./styles
-COPY admin-console ./admin-console
+COPY sysLingoWorld/modApi/package.json ./sysApi/package.json
+COPY sysLingoWorld/modShell/index.html ./index.html
+COPY sysLingoWorld/modShell/game-engine ./game-engine
+COPY sysLingoWorld/modShell/content-base ./content-base
+COPY sysLingoWorld/modShell/content-package ./content-package
+COPY sysLingoWorld/modShell/styles ./styles
+COPY sysLingoWorld/modAdmin ./admin-console
 USER node
 EXPOSE 4180
 HEALTHCHECK --interval=30s --timeout=3s --start-period=15s \

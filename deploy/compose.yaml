@@ -1,8 +1,8 @@
 # solLingoWorld 自架部署（issue #309）— 本機／家庭區網驗收環境。
 # 用法：docker compose -f deploy/compose.yaml up -d
 #   → 啟動 PostgreSQL（資料落 named volume luminara-db，重啟不失）。
-#   → sysApi 服務於主機執行：cd sysApi && npm ci && npm run build && npm start
-#     （需 .env 或環境變數：DATABASE_URL、SESSION_SECRET；見 sysApi/.env.example）
+#   → sysApi 服務於主機執行：cd sysLingoWorld/modApi && npm ci && npm run build && npm start
+#     （需 .env 或環境變數：DATABASE_URL、SESSION_SECRET；見 sysLingoWorld/modApi/.env.example）
 # 正式 image＋helm 整包於增量 #311 編制（trainFlow-3pub 通道）。
 services:
   db:

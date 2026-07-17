@@ -55,7 +55,7 @@ if ($ic) { "OK: 叢集有預設 IngressClass（$($ic[0].metadata.name)；values 
 else { "注意：叢集沒有標記預設 IngressClass——安裝時請加 --set ingress.className=<名稱>（kubectl get ingressclass 查看；ingress-nginx 官方安裝預設不標），否則 Ingress 沒人接、網址會無聲 404" }
 ```
 
-1. 取得發行物：chart `sollingoworld-chart` 取自發佈列車隨版本發行的 chart 套件（GitHub Release 附件 `.tgz` 或 OCI registry；正式發行前的驗測可直接用本 repo 的 `deploy/helm/`）；容器 image `ghcr.io/twstellerwhale-ocean2/sollingoworld` 為公開 image、不需登入即可拉取（image 與 chart 分屬兩名——chart 帶 `-chart` 後綴以免與 image 撞同一 OCI path）。
+1. 取得發行物：chart `sollingoworld-chart` 取自發佈列車隨版本發行的 chart 套件（GitHub Release 附件 `.tgz` 或 OCI registry；正式發行前的驗測可直接用本 repo 的 `sysLingoWorld/deploy/helm/`）；容器 image `ghcr.io/twstellerwhale-ocean2/sollingoworld` 為公開 image、不需登入即可拉取（image 與 chart 分屬兩名——chart 帶 `-chart` 後綴以免與 image 撞同一 OCI path）。
 2. 準備秘密檔 `secrets.yaml`（**不要**用 `--set` 直接把密碼打在指令上——會留在指令歷史裡）：
 
    ```yaml
@@ -120,11 +120,11 @@ else { "注意：叢集沒有標記預設 IngressClass——安裝時請加 --se
    docker compose -f deploy/compose.yaml up -d
    ```
 
-2. 設定環境變數：複製 `sysApi/.env.example` 為 `sysApi/.env`，把 `SESSION_SECRET` 改成一段自己的隨機長字串（`DATABASE_URL` 預設即對應上面的 compose 資料庫）；並設定 `ADMIN_USERNAME` 與 `ADMIN_PASSWORD`（密碼至少 8 位、含一個數字與一個小寫英文）——服務**第一次啟動**時會用它建立**維護者管理帳號**，供登入線上管理頁（見 [III.J 線上管理](#j-線上管理維護者)）；帳號已存在時不會覆寫（你在管理頁改過的密碼不會被重啟洗掉）。
+2. 設定環境變數：複製 `sysLingoWorld/modApi/.env.example` 為 `sysLingoWorld/modApi/.env`，把 `SESSION_SECRET` 改成一段自己的隨機長字串（`DATABASE_URL` 預設即對應上面的 compose 資料庫）；並設定 `ADMIN_USERNAME` 與 `ADMIN_PASSWORD`（密碼至少 8 位、含一個數字與一個小寫英文）——服務**第一次啟動**時會用它建立**維護者管理帳號**，供登入線上管理頁（見 [III.J 線上管理](#j-線上管理維護者)）；帳號已存在時不會覆寫（你在管理頁改過的密碼不會被重啟洗掉）。
 3. 啟動遊戲伺服器（同站提供遊戲網頁與 `/api/*` 帳號存檔端點，預設 port `4180`）：
 
    ```powershell
-   cd sysApi
+   cd sysLingoWorld/modApi
    npm ci
    npm run build
    npm start
@@ -137,7 +137,7 @@ else { "注意：叢集沒有標記預設 IngressClass——安裝時請加 --se
 - **傳輸安全定位**：純內網部署可走 HTTP（NodePort 或 `sollingoworld.local`）；**要開放到公網一律經 TLS 終結的入口**（見上「公網正式部署」兩模式）——明文 HTTP 的 port 不要直接轉發到公網，密碼（含管理帳號）會裸奔。
 - **定期備份你的資料庫**：全家的帳號與進度都存在 PostgreSQL 裡；玩家也可各自在遊戲內匯出 Markdown 備份。
 - **線上管理**：瀏覽器開 `http://<主機IP>:<port>/admin/`（helm 路徑預設 port `30418`、開發路徑 `4180`）、以 admin 帳密登入，即可線上管理帳號（孩子忘記密碼在這裡重設、刪除不用的帳號）與執行期遊戲設定（預設遊玩時長、鎖定孩子時長、關閉註冊），儲存即生效、不需重佈——見 [III.J 線上管理](#j-線上管理維護者)。
-- **admin 自己忘記密碼**（唯一無法用網頁自救的情況）：開發路徑在伺服器端執行 `cd sysApi && npm run reset-password -- <帳號> <新密碼>`；helm 部署見正式路徑步驟 8（`kubectl exec`）。
+- **admin 自己忘記密碼**（唯一無法用網頁自救的情況）：開發路徑在伺服器端執行 `cd sysLingoWorld/modApi && npm run reset-password -- <帳號> <新密碼>`；helm 部署見正式路徑步驟 8（`kubectl exec`）。
 - `server.mjs` 仍是**維護者專用 dev 工具**（管理設定工具的寫回），與遊玩用服務無關。
 - **經反向代理部署時**（啟用 Ingress 或 Cloudflare Tunnel 等邊緣入口）：依**實際代理跳數**設定 helm values `api.trustProxy`（投影為服務環境變數 `TRUST_PROXY`；開發路徑直接設 env）——只有 Ingress 是 1、Tunnel 再接 Ingress 是 2（且 ingress-nginx 須開啟 forwarded headers），登入／註冊的失敗限流才會以真實來源計算。失敗限流一律**按「來源＋帳號」累計**（同一帳號重試才會被擋、鄰居的失敗不會鎖到你），被限流時畫面會顯示還要等幾秒；設定了 `api.trustProxy` 的公網部署，請以 Ingress 作為唯一對外入口、不要同時把 NodePort 暴露到公網。
 
@@ -192,7 +192,7 @@ else { "注意：叢集沒有標記預設 IngressClass——安裝時請加 --se
 - 公主立繪採**共用 `body`（neck-down、含永久肌膚安全底著）＋ 每位公主一張 `head`（臉＋預設髮型）** 之分層合成，皆為 `shared-512x768-v1`、`512x768` 透明 WebP；換裝時衣物疊在底著之上、髮型 layer 完全覆蓋預設髮，換裝後舊層不殘留。
 - 衣物、鞋帽與配件採**類別級 layer 對位範圍**，同類共用同一範圍、新增商品不必逐件 nudge。
 - 各類圖像資產有**標準尺寸與檔重預算**（角色 body／head／NPC 512×768、ADV 場景 1024×1024、地區地圖 1536×1536、世界地圖 1024×1536、衣物單品 layer 兼商店預覽 512×512——單一素材、無另設分離縮圖），素材須為 GPT 產生或手工修圖的童話手繪風格 PNG／WebP，禁止以 SVG／CSS 濾鏡代替。
-- 規格詳見 [docs/design.md](docs/design.md) 與 [contract-local/hmiIntf自訂角色尺度與美術規範.md](contract-local/hmiIntf自訂角色尺度與美術規範.md)。
+- 規格詳見 [docs/design.md](docs/design.md) 與 [docs/design.md ＜II.C.(C)＞ hmiIntf自訂角色尺度與美術規範](docs/design.md)。
 
 ## D. 參考案例
 
@@ -359,8 +359,8 @@ else { "注意：叢集沒有標記預設 IngressClass——安裝時請加 --se
 **擴充內容（給維護者）**：area、角色、可玩公主、衣物與場景背景都是 `content-package/` 下的**模組化內容包**，新增／調整內容時優先只動單一包與少量 registry 設定，不必改核心引擎。可玩公主須共用 `shared-512x768-v1` rig（共用 `body`＋per-character `head` 分層，見 [II.C 換裝分層與美術資產](#c-換裝分層與美術資產)）。新增或重製 wardrobe 素材、ADV 場景背景時須遵守 [II.C](#c-換裝分層與美術資產) 的資產尺寸／檔重預算與童話手繪 bitmap 規則（禁 SVG／濾鏡補足），並以手機直向與桌機視口做視覺 QA；`?selftest=data-audit` 會一併檢查全資產的尺寸與檔重並列出超標清單。細部規則見：
 
 - 內部設計 SSOT：[docs/design.md](docs/design.md)
-- 角色尺度與美術契約：[contract-local/hmiIntf自訂角色尺度與美術規範.md](contract-local/hmiIntf自訂角色尺度與美術規範.md)
-- 技術選型與契約：[contract-common/](contract-common/)、[contract-local/contract-index.md](contract-local/contract-index.md)
+- 角色尺度與美術契約：[docs/design.md ＜II.C.(C)＞ hmiIntf自訂角色尺度與美術規範](docs/design.md)
+- 技術選型與契約：[docs/shared-contracts/](docs/shared-contracts/)（自訂設計已併入 [docs/design.md](docs/design.md)，issue #342）
 - agent 操作規則：[AGENTS.md](AGENTS.md)
 
 ## J. 線上管理（維護者）
@@ -442,7 +442,7 @@ else { "注意：叢集沒有標記預設 IngressClass——安裝時請加 --se
 - 2026-06-20（issue #196）：設計把每件衣物收斂為**單一一張 `512×512` 圖**，既當投影素材也直接當商店方塊預覽，長邊貼滿、透明 WebP；素材以影像模型重繪並用三層描述詞驅動。設計決策詳見 [docs/design-issue196.md](docs/design-issue196.md)。本項為 2plan 初稿，待 dev／opr 校準。
 - 2026-06-20（issue #204）：改善打工與生活聊天題目品質——打工正解一律為經過思考的決策／判斷／建議（非題幹複述），生活聊天維持自然社交回應。已落地四地區 42 道打工複述題改寫、57 個聊天超現實干擾選項改為情境內回應，並新增 data-audit 守門。設計決策見 [docs/design.md](docs/design.md)。本項為 dev 實作，待 opr 終驗。
 - 2026-06-20（issue #197）：為各類圖像資產建立**標準尺寸與檔重預算**（`paramAssetStandards`），擴充 `?selftest=data-audit` 對所有圖像資產同時檢查尺寸與檔重，並把 9 張超標地圖／場景重壓縮至預算內。設計決策與 GATE 紀錄詳見 [docs/design-issue197.md](docs/design-issue197.md)。本項為 dev 實作，待 opr 終驗。
-- 2026-06-20（issue #199）：已強化角色立繪輪廓辨識——常態可讀性改以貼合 alpha 外框的深色描邊與自然景深陰影，試穿光暈保留為互動狀態提示。設計決策已納入 [docs/design.md](docs/design.md) 與 [contract-local/hmiIntf自訂角色尺度與美術規範.md](contract-local/hmiIntf自訂角色尺度與美術規範.md)。本項為 dev 實作，待 opr 終驗。
+- 2026-06-20（issue #199）：已強化角色立繪輪廓辨識——常態可讀性改以貼合 alpha 外框的深色描邊與自然景深陰影，試穿光暈保留為互動狀態提示。設計決策已納入 [docs/design.md](docs/design.md) 與 [docs/design.md ＜II.C.(C)＞ hmiIntf自訂角色尺度與美術規範](docs/design.md)。本項為 dev 實作，待 opr 終驗。
 - 2026-06-20（issue #195）：已移除「整套穿搭」一鍵換整套商品，回歸逐件單品購買穿戴，確立「單品單層」原則；披風／外套統一單層呈現。設計決策詳見 [docs/design-issue195.md](docs/design-issue195.md)。本項為 dev 實作，待 opr 終驗。
 - 2026-06-19（issue #179）：已重繪並替換 16 張上下區域疑似模糊補版的 ADV 場景背景（維持單張 `1024x1024` WebP），並新增 `?selftest=visual-qa` scene-art contact sheet／單場景截取；QA 40/40、0 review warning。設計決策詳見 [docs/design-issue179.md](docs/design-issue179.md)。
 - 2026-06-19（issue #181）：把各地區打工報酬差距再收斂為城堡 100／市區 105／鄉村 110／森林 115（最大約 1.15 倍），商店定價維持 #157 不動。詳見 [docs/design-issue181.md](docs/design-issue181.md)。本項為 2plan 初稿，待 dev／opr 校準。

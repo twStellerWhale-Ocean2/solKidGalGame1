@@ -19,6 +19,8 @@ export interface AppOptions {
   sessionSecret: string;
   sessionTtlMs: number;
   staticRoot?: string | null;
+  /** /admin/ 靜態根（#342）：預設 staticRoot/admin-console（image 佈局）；dev/e2e 源樹分 mod 時指向 modAdmin。 */
+  adminRoot?: string | null;
   rateLimiter?: RateLimiter;
   now?: () => number;
   bcryptCost?: number;
@@ -37,6 +39,7 @@ export function createApp(options: AppOptions) {
     sessionSecret,
     sessionTtlMs,
     staticRoot = null,
+    adminRoot = null,
     rateLimiter = createRateLimiter({ max: 10, windowMs: 10 * 60 * 1000 }),
     now = Date.now,
     bcryptCost = BCRYPT_COST,
@@ -363,7 +366,7 @@ export function createApp(options: AppOptions) {
       app.use(`/${dir}`, express.static(path.resolve(staticRoot, dir)));
     });
     // `/admin/` 線上管理頁（spec#25；頁面本身可公開取得、資料一律經受 admin 保護之 `/api/admin/*`）。
-    app.use("/admin", express.static(path.resolve(staticRoot, "admin-console")));
+    app.use("/admin", express.static(adminRoot ? path.resolve(adminRoot) : path.resolve(staticRoot, "admin-console")));
     app.use((_req, res) => fail(res, 404, "not-found", "Not served."));
   }
 

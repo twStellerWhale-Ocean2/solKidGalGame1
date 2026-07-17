@@ -13,9 +13,9 @@ import { fileURLToPath } from "node:url";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const versionPath = join(root, "VERSION");
-const versionJsPath = join(root, "game-engine", "build", "version.js");
+const versionJsPath = join(root, "sysLingoWorld", "modShell", "game-engine", "build", "version.js");
 const changelogPath = join(root, "CHANGELOG.md");
-const chartYamlPath = join(root, "deploy", "helm", "Chart.yaml");
+const chartYamlPath = join(root, "sysLingoWorld", "deploy", "helm", "Chart.yaml");
 
 function fail(msg) {
   console.error(`genVersion: ${msg}`);
@@ -122,9 +122,9 @@ function main() {
   const check = process.argv.includes("--check");
   const data = loadVersion();
   const targets = [
-    { path: versionJsPath, label: "game-engine/build/version.js", content: genVersionJs(data) },
+    { path: versionJsPath, label: "sysLingoWorld/modShell/game-engine/build/version.js", content: genVersionJs(data) },
     { path: changelogPath, label: "CHANGELOG.md", content: genChangelog(data) },
-    { path: chartYamlPath, label: "deploy/helm/Chart.yaml", content: genChartYaml(data) },
+    { path: chartYamlPath, label: "sysLingoWorld/deploy/helm/Chart.yaml", content: genChartYaml(data) },
   ];
   if (check) {
     const drift = [];
@@ -142,7 +142,7 @@ function main() {
       console.error("genVersion --check 失敗（版號投影漂移）：\n  - " + drift.join("\n  - ") + "\n  修復：node scripts/genVersion.mjs");
       process.exit(1);
     }
-    console.log("genVersion --check：PASS（version.js／CHANGELOG.md／deploy/helm/Chart.yaml 與 VERSION 一致）");
+    console.log("genVersion --check：PASS（version.js／CHANGELOG.md／sysLingoWorld/deploy/helm/Chart.yaml 與 VERSION 一致）");
     return;
   }
   for (const t of targets) {

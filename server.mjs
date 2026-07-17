@@ -4,11 +4,15 @@ import { dirname, extname, join, normalize, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn, execFile } from "node:child_process";
 import { networkInterfaces } from "node:os";
-import { outfitSlots } from "./content-package/wardrobe/_shared/rules.js";
+import { outfitSlots } from "./sysLingoWorld/modShell/content-package/wardrobe/_shared/rules.js";
 import { SCENE_AREA_KEYS, SCENE_DIALOG_KINDS, bankConstName, rewardVarFor, serializeBank, validateBank } from "./devtool/scene-bank-io.mjs";
 
-const root = dirname(fileURLToPath(import.meta.url));
+const root = dirname(fileURLToPath(import.meta.url)); // repo 根：devtool/、docs/、scripts/
+// issue #342：遊戲殼移住 sysLingoWorld/modShell/——URL 空間不變（/game-engine/*、/content-package/* 照舊），
+// 靜態服務先查 repo 根（devtool 等）、後查 shellRoot；內容寫回一律以 shellRoot 為基準。
+const shellRoot = join(root, "sysLingoWorld", "modShell");
 const rootPrefix = root.endsWith(sep) ? root : `${root}${sep}`;
+const shellPrefix = shellRoot.endsWith(sep) ? shellRoot : `${shellRoot}${sep}`;
 const port = Number(process.env.PORT || 4174);
 
 const mimeTypes = {
@@ -28,11 +32,19 @@ async function serveStatic(request, response) {
   const url = new URL(request.url, `http://${request.headers.host}`);
   const pathname = decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname);
   const normalized = normalize(pathname).replace(/^[/\\]+/, "").replace(/^(\.\.[/\\])+/, "");
-  const filePath = join(root, normalized);
-  if (filePath !== root && !filePath.startsWith(rootPrefix)) {
+  // 兩段式解析：repo 根（devtool/、docs/…）優先，未命中回退 shellRoot（index.html、game-engine/、content-*、styles/）。
+  const rootCandidate = join(root, normalized);
+  const shellCandidate = join(shellRoot, normalized);
+  if ((rootCandidate !== root && !rootCandidate.startsWith(rootPrefix)) || (shellCandidate !== shellRoot && !shellCandidate.startsWith(shellPrefix))) {
     response.writeHead(403);
     response.end("Forbidden");
     return;
+  }
+  let filePath = rootCandidate;
+  try {
+    await stat(rootCandidate);
+  } catch {
+    filePath = shellCandidate;
   }
   try {
     const content = await readFile(filePath);
@@ -75,7 +87,7 @@ async function handleApplyWardrobe(request, response) {
     if (typeof payload.rules === "string") {
       const target = APPLY_TARGETS.rules;
       const block = validatedBlock(target.name, payload.rules);
-      const filePath = join(root, target.file);
+      const filePath = join(shellRoot, target.file);
       const original = await readFile(filePath, "utf8");
       const eol = original.includes("\r\n") ? "\r\n" : "\n";
       const updated = replaceExportBlock(original, target.name, block).replace(/\r\n/g, "\n").replace(/\n/g, eol);
@@ -125,7 +137,7 @@ function safeName(value, label) {
   if (typeof value !== "string" || !/^[a-zA-Z0-9_-]+$/.test(value)) throw new Error(`bad ${label}`);
   return value;
 }
-function packDir(pack) { return join(root, "content-package", "wardrobe", safeName(pack, "pack")); }
+function packDir(pack) { return join(shellRoot, "content-package", "wardrobe", safeName(pack, "pack")); }
 // issue #267：衣物單品單一事實來源＝素材旁 sidecar；管理工具一律對單一 sidecar 原子操作，寫後重生衍生 index。
 function layersDir(pack) { return join(packDir(pack), "assets", "layers"); }
 function sidecarFile(pack, asset) { return join(layersDir(pack), `${safeName(asset, "asset")}.metadata.json`); }
@@ -307,7 +319,7 @@ async function handleSaveMapPositions(request, response) {
     const { file, positions } = JSON.parse(await readBody(request) || "{}");
     if (!MAP_POSITION_FILES.has(file)) throw new Error("file 不在白名單");
     if (!Array.isArray(positions) || !positions.length) throw new Error("positions required");
-    const filePath = join(root, file);
+    const filePath = join(shellRoot, file);
     const original = await readFile(filePath, "utf8");
     const eol = original.includes("\r\n") ? "\r\n" : "\n";
     let working = original.replace(/\r\n/g, "\n");
@@ -343,7 +355,7 @@ async function handleUploadMap(request, response) {
     if (!m) throw new Error("缺少有效圖檔");
     const buf = Buffer.from(m[1], "base64");
     if (buf.length > 16 * 1024 * 1024) throw new Error("圖檔過大（>16MB）");
-    const outFile = join(root, t.file);
+    const outFile = join(shellRoot, t.file);
     const tmp = join(dirname(outFile), `.upload-map-${Date.now()}.tmp`);
     await writeFile(tmp, buf);
     try {
@@ -373,7 +385,7 @@ async function handleSaveDefaults(request, response) {
       if (!outfitSlots.includes(slot)) throw new Error(`未知 slot ${slot}`);
       if (!isItemId(val)) throw new Error(`slot ${slot} 值非法`);
     }
-    const filePath = join(root, DEFAULTS_FILE);
+    const filePath = join(shellRoot, DEFAULTS_FILE);
     const original = await readFile(filePath, "utf8");
     const eol = original.includes("\r\n") ? "\r\n" : "\n";
     const ownedLiteral = `owned: [${[...new Set(owned)].map((id) => JSON.stringify(id)).join(", ")}]`;
@@ -408,7 +420,7 @@ async function handleSaveSceneDialog(request, response) {
     const constName = bankConstName(area, kind);
     const block = serializeBank(constName, bank, rewardVarFor(kind));
     const file = `content-package/areas/${area}/manifest.js`;
-    const filePath = join(root, file);
+    const filePath = join(shellRoot, file);
     const original = await readFile(filePath, "utf8");
     const eol = original.includes("\r\n") ? "\r\n" : "\n"; // 保留原檔 EOL，避免 autocrlf 標記整檔已變更
     const re = new RegExp(`const ${constName} = Object\\.freeze\\(\\{[\\s\\S]*?\\n\\}\\);`);

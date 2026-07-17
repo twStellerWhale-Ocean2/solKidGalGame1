@@ -83,7 +83,7 @@ try {
   console.log("== 1. helm install（秘密以 values 檔供給、用後即刪）==");
   secretsFile = path.join(os.tmpdir(), `lume2e-secrets-${suffix}.yaml`);
   fs.writeFileSync(secretsFile, `secrets:\n  adminUsername: "${adminUser}"\n  adminPassword: "${adminPassword}"\n`);
-  run("helm", ["install", RELEASE, "deploy/helm", "-n", NS, "--create-namespace", "-f", secretsFile,
+  run("helm", ["install", RELEASE, "sysLingoWorld/deploy/helm", "-n", NS, "--create-namespace", "-f", secretsFile,
     "--set", `image.repository=${IMAGE}`, "--set", `image.tag=${TAG_A}`, "--set", `service.nodePort=${NODE_PORT}`]);
   fs.unlinkSync(secretsFile); secretsFile = "";
   check("install 後就緒（readyz 200，DB 晚就緒由 init/probe 吸收）", await waitReady("install", httpReady));
@@ -122,7 +122,7 @@ try {
   check("兩張證據截圖已產出", fs.existsSync(path.join(SHOTS, "issue311-01-helm-game-login.png")) && fs.existsSync(path.join(SHOTS, "issue311-02-helm-admin-accounts.png")));
 
   console.log("== 4. helm upgrade（不重供秘密）→ 資料保全 ==");
-  run("helm", ["upgrade", RELEASE, "deploy/helm", "-n", NS,
+  run("helm", ["upgrade", RELEASE, "sysLingoWorld/deploy/helm", "-n", NS,
     "--set", `image.repository=${IMAGE}`, "--set", `image.tag=${TAG_B}`, "--set", `service.nodePort=${NODE_PORT}`]);
   run("kubectl", ["-n", NS, "rollout", "status", `deployment/${RELEASE}-app`, "--timeout=180s"]);
   check("upgrade 後就緒", await waitReady("upgrade", httpReady));
@@ -161,7 +161,7 @@ try {
   check("uninstall 後 PVC 仍在（resource-policy: keep）", pvcOut.includes(`${RELEASE}-db-data`), pvcOut);
   const secretOut = kubectl(["get", "secret", `${RELEASE}-secrets`, "-o", "name"]);
   check("uninstall 後 Secret 仍在（隨資料同留存）", secretOut.includes(`${RELEASE}-secrets`), secretOut);
-  run("helm", ["install", RELEASE, "deploy/helm", "-n", NS,
+  run("helm", ["install", RELEASE, "sysLingoWorld/deploy/helm", "-n", NS,
     "--set", `image.repository=${IMAGE}`, "--set", `image.tag=${TAG_B}`, "--set", `service.nodePort=${NODE_PORT}`]);
   check("重裝（不重供秘密，lookup 沿用）後就緒", await waitReady("reinstall", httpReady));
   const kidAfterReinstall = await loginWithRetry(kidUser, kidPassword);

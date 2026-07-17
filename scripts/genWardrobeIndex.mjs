@@ -9,10 +9,10 @@
 import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { outfitSlots, wardrobeLayerBoundsByType } from "../content-package/wardrobe/_shared/rules.js";
+import { outfitSlots, wardrobeLayerBoundsByType } from "../sysLingoWorld/modShell/content-package/wardrobe/_shared/rules.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const WARDROBE = join(root, "content-package", "wardrobe");
+const WARDROBE = join(root, "sysLingoWorld", "modShell", "content-package", "wardrobe");
 const PACK_ORDER = ["starter", "urban", "castle", "rural", "wild"]; // 沿舊 wardrobeItems 聚合順序
 const LAYER_PACKS = ["castle", "urban", "rural", "wild"];
 const META_SUFFIX = ".metadata.json";
