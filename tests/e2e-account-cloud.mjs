@@ -148,24 +148,35 @@ try {
   await cdp362.send("Network.enable");
   await cdp362.send("Network.emulateNetworkConditions", { offline: false, latency: 150, downloadThroughput: 180 * 1024, uploadThroughput: 84 * 1024 }); // Fast-3G 近似
   const spot = pageA.locator("#castleStage .map-marker.hotspot").nth(1);
-  const sceneEntries = () => pageA.evaluate(() => performance.getEntriesByType("resource").filter((e) => /scenes\/.*-1024\.webp/.test(e.name)).length);
+  // 量測與斷言一律**綁定目標 URL**（非「第一筆場景圖」）：位置式取用今日碰巧正確（實測初繪不預抓任何場景圖），
+  // 但哪天鄰近半徑一改、初繪就預抓，位置式會默默量錯資源、且 waitedMs===0 會恆綠＝假守門（Q3 三審 B3）。
+  const TARGET362 = "king-hall-1024\.webp";
+  const seenBefore362 = await pageA.evaluate((re) => performance.getEntriesByType("resource").some((x) => new RegExp(re).test(x.name)), TARGET362);
+  check("#362 量測前提：目標場景圖於聚焦前未下載", seenBefore362 === false, String(seenBefore362));
+  const focusAt362 = await pageA.evaluate(() => performance.now());
   await spot.click(); // 第一次點＝聚焦（預抓啟動）
-  await pageA.waitForFunction(() => performance.getEntriesByType("resource").some((e) => /scenes\/.*-1024\.webp/.test(e.name) && e.responseEnd > 0), { timeout: 60000 });
-  check("#362 聚焦即預抓場景圖（進場前已下載）", (await sceneEntries()) > 0);
+  await pageA.waitForFunction((re) => performance.getEntriesByType("resource").some((x) => new RegExp(re).test(x.name) && x.responseEnd > 0), TARGET362, { timeout: 60000 });
   check("#362 聚焦不進場（互動模型未變）", !(await pageA.$(".adv-modal.show")));
   const enterAt362 = await pageA.evaluate(() => performance.now());
   await spot.click(); // 第二次點＝進場
   await pageA.waitForFunction(() => Boolean(document.querySelector(".adv-modal.show")), { timeout: 30000 });
   await pageA.waitForTimeout(900);
   check("#362 進場面板正常渲染（對話選項在）", (await pageA.$$("#choiceList button")).length > 0);
-  await pageA.screenshot({ path: path.join(SHOTS, "issue362-01-scene-prefetched.png") }); // GATE ＜2.5節＞ 證據：**modal 開啟中**之場景畫面
-  const perf362 = await pageA.evaluate((t0) => {
-    const e = performance.getEntriesByType("resource").filter((x) => /scenes\/.*-1024\.webp/.test(x.name))[0];
-    return e ? { downloadMs: Math.round(e.duration), waitedMs: Math.round(Math.max(0, e.responseEnd - t0)), bytes: e.encodedBodySize } : null;
-  }, enterAt362);
+  const perf362 = await pageA.evaluate(([re, t0, tFocus]) => {
+    const e = performance.getEntriesByType("resource").find((x) => new RegExp(re).test(x.name));
+    return e ? {
+      bytes: e.encodedBodySize,
+      downloadMs: Math.round(e.duration),          // 無預抓時玩家按下去還要乾等的時間（修前等效）
+      waitedMs: Math.round(Math.max(0, e.responseEnd - t0)), // 有預抓時實際等待
+      startedAfterFocus: e.startTime >= tFocus     // 證明是「聚焦」觸發的、非既有快取矇到
+    } : null;
+  }, [TARGET362, enterAt362, focusAt362]);
   console.log(`  [#362 量測 @Fast-3G] 場景圖 ${perf362?.bytes} bytes：無預抓時玩家須乾等 ≈${perf362?.downloadMs} ms；有預抓時實際等待 ${perf362?.waitedMs} ms`);
-  check("#362 預抓確有提前量（進場時圖已就緒）", perf362 !== null && perf362.waitedMs === 0, JSON.stringify(perf362));
-  check("#362 量得無預抓之等待成本（供 issue 前後對照）", (perf362?.downloadMs || 0) > 0, JSON.stringify(perf362));
+  check("#362 預抓由聚焦觸發（非既有快取矇到）", perf362?.startedAfterFocus === true, JSON.stringify(perf362));
+  check("#362 預抓確有提前量（進場時圖已就緒）", perf362?.waitedMs === 0, JSON.stringify(perf362));
+  check("#362 節流下確有下載成本（對照基準有效）", (perf362?.downloadMs || 0) > 1000, JSON.stringify(perf362));
+  await pageA.waitForFunction((re) => performance.getEntriesByType("resource").some((x) => /king-rowan|npc/i.test(x.name) && x.responseEnd > 0) || true, TARGET362).catch(() => {});
+  await pageA.screenshot({ path: path.join(SHOTS, "issue362-01-scene-prefetched.png") }); // GATE ＜2.5節＞ 證據：modal 開啟中之場景畫面
   await cdp362.send("Network.emulateNetworkConditions", { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 }); // 解除節流，不影響後續案例
   await pageA.locator("#advActionFooter button").last().click({ timeout: 5000 }).catch(() => {});
   await pageA.keyboard.press("Escape").catch(() => {});

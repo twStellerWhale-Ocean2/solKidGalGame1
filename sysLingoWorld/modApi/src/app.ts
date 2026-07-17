@@ -368,8 +368,9 @@ export function createApp(options: AppOptions) {
     // **勿誤解**：同一分頁內重進同一場景本由瀏覽器記憶體快取接住、與本標頭無關——#362 節流實測
     // （Fast-3G）證實修前修後皆 0 筆請求、差 10 ms；玩家原始抱怨「進場景要等圖」之主解方為預抓
     // （scene/scene-art.js 之 prefetchSceneArt），本標頭為輔。
-    // `stale-while-revalidate`：新鮮期內零網路；過期後**先用快取即時畫、背景再更新**，故升級後最多
-    // 一次舊圖、下次即新——畫面永不阻塞等網路。
+    // `stale-while-revalidate`：新鮮期內零網路；過期後**先用快取即時畫、背景再更新**——畫面永不阻塞等網路。
+    // 註：升級**不會**出現舊圖——本專案圖像 URL 全數帶版號（`?v=…`），換圖＝換 URL＝零陳舊；
+    // SWR 只是讓「同一張未改動的圖」在 7 天後仍免於阻塞式重驗（Q3 三審 F10：舊註解殘留之「最多一次舊圖」已不適用）。
     // **不含 JS／CSS／HTML**（content-package 內尚有 manifest.js／rules.js 等程式碼；game-engine／styles
     // 為引擎本體）：那些一律維持 revalidate，否則升級後會出現「新引擎配舊資料／舊殼」之版本錯配。
     // max-age 取 7 天（非 10 分鐘）：**本專案之圖像 URL 全數帶版號**（`?v=…`，見 areas/*/manifest.js、
