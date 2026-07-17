@@ -1,8 +1,16 @@
 {
-  "version": "0.66.1",
-  "date": "2026-07-16",
+  "version": "0.66.2",
+  "date": "2026-07-17",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.66.2",
+      "date": "2026-07-17",
+      "type": "fix",
+      "playerVisible": false,
+      "issue": "#343",
+      "summaryZh": "發行 image 補 OCI 標準標籤（deploy-only、產品行為零變更）：org.opencontainers.image.source 指向本 repo——GHCR package 自此自動關聯 repo（package 頁顯示來源與 README、權限沿用），並補 description 與 licenses（PolyForm-Noncommercial-1.0.0）標籤"
+    },
     {
       "version": "0.66.1",
       "date": "2026-07-16",
