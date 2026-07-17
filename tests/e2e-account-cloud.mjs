@@ -75,7 +75,8 @@ try {
   // ── issue #340：Profile color 變更 → Background pattern chips 即時連動（花紋選擇保留、只換色） ──
   await pageA.click('.background-pattern-swatch[data-pattern]'); // 先選一個非 none 花紋
   const beforeColor = await pageA.evaluate(() => document.querySelector(".background-pattern-swatch").style.getPropertyValue("--profile-color"));
-  await pageA.click(".profile-color-swatch:nth-child(3)"); // 換一個非預設色
+  // 挑「非目前選中」的色票：初始色隨機（randomizeTheme），固定第 n 格有 1/8 撞色＝假紅（Q3 審查抓出）。
+  await pageA.click('.profile-color-swatch:not([aria-checked="true"])');
   const sync = await pageA.evaluate(() => {
     const chosen = document.querySelector('.profile-color-swatch[aria-checked="true"]').style.getPropertyValue("--profile-color");
     const chips = [...document.querySelectorAll(".background-pattern-swatch")].map((el) => el.style.getPropertyValue("--profile-color"));
