@@ -1,8 +1,16 @@
 {
-  "version": "0.67.0",
+  "version": "0.67.1",
   "date": "2026-07-17",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.67.1",
+      "date": "2026-07-17",
+      "type": "fix",
+      "playerVisible": true,
+      "issue": "#362",
+      "summaryZh": "進場景不再乾等圖（手機尤其明顯）：走近地點時就先把該場景的圖與角色圖偷偷抓好，按下去即開——不再是按了才開始下載（低優先級抓取，不跟你當下正在看的畫面搶網路）；另外把圖片改為可長期快取，重新整理或隔天再開時，看過的圖不必再回伺服器確認一次"
+    },
     {
       "version": "0.67.0",
       "date": "2026-07-17",

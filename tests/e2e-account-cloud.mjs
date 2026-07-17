@@ -49,6 +49,21 @@ const browser = await chromium.launch({ headless: true, channel: "chrome" });
 try {
   check("sysApi healthy", await waitHealthy());
 
+  // ── issue #362：靜態資產傳輸層（圖像可快取、程式碼不得長效——升級後不得新引擎配舊資料）──
+  {
+    const cc = async (p) => (await fetch(`${BASE}${p}`)).headers.get("cache-control") || "";
+    // 判準：max-age 非 0 即視為「長效」——`\d{2,}` 會漏掉 max-age=5 之回歸（審查 F3）。
+    const cachedLong = (v) => /max-age=([1-9]\d*)/.test(v);
+    for (const [label, p] of [["場景圖", "/content-package/areas/castle/assets/scenes/king-hall-1024.webp"], ["UI 圖（content-base）", "/content-base/ui/diary-book.webp"]]) {
+      const v = await cc(p);
+      check(`#362 ${label}可快取（max-age＋stale-while-revalidate）`, cachedLong(v) && /stale-while-revalidate/.test(v), `${p} → ${v}`);
+    }
+    for (const [label, p] of [["content-package 之 JS", "/content-package/wardrobe/manifest.js"], ["引擎 JS", "/game-engine/main.js"], ["CSS", "/styles/adv.css"], ["入口 index.html（走 sendFile 另一路徑）", "/index.html"]]) {
+      const v = await cc(p);
+      check(`#362 ${label} 不得長效快取（升級即生效）`, !cachedLong(v), `${p} → ${v}`);
+    }
+  }
+
   // ── 裝置 A：首次進入 → 空狀態註冊 → 選角 → 遊玩 → 雲端保存 ──
   const deviceA = await browser.newContext({ viewport: { width: 412, height: 880 } });
   const pageA = await deviceA.newPage();
@@ -123,6 +138,29 @@ try {
     side: getComputedStyle(document.querySelector("#sideProfileAvatar")).visibility
   }));
   check("princess appears after Start (#352)", stageAfter.flag === false && stageAfter.side === "visible", JSON.stringify(stageAfter));
+
+  // ── issue #362：場景圖預抓（互動模型：第一次點聚焦、第二次點進場）──
+  // 量測法（Q3 二審 M5 建議）：節流至 Fast-3G 後於**同一 run、同一頁**讀 resource timing——
+  //   `duration` ＝ 該圖在此網速之實際下載耗時 ＝ **沒有預抓時，玩家按下去還要乾等的時間**（修前等效）；
+  //   `responseEnd - 進場時刻` ＝ 修後玩家實際等待（預抓已完成則 ≤0）。免 reload、免第二台 server。
+  await pageA.waitForSelector("#castleStage .map-marker.hotspot", { timeout: 15000 });
+  const cdp362 = await deviceA.newCDPSession(pageA);
+  await cdp362.send("Network.enable");
+  await cdp362.send("Network.emulateNetworkConditions", { offline: false, latency: 150, downloadThroughput: 180 * 1024, uploadThroughput: 84 * 1024 }); // Fast-3G 近似
+  const spot = pageA.locator("#castleStage .map-marker.hotspot").nth(1);
+  // 量測與斷言一律**綁定目標 URL**（非「第一筆場景圖」）：位置式取用今日碰巧正確（實測初繪不預抓任何場景圖），
+  // 但哪天鄰近半徑一改、初繪就預抓，位置式會默默量錯資源、且 waitedMs===0 會恆綠＝假守門（Q3 三審 B3）。
+  const TARGET362 = "king-hall-1024\\.webp"; // 字串→RegExp：`\\.` 才是跳脫的點（單一 `\.` 在字串中會塌成任意字元，Q3 四審 N2）
+  const seenBefore362 = await pageA.evaluate((re) => performance.getEntriesByType("resource").some((x) => new RegExp(re).test(x.name)), TARGET362);
+  check("#362 量測前提：目標場景圖於聚焦前未下載", seenBefore362 === false, String(seenBefore362));
+  const focusAt362 = await pageA.evaluate(() => performance.now());
+  await spot.click(); // 第一次點＝聚焦（預抓啟動）
+  await pageA.screenshot({ path: path.join(SHOTS, "issue362-01-scene-prefetched.png") }); // GATE ＜2.5節＞ 證據：modal 開啟中之場景畫面
+  await cdp362.send("Network.emulateNetworkConditions", { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 }); // 解除節流，不影響後續案例
+  await pageA.locator("#advActionFooter button").last().click({ timeout: 5000 }).catch(() => {});
+  await pageA.keyboard.press("Escape").catch(() => {});
+  await pageA.waitForFunction(() => !document.querySelector(".adv-modal.show"), { timeout: 10000 });
+
   // 遊玩：以測試 hook 改變狀態並保存（等值於答題得幣後 persist）
   await pageA.evaluate(() => window.LuminaraTest.setCoins(777));
   await pageA.waitForTimeout(2600); // 節流窗口

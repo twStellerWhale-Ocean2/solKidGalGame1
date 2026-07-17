@@ -29,6 +29,7 @@ import { createMapActorRuntime } from "./actors.js";
 import { createKeyboardWalkController } from "./keyboard-walk.js";
 import { createAreaMapViewportController } from "./viewport.js";
 import { cssAssetUrl, domAssetUrl } from "../core/asset-url.js";
+import { prefetchSceneArt } from "../scene/scene-art.js"; // #362：聚焦即預抓場景圖
 import { elements, session } from "../core/session.js";
 import { activeWorldDestination, openWorldDestination, worldDestinationForArea } from "./world-map.js";
 import { refreshAreaMapPositions } from "./map-gestures.js";
@@ -253,6 +254,7 @@ export function renderCastleMap() {
 
 export function focusCastleHotspot(hotspotId, rerender = true) {
   session.activeCastleHotspot = castleHotspots.find((hotspot) => hotspot.id === hotspotId) || castleHotspots[0];
+  prefetchSceneArt(sceneConfigFor(session.activeCastleHotspot), { assetUrl: domAssetUrl }); // #362
   const node = castleMapNodes[session.activeCastleHotspot?.node];
   if (node) {
     session.state.playerNode = node.id;
@@ -311,6 +313,7 @@ export function interactCastleHotspot() {
 
 export function updateNearbyCastleHotspot() {
   session.activeCastleHotspot = nearbyCastleHotspot();
+  if (session.activeCastleHotspot) prefetchSceneArt(sceneConfigFor(session.activeCastleHotspot), { assetUrl: domAssetUrl }); // #362
   updateCastleHotspotFocus();
 }
 
@@ -440,6 +443,7 @@ export function focusTravelHotspot(hotspotId, areaId = activeTravelMapArea()) {
   const hotspot = locationsForArea(areaId).find((item) => item.id === hotspotId);
   const node = nodeMapForArea(areaId)[hotspot?.node];
   if (!hotspot || !node) return;
+  prefetchSceneArt(sceneConfigFor(hotspot), { assetUrl: domAssetUrl }); // #362：四區一致（非僅城堡）
   session.state.area = areaId;
   session.state.playerNode = node.id;
   session.state.player = { x: node.x, y: node.y };
@@ -578,6 +582,7 @@ export function travelActionLabel(hotspot) {
 
 export function updateNearbyHotspot() {
   session.activeHotspot = nearbyHotspot();
+  if (session.activeHotspot) prefetchSceneArt(sceneConfigFor(session.activeHotspot), { assetUrl: domAssetUrl }); // #362
   updateHotspotFocus();
 }
 

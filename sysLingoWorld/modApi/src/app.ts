@@ -362,11 +362,34 @@ export function createApp(options: AppOptions) {
     app.get(["/", "/index.html"], (_req, res) => res.sendFile(indexFile, (error) => {
       if (error) fail(res, 404, "not-found", "Game shell not found.");
     }));
+    // issue #362：**只對圖像資產**放寬快取——express.static 預設 `Cache-Control: max-age=0`，
+    // 使圖片即使已在磁碟快取，**每個新 document** 仍須先發條件請求驗證（拿 304 才敢用）＝每張圖多一趟 RTT。
+    // 效益落點＝**跨頁載入**（孩子隔天再開遊戲／重新整理＝新 document，此時每張場景圖省一趟 RTT）。
+    // **勿誤解**：同一分頁內重進同一場景本由瀏覽器記憶體快取接住、與本標頭無關——#362 節流實測
+    // （Fast-3G）證實修前修後皆 0 筆請求、差 10 ms；玩家原始抱怨「進場景要等圖」之主解方為預抓
+    // （scene/scene-art.js 之 prefetchSceneArt），本標頭為輔。
+    // `stale-while-revalidate`：新鮮期內零網路；過期後**先用快取即時畫、背景再更新**——畫面永不阻塞等網路。
+    // 註：升級**不會**出現舊圖——本專案圖像 URL 全數帶版號（`?v=…`），換圖＝換 URL＝零陳舊；
+    // SWR 只是讓「同一張未改動的圖」在 7 天後仍免於阻塞式重驗（Q3 三審 F10：舊註解殘留之「最多一次舊圖」已不適用）。
+    // **不含 JS／CSS／HTML**（content-package 內尚有 manifest.js／rules.js 等程式碼；game-engine／styles
+    // 為引擎本體）：那些一律維持 revalidate，否則升級後會出現「新引擎配舊資料／舊殼」之版本錯配。
+    // max-age 取 7 天（非 10 分鐘）：**本專案之圖像 URL 全數帶版號**（`?v=…`，見 areas/*/manifest.js、
+    // characters/manifest.js、paper-doll-assets.js、mobile-*.css），換圖必改版號＝新 URL，故長新鮮期無陳舊風險。
+    // 反之壓成 600s 會讓「單次遊玩上限 20 分」內第 11 分起症狀復發——Safari／WebKit 未實作
+    // stale-while-revalidate（iOS 全瀏覽器皆 WebKit），忽略 SWR 後即退回阻塞式條件請求（Q3 審查 M3/M4）。
+    // SWR 同設 7 天：支援之瀏覽器於過期後仍先用快取即時繪、背景更新，畫面永不阻塞。
+    const IMAGE_ASSET = /\.(webp|png|jpe?g|gif|svg|ico)$/i;
+    const IMAGE_CACHE_CONTROL = "public, max-age=604800, stale-while-revalidate=604800";
+    const staticOptions = {
+      setHeaders: (res: Response, filePath: string) => {
+        if (IMAGE_ASSET.test(filePath)) res.setHeader("Cache-Control", IMAGE_CACHE_CONTROL);
+      }
+    };
     GAME_SHELL_DIRS.forEach((dir) => {
-      app.use(`/${dir}`, express.static(path.resolve(staticRoot, dir)));
+      app.use(`/${dir}`, express.static(path.resolve(staticRoot, dir), staticOptions));
     });
     // `/admin/` 線上管理頁（spec#25；頁面本身可公開取得、資料一律經受 admin 保護之 `/api/admin/*`）。
-    app.use("/admin", express.static(adminRoot ? path.resolve(adminRoot) : path.resolve(staticRoot, "admin-console")));
+    app.use("/admin", express.static(adminRoot ? path.resolve(adminRoot) : path.resolve(staticRoot, "admin-console"), staticOptions)); // #362 審查 F2：共用同一快取政策（今日無圖、防日後不一致）
     app.use((_req, res) => fail(res, 404, "not-found", "Not served."));
   }
 
