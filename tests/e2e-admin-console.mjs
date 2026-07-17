@@ -158,8 +158,7 @@ try {
   const kid = await kidCtx.newPage();
   await kid.goto(`${BASE}/`, { waitUntil: "networkidle" });
   await kid.waitForSelector("#accountSelect.show", { timeout: 15000 });
-  await kid.click("text=Other account");
-  await kid.waitForSelector("#loginOtherUsername", { timeout: 8000 });
+  await kid.waitForSelector("#loginOtherUsername", { timeout: 8000 }); // #357：空狀態預設即登入表單（不再需要點 Other account）
   await kid.fill("#loginOtherUsername", kidUser);
   await kid.fill("#loginOtherPassword", "fresh6678");
   await kid.click(".login-enter");

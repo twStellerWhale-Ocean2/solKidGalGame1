@@ -88,7 +88,9 @@ try {
   const pageErrors = [];
   page.on("pageerror", (e) => pageErrors.push(e.message));
   await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
-  await page.waitForSelector("#registerUsername", { timeout: 15000 }); // 空狀態直落註冊表單
+  await page.waitForSelector("#loginOtherUsername", { timeout: 15000 }); // #357：空狀態預設登入表單
+  await page.click(".login-link"); // → 建立新帳號（次要出口）
+  await page.waitForSelector("#registerUsername", { timeout: 10000 });
   await page.fill("#registerUsername", "123456"); // 純數字（無字母）：被帳號規則擋（#330 後數字開頭已合法；此處驗回饋）
   await page.fill("#registerPassword", "secret66");
   await page.click(".login-enter"); // Create and play
@@ -136,7 +138,9 @@ try {
   const page2 = await phone2.newPage();
   page2.on("pageerror", (e) => pageErrors.push(e.message));
   await page2.goto(`${BASE}/`, { waitUntil: "networkidle" });
-  await page2.waitForSelector("#registerUsername", { timeout: 15000 });
+  await page2.waitForSelector("#loginOtherUsername", { timeout: 15000 }); // #357
+  await page2.click(".login-link");
+  await page2.waitForSelector("#registerUsername", { timeout: 10000 });
   await page2.fill("#registerUsername", taken);
   await page2.fill("#registerPassword", "secret66");
   await page2.click(".login-enter");

@@ -57,8 +57,18 @@ try {
   await pageA.goto(`${BASE}/`, { waitUntil: "networkidle" });
   await pageA.waitForSelector("#accountSelect.show", { timeout: 15000 });
   check("first visit shows sign-in gate", await pageA.isVisible("#accountSelect.show"));
-  // 空狀態：無帳號卡 → 直接呈現建立新帳號表單（[hmiIntf自訂登入註冊頁] (a)）
+  // 空狀態（#357）：無帳號卡 → 預設**登入表單**（帳號存伺服器、新裝置的既有玩家先能登入）；註冊為次要連結。
+  await pageA.waitForSelector("#loginOtherUsername", { timeout: 10000 });
+  check("#357 新裝置空狀態預設為登入表單（非註冊）", !(await pageA.$("#registerUsername")));
+  check("#357 空狀態無 Back 鈕（root auth 無上一步）", await pageA.evaluate(() => ![...document.querySelectorAll("#accountList button")].some((b) => b.textContent.trim() === "Back")));
+  check("#358 登入卡顯示產品名＋版本（值＝buildInfo，無第二份）", await pageA.evaluate(async () => {
+    const v = (await import("/game-engine/build/version.js")).buildInfo.version;
+    return /Luminara/.test(document.querySelector("#accountSelectTitle")?.textContent || "")
+      && (document.querySelector(".login-version")?.textContent || "").includes(v);
+  }));
+  await pageA.click(".login-link"); // #357 次要出口：First time here? Create an account
   await pageA.waitForSelector("#registerUsername", { timeout: 10000 });
+  check("#359 註冊表單不再前置攤開帳密規則長句", await pageA.evaluate(() => !/3-16 lowercase/.test(document.querySelector(".login-form")?.textContent || "")));
   await pageA.screenshot({ path: path.join(SHOTS, "issue309-01-register-empty-state.png") });
   await pageA.fill("#registerUsername", username);
   await pageA.fill("#registerPassword", password);
@@ -124,9 +134,9 @@ try {
   const deviceB = await browser.newContext({ viewport: { width: 412, height: 880 } });
   const pageB = await deviceB.newPage();
   await pageB.goto(`${BASE}/`, { waitUntil: "networkidle" });
-  await pageB.waitForSelector("#registerUsername", { timeout: 15000 }); // 空狀態（此裝置無帳號卡）
-  await pageB.click(".login-actions .soft-button"); // Other account（空狀態亦提供）
-  await pageB.waitForSelector("#loginOtherUsername", { timeout: 10000 });
+  await pageB.waitForSelector("#loginOtherUsername", { timeout: 15000 }); // #357：空狀態預設即登入表單（毋須再點 Other account）
+
+
   await pageB.fill("#loginOtherUsername", username);
   await pageB.fill("#loginOtherPassword", "wrong66");
   await pageB.click(".login-enter");
