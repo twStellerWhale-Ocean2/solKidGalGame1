@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（`node scripts/genVersion.mjs`）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更，遊戲 About 只投影 playerVisible 筆。
 
+## 0.66.2 — 2026-07-17 _(internal)_
+- fix (#343): 發行 image 補 OCI 標準標籤（deploy-only、產品行為零變更）：org.opencontainers.image.source 指向本 repo——GHCR package 自此自動關聯 repo（package 頁顯示來源與 README、權限沿用），並補 description 與 licenses（PolyForm-Noncommercial-1.0.0）標籤
+
 ## 0.66.1 — 2026-07-16 _(internal)_
 - test (#338): 發車測試 fixture 修正（test-only、產品行為零變更）：helm e2e 之玩家密碼測試值改合 #330 新規（8 碼含數字小寫）——v0.66.0 首班發車測試 422 假敗即此因，發車環硬 gate 攔下後修正、本批改發 v0.66.1
 
