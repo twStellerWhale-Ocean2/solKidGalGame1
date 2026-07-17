@@ -68,8 +68,9 @@ try {
   }));
   await pageA.click(".login-link"); // #357 次要出口：First time here? Create an account
   await pageA.waitForSelector("#registerUsername", { timeout: 10000 });
+  await pageA.screenshot({ path: path.join(SHOTS, "issue357-02-register-secondary.png") }); // GATE ＜2.5節＞ 證據（次要出口後之註冊表單）
   check("#359 註冊表單不再前置攤開帳密規則長句", await pageA.evaluate(() => !/3-16 lowercase/.test(document.querySelector(".login-form")?.textContent || "")));
-  await pageA.screenshot({ path: path.join(SHOTS, "issue309-01-register-empty-state.png") });
+  await pageA.screenshot({ path: path.join(SHOTS, "issue357-01-signin-default.png") }); // GATE ＜2.5節＞ 證據（#357 空狀態＝登入表單）
   await pageA.fill("#registerUsername", username);
   await pageA.fill("#registerPassword", password);
   // 顯示密碼切換
