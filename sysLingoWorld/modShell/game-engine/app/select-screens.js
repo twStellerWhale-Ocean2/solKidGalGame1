@@ -66,6 +66,9 @@ export function openCharacterSelect({ forced = false, cancelable = false } = {})
   elements.characterSelect.classList.add("show");
   elements.characterSelect.setAttribute("aria-hidden", "false");
   document.body.classList.add("character-select-open");
+  // #352：首次初始設定（first-run）期間，背景畫面之公主立繪（側欄頭胸照、地圖棋子）留空——
+  // 玩家還沒選，預設公主不先登場；按 Start 確認後（closeCharacterSelect）即現身。
+  document.body.classList.toggle("first-run-select", forced && !cancelable);
   setTimeout(() => elements.characterSelectCard?.focus({ preventScroll: true }), 0);
 }
 
@@ -73,6 +76,7 @@ export function closeCharacterSelect() {
   elements.characterSelect.classList.remove("show");
   elements.characterSelect.setAttribute("aria-hidden", "true");
   document.body.classList.remove("character-select-open");
+  document.body.classList.remove("first-run-select"); // #352：確認（或關閉）即恢復立繪
 }
 
 export function buildCharacterCards() {

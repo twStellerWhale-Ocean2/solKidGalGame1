@@ -1,8 +1,16 @@
 {
-  "version": "0.66.7",
+  "version": "0.66.8",
   "date": "2026-07-17",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.66.8",
+      "date": "2026-07-17",
+      "type": "fix",
+      "playerVisible": true,
+      "issue": "#352",
+      "summaryZh": "首次初始設定（選公主／顏色／花紋）期間，背景畫面不再先出現預設公主：側欄頭胸照與地圖上的公主棋子留空，按 Start 確認後所選公主才登場；選角卡內三位公主預覽照常"
+    },
     {
       "version": "0.66.7",
       "date": "2026-07-17",
