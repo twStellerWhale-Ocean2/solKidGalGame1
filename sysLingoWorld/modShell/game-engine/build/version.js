@@ -4,6 +4,7 @@
 export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
+  { version: "0.78.0", buildDateTime: "2026-07-18", summaryZh: "登入畫面大幅簡化（兩表單登入動線 Increment 4，承 #389）：登入頁只剩「帳號＋密碼」與「建立新帳號」，移除多帳號卡、Remove card 與逐卡密碼；登入一次就保持登入，之後開遊戲直接到選角色頁。遊戲內 ⟳ 按鈕改名「Switch princess」＝回選角色頁換公主；設定選單裡的公主切換清單與登出按鈕也一併移到選角色頁（單一路徑，不再兩套）" },
   { version: "0.77.0", buildDateTime: "2026-07-18", summaryZh: "選角色頁逐角色「檢視資訊」與「刪除」（兩表單登入動線 Increment 3，承 #389）：每位公主旁新增 ⓘ（看名字、金幣、衣櫃、單字、日記、徽章與是否設密碼）與 ×（刪除——設密碼的要輸入正確密碼，沒設的要按兩段確認；最後一位公主不能刪）。刪掉一位不影響其他公主的進度" },
   { version: "0.76.0", buildDateTime: "2026-07-18", summaryZh: "角色密碼（選配，兩表單登入動線 Increment 2，承 #389）：新增公主時可以幫她設一個小密碼（留空＝不設）；設了密碼的公主，在選角色頁要輸入正確密碼才能進入遊戲，避免家裡其他小朋友偷玩她的進度。密碼會跟著存檔備份一起保留" },
   { version: "0.75.0", buildDateTime: "2026-07-18", summaryZh: "新增「選角色頁」（兩表單登入動線 Increment 1，承 #389）：登入或自動續玩後先到「Who is playing?」選角色頁——上方顯示帳號與遊玩狀態、中間列出這個帳號的所有公主（點一下就進入遊戲）、下方可新增公主；遊戲內⟳改為回到選角色頁換人。裝置記得登入狀態：開啟遊戲免重打密碼直接到選角色頁" },
@@ -63,8 +64,8 @@ export const versionHistory = [
 ];
 
 export const buildInfo = {
-  version: "0.77.0",
+  version: "0.78.0",
   buildDate: "2026-07-18",
   buildDateTime: "2026-07-18",
-  issues: ["#392"]
+  issues: ["#393"]
 };

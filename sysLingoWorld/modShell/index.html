@@ -25,7 +25,8 @@
           </div>
           <div class="info-actions">
             <button class="info-icon-button" id="systemMenuButton" type="button" title="Menu &amp; Settings" aria-label="Open Lumi Diary and Settings" aria-controls="systemMenu" aria-haspopup="dialog"><span aria-hidden="true">⚙</span></button>
-            <button class="info-icon-button" id="switchPlayerQuickButton" type="button" title="Switch player" aria-label="Switch player"><span aria-hidden="true">⟳</span></button>
+            <!-- #393 兩表單 canon：⟳＝回選角色頁換公主（角色層單一切換路徑），非帳號切換。 -->
+            <button class="info-icon-button" id="switchPlayerQuickButton" type="button" title="Switch princess" aria-label="Switch princess"><span aria-hidden="true">⟳</span></button>
           </div>
           <p class="visually-hidden" id="statusMessage" aria-live="polite">Choose a place, help someone, then dress your princess with the reward.</p>
         </aside>
@@ -122,18 +123,13 @@
               <p class="settings-account-line" id="settingsAccountLine" hidden></p>
               <div class="settings-actions">
                 <button class="soft-button" id="speakToggleButton" type="button">Voice: On</button>
-                <!-- #371：角色/造型 與 帳號/玩家 動作分組正名，消除與帳號切換/登出混用之困惑（1 帳號＝1 公主，spec#5）。 -->
-                <h3 class="settings-group-title">Your princesses</h3>
-                <!-- #378：同帳號多角色 roster——點卡切換（非破壞，各自存檔）；Add 新增、Change 改當前造型。 -->
-                <div class="character-roster" id="characterRoster" role="list" aria-label="Your princesses"></div>
+                <!-- #371/#393：角色 與 玩家 動作分組；#393 兩表單 canon——切換/新增/刪除/登出一律回選角色頁（單一路徑），設定內只留改造型。 -->
+                <h3 class="settings-group-title">Your princess</h3>
                 <div class="character-roster-actions">
-                  <button class="soft-button" id="addCharacterButton" type="button">Add princess</button>
                   <button class="soft-button" id="changeCharacterButton" type="button">Change this princess&rsquo;s look</button>
-                  <button class="danger-button" id="removeCharacterButton" type="button" hidden>Remove this princess</button>
                 </div>
-                <p class="settings-group-hint" id="changePrincessHint">Add more princesses to this player and tap one to switch — each keeps her own coins and dress-up. To play as a different child, tap &#x27F3; Switch player at the top.</p>
+                <p class="settings-group-hint" id="changePrincessHint">To switch, add, or manage princesses, tap &#x27F3; Switch princess at the top — it takes you back to the character page. Log out lives there too.</p>
                 <h3 class="settings-group-title">This player</h3>
-                <button class="soft-button" id="signOutButton" type="button" hidden>Sign out</button>
                 <button class="danger-button" id="resetButton" type="button">Reset Progress</button>
               </div>
               <form class="play-limit-form" id="playLimitForm" autocomplete="off">
