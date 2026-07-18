@@ -27,9 +27,10 @@ import {
 } from "../state/cloud-session.js";
 import { apiLogout } from "../system/api-client.js";
 import { freshState, loadAccountState, normalizeState } from "../state/game-state.js";
-import { listAccounts } from "../state/accounts.js";
+import { getActiveAccountId, listAccounts } from "../state/accounts.js";
 import { playableCharacterById, normalizeBackgroundPattern } from "../data/game-data.js";
 import { buildInfo } from "../build/version.js"; // #358：登入卡產品識別之版本值（VERSION SSOT 投影，不另存第二份）
+import { BRAND_NAME } from "../data/brand.js"; // #358/#370：玩家端品牌名 SSOT（登入卡與遊戲內 wordmark 共用，不重複字面值）
 import { princessName, profileColorFor, render, renderBustInto } from "../render/hud.js";
 import { changeView } from "./views.js";
 import { clockNow, formatClock, tickPlayClock } from "../state/play-session.js";
@@ -88,7 +89,7 @@ export function openLoginScreen({ mustChoose = true } = {}) {
   const els = overlayEls();
   // #358 產品識別：卡片頂端＝軟體名稱（品牌）；版本以小字置頁尾（見 buildLoginScreen）。
   // #359：副標精簡為一句——規則不前置攤開，改由 placeholder 與 #331 就地錯誤漸進揭露。
-  if (els.title) els.title.textContent = "Luminara";
+  if (els.title) els.title.textContent = BRAND_NAME;
   if (els.intro) els.intro.textContent = "Princess English Adventure — sign in to play. A parent can help type.";
   if (els.newButton) els.newButton.textContent = "Create new account";
   // #358 後標題＝品牌名，對話框 accessible name 由「用途」變「品牌」；以 describedby 指向副標補回用途（Q3 審查 F1）。
@@ -600,7 +601,10 @@ export function buildLoginScreen() {
   if (!els.list) return;
   renderLoginVersion(); // #358
   els.list.innerHTML = "";
-  if (els.back) els.back.hidden = true; // 登入 gate：不可關閉
+  // #372：Back 顯示與否比照本機模式（select-screens buildAccountList L314）——
+  // 由「進行中遊戲」按 ⟳Switch player 進入時（有使用中帳號、非啟動 gate）提供回程；
+  // 啟動登入 gate（mustChoose，或尚無使用中帳號，如 main.js bootstrap）仍不可關閉（#309 不可繞過）。
+  if (els.back) els.back.hidden = session.accountSelectMustChoose || !getActiveAccountId();
   const cached = loadCachedSession();
   const recents = loadRecentAccounts();
   const registrationOpen = serverConfig.registrationOpen;
@@ -665,7 +669,7 @@ function renderLoginVersion() {
     footer.className = "login-version";
     card.appendChild(footer);
   }
-  footer.textContent = `Luminara v${buildInfo.version}`; // 玩家端品牌＋版本（design ＜命名層對照＞：codename solLingoWorld 不外露）
+  footer.textContent = `${BRAND_NAME} v${buildInfo.version}`; // 玩家端品牌＋版本（design ＜命名層對照＞：codename solLingoWorld 不外露）
 }
 
 export function removeRecent(username) {

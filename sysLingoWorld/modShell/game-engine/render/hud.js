@@ -13,6 +13,7 @@ import {
   playableCharacterById
 } from "../data/game-data.js";
 import { buildInfo, copyright, versionHistory } from "../build/version.js";
+import { BRAND_NAME } from "../data/brand.js"; // #370：遊戲畫面品牌 wordmark 之名稱來源（SSOT）
 import { bustMarkupFor, paperDollRenderer, renderPaperDolls } from "../wardrobe/doll.js";
 import { getActiveAccountId, updateAccountMeta } from "../state/accounts.js";
 import { openArea, renderCastleMap, renderMap } from "../map/map-runtime.js";
@@ -108,6 +109,8 @@ export function setExpressions(princess = "normal", npc = "normal") {
 }
 
 export function render() {
+  // #370：遊戲畫面品牌 wordmark（側欄頂端；文字取品牌 SSOT，冪等設定，不重複硬編字面值）。
+  if (elements.appWordmark && elements.appWordmark.textContent !== BRAND_NAME) elements.appWordmark.textContent = BRAND_NAME;
   renderStatus();
   renderIdentity();
   updateProfileColorChrome();

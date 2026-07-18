@@ -342,6 +342,11 @@ body {
     box-shadow: 0 8px 18px rgba(80, 56, 70, 0.16);
   }
 
+  /* issue #370：窄版緊湊 HUD（三欄橫列 grid）無垂直空間容納品牌 wordmark，隱藏之（品牌識別於登入卡與桌機側欄）。 */
+  .info-bar .app-wordmark {
+    display: none;
+  }
+
 .info-bar .info-portrait {
     grid-area: portrait;
     width: 58px;

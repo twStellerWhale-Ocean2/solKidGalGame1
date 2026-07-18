@@ -122,6 +122,16 @@ p {
   font-weight: 700;
 }
 
+/* issue #370：遊戲畫面品牌 wordmark（桌機側欄頂端；窄版緊湊 HUD 於 mobile-shell 隱藏）。 */
+.app-wordmark {
+  margin: 0 0 10px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 1.04rem;
+  letter-spacing: 0.05em;
+  color: var(--rose-dark);
+}
+
 .nav-tabs {
   justify-content: center;
 }

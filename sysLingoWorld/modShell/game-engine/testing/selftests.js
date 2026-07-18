@@ -287,6 +287,24 @@ function runCloudAuthSelfTest(api) {
       }
       document.body.classList.remove("account-select-open");
 
+      // 8b) #372：由「進行中遊戲」按 ⟳Switch player 進入登入畫面（有使用中帳號、非啟動 gate）須提供 Back 回程並可關閉回遊戲；
+      //     啟動登入 gate（無使用中帳號之 bootstrap，如 main.js）仍不可退出（#309 不可繞過）。
+      if (!api.accounts.activeId()) api.accounts.create();
+      const backBtn = document.getElementById("accountBack");
+      cloudAuth.openLoginScreen({ mustChoose: false }); // 模擬 returnToInitialSelect 由遊戲中進入
+      if (!backBtn) errors.push("#372: accountBack 元素缺失");
+      if (backBtn && backBtn.hidden) errors.push("#372: 由遊戲進入登入畫面應顯示 Back（可回程）");
+      api.closeAccountSelect(); // Back 之行為：有使用中帳號、非 mustChoose 時放行關閉、回到遊戲
+      if (document.getElementById("accountSelect")?.classList.contains("show")) errors.push("#372: 有使用中帳號時 Back 未能關閉登入覆蓋層（回不了遊戲）");
+      cloudAuth.openLoginScreen({ mustChoose: true }); // 啟動 gate（bootstrap，無使用中 session 時不可繞過）
+      if (backBtn && !backBtn.hidden) errors.push("#372: 啟動登入 gate 不應顯示 Back（#309 不可繞過）");
+      const gateOverlay = document.getElementById("accountSelect");
+      if (gateOverlay) {
+        gateOverlay.classList.remove("show");
+        gateOverlay.setAttribute("aria-hidden", "true");
+      }
+      document.body.classList.remove("account-select-open");
+
       // 9) 時長政策（issue #310 spec#26／sysCase#16.1）：鎖定→執行值取政策、欄位唯讀、state 不被改寫；PUT 回應解除即回復。
       fake.policies.set("mimi", { locked: true, playMinutes: 10, restMinutes: 20, playMaxMinutes: 12 });
       const lockedLogin = await cloudAuth.login("mimi", "secret66");
@@ -793,6 +811,16 @@ function runAboutSelfTest(api) {
 
   // issue #134 後續：Settings 不得殘留「Switch player」按鈕；按「Change princess」須先關閉系統選單再開選角。
   if (settingsView?.querySelector("#switchAccountButton")) errors.push("Settings 仍殘留 Switch player 按鈕（應移除）");
+  // issue #371：設定選單將「角色/造型」與「帳號」動作分組並澄清一帳號一公主模型，消除與帳號切換/登出混用之困惑。
+  const settingsGroupTitles = [...(settingsView?.querySelectorAll(".settings-group-title") || [])];
+  if (settingsGroupTitles.length < 2) errors.push("#371: 設定選單缺少分組標題（角色/帳號分組，實得 " + settingsGroupTitles.length + "）");
+  const princessHint = settingsView?.querySelector("#changePrincessHint");
+  if (!princessHint) errors.push("#371: 設定選單缺少換公主說明（一帳號一公主導引）");
+  else if (!princessHint.textContent.includes("Switch player")) errors.push("#371: 換公主說明未導引玩家改用 ⟳ Switch player 切換玩家");
+  // issue #370：遊戲畫面（側欄）顯示品牌 wordmark，文字取品牌 SSOT（render 套用，非硬編）。
+  const wordmark = document.getElementById("appWordmark");
+  if (!wordmark) errors.push("#370: 遊戲畫面缺品牌 wordmark 元素");
+  else if (!wordmark.textContent.trim()) errors.push("#370: 品牌 wordmark 文字為空（render 未套用品牌 SSOT）");
   if (!api.accounts?.activeId?.()) api.accounts?.create?.();
   api.openSystemMenu("settings");
   api.openCharacterSelect({ forced: false });

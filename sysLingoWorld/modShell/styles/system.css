@@ -91,8 +91,27 @@
   font-weight: 700;
 }
 
+/* issue #371：設定動作改為直向分組清單（覆寫 base.css 之 flex row），使分組標題/說明成立、按鈕整齊直排。 */
 .settings-actions {
   margin-top: 16px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+/* issue #371：設定選單「角色/造型」與「帳號/玩家」分組標題與說明（theme-safe，繼承卡片文字色）。 */
+.settings-group-title {
+  margin: 18px 0 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  opacity: 0.7;
+}
+.settings-group-hint {
+  margin: 6px 0 2px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  opacity: 0.72;
 }
 
 /* issue #134：角色語音設定區（每個 gender×personality 桶一列下拉）。 */
