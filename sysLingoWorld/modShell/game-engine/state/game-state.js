@@ -78,15 +78,9 @@ export function freshRoster() {
   return { schema: "2", activeCharacterSaveId: saveId, characters: { [saveId]: freshState() } };
 }
 
-// 讀回某帳號之 roster envelope；legacy 單角色 blob 或空值一律 wrap 成一員（idempotent：已是 envelope 不再包）。
-export function readRosterEnvelope(accountId) {
-  let parsed = null;
-  try {
-    const saved = localStorage.getItem(accountStateKey(accountId));
-    if (saved) parsed = JSON.parse(saved);
-  } catch {
-    parsed = null;
-  }
+// pure core：由已解析物件（或 null）得正規化 envelope（wrap legacy／idempotent：已是 envelope 不再包）。
+// 本機（readRosterEnvelope）與雲端（#377 cloud-sync）共用同一 wrap/unwrap 規則。
+export function rosterEnvelopeOf(parsed) {
   if (isRosterEnvelope(parsed)) {
     const characters = { ...parsed.characters };
     let activeId = parsed.activeCharacterSaveId;
@@ -100,8 +94,26 @@ export function readRosterEnvelope(accountId) {
   return { schema: "2", activeCharacterSaveId: saveId, characters: { [saveId]: bare } };
 }
 
-// 以 active 角色 state 回組 envelope（root mirror＝active 欄位＋meta；characters 存 clean 切片）。
-function reassembleEnvelope(activeState, envelope) {
+// active 角色之 raw 切片（未 normalize）；供雲端 unwrap（serverSave.state → active 角色）。
+export function activeCharacterStateOf(candidate) {
+  const env = rosterEnvelopeOf(candidate);
+  return env.characters[env.activeCharacterSaveId];
+}
+
+// 讀回某帳號之本機 roster envelope（legacy blob／空值 wrap 成一員）。
+export function readRosterEnvelope(accountId) {
+  let parsed = null;
+  try {
+    const saved = localStorage.getItem(accountStateKey(accountId));
+    if (saved) parsed = JSON.parse(saved);
+  } catch {
+    parsed = null;
+  }
+  return rosterEnvelopeOf(parsed);
+}
+
+// 以 active 角色 state 回組 envelope（root mirror＝active 欄位＋meta；characters 存 clean 切片）。供本機與雲端 #377 共用。
+export function reassembleEnvelope(activeState, envelope) {
   const cleanActive = characterSliceOf(activeState);
   const characters = { ...envelope.characters, [envelope.activeCharacterSaveId]: cleanActive };
   return { ...cleanActive, schema: "2", activeCharacterSaveId: envelope.activeCharacterSaveId, characters };

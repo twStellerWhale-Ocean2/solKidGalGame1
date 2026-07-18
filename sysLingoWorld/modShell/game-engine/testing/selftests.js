@@ -312,6 +312,16 @@ function runCloudAuthSelfTest(api) {
       await cloudAuth.flushSave();
       if (fake.saves.get("mimi").state.coins !== 77) errors.push("migrated state not uploaded");
       if (cloudAuth.cloud.status !== "idle") errors.push("migration upload not clean");
+      // #377：雲端 PUT 升為 roster envelope——root mirror 保 top-level coins（admin/驗證讀值不變）、characters 恰 1 員、active 切片一致。
+      const uploaded377 = fake.saves.get("mimi").state;
+      if (!uploaded377 || !uploaded377.characters || typeof uploaded377.characters !== "object") {
+        errors.push("#377: 雲端存檔非 roster envelope（缺 characters）");
+      } else {
+        const cids377 = Object.keys(uploaded377.characters);
+        if (cids377.length !== 1) errors.push("#377: 雲端 roster 應 1 員（實得 " + cids377.length + "）");
+        if (uploaded377.coins !== 77) errors.push("#377: envelope root mirror 未保 top-level coins（admin 讀值破）");
+        if (cids377[0] && uploaded377.characters[cids377[0]].coins !== 77) errors.push("#377: active 角色切片 coins 不符");
+      }
       localStorage.setItem(cloudAuth.migratedFlagKey, JSON.stringify([legacy.id])); // 先上傳成功、後標記
       if (!cloudAuth.loadMigratedLocalIds().includes(legacy.id)) errors.push("migration flag not recorded after successful upload");
       api.accounts.remove(legacy.id);
