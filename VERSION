@@ -1,8 +1,16 @@
 {
-  "version": "0.74.0",
+  "version": "0.74.1",
   "date": "2026-07-18",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.74.1",
+      "date": "2026-07-18",
+      "type": "docs",
+      "playerVisible": false,
+      "issue": "#381",
+      "summaryZh": "（內部）設計文件 spec 追平多角色模型（Increment 6，承 #375 epic 收尾）：修訂 spec#5（每帳號可多位角色、各自存檔可切換）、spec#8（帳號內多角色進度各自分離）、spec#19（釐清 roster 三位＝可玩角色外觀類型），新增 spec#28（同帳號養成/切換多角色：非破壞、上限 6、守最後一員、護眼時鐘綁帳號跨角色共用、既有存檔無損升級、匯出入含所有角色）。純文件、無程式碼與行為變更（實作於 #376–#380）"
+    },
     {
       "version": "0.74.0",
       "date": "2026-07-18",
