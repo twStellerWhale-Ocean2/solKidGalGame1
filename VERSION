@@ -1,8 +1,16 @@
 {
-  "version": "0.68.3",
+  "version": "0.69.0",
   "date": "2026-07-18",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.69.0",
+      "date": "2026-07-18",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#370",
+      "summaryZh": "遊戲畫面加上遊戲名稱品牌 wordmark（文字版）：桌機左側狀態欄頂端顯示「Luminara」，與登入卡同一品牌名稱來源（單一 SSOT，不再各處硬編字面值）；窄版緊湊 HUD（手機）維持精簡不顯示，品牌識別已於登入卡呈現。純顯示、不影響玩法與存檔"
+    },
     {
       "version": "0.68.3",
       "date": "2026-07-18",

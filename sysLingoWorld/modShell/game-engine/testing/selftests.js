@@ -817,6 +817,10 @@ function runAboutSelfTest(api) {
   const princessHint = settingsView?.querySelector("#changePrincessHint");
   if (!princessHint) errors.push("#371: 設定選單缺少換公主說明（一帳號一公主導引）");
   else if (!princessHint.textContent.includes("Switch player")) errors.push("#371: 換公主說明未導引玩家改用 ⟳ Switch player 切換玩家");
+  // issue #370：遊戲畫面（側欄）顯示品牌 wordmark，文字取品牌 SSOT（render 套用，非硬編）。
+  const wordmark = document.getElementById("appWordmark");
+  if (!wordmark) errors.push("#370: 遊戲畫面缺品牌 wordmark 元素");
+  else if (!wordmark.textContent.trim()) errors.push("#370: 品牌 wordmark 文字為空（render 未套用品牌 SSOT）");
   if (!api.accounts?.activeId?.()) api.accounts?.create?.();
   api.openSystemMenu("settings");
   api.openCharacterSelect({ forced: false });

@@ -22,6 +22,7 @@ export function createElements() {
     timeLeftValue: $("#timeLeftValue"),
     statusMessage: $("#statusMessage"),
     princessNameTitle: $("#princessNameTitle"),
+    appWordmark: $("#appWordmark"),
     sideProfileAvatar: $("#sideProfileAvatar"),
     sideProfileFrame: $("#sideProfileFrame"),
     switchPlayerQuickButton: $("#switchPlayerQuickButton"),

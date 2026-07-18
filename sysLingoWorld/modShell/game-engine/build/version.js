@@ -4,6 +4,7 @@
 export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
+  { version: "0.69.0", buildDateTime: "2026-07-18", summaryZh: "遊戲畫面加上遊戲名稱品牌 wordmark（文字版）：桌機左側狀態欄頂端顯示「Luminara」，與登入卡同一品牌名稱來源（單一 SSOT，不再各處硬編字面值）；窄版緊湊 HUD（手機）維持精簡不顯示，品牌識別已於登入卡呈現。純顯示、不影響玩法與存檔" },
   { version: "0.68.3", buildDateTime: "2026-07-18", summaryZh: "設定選單把「角色/造型」與「帳號/玩家」動作分組正名：新增〈Your princess〉與〈This player〉分組標題，並在「Change princess」下加一行說明——這只是換公主造型、每位玩家只有一位公主；想換成別的小孩請用畫面上方的「⟳ 切換玩家」。HUD 的 ⚙／⟳ 圖示按鈕補滑鼠提示文字。消除「換角色」與「帳號切換/登出」表單混用之困惑（各表單往來與返回鍵見 design-issue371 表單地圖）；維持一帳號一公主、不動存檔與資料模型" },
   { version: "0.68.2", buildDateTime: "2026-07-18", summaryZh: "雲端模式下、遊戲進行中按「⟳ 切換玩家」被帶到登入／帳號畫面時，補上可返回原遊戲的 Back 返回鍵——原本沒有返回途徑，改變心意也回不去、只能重選帳號或重新登入；尚未登入的啟動把關維持不可略過（安全前提不變）。本機多帳號模式原本即可返回、行為不變" },
   { version: "0.68.0", buildDateTime: "2026-07-17", summaryZh: "新局公主預設造型更新：改為雙辮髮型（Twin braids）搭配金色刺繡宮廷裙（Gold embroidered court gown），木鞋不變；新局預先擁有的三件同步為身上所穿（規則不變：其餘外觀仍以答題所得金幣購買）。既有存檔與進度完全不受影響，只影響新開局的起始造型" },
@@ -56,8 +57,8 @@ export const versionHistory = [
 ];
 
 export const buildInfo = {
-  version: "0.68.3",
+  version: "0.69.0",
   buildDate: "2026-07-18",
   buildDateTime: "2026-07-18",
-  issues: ["#371"]
+  issues: ["#370"]
 };

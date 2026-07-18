@@ -11,6 +11,8 @@
     <div class="app-shell">
       <main class="game-layout">
         <aside class="side-panel info-bar" aria-label="Princess status">
+          <!-- #370：遊戲畫面品牌 wordmark（文字版，桌機側欄頂端；窄版緊湊 HUD 隱藏，見 mobile-shell）。文字由 hud render 取品牌 SSOT。 -->
+          <div class="app-wordmark" id="appWordmark" aria-hidden="true"></div>
           <h1 class="visually-hidden" id="princessNameTitle">Lumi</h1>
           <div class="info-portrait" id="sideProfileFrame">
             <span class="paper-doll bust-doll" data-doll="side-bust" id="sideProfileAvatar" aria-hidden="true"></span>
