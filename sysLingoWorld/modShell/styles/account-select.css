@@ -356,3 +356,43 @@ body.cloud-offline #statusMessage {
 .character-home-logout {
   flex: 0 0 auto;
 }
+
+/* #392 選角色頁逐列動作：ⓘ 檢視資訊（沿 .account-delete 版型）＋資訊/刪除面板 */
+.account-info {
+  flex: 0 0 auto;
+  width: 44px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.account-info:hover {
+  border-color: var(--ink);
+  background: #f4f0ff;
+}
+
+.character-info-list {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 12px;
+  font-size: 0.9rem;
+}
+
+.character-info-list dt {
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.character-info-list dd {
+  margin: 0;
+}
+
+.character-delete-warning {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+  color: var(--rose-dark, #b00040);
+}

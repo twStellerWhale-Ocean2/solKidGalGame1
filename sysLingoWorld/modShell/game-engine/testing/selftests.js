@@ -178,6 +178,76 @@ function runCharacterHomeSelfTest(api) {
       rowQ?.click();
       if (api.state.playerName !== "Qqq") errors.push("#391: 無 pin 角色應照舊點即進入");
       if (overlay.classList.contains("show")) errors.push("#391: 無 pin 進入後應關閉");
+      // #392：檢視資訊＋逐角色刪除。roster：chD(active 無 pin)、chE(無 pin)、chF(pin)。
+      const D = api.normalizeState({ activeCharacterId: "lumi", playerName: "Ddd", coins: 50 });
+      const E = api.normalizeState({ activeCharacterId: "lumi", playerName: "Eee", coins: 60 });
+      const F = api.normalizeState({ activeCharacterId: "lumi", playerName: "Fff", coins: 70 });
+      F.pinHash = api.hashCharacterPin("4321");
+      localStorage.setItem(aKey, JSON.stringify({ schema: "2", activeCharacterSaveId: "chD", characters: { chD: D, chE: E, chF: F } }));
+      api.state = api.normalizeState(D);
+      api.openCharacterHome();
+      // 資訊面板：ⓘ 開啟顯示金幣；再點收合。
+      const infoBtnE = overlay.querySelector('.account-info[data-save-id="chE"]');
+      if (!infoBtnE) {
+        errors.push("#392: 缺 ⓘ 檢視資訊鈕");
+      } else {
+        infoBtnE.click();
+        const infoPanel = overlay.querySelector(".character-info-panel");
+        if (!infoPanel || !/60/.test(infoPanel.textContent)) errors.push("#392: 資訊面板未顯示金幣");
+        if (infoPanel && !/Not set/.test(infoPanel.textContent)) errors.push("#392: 無 pin 角色資訊應標 Password: Not set");
+        infoBtnE.isConnected ? infoBtnE.click() : overlay.querySelector('.account-info[data-save-id="chE"]').click();
+        if (overlay.querySelector(".character-info-panel")) errors.push("#392: 再點 ⓘ 應收合資訊面板");
+      }
+      // 無 pin 刪除：×（第一段）→ Yes, delete（第二段）；刪非 active 不影響 session。
+      const delBtnE = overlay.querySelector('.account-delete[data-save-id="chE"]');
+      if (!delBtnE) {
+        errors.push("#392: 缺 × 刪除鈕");
+      } else {
+        delBtnE.click();
+        const delPanel = overlay.querySelector(".character-delete-panel");
+        if (!delPanel) errors.push("#392: 點 × 未展開刪除確認面板");
+        let rawNow = JSON.parse(localStorage.getItem(aKey) || "null");
+        if (rawNow && !rawNow.characters.chE) errors.push("#392: 第一段不應即刪");
+        delPanel?.querySelector(".character-delete-confirm")?.click();
+        rawNow = JSON.parse(localStorage.getItem(aKey) || "null");
+        if (!rawNow || rawNow.characters.chE) errors.push("#392: 兩段確認後應刪除 chE");
+        if (api.state.playerName !== "Ddd") errors.push("#392: 刪非 active 不應動 session");
+        if (!overlay.classList.contains("show")) errors.push("#392: 刪後應留在選角色頁");
+      }
+      // 有 pin 刪除：錯誤密碼不刪、正確密碼刪除。
+      const delBtnF = overlay.querySelector('.account-delete[data-save-id="chF"]');
+      if (!delBtnF) {
+        errors.push("#392: pin 角色缺刪除鈕");
+      } else {
+        delBtnF.click();
+        const delPanelF = overlay.querySelector(".character-delete-panel");
+        const pinIn = delPanelF?.querySelector("input");
+        if (!pinIn) {
+          errors.push("#392: pin 角色刪除面板應有密碼欄");
+        } else {
+          pinIn.value = "0000";
+          delPanelF.querySelector(".character-delete-confirm").click();
+          let rawNow2 = JSON.parse(localStorage.getItem(aKey) || "null");
+          if (!rawNow2 || !rawNow2.characters.chF) errors.push("#392: 錯誤密碼不應刪除");
+          const delPanelF2 = overlay.querySelector(".character-delete-panel");
+          delPanelF2.querySelector("input").value = "4321";
+          delPanelF2.querySelector(".character-delete-confirm").click();
+          rawNow2 = JSON.parse(localStorage.getItem(aKey) || "null");
+          if (!rawNow2 || rawNow2.characters.chF) errors.push("#392: 正確密碼應刪除 chF");
+        }
+      }
+      // 守最後一員：僅剩 1 員時不顯示刪除鈕。
+      if (overlay.querySelector(".account-delete")) errors.push("#392: 僅剩 1 員仍顯示刪除鈕（守最後一員破功）");
+      // 刪 active：重灌 2 員、刪 active chD → session 切到存活者。
+      const D2 = api.normalizeState({ activeCharacterId: "lumi", playerName: "Ddd", coins: 50 });
+      const E2 = api.normalizeState({ activeCharacterId: "lumi", playerName: "Eee", coins: 60 });
+      localStorage.setItem(aKey, JSON.stringify({ schema: "2", activeCharacterSaveId: "chD", characters: { chD: D2, chE: E2 } }));
+      api.state = api.normalizeState(D2);
+      api.openCharacterHome();
+      overlay.querySelector('.account-delete[data-save-id="chD"]')?.click();
+      overlay.querySelector(".character-delete-panel .character-delete-confirm")?.click();
+      if (api.state.playerName !== "Eee") errors.push("#392: 刪 active 應切到存活角色");
+      api.closeCharacterHome();
     } finally {
       if (savedBlob === null) localStorage.removeItem(aKey); else localStorage.setItem(aKey, savedBlob);
       api.closeCharacterHome();
