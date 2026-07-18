@@ -203,6 +203,50 @@ function runRosterSelfTest(api) {
     errors.push("#379: unexpected error(5) " + ((error && error.message) || error));
   }
 
+  // 6) #380：存檔 Markdown 支援 roster——匯出含所有公主；匯入 legacy 單一（更新 active 保留其他）、envelope replace/add。
+  try {
+    if (!api.accounts.activeId()) api.accounts.create();
+    const activeId = api.accounts.activeId();
+    const aKey = api.accountStateKey(activeId);
+    const savedBlob = localStorage.getItem(aKey);
+    const origConfirm = window.confirm;
+    const MK_S = "<!-- LUMINARA_SAVE_JSON";
+    const MK_E = "LUMINARA_SAVE_JSON -->";
+    const wrapMd = (obj) => `x\n${MK_S}\n${JSON.stringify(obj)}\n${MK_E}\n`;
+    try {
+      const A = api.normalizeState({ activeCharacterId: "lumi", playerName: "Aaa", coins: 11 });
+      const B = api.normalizeState({ activeCharacterId: "lumi", playerName: "Bbb", coins: 22 });
+      localStorage.setItem(aKey, JSON.stringify({ schema: "2", activeCharacterSaveId: "chA", characters: { chA: A, chB: B } }));
+      api.state = api.normalizeState(A);
+      // 匯出 MD payload 應為 envelope 含 2 員。
+      const md = api.buildSaveMarkdown();
+      const payload = JSON.parse(md.slice(md.indexOf(MK_S) + MK_S.length, md.indexOf(MK_E)).trim());
+      if (!payload.characters || Object.keys(payload.characters).length !== 2) errors.push("#380: 匯出 MD 未含整個 roster（2 員）");
+      // 匯入 legacy 單一 → 更新 active、保留其他公主。
+      window.confirm = () => true;
+      api.loadMarkdownText(wrapMd(api.normalizeState({ activeCharacterId: "lumi", playerName: "Legacy", coins: 5 })));
+      if (api.state.playerName !== "Legacy") errors.push("#380: 匯入 legacy 單一未載入");
+      let raw = JSON.parse(localStorage.getItem(aKey) || "null");
+      if (!raw || Object.keys(raw.characters).length !== 2 || raw.characters.chB.playerName !== "Bbb") errors.push("#380: 匯入 legacy 應更新 active 且保留其他公主");
+      // 匯入 envelope REPLACE（confirm→false＝replace）。
+      const rosterObj = { schema: "2", activeCharacterSaveId: "z1", characters: { z1: api.normalizeState({ activeCharacterId: "lumi", playerName: "Zed", coins: 9 }), z2: api.normalizeState({ activeCharacterId: "lumi", playerName: "Zoe", coins: 8 }) } };
+      window.confirm = () => false;
+      api.loadMarkdownText(wrapMd(rosterObj));
+      raw = JSON.parse(localStorage.getItem(aKey) || "null");
+      if (!raw || Object.keys(raw.characters).length !== 2 || api.state.playerName !== "Zed") errors.push("#380: 匯入 envelope replace 應為 2 員且 active＝檔案 active");
+      // 匯入 envelope ADD（confirm→true＝add）→ 2＋2＝4 員。
+      window.confirm = () => true;
+      api.loadMarkdownText(wrapMd(rosterObj));
+      raw = JSON.parse(localStorage.getItem(aKey) || "null");
+      if (!raw || Object.keys(raw.characters).length !== 4) errors.push("#380: 匯入 envelope add 應累加為 4 員（實得 " + (raw ? Object.keys(raw.characters).length : 0) + "）");
+    } finally {
+      window.confirm = origConfirm;
+      if (savedBlob === null) localStorage.removeItem(aKey); else localStorage.setItem(aKey, savedBlob);
+    }
+  } catch (error) {
+    errors.push("#380: unexpected error(6) " + ((error && error.message) || error));
+  }
+
   const result = document.createElement("pre");
   result.id = "rosterResult";
   result.textContent = JSON.stringify({ test: "roster", passed: errors.length === 0, errors });
@@ -3102,7 +3146,13 @@ function runSaveLoadSelfTest(api) {
   const before = JSON.parse(JSON.stringify(api.state));
   const markdown = api.buildSaveMarkdown();
   api.state.coins = 0;
-  api.loadMarkdownText(markdown);
+  const origConfirm = window.confirm;
+  window.confirm = () => false; // #380：MD 現含 roster envelope，自 round-trip 匯入採 replace（不彈原生對話框、避免自測卡住）
+  try {
+    api.loadMarkdownText(markdown);
+  } finally {
+    window.confirm = origConfirm;
+  }
   const after = JSON.parse(JSON.stringify(api.state));
   const passed =
     markdown.includes("## Diary") &&

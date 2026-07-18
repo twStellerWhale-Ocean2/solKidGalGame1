@@ -6,6 +6,8 @@ export function createSaveLoadController({
   elements,
   normalizeState,
   onStateLoaded,
+  importRosterMode = () => "replace", // #380：roster envelope 匯入模式（"add"｜"replace"｜null＝取消）
+  onRosterLoaded = () => {}, // #380：套用匯入之 roster envelope
   persist,
   render
 }) {
@@ -49,8 +51,16 @@ export function createSaveLoadController({
     const end = text.indexOf(saveMarkerEnd);
     if (start === -1 || end === -1 || end <= start) throw new Error("Luminara save data block was not found.");
     const json = text.slice(start + saveMarkerStart.length, end).trim();
-    onStateLoaded(normalizeState(JSON.parse(json)));
-    persist();
+    const parsed = JSON.parse(json);
+    // #380：payload 為 roster envelope（有 characters 物件）→ 提示 ADD/REPLACE；否則 legacy 單一 state（wrap 成一員）。
+    if (parsed && typeof parsed === "object" && parsed.characters && typeof parsed.characters === "object" && !Array.isArray(parsed.characters)) {
+      const mode = importRosterMode(parsed);
+      if (!mode) { elements.statusMessage.textContent = "Import cancelled."; return; }
+      onRosterLoaded(parsed, mode);
+    } else {
+      onStateLoaded(normalizeState(parsed));
+      persist();
+    }
     elements.statusMessage.textContent = "Load complete. Progress restored.";
     render();
   }

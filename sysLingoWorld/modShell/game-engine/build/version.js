@@ -4,6 +4,7 @@
 export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
+  { version: "0.74.0", buildDateTime: "2026-07-18", summaryZh: "存檔備份檔（Markdown）支援多位公主（Increment 5，承 #375）：匯出的 .md 現在會備份這位玩家的所有公主（原本只存目前這位）；匯入含多位公主的檔案時會詢問「加入現有公主」或「取代」；匯入舊版單一公主檔則更新目前公主、保留其他公主。既有存檔與舊備份檔自動相容" },
   { version: "0.73.0", buildDateTime: "2026-07-18", summaryZh: "可移除同一玩家下的公主，並限制每位玩家最多 6 位（Increment 4，承 #375）：設定選單「Your princesses」新增「Remove this princess」（危險鈕、二次確認、刪除該公主的金幣/日記/換裝）；刪除使用中的公主會自動切到其餘的第一位；只剩一位時不顯示移除鈕（保底至少一位公主）；達 6 位上限時「Add princess」自動停用。既有存檔自動相容" },
   { version: "0.72.0", buildDateTime: "2026-07-18", summaryZh: "同一玩家可養多位公主、點卡即可切換（Increment 3，承 #375）：設定選單新增「Your princesses」角色卡列，可「Add princess」新增、點另一張卡切換——每位公主各自保有自己的金幣、日記、學過的單字與換裝，切換不會覆蓋彼此（原本每玩家只有一位、換公主是就地覆寫）；「Change this princess's look」仍可改當前公主造型。切換公主不會重置護眼休息鎖（時鐘綁定帳號、防止靠切角色繞過休息）。想換成別的小孩仍用畫面上方「⟳ 切換玩家」。既有存檔自動相容" },
   { version: "0.69.0", buildDateTime: "2026-07-18", summaryZh: "遊戲畫面加上遊戲名稱品牌 wordmark（文字版）：桌機左側狀態欄頂端顯示「Luminara」，與登入卡同一品牌名稱來源（單一 SSOT，不再各處硬編字面值）；窄版緊湊 HUD（手機）維持精簡不顯示，品牌識別已於登入卡呈現。純顯示、不影響玩法與存檔" },
@@ -59,8 +60,8 @@ export const versionHistory = [
 ];
 
 export const buildInfo = {
-  version: "0.73.0",
+  version: "0.74.0",
   buildDate: "2026-07-18",
   buildDateTime: "2026-07-18",
-  issues: ["#379"]
+  issues: ["#380"]
 };

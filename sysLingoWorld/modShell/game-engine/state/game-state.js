@@ -407,9 +407,10 @@ export function outfitSummary(state) {
   return labels.join(" / ") || "No outfit";
 }
 
-export function buildSaveMarkdown(state) {
+export function buildSaveMarkdown(state, envelope = null) {
   const questRows = state.diary.filter((entry) => entry.type === "quest");
-  const exportState = JSON.parse(JSON.stringify(state));
+  // #380：給 roster envelope 則匯出整個 roster（備份含所有公主）；否則單一 state（相容）。標頭仍取 active 角色。
+  const exportState = JSON.parse(JSON.stringify(envelope || state));
   const rows = state.diary.length
     ? state.diary.map((entry) => `| ${entry.title} | ${entry.body.replaceAll("|", "/")} | ${entry.result || ""} |`).join("\n")
     : "| - | - | - |";

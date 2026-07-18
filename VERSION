@@ -1,8 +1,16 @@
 {
-  "version": "0.73.0",
+  "version": "0.74.0",
   "date": "2026-07-18",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.74.0",
+      "date": "2026-07-18",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#380",
+      "summaryZh": "存檔備份檔（Markdown）支援多位公主（Increment 5，承 #375）：匯出的 .md 現在會備份這位玩家的所有公主（原本只存目前這位）；匯入含多位公主的檔案時會詢問「加入現有公主」或「取代」；匯入舊版單一公主檔則更新目前公主、保留其他公主。既有存檔與舊備份檔自動相容"
+    },
     {
       "version": "0.73.0",
       "date": "2026-07-18",
