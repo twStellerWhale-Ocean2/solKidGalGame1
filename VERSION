@@ -1,8 +1,16 @@
 {
-  "version": "0.69.0",
+  "version": "0.70.0",
   "date": "2026-07-18",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.70.0",
+      "date": "2026-07-18",
+      "type": "feat",
+      "playerVisible": false,
+      "issue": "#376",
+      "summaryZh": "（內部）本機存檔升為多角色 roster envelope 基礎結構（Increment 1，承 #375 epic）：每帳號 blob 由單一角色 state 升為含 characters 映射之 envelope、root 鏡射使用中角色以維持相容；目前每帳號恆一位角色、玩法與存檔行為零變更，為後續新增/切換公主（#378）鋪路。既有存檔自動相容（讀到即 wrap、無損 round-trip）"
+    },
     {
       "version": "0.69.0",
       "date": "2026-07-18",

@@ -49,6 +49,64 @@ const legacyItemIds = Object.freeze({
 const bakedBaseStarterHairIds = new Set(["softBrownHair", "yumiStarterHair", "solStarterHair", "rosaStarterHair"]);
 const bakedBaseStarterOutfitIds = new Set(["starterPajama"]);
 
+// ── issue #376：多角色 roster envelope（Option A：additive active-mirror；Increment 1／基礎，無 UI）──
+// 本機每帳號 blob 由「單一角色 state」升為 envelope：
+//   { schema:"2", activeCharacterSaveId, characters:{ <characterSaveId>:<characterState> }, …root mirror=active }
+// root 恆鏡射 active 角色（＋envelope meta），使舊讀取者（雲端 admin 摘要／validateStateShape／rollback 舊 image）不受影響。
+// Increment 1：roster 恆 size==1、使用者無感；新增/切換/刪除 UI 於 #378/#379、雲端於 #377、spec 於 #381。
+export const ROSTER_META_KEYS = Object.freeze(["schema", "activeCharacterSaveId", "characters"]);
+
+export function newCharacterSaveId() {
+  return `ch-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+// 唯一判別＝有 characters 物件（idempotent wrap 之守衛）。
+function isRosterEnvelope(obj) {
+  return Boolean(obj) && typeof obj === "object" && Boolean(obj.characters) && typeof obj.characters === "object" && !Array.isArray(obj.characters);
+}
+
+// 取角色 state 之 clean 切片（去 envelope meta，避免存進 characters slice 後再讀汙染）。
+function characterSliceOf(obj) {
+  const slice = { ...obj };
+  ROSTER_META_KEYS.forEach((key) => delete slice[key]);
+  return slice;
+}
+
+// 乾淨一員 roster（新帳號用）。
+export function freshRoster() {
+  const saveId = newCharacterSaveId();
+  return { schema: "2", activeCharacterSaveId: saveId, characters: { [saveId]: freshState() } };
+}
+
+// 讀回某帳號之 roster envelope；legacy 單角色 blob 或空值一律 wrap 成一員（idempotent：已是 envelope 不再包）。
+export function readRosterEnvelope(accountId) {
+  let parsed = null;
+  try {
+    const saved = localStorage.getItem(accountStateKey(accountId));
+    if (saved) parsed = JSON.parse(saved);
+  } catch {
+    parsed = null;
+  }
+  if (isRosterEnvelope(parsed)) {
+    const characters = { ...parsed.characters };
+    let activeId = parsed.activeCharacterSaveId;
+    if (!characters[activeId]) activeId = Object.keys(characters)[0];
+    if (!activeId) return freshRoster(); // characters 空：退乾淨一員
+    return { schema: "2", activeCharacterSaveId: activeId, characters };
+  }
+  // legacy 單角色（或無存檔）：wrap 成一員。
+  const bare = parsed && typeof parsed === "object" ? characterSliceOf(parsed) : freshState();
+  const saveId = newCharacterSaveId();
+  return { schema: "2", activeCharacterSaveId: saveId, characters: { [saveId]: bare } };
+}
+
+// 以 active 角色 state 回組 envelope（root mirror＝active 欄位＋meta；characters 存 clean 切片）。
+function reassembleEnvelope(activeState, envelope) {
+  const cleanActive = characterSliceOf(activeState);
+  const characters = { ...envelope.characters, [envelope.activeCharacterSaveId]: cleanActive };
+  return { ...cleanActive, schema: "2", activeCharacterSaveId: envelope.activeCharacterSaveId, characters };
+}
+
 export function loadLocalState() {
   migrateLegacyAccount(); // 一次性將舊單一存檔遷移為首個帳號，保留既有玩家進度。
   const activeId = getActiveAccountId();
@@ -57,14 +115,11 @@ export function loadLocalState() {
 }
 
 // 載入指定帳號的進度（供切換帳號使用）；無存檔或解析失敗時回退乾淨初始狀態。
+// #376：讀回 envelope 之 active 角色切片。**保持 pure（不動 session）**——本函式亦被他帳號摘要
+// （accountSummary／status ticker／登入卡）呼叫，回傳單一角色 state、行為與現況一致（讀到 active 角色）。
 export function loadAccountState(accountId) {
-  try {
-    const saved = localStorage.getItem(accountStateKey(accountId));
-    if (!saved) return freshState();
-    return normalizeState(JSON.parse(saved));
-  } catch {
-    return freshState();
-  }
+  const envelope = readRosterEnvelope(accountId);
+  return normalizeState(envelope.characters[envelope.activeCharacterSaveId]);
 }
 
 // 建立新帳號並寫入一份乾淨初始進度，回傳帳號資料（已設為使用中）。
@@ -76,7 +131,10 @@ export function persistState(state) {
   const activeId = getActiveAccountId();
   if (!activeId) return; // 無使用中帳號時不寫入（遊戲尚未真正開始）。
   try {
-    localStorage.setItem(accountStateKey(activeId), JSON.stringify(state));
+    // #376：read-modify-write envelope——只更新 active 角色切片，自 storage 讀回其餘 slice，
+    // 使「寫 active 角色」永不覆蓋其他角色（Increment 1 免把 roster 穿線進 session）。
+    const envelope = readRosterEnvelope(activeId);
+    localStorage.setItem(accountStateKey(activeId), JSON.stringify(reassembleEnvelope(state, envelope)));
   } catch (error) {
     // 寫入失敗（例如多帳號使 localStorage 配額已滿）：不讓存檔錯誤中斷遊戲，記錄警告供診斷。
     console.warn("persistState failed", error);

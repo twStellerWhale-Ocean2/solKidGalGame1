@@ -10,8 +10,9 @@ import { firstLayerActionsFor } from "./flow/scene-actions.js";
 import { mapActorMotionTypes } from "./map/actors.js";
 import { renderVoiceSettings } from "./render/settings.js";
 import { VOICE_ASSIGNMENT_KEY } from "./state/voice-assignments.js";
-import { createQuestForPlace, createRandomQuest, createFreshAccount, freshState, loadAccountState, normalizeState } from "./state/game-state.js";
+import { createQuestForPlace, createRandomQuest, createFreshAccount, freshState, loadAccountState, normalizeState, persistState, readRosterEnvelope } from "./state/game-state.js";
 import { deleteAccount, getActiveAccountId, listAccounts, setActiveAccountId } from "./state/accounts.js";
+import { accountStateKey } from "./state/storage.js"; // #376：roster selftest 之 storage 鍵
 import { installTestingHooks } from "./testing/selftests.js?v=20260703-issue298-split-monolith";
 import { elements, session } from "./core/session.js";
 import { bindEvents } from "./app/bind-events.js";
@@ -243,6 +244,9 @@ installTestingHooks({
     focusWorldDestination(target.id);
   },
   freshState,
+  persistState, // #376：roster envelope 自測
+  readRosterEnvelope, // #376
+  accountStateKey, // #376
   getMapMetrics: (areaId = session.state.area) => {
     if (areaId !== "world" && !areaRegistry[areaId]) throw new Error("Unknown area");
     return areaMapMetrics(areaId);

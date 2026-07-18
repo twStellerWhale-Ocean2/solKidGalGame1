@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（incrFlow genVersion，SSOT 工具）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更。
 
+## 0.70.0 — 2026-07-18 _(internal)_
+- feat (#376): （內部）本機存檔升為多角色 roster envelope 基礎結構（Increment 1，承 #375 epic）：每帳號 blob 由單一角色 state 升為含 characters 映射之 envelope、root 鏡射使用中角色以維持相容；目前每帳號恆一位角色、玩法與存檔行為零變更，為後續新增/切換公主（#378）鋪路。既有存檔自動相容（讀到即 wrap、無損 round-trip）
+
 ## 0.69.0 — 2026-07-18
 - feat (#370): 遊戲畫面加上遊戲名稱品牌 wordmark（文字版）：桌機左側狀態欄頂端顯示「Luminara」，與登入卡同一品牌名稱來源（單一 SSOT，不再各處硬編字面值）；窄版緊湊 HUD（手機）維持精簡不顯示，品牌識別已於登入卡呈現。純顯示、不影響玩法與存檔
 
