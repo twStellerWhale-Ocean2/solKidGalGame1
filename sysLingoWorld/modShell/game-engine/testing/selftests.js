@@ -82,6 +82,69 @@ export function installTestingHooks(api) {
   runDevToolsSelfTest(api);
   runSceneCoinsSelfTest(api);
   runStarterOutfitSelfTest(api);
+  runRosterSelfTest(api);
+}
+
+// issue #376：多角色 roster envelope（Increment 1／基礎）——legacy wrap 冪等、characters slice clean、
+// persist round-trip 無損、root mirror 鏡射 active；roster 恆 size==1、行為與現況一致。
+function runRosterSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "roster") return;
+  const errors = [];
+  const KEY_ACCT = "rostertest-376";
+  const key = api.accountStateKey(KEY_ACCT);
+  try {
+    // 1) legacy 單角色 blob → wrap 成一員 roster；資料保留、slice clean。
+    const legacy = api.normalizeState({ activeCharacterId: "lumi", playerName: "LegacyKid", coins: 123, learnedWords: ["cat", "dog"] });
+    localStorage.setItem(key, JSON.stringify(legacy));
+    const env1 = api.readRosterEnvelope(KEY_ACCT);
+    const ids1 = env1 && env1.characters ? Object.keys(env1.characters) : [];
+    if (ids1.length !== 1) {
+      errors.push(`#376: legacy wrap 應得 1 員 roster（實得 ${ids1.length}）`);
+    } else {
+      if (env1.activeCharacterSaveId !== ids1[0]) errors.push("#376: activeCharacterSaveId 未指向唯一成員");
+      if (env1.characters[ids1[0]].coins !== 123 || env1.characters[ids1[0]].playerName !== "LegacyKid") errors.push("#376: legacy 角色資料未保留");
+      if ("characters" in env1.characters[ids1[0]] || "schema" in env1.characters[ids1[0]] || "activeCharacterSaveId" in env1.characters[ids1[0]]) errors.push("#376: characters slice 殘留 envelope meta");
+    }
+
+    // 2) idempotent：對已 wrap envelope 再讀＝no-op（同 active id、仍 1 員）。
+    const stableId = ids1[0] || "ch-x";
+    localStorage.setItem(key, JSON.stringify({ schema: "2", activeCharacterSaveId: stableId, characters: { [stableId]: { activeCharacterId: "lumi", playerName: "LegacyKid", coins: 123 } } }));
+    const env2 = api.readRosterEnvelope(KEY_ACCT);
+    if (env2.activeCharacterSaveId !== stableId || Object.keys(env2.characters).length !== 1) errors.push("#376: 對已 wrap envelope 再讀非冪等（應 no-op）");
+  } catch (error) {
+    errors.push("#376: unexpected error(1) " + ((error && error.message) || error));
+  } finally {
+    localStorage.removeItem(key);
+  }
+
+  // 3) persist round-trip（active 帳號）：legacy blob → 載入 active → persist → blob＝1 員 envelope＋root mirror → reload 相等。
+  try {
+    if (!api.accounts.activeId()) api.accounts.create();
+    const activeId = api.accounts.activeId();
+    const aKey = api.accountStateKey(activeId);
+    const savedBlob = localStorage.getItem(aKey);
+    try {
+      localStorage.setItem(aKey, JSON.stringify(api.normalizeState({ activeCharacterId: "lumi", playerName: "RoundTrip", coins: 77, badges: ["First Quest"] })));
+      const loaded = api.accounts.loadState(activeId);
+      if (loaded.coins !== 77 || loaded.playerName !== "RoundTrip") errors.push("#376: 載入 active 角色資料不符");
+      api.persistState(loaded);
+      const rawAfter = JSON.parse(localStorage.getItem(aKey) || "null");
+      if (!rawAfter || !rawAfter.characters || Object.keys(rawAfter.characters).length !== 1) errors.push("#376: persist 後 blob 非 1 員 envelope");
+      else if (rawAfter.coins !== 77) errors.push("#376: envelope root mirror 未鏡射 active（coins）");
+      const reloaded = api.accounts.loadState(activeId);
+      if (reloaded.coins !== 77 || reloaded.playerName !== "RoundTrip" || (reloaded.badges || []).indexOf("First Quest") < 0) errors.push("#376: round-trip active state 遺失");
+    } finally {
+      if (savedBlob === null) localStorage.removeItem(aKey); else localStorage.setItem(aKey, savedBlob);
+    }
+  } catch (error) {
+    errors.push("#376: unexpected error(3) " + ((error && error.message) || error));
+  }
+
+  const result = document.createElement("pre");
+  result.id = "rosterResult";
+  result.textContent = JSON.stringify({ test: "roster", passed: errors.length === 0, errors });
+  document.body.prepend(result);
 }
 
 
