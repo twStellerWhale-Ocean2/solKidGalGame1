@@ -811,6 +811,12 @@ function runAboutSelfTest(api) {
 
   // issue #134 後續：Settings 不得殘留「Switch player」按鈕；按「Change princess」須先關閉系統選單再開選角。
   if (settingsView?.querySelector("#switchAccountButton")) errors.push("Settings 仍殘留 Switch player 按鈕（應移除）");
+  // issue #371：設定選單將「角色/造型」與「帳號」動作分組並澄清一帳號一公主模型，消除與帳號切換/登出混用之困惑。
+  const settingsGroupTitles = [...(settingsView?.querySelectorAll(".settings-group-title") || [])];
+  if (settingsGroupTitles.length < 2) errors.push("#371: 設定選單缺少分組標題（角色/帳號分組，實得 " + settingsGroupTitles.length + "）");
+  const princessHint = settingsView?.querySelector("#changePrincessHint");
+  if (!princessHint) errors.push("#371: 設定選單缺少換公主說明（一帳號一公主導引）");
+  else if (!princessHint.textContent.includes("Switch player")) errors.push("#371: 換公主說明未導引玩家改用 ⟳ Switch player 切換玩家");
   if (!api.accounts?.activeId?.()) api.accounts?.create?.();
   api.openSystemMenu("settings");
   api.openCharacterSelect({ forced: false });

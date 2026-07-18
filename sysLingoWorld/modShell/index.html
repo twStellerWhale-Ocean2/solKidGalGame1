@@ -22,8 +22,8 @@
             <div class="info-field"><span class="info-label">Time left</span><strong class="info-value" id="timeLeftValue">15:00</strong></div>
           </div>
           <div class="info-actions">
-            <button class="info-icon-button" id="systemMenuButton" type="button" aria-label="Open Lumi Diary and Settings" aria-controls="systemMenu" aria-haspopup="dialog"><span aria-hidden="true">⚙</span></button>
-            <button class="info-icon-button" id="switchPlayerQuickButton" type="button" aria-label="Switch player"><span aria-hidden="true">⟳</span></button>
+            <button class="info-icon-button" id="systemMenuButton" type="button" title="Menu &amp; Settings" aria-label="Open Lumi Diary and Settings" aria-controls="systemMenu" aria-haspopup="dialog"><span aria-hidden="true">⚙</span></button>
+            <button class="info-icon-button" id="switchPlayerQuickButton" type="button" title="Switch player" aria-label="Switch player"><span aria-hidden="true">⟳</span></button>
           </div>
           <p class="visually-hidden" id="statusMessage" aria-live="polite">Choose a place, help someone, then dress your princess with the reward.</p>
         </aside>
@@ -120,7 +120,11 @@
               <p class="settings-account-line" id="settingsAccountLine" hidden></p>
               <div class="settings-actions">
                 <button class="soft-button" id="speakToggleButton" type="button">Voice: On</button>
+                <!-- #371：角色/造型 與 帳號/玩家 動作分組正名，消除與帳號切換/登出混用之困惑（1 帳號＝1 公主，spec#5）。 -->
+                <h3 class="settings-group-title">Your princess</h3>
                 <button class="soft-button" id="changeCharacterButton" type="button">Change princess</button>
+                <p class="settings-group-hint" id="changePrincessHint">Changes how your princess looks. Each player has one princess — to play as a different child, tap ⟳ Switch player at the top.</p>
+                <h3 class="settings-group-title">This player</h3>
                 <button class="soft-button" id="signOutButton" type="button" hidden>Sign out</button>
                 <button class="danger-button" id="resetButton" type="button">Reset Progress</button>
               </div>

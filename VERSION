@@ -1,8 +1,16 @@
 {
-  "version": "0.68.2",
+  "version": "0.68.3",
   "date": "2026-07-18",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.68.3",
+      "date": "2026-07-18",
+      "type": "fix",
+      "playerVisible": true,
+      "issue": "#371",
+      "summaryZh": "設定選單把「角色/造型」與「帳號/玩家」動作分組正名：新增〈Your princess〉與〈This player〉分組標題，並在「Change princess」下加一行說明——這只是換公主造型、每位玩家只有一位公主；想換成別的小孩請用畫面上方的「⟳ 切換玩家」。HUD 的 ⚙／⟳ 圖示按鈕補滑鼠提示文字。消除「換角色」與「帳號切換/登出」表單混用之困惑（各表單往來與返回鍵見 design-issue371 表單地圖）；維持一帳號一公主、不動存檔與資料模型"
+    },
     {
       "version": "0.68.2",
       "date": "2026-07-18",
