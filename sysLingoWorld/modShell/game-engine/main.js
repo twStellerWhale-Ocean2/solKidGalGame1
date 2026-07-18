@@ -20,7 +20,7 @@ import { buildSaveMarkdown, loadMarkdownText, persist } from "./system/persisten
 import { clockNow, renderPlayClock, startPlayClock } from "./state/play-session.js";
 import { render, renderSettings, syncActiveAccountMeta } from "./render/hud.js";
 import { changeView, closeSystemMenu, openSystemMenu } from "./app/views.js";
-import { buildAccountList, cancelCharacterSelect, closeAccountSelect, createNewAccount, listAccountCharacters, openAccountSelect, openCharacterSelect, refreshAccountStatuses, returnToInitialSelect, startAddCharacter, switchToCharacter } from "./app/select-screens.js";
+import { buildAccountList, cancelCharacterSelect, closeAccountSelect, createNewAccount, deleteActiveCharacter, listAccountCharacters, openAccountSelect, openCharacterSelect, refreshAccountStatuses, returnToInitialSelect, rosterAtCap, startAddCharacter, switchToCharacter } from "./app/select-screens.js";
 import { answerLesson, backToSceneMenu, closeAdv, handleFirstLayerSceneAction, hasChatForPlace, hasLessonsForPlace, openHintAdv, openQuestAdv, openRoomScene, openSceneAdv } from "./scene/adv-flow.js";
 import { equipOutfitItem, toggleEquip } from "./wardrobe/doll.js";
 import { allowedShopCategories, buyItemInAdv, openRefundDetail, openShopDetail, openWardrobeDetail, refundItemInAdv, renderAdvShop, renderRefundDetail, renderWardrobeDetail, toggleShopTryOn } from "./wardrobe/shop-panel.js";
@@ -145,6 +145,8 @@ installTestingHooks({
   listAccountCharacters, // #378
   switchToCharacter, // #378
   startAddCharacter, // #378
+  deleteActiveCharacter, // #379
+  rosterAtCap, // #379
   profileColorPalette,
   defaultProfileColorFor,
   normalizeProfileColor,

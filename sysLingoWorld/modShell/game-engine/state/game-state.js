@@ -55,6 +55,7 @@ const bakedBaseStarterOutfitIds = new Set(["starterPajama"]);
 // root 恆鏡射 active 角色（＋envelope meta），使舊讀取者（雲端 admin 摘要／validateStateShape／rollback 舊 image）不受影響。
 // Increment 1：roster 恆 size==1、使用者無感；新增/切換/刪除 UI 於 #378/#379、雲端於 #377、spec 於 #381。
 export const ROSTER_META_KEYS = Object.freeze(["schema", "activeCharacterSaveId", "characters"]);
+export const ROSTER_CAP = 6; // #379：每帳號角色上限（配合 1MB 存檔上傳與 UI 版面）
 
 export function newCharacterSaveId() {
   return `ch-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;

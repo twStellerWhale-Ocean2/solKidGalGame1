@@ -27,6 +27,7 @@ import {
   newCharacterSaveId,
   normalizeState,
   readRosterEnvelope,
+  ROSTER_CAP,
   rosterEnvelopeOf,
   sanitizePlayerName,
   writeRosterEnvelope
@@ -258,6 +259,7 @@ function commitRoster(env) {
 function confirmAddCharacter(character) {
   if (!hasRosterContext()) { applyChosenAppearance(character); persist(); return; } // 無帳號情境（不應發生）：退回 re-skin
   const env = getActiveRoster();
+  if (Object.keys(env.characters).length >= ROSTER_CAP) return; // #379：達上限不新增（startAddCharacter 已擋，此為保險）
   env.characters[env.activeCharacterSaveId] = characterSliceOf(session.state); // 保存目前 active 之最新變動
   const fresh = freshState({ randomizeTheme: false });
   carryAccountClock(session.state, fresh); // 新角色沿帳號時鐘（account-scoped）
@@ -300,8 +302,36 @@ export function switchToCharacter(saveId) {
 
 // #378：開始新增角色——開選角畫面於「新增」模式（confirm 時 append）。
 export function startAddCharacter() {
+  if (rosterAtCap()) return; // #379：達上限不開新增
   session.pendingAddCharacter = true;
   openCharacterSelect({ forced: false, cancelable: true });
+}
+
+// #379：roster 是否已達上限（供 UI 停用 Add）。
+export function rosterAtCap() {
+  if (!hasRosterContext()) return false;
+  return Object.keys(getActiveRoster().characters).length >= ROSTER_CAP;
+}
+
+// #379：刪除目前使用中角色（守最後一員不可刪）；刪 active 後切到其餘首員（帳號時鐘 account-scoped）。
+export function deleteActiveCharacter() {
+  if (!hasRosterContext()) return;
+  const env = getActiveRoster();
+  const ids = Object.keys(env.characters);
+  if (ids.length <= 1) return; // 守最後一員：不可刪到零角色
+  const removing = env.activeCharacterSaveId;
+  const nextId = ids.find((id) => id !== removing);
+  delete env.characters[removing];
+  const next = normalizeState(env.characters[nextId]);
+  carryAccountClock(session.state, next); // 帳號時鐘 account-scoped
+  env.activeCharacterSaveId = nextId;
+  env.characters[nextId] = characterSliceOf(next);
+  session.state = next;
+  commitRoster(env);
+  syncActiveAccountMeta({ touched: true });
+  closeSystemMenu();
+  render();
+  elements.statusMessage.textContent = `${princessName()} is ready. Choose a place to start.`;
 }
 
 // issue #153：取消創角。若為「既有帳號下新增」之未確認新帳號，丟棄該空帳號並返回帳號選擇（還原先前使用中帳號）；

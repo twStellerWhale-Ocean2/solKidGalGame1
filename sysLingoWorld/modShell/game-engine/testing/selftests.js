@@ -171,6 +171,38 @@ function runRosterSelfTest(api) {
     errors.push("#378: unexpected error(4) " + ((error && error.message) || error));
   }
 
+  // 5) #379：刪除角色（守最後一員不可刪）＋roster 上限（ROSTER_CAP）。
+  try {
+    if (!api.accounts.activeId()) api.accounts.create();
+    const activeId = api.accounts.activeId();
+    const aKey = api.accountStateKey(activeId);
+    const savedBlob = localStorage.getItem(aKey);
+    try {
+      const A = api.normalizeState({ activeCharacterId: "lumi", playerName: "Aaa", coins: 10 });
+      const B = api.normalizeState({ activeCharacterId: "lumi", playerName: "Bbb", coins: 20 });
+      localStorage.setItem(aKey, JSON.stringify({ schema: "2", activeCharacterSaveId: "chA", characters: { chA: A, chB: B } }));
+      api.state = api.normalizeState(A);
+      api.deleteActiveCharacter(); // 刪 active A → 切到 B、A 移除
+      if (api.state.playerName !== "Bbb") errors.push("#379: 刪 active 後未切到其餘角色");
+      let raw = JSON.parse(localStorage.getItem(aKey) || "null");
+      if (!raw || Object.keys(raw.characters).length !== 1) errors.push("#379: 刪除後 roster 應剩 1 員");
+      if (raw && (raw.characters.chA || raw.activeCharacterSaveId !== "chB")) errors.push("#379: 刪除未正確移除 A／切到 B");
+      api.deleteActiveCharacter(); // 守最後一員：再刪應 no-op
+      raw = JSON.parse(localStorage.getItem(aKey) || "null");
+      if (!raw || Object.keys(raw.characters).length !== 1) errors.push("#379: 守最後一員失敗（刪到 0）");
+      if (api.state.playerName !== "Bbb") errors.push("#379: 守最後一員時 active 不應變");
+      const full = { schema: "2", activeCharacterSaveId: "c0", characters: {} };
+      for (let i = 0; i < 6; i += 1) full.characters["c" + i] = api.normalizeState({ activeCharacterId: "lumi", playerName: "P" + i, coins: i });
+      localStorage.setItem(aKey, JSON.stringify(full));
+      api.state = api.normalizeState(full.characters.c0);
+      if (!api.rosterAtCap()) errors.push("#379: 6 員應達上限（rosterAtCap 回 false）");
+    } finally {
+      if (savedBlob === null) localStorage.removeItem(aKey); else localStorage.setItem(aKey, savedBlob);
+    }
+  } catch (error) {
+    errors.push("#379: unexpected error(5) " + ((error && error.message) || error));
+  }
+
   const result = document.createElement("pre");
   result.id = "rosterResult";
   result.textContent = JSON.stringify({ test: "roster", passed: errors.length === 0, errors });
