@@ -27,7 +27,7 @@ import {
 } from "../state/cloud-session.js";
 import { apiLogout } from "../system/api-client.js";
 import { freshState, loadAccountState, normalizeState } from "../state/game-state.js";
-import { listAccounts } from "../state/accounts.js";
+import { getActiveAccountId, listAccounts } from "../state/accounts.js";
 import { playableCharacterById, normalizeBackgroundPattern } from "../data/game-data.js";
 import { buildInfo } from "../build/version.js"; // #358：登入卡產品識別之版本值（VERSION SSOT 投影，不另存第二份）
 import { princessName, profileColorFor, render, renderBustInto } from "../render/hud.js";
@@ -600,7 +600,10 @@ export function buildLoginScreen() {
   if (!els.list) return;
   renderLoginVersion(); // #358
   els.list.innerHTML = "";
-  if (els.back) els.back.hidden = true; // 登入 gate：不可關閉
+  // #372：Back 顯示與否比照本機模式（select-screens buildAccountList L314）——
+  // 由「進行中遊戲」按 ⟳Switch player 進入時（有使用中帳號、非啟動 gate）提供回程；
+  // 啟動登入 gate（mustChoose，或尚無使用中帳號，如 main.js bootstrap）仍不可關閉（#309 不可繞過）。
+  if (els.back) els.back.hidden = session.accountSelectMustChoose || !getActiveAccountId();
   const cached = loadCachedSession();
   const recents = loadRecentAccounts();
   const registrationOpen = serverConfig.registrationOpen;

@@ -38,9 +38,11 @@ export function returnToInitialSelect() {
   hidePlayBreak();
   closeSystemMenu();
   // issue #309：雲端模式返回登入／帳號選擇畫面（返回前已保存並同步雲端；不重置進度、不解除休息鎖）。
+  // #372：由進行中遊戲進入時比照本機路徑用 mustChoose:false——有使用中帳號時登入畫面提供 Back 回程
+  // （回原遊戲畫面）；啟動 gate（main.js bootstrap，無使用中帳號）另以 mustChoose:true 進入、仍不可退出。
   if (CLOUD_MODE) {
     void flushCloudSave();
-    openLoginScreen({ mustChoose: true });
+    openLoginScreen({ mustChoose: false });
     return;
   }
   openAccountSelect({ mustChoose: false });

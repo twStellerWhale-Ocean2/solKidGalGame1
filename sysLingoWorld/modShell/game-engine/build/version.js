@@ -4,6 +4,7 @@
 export const copyright = "carlton0521@gmail.com, copyright reserved, 2026";
 
 export const versionHistory = [
+  { version: "0.68.2", buildDateTime: "2026-07-18", summaryZh: "雲端模式下、遊戲進行中按「⟳ 切換玩家」被帶到登入／帳號畫面時，補上可返回原遊戲的 Back 返回鍵——原本沒有返回途徑，改變心意也回不去、只能重選帳號或重新登入；尚未登入的啟動把關維持不可略過（安全前提不變）。本機多帳號模式原本即可返回、行為不變" },
   { version: "0.68.0", buildDateTime: "2026-07-17", summaryZh: "新局公主預設造型更新：改為雙辮髮型（Twin braids）搭配金色刺繡宮廷裙（Gold embroidered court gown），木鞋不變；新局預先擁有的三件同步為身上所穿（規則不變：其餘外觀仍以答題所得金幣購買）。既有存檔與進度完全不受影響，只影響新開局的起始造型" },
   { version: "0.67.1", buildDateTime: "2026-07-17", summaryZh: "進場景不再乾等圖（手機尤其明顯）：走近地點時就先把該場景的圖與角色圖偷偷抓好，按下去即開——不再是按了才開始下載（低優先級抓取，不跟你當下正在看的畫面搶網路）；另外把圖片改為可長期快取，重新整理或隔天再開時，看過的圖不必再回伺服器確認一次" },
   { version: "0.67.0", buildDateTime: "2026-07-17", summaryZh: "登入畫面依業界慣例重整（家長回饋）：新裝置進來預設是「登入」表單而非「建立新帳號」——帳號存在家用伺服器上，換手機或平板的既有玩家直接登入即可帶回進度，不會被導去重建帳號（原動線會產生重複帳號、進度分裂）；第一次玩的新玩家點表單下方「First time here? Create an account」建立。卡片頂端顯示遊戲名稱、頁尾顯示服務版本（維護者不必登入即可確認版本）；帳密規則不再一次攤成大段說明，改由欄位提示與送出後的就地錯誤呈現；移除空狀態那顆按了無處可回的 Back 鈕。既有帳號卡動線、免密續玩、註冊關閉說明皆不變" },
@@ -54,8 +55,8 @@ export const versionHistory = [
 ];
 
 export const buildInfo = {
-  version: "0.68.1",
-  buildDate: "2026-07-17",
-  buildDateTime: "2026-07-17",
-  issues: ["#367"]
+  version: "0.68.2",
+  buildDate: "2026-07-18",
+  buildDateTime: "2026-07-18",
+  issues: ["#372"]
 };

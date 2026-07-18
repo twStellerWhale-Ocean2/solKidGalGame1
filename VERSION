@@ -1,8 +1,16 @@
 {
-  "version": "0.68.1",
-  "date": "2026-07-17",
+  "version": "0.68.2",
+  "date": "2026-07-18",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.68.2",
+      "date": "2026-07-18",
+      "type": "fix",
+      "playerVisible": true,
+      "issue": "#372",
+      "summaryZh": "雲端模式下、遊戲進行中按「⟳ 切換玩家」被帶到登入／帳號畫面時，補上可返回原遊戲的 Back 返回鍵——原本沒有返回途徑，改變心意也回不去、只能重選帳號或重新登入；尚未登入的啟動把關維持不可略過（安全前提不變）。本機多帳號模式原本即可返回、行為不變"
+    },
     {
       "version": "0.68.1",
       "date": "2026-07-17",
