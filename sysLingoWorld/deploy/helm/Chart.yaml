@@ -3,5 +3,5 @@ apiVersion: v2
 name: sollingoworld-chart
 description: solLingoWorld 整包自架部署（遊戲殼＋帳號存檔 API＋/admin/ 線上管理＋PostgreSQL；spec#27）
 type: application
-version: 0.74.0
-appVersion: "0.74.0"
+version: 0.74.1
+appVersion: "0.74.1"
