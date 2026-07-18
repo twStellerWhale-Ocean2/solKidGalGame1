@@ -29,6 +29,7 @@ export function createElements() {
     changeCharacterButton: $("#changeCharacterButton"),
     characterRoster: $("#characterRoster"),
     addCharacterButton: $("#addCharacterButton"),
+    removeCharacterButton: $("#removeCharacterButton"),
     characterSelect: $("#characterSelect"),
     characterSelectCard: $(".character-select-card"),
     characterGrid: $("#characterGrid"),

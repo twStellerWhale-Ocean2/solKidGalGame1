@@ -22,7 +22,7 @@ import { renderAbout, renderBuildInfo } from "./settings.js";
 import { renderPlayClock } from "../state/play-session.js";
 import { effectivePlayLimit } from "../system/play-clock.js";
 import { elements, session } from "../core/session.js";
-import { listAccountCharacters } from "../app/select-screens.js"; // #378：settings 角色 roster picker（cyclic，runtime 呼叫安全）
+import { listAccountCharacters, rosterAtCap } from "../app/select-screens.js"; // #378/#379：settings 角色 roster picker（cyclic，runtime 呼叫安全）
 import { cloud, cloudActive, syncRecentSummary } from "../system/cloud-sync.js";
 
 function cloudUsername() { return cloud.username || ""; }
@@ -256,6 +256,8 @@ function renderCharacterRoster() {
     btn.append(bust, label);
     roster.appendChild(btn);
   });
+  if (elements.addCharacterButton) elements.addCharacterButton.disabled = rosterAtCap(); // #379：達上限停用 Add
+  if (elements.removeCharacterButton) elements.removeCharacterButton.hidden = characters.length <= 1; // #379：僅一員時不顯示 Remove（守最後一員）
 }
 
 export function renderSettings() {

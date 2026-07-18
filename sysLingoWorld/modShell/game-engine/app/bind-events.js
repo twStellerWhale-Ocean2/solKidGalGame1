@@ -52,6 +52,7 @@ import {
   closeAccountSelect,
   confirmCharacterSelect,
   createNewAccount,
+  deleteActiveCharacter,
   openCharacterSelect,
   returnToInitialSelect,
   startAddCharacter,
@@ -81,6 +82,9 @@ export function bindEvents() {
   elements.characterRoster?.addEventListener("click", (event) => { // #378：點卡切換公主（非破壞）
     const item = event.target.closest("[data-character-save-id]");
     if (item) switchToCharacter(item.dataset.characterSaveId);
+  });
+  elements.removeCharacterButton?.addEventListener("click", () => { // #379：刪除目前公主（守最後一員＋確認）
+    if (window.confirm(`Remove ${princessName()}? Her coins, diary and dress-up will be deleted. This can't be undone.`)) deleteActiveCharacter();
   });
   elements.characterConfirm?.addEventListener("click", confirmCharacterSelect);
   elements.characterCancel?.addEventListener("click", cancelCharacterSelect);

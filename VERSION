@@ -1,8 +1,16 @@
 {
-  "version": "0.72.0",
+  "version": "0.73.0",
   "date": "2026-07-18",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.73.0",
+      "date": "2026-07-18",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#379",
+      "summaryZh": "可移除同一玩家下的公主，並限制每位玩家最多 6 位（Increment 4，承 #375）：設定選單「Your princesses」新增「Remove this princess」（危險鈕、二次確認、刪除該公主的金幣/日記/換裝）；刪除使用中的公主會自動切到其餘的第一位；只剩一位時不顯示移除鈕（保底至少一位公主）；達 6 位上限時「Add princess」自動停用。既有存檔自動相容"
+    },
     {
       "version": "0.72.0",
       "date": "2026-07-18",
