@@ -83,6 +83,75 @@ export function installTestingHooks(api) {
   runSceneCoinsSelfTest(api);
   runStarterOutfitSelfTest(api);
   runRosterSelfTest(api);
+  runCharacterHomeSelfTest(api);
+}
+
+// issue #390：選角色頁（登入後家門口，兩表單 canon Inc1）——角色列建構、active 標示、
+// 點列切換＋關頁、Add 上限停用、本機模式不顯示 Log out。
+function runCharacterHomeSelfTest(api) {
+  const params = new URLSearchParams(location.search);
+  if (params.get("selftest") !== "character-home") return;
+  const errors = [];
+  try {
+    if (!api.accounts.activeId()) api.accounts.create();
+    const activeId = api.accounts.activeId();
+    const aKey = api.accountStateKey(activeId);
+    const savedBlob = localStorage.getItem(aKey);
+    try {
+      const A = api.normalizeState({ activeCharacterId: "lumi", playerName: "Aaa", coins: 10 });
+      const B = api.normalizeState({ activeCharacterId: "lumi", playerName: "Bbb", coins: 20 });
+      localStorage.setItem(aKey, JSON.stringify({ schema: "2", activeCharacterSaveId: "chA", characters: { chA: A, chB: B } }));
+      api.state = api.normalizeState(A);
+      api.openCharacterHome();
+      const overlay = document.getElementById("characterHome");
+      if (!overlay || !overlay.classList.contains("show")) errors.push("#390: 選角色頁未開啟");
+      const rows = overlay ? [...overlay.querySelectorAll(".account-pick")] : [];
+      if (rows.length !== 2) errors.push(`#390: 角色列應 2（實得 ${rows.length}）`);
+      if (overlay && overlay.querySelectorAll(".account-row.active").length !== 1) errors.push("#390: active 標示應恰 1 列");
+      const logoutBtn = document.getElementById("characterHomeLogout");
+      if (logoutBtn && !logoutBtn.hidden) errors.push("#390: 本機模式不應顯示 Log out");
+      const accountLine = document.getElementById("characterHomeAccountLine");
+      if (!accountLine || !/2 princesses/.test(accountLine.textContent)) errors.push("#390: 帳號行未顯示角色數");
+      // 點非 active 列＝切換角色＋關頁進入遊戲。
+      const rowB = rows.find((row) => row.dataset.saveId === "chB");
+      if (!rowB) {
+        errors.push("#390: 找不到角色 B 列");
+      } else {
+        rowB.click();
+        if (api.state.playerName !== "Bbb" || api.state.coins !== 20) errors.push("#390: 點列未切換至目標角色");
+        if (overlay.classList.contains("show")) errors.push("#390: 進入遊戲後選角色頁應關閉");
+      }
+      // 重開：active 應移至 B；點 active 列＝直接進入（狀態不變、關頁）。
+      api.openCharacterHome();
+      const activePick = overlay.querySelector(".account-row.active .account-pick");
+      if (!activePick || activePick.dataset.saveId !== "chB") errors.push("#390: 重開後 active 應為 B");
+      activePick?.click();
+      if (api.state.playerName !== "Bbb") errors.push("#390: 點 active 列後狀態不應變");
+      if (overlay.classList.contains("show")) errors.push("#390: 點 active 列後應關頁進入遊戲");
+      // Add 上限：2 員可新增；6 員（ROSTER_CAP）停用。
+      api.openCharacterHome();
+      const addBtn = document.getElementById("characterHomeAdd");
+      if (!addBtn || addBtn.disabled) errors.push("#390: 2 員時 Add 不應停用");
+      const full = { schema: "2", activeCharacterSaveId: "c0", characters: {} };
+      for (let i = 0; i < 6; i += 1) full.characters["c" + i] = api.normalizeState({ activeCharacterId: "lumi", playerName: "P" + i, coins: i });
+      localStorage.setItem(aKey, JSON.stringify(full));
+      api.state = api.normalizeState(full.characters.c0);
+      api.buildCharacterHome();
+      if (!document.getElementById("characterHomeAdd").disabled) errors.push("#390: 6 員達上限 Add 應停用");
+      if ([...overlay.querySelectorAll(".account-pick")].length !== 6) errors.push("#390: 6 員 roster 應列 6 列");
+      api.closeCharacterHome();
+      if (overlay.classList.contains("show")) errors.push("#390: closeCharacterHome 未關閉");
+    } finally {
+      if (savedBlob === null) localStorage.removeItem(aKey); else localStorage.setItem(aKey, savedBlob);
+      api.closeCharacterHome();
+    }
+  } catch (error) {
+    errors.push("#390: unexpected error " + ((error && error.message) || error));
+  }
+  const result = document.createElement("pre");
+  result.id = "characterHomeResult";
+  result.textContent = JSON.stringify({ test: "character-home", passed: errors.length === 0, errors });
+  document.body.prepend(result);
 }
 
 // issue #376：多角色 roster envelope（Increment 1／基礎）——legacy wrap 冪等、characters slice clean、

@@ -37,6 +37,7 @@ import { itemById } from "../core/lookups.js";
 import { CLOUD_MODE } from "./env.js";
 import { cloud, cloudActive, flushCloudSave, scheduleCloudSave, setCloudRoster } from "../system/cloud-sync.js";
 import { openLoginScreen } from "./login-screen.js";
+import { openCharacterHome } from "./character-home.js"; // #390：⟳ 重導選角色頁
 import { persist } from "../system/persistence.js";
 import { playStatus } from "../system/play-clock.js";
 import { elements, session } from "../core/session.js";
@@ -50,6 +51,12 @@ export function returnToInitialSelect() {
   // （回原遊戲畫面）；啟動 gate（main.js bootstrap，無使用中帳號）另以 mustChoose:true 進入、仍不可退出。
   if (CLOUD_MODE) {
     void flushCloudSave();
+    // #390 兩表單 canon：⟳＝切換角色，自遊戲返回「選角色頁」（角色層單一路徑）；
+    // 僅在無活躍 session（過期等）時退回登入表單。
+    if (cloudActive()) {
+      openCharacterHome();
+      return;
+    }
     openLoginScreen({ mustChoose: false });
     return;
   }
@@ -337,7 +344,13 @@ export function deleteActiveCharacter() {
 // issue #153：取消創角。若為「既有帳號下新增」之未確認新帳號，丟棄該空帳號並返回帳號選擇（還原先前使用中帳號）；
 // 一般換角（changeCharacter）或無待定新帳號時，僅關閉覆蓋層。
 export function cancelCharacterSelect() {
+  const wasAdding = session.pendingAddCharacter === true; // #390：自選角色頁進入的新增，取消要回選角色頁
   session.pendingAddCharacter = false; // #378：取消新增角色亦清旗標（回退不 append）
+  if (wasAdding && hasRosterContext()) {
+    closeCharacterSelect();
+    openCharacterHome();
+    return;
+  }
   if (session.pendingNewAccount) {
     const { id, prevActiveId, prevMustChoose } = session.pendingNewAccount;
     session.pendingNewAccount = null;

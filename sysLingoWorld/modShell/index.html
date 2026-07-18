@@ -229,6 +229,22 @@
       </div>
     </section>
 
+    <!-- #390 選角色頁（登入後家門口，techApp ＜III.B＞ 兩表單 canon）：reuse account-select 卡版型 -->
+    <section class="account-select-overlay character-home-overlay" id="characterHome" aria-hidden="true" aria-labelledby="characterHomeTitle">
+      <div class="account-select-backdrop"></div>
+      <div class="account-select-card character-home-card" role="dialog" aria-modal="true" tabindex="-1" aria-describedby="characterHomeAccountLine">
+        <div class="account-select-header character-home-header">
+          <h2 id="characterHomeTitle">Who is playing?</h2>
+          <p class="character-home-account-line" id="characterHomeAccountLine"></p>
+        </div>
+        <div class="account-list" id="characterHomeList" role="list"></div>
+        <div class="account-select-actions character-home-actions">
+          <button class="soft-button character-home-logout" id="characterHomeLogout" type="button" hidden>Log out</button>
+          <button class="primary-button" id="characterHomeAdd" type="button">Add princess</button>
+        </div>
+      </div>
+    </section>
+
     <section class="character-select-overlay" id="characterSelect" aria-hidden="true" aria-labelledby="characterSelectTitle">
       <div class="character-select-backdrop" data-character-cancel></div>
       <div class="character-select-card" role="dialog" aria-modal="true" tabindex="-1">

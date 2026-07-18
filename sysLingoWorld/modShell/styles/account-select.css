@@ -341,3 +341,18 @@ body.cloud-offline #statusMessage {
   color: #6b5560;
   font-size: 0.75rem;
 }
+
+/* #390 選角色頁（登入後家門口）：reuse 帳號選擇卡版型；帳號行＋登出為帳號層唯一露出處 */
+.character-home-account-line {
+  margin: 0.2rem 0 0;
+  font-size: 0.85rem;
+  opacity: 0.82;
+}
+
+.character-home-actions {
+  gap: 0.6rem;
+}
+
+.character-home-logout {
+  flex: 0 0 auto;
+}
