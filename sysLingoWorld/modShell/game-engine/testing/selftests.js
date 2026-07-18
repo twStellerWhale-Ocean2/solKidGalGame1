@@ -141,6 +141,43 @@ function runCharacterHomeSelfTest(api) {
       if ([...overlay.querySelectorAll(".account-pick")].length !== 6) errors.push("#390: 6 員 roster 應列 6 列");
       api.closeCharacterHome();
       if (overlay.classList.contains("show")) errors.push("#390: closeCharacterHome 未關閉");
+      // #391：角色密碼守門——有 pin 不直進（展開驗證面板）、錯誤留頁、正確進入。
+      const P = api.normalizeState({ activeCharacterId: "lumi", playerName: "Ppp", coins: 30 });
+      P.pinHash = api.hashCharacterPin("1234");
+      const Q = api.normalizeState({ activeCharacterId: "lumi", playerName: "Qqq", coins: 40 });
+      localStorage.setItem(aKey, JSON.stringify({ schema: "2", activeCharacterSaveId: "chQ", characters: { chQ: Q, chP: P } }));
+      api.state = api.normalizeState(Q);
+      api.openCharacterHome();
+      const rowP = overlay.querySelector('.account-pick[data-save-id="chP"]');
+      if (!rowP) {
+        errors.push("#391: 找不到有 pin 之角色列");
+      } else {
+        rowP.click();
+        if (api.state.playerName !== "Qqq") errors.push("#391: 有 pin 角色不應點列直進（已被切換）");
+        const panel = overlay.querySelector(".character-pin-panel");
+        if (!panel) {
+          errors.push("#391: 點有 pin 角色列未展開驗證面板");
+        } else {
+          const pinInput = panel.querySelector("input");
+          const pinEnter = panel.querySelector("button");
+          pinInput.value = "9999";
+          pinEnter.click();
+          if (api.state.playerName !== "Qqq") errors.push("#391: 錯誤密碼不應進入");
+          const panelNow = overlay.querySelector(".character-pin-panel");
+          if (!panelNow || !panelNow.querySelector(".login-error").textContent) errors.push("#391: 錯誤密碼應就地顯示錯誤");
+          panelNow.querySelector("input").value = "1234";
+          panelNow.querySelector("button").click();
+          if (api.state.playerName !== "Ppp" || api.state.coins !== 30) errors.push("#391: 正確密碼應切換並進入");
+          if (overlay.classList.contains("show")) errors.push("#391: 驗證通過後選角色頁應關閉");
+          if (api.state.pinHash !== api.hashCharacterPin("1234")) errors.push("#391: 切換後 pinHash 應隨角色 state 保留");
+        }
+      }
+      // #391：無 pin 角色（chQ）行為不變——點即進入。
+      api.openCharacterHome();
+      const rowQ = overlay.querySelector('.account-pick[data-save-id="chQ"]');
+      rowQ?.click();
+      if (api.state.playerName !== "Qqq") errors.push("#391: 無 pin 角色應照舊點即進入");
+      if (overlay.classList.contains("show")) errors.push("#391: 無 pin 進入後應關閉");
     } finally {
       if (savedBlob === null) localStorage.removeItem(aKey); else localStorage.setItem(aKey, savedBlob);
       api.closeCharacterHome();

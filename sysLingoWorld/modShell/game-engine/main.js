@@ -11,7 +11,7 @@ import { firstLayerActionsFor } from "./flow/scene-actions.js";
 import { mapActorMotionTypes } from "./map/actors.js";
 import { renderVoiceSettings } from "./render/settings.js";
 import { VOICE_ASSIGNMENT_KEY } from "./state/voice-assignments.js";
-import { createQuestForPlace, createRandomQuest, createFreshAccount, freshState, loadAccountState, normalizeState, persistState, readRosterEnvelope } from "./state/game-state.js";
+import { createQuestForPlace, createRandomQuest, createFreshAccount, freshState, hashCharacterPin, loadAccountState, normalizeState, persistState, readRosterEnvelope } from "./state/game-state.js";
 import { deleteAccount, getActiveAccountId, listAccounts, setActiveAccountId } from "./state/accounts.js";
 import { accountStateKey } from "./state/storage.js"; // #376：roster selftest 之 storage 鍵
 import { installTestingHooks } from "./testing/selftests.js?v=20260703-issue298-split-monolith";
@@ -149,6 +149,7 @@ installTestingHooks({
   openCharacterHome, // #390：選角色頁（自測）
   closeCharacterHome, // #390
   buildCharacterHome, // #390
+  hashCharacterPin, // #391：角色密碼雜湊（自測）
   startAddCharacter, // #378
   deleteActiveCharacter, // #379
   rosterAtCap, // #379
