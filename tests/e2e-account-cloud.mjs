@@ -193,30 +193,32 @@ try {
   await pageB.screenshot({ path: path.join(SHOTS, "issue309-05-login-error.png") });
   await pageB.fill("#loginOtherPassword", password);
   await pageB.click(".login-enter");
-  await pageB.waitForFunction(() => !document.querySelector("#accountSelect.show"), { timeout: 15000 });
+  // #390 兩表單 canon：登入成功落「選角色頁」（Who is playing?），點角色才進遊戲。
+  await pageB.waitForSelector("#characterHome.show", { timeout: 15000 });
+  await pageB.screenshot({ path: path.join(SHOTS, "issue390-06-character-home.png") }); // GATE ＜2.5節＞ 證據：選角色頁
+  await pageB.click("#characterHomeList .account-pick");
+  await pageB.waitForFunction(() => !document.querySelector("#characterHome.show"), { timeout: 10000 });
   const coinsB = await pageB.evaluate(() => window.LuminaraTest.getCoins());
   check("cross-device login restores cloud state (coins 777)", coinsB === 777, String(coinsB));
   await pageB.screenshot({ path: path.join(SHOTS, "issue309-06-cross-device-restored.png") });
 
-  // ── 裝置 B 再次進入：帳號卡＋免密續玩（session 快取） ──
+  // ── 裝置 B 再次進入：保持登入（#390/#393）——靜默續玩直落選角色頁、不見登入表單 ──
   await pageB.reload({ waitUntil: "networkidle" });
-  await pageB.waitForSelector("#accountSelect.show", { timeout: 15000 });
-  await pageB.waitForSelector(`#accountList .account-pick[data-username="${username}"]`, { timeout: 10000 });
-  await pageB.screenshot({ path: path.join(SHOTS, "issue309-07-login-cards.png") });
-  check("#357 有帳號卡＝cards 模式，大鈕（新增玩家）可見", await pageB.evaluate(() => document.getElementById("accountNewButton")?.hidden === false));
-  await pageB.click(".login-actions .soft-button"); // Other account
-  await pageB.waitForSelector("#loginOtherUsername", { timeout: 8000 });
-  check("#357 有上一步時 Back 出現（自子表單回卡片列表）", await pageB.evaluate(() => [...document.querySelectorAll("#accountList button")].some((b) => b.textContent.trim() === "Back")));
-  check("#357 子表單模式下大鈕收起（不與登入同權）", await pageB.evaluate(() => document.getElementById("accountNewButton")?.hidden === true));
-  await pageB.click("#accountList button:has-text('Back')");
-  await pageB.waitForSelector(`#accountList .account-pick[data-username="${username}"]`, { timeout: 8000 });
-  await pageB.click(`#accountList .account-pick[data-username="${username}"]`);
-  await pageB.waitForSelector(".login-continue", { timeout: 10000 });
-  await pageB.screenshot({ path: path.join(SHOTS, "issue309-08-continue-session.png") });
-  await pageB.click(".login-continue");
-  await pageB.waitForFunction(() => !document.querySelector("#accountSelect.show"), { timeout: 15000 });
+  await pageB.waitForSelector("#characterHome.show", { timeout: 15000 });
+  check("#390 revisit stays signed in (silent resume, no login form)", await pageB.evaluate(() => !document.querySelector("#accountSelect.show")));
+  check("#390 character page shows account line", await pageB.evaluate((u) => (document.getElementById("characterHomeAccountLine")?.textContent || "").includes(u), username));
+  await pageB.screenshot({ path: path.join(SHOTS, "issue390-07-character-home-resume.png") });
+  await pageB.click("#characterHomeList .account-pick");
+  await pageB.waitForFunction(() => !document.querySelector("#characterHome.show"), { timeout: 10000 });
   const coinsB2 = await pageB.evaluate(() => window.LuminaraTest.getCoins());
-  check("session cache continue (no password) restores state", coinsB2 === 777, String(coinsB2));
+  check("silent resume (no password) restores state", coinsB2 === 777, String(coinsB2));
+
+  // ── ⟳ Switch princess＝回選角色頁（單一切換路徑）；Log out（帳號層唯一登出處）→ 登入表單預填帳號 ──
+  await pageB.click("#switchPlayerQuickButton");
+  await pageB.waitForSelector("#characterHome.show", { timeout: 10000 });
+  await pageB.click("#characterHomeLogout");
+  await pageB.waitForSelector("#loginOtherUsername", { timeout: 15000 });
+  check("#393 log out returns to sign-in with prefilled username", (await pageB.inputValue("#loginOtherUsername")) === username);
 
   check("no page errors on either device", consoleErrors.length === 0, consoleErrors[0] || "");
 } finally {
