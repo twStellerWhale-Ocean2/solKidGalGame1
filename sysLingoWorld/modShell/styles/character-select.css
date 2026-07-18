@@ -248,3 +248,18 @@
   align-self: flex-start;
   margin-top: 2px;
 }
+
+/* #391 角色密碼（選配）欄：僅建立新角色時顯示；說明字樣收斂為次要視覺 */
+.character-pin-field {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.character-pin-field span {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--ink);
+  opacity: 0.85;
+}

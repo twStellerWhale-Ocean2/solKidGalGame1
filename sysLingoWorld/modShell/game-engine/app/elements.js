@@ -38,6 +38,8 @@ export function createElements() {
     profileColorGrid: $("#profileColorGrid"),
     profileColorPicker: $("#profileColorPicker"),
     backgroundPatternGrid: $("#backgroundPatternGrid"),
+    characterPinField: $("#characterPinField"),
+    characterPinInput: $("#characterPinInput"),
     characterConfirm: $("#characterConfirm"),
     characterCancel: $("#characterCancel"),
     wardrobeTunerDevButton: $("#wardrobeTunerDevButton"),

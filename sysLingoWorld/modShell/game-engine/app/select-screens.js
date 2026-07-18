@@ -23,6 +23,7 @@ import {
   characterSliceOf,
   createFreshAccount,
   freshState,
+  hashCharacterPin,
   loadAccountState,
   newCharacterSaveId,
   normalizeState,
@@ -77,6 +78,11 @@ export function openCharacterSelect({ forced = false, cancelable = false } = {})
   buildCharacterCards();
   buildProfileColorChoices();
   buildBackgroundPatternChoices();
+  // #391：角色密碼欄僅於建立新角色時顯示（新增模式或 forced 創角）；re-skin 隱藏、不動既有 pin。
+  if (elements.characterPinField) {
+    elements.characterPinField.hidden = !(session.pendingAddCharacter === true || forced);
+    if (elements.characterPinInput) elements.characterPinInput.value = "";
+  }
   elements.playerNameInput.value = session.state.playerName || playableCharacterById(session.pendingCharacterId)?.defaultName || "";
   // issue #153：真正首啟（forced 且不可取消）才鎖定不可取消；既有帳號下新增（cancelable）顯示返回鈕、可取消返回帳號選擇。
   elements.characterSelect.classList.toggle("first-run", forced && !cancelable);
@@ -216,13 +222,19 @@ export function applyCharacterStarterOutfit(character) {
 export function confirmCharacterSelect() {
   const character = playableCharacterById(session.pendingCharacterId);
   const adding = session.pendingAddCharacter === true; // #378：新增模式（append 而非就地覆寫）
+  // #391：角色密碼（選配）——欄位顯示中且非空才設；留空＝不設。
+  const pinValue = elements.characterPinField && !elements.characterPinField.hidden && elements.characterPinInput
+    ? elements.characterPinInput.value.trim()
+    : "";
   session.pendingAddCharacter = false;
   if (adding) {
-    confirmAddCharacter(character);
+    confirmAddCharacter(character, pinValue);
   } else {
     applyChosenAppearance(character);
+    if (pinValue) session.state.pinHash = hashCharacterPin(pinValue); // #391：forced 創角（首角）亦可設
     persist();
   }
+  if (elements.characterPinInput) elements.characterPinInput.value = "";
   const activeAccountId = getActiveAccountId();
   if (activeAccountId) syncActiveAccountMeta({ touched: true });
   session.pendingNewAccount = null; // issue #153：已確認創角，此新帳號不再是可丟棄的待定帳號。
@@ -263,7 +275,7 @@ export function commitRoster(env) {
 }
 
 // #378：新增一位角色（非破壞）——保存目前 active 回 roster，新建一員 fresh 角色套用選定外觀、設為 active、寫全 roster。
-function confirmAddCharacter(character) {
+function confirmAddCharacter(character, pinValue = "") {
   if (!hasRosterContext()) { applyChosenAppearance(character); persist(); return; } // 無帳號情境（不應發生）：退回 re-skin
   const env = getActiveRoster();
   if (Object.keys(env.characters).length >= ROSTER_CAP) return; // #379：達上限不新增（startAddCharacter 已擋，此為保險）
@@ -272,6 +284,7 @@ function confirmAddCharacter(character) {
   carryAccountClock(session.state, fresh); // 新角色沿帳號時鐘（account-scoped）
   session.state = fresh;
   applyChosenAppearance(character); // 對 fresh 套用選定外觀
+  if (pinValue) session.state.pinHash = hashCharacterPin(pinValue); // #391：新增時選設角色密碼
   const saveId = newCharacterSaveId();
   env.activeCharacterSaveId = saveId;
   env.characters[saveId] = characterSliceOf(session.state);
@@ -285,7 +298,7 @@ export function listAccountCharacters() {
   return Object.keys(env.characters).map((saveId) => {
     const active = saveId === env.activeCharacterSaveId;
     const s = active ? session.state : normalizeState(env.characters[saveId]);
-    return { saveId, active, characterId: s.activeCharacterId, playerName: s.playerName, profileColor: s.profileColor, backgroundPattern: normalizeBackgroundPattern(s.backgroundPattern), outfit: s.outfit, coins: s.coins };
+    return { saveId, active, characterId: s.activeCharacterId, playerName: s.playerName, profileColor: s.profileColor, backgroundPattern: normalizeBackgroundPattern(s.backgroundPattern), outfit: s.outfit, coins: s.coins, pinHash: s.pinHash || "" }; // #391：曝 pinHash 供選角色頁守門
   });
 }
 

@@ -268,6 +268,11 @@
             <legend>Background pattern</legend>
             <div class="background-pattern-grid" id="backgroundPatternGrid" role="radiogroup" aria-label="Background pattern"></div>
           </fieldset>
+          <!-- #391 角色密碼（選配，僅建立新角色時顯示）：防共用裝置互玩之家庭內防呆 -->
+          <label class="character-pin-field" id="characterPinField" hidden>
+            <span>Secret password (optional) — keeps others from playing as her</span>
+            <input id="characterPinInput" type="password" maxlength="12" autocomplete="off" placeholder="Leave empty for no password" />
+          </label>
         </form>
         <div class="character-select-actions">
           <button class="soft-button character-select-cancel" id="characterCancel" type="button">Back</button>

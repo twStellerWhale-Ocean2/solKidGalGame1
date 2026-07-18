@@ -9,11 +9,16 @@ import { tickPlayClock } from "../state/play-session.js";
 import { accountPlayStatusText, listAccountCharacters, rosterAtCap, startAddCharacter, switchToCharacter } from "./select-screens.js";
 import { cloud, cloudActive, cloudLogout } from "../system/cloud-sync.js";
 import { clearCachedSession } from "../state/cloud-session.js";
+import { hashCharacterPin } from "../state/game-state.js";
 import { openLoginScreen } from "./login-screen.js";
 import { elements, session } from "../core/session.js";
 
+// #391：待驗證角色（點到有密碼的角色列時展開就地驗證面板）；開頁時重置。
+let pendingPinSaveId = "";
+
 export function openCharacterHome() {
   closeSystemMenu();
+  pendingPinSaveId = "";
   buildCharacterHome();
   elements.characterHome.classList.add("show");
   elements.characterHome.setAttribute("aria-hidden", "false");
@@ -69,13 +74,64 @@ export function buildCharacterHome() {
     pick.append(avatar, text, statusEl);
     pick.addEventListener("click", () => enterAsCharacter(entry.saveId));
     row.append(pick);
+    // #391：有角色密碼者，點列先展開就地驗證面板（沿 #331 就地錯誤通則），驗過才進入。
+    if (entry.pinHash && entry.saveId === pendingPinSaveId) row.append(buildPinPanel(entry));
     list.appendChild(row);
   });
   if (elements.characterHomeAdd) elements.characterHomeAdd.disabled = rosterAtCap();
 }
 
-// 點角色列＝進入遊戲：active 直接進；非 active 先非破壞切換（#378，帳號時鐘不重置）再進。
+// #391：角色密碼就地驗證面板——密碼欄＋Enter＋錯誤行。
+function buildPinPanel(entry) {
+  const panel = document.createElement("div");
+  panel.className = "login-expand character-pin-panel";
+  const input = document.createElement("input");
+  input.type = "password";
+  input.maxLength = 12;
+  input.autocomplete = "off";
+  input.placeholder = "Secret password";
+  input.className = "login-input";
+  const error = document.createElement("p");
+  error.className = "login-error";
+  error.setAttribute("role", "alert");
+  const enter = document.createElement("button");
+  enter.type = "button";
+  enter.className = "primary-button";
+  enter.textContent = "Enter";
+  const submit = () => {
+    if (hashCharacterPin(input.value) !== entry.pinHash) {
+      error.textContent = "⚠ Wrong password. Ask a grown-up if you forgot.";
+      input.value = "";
+      input.focus({ preventScroll: true });
+      return;
+    }
+    pendingPinSaveId = "";
+    proceedEnter(entry.saveId);
+  };
+  enter.addEventListener("click", submit);
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") submit();
+  });
+  panel.append(input, error, enter);
+  setTimeout(() => input.focus({ preventScroll: true }), 0);
+  return panel;
+}
+
+// 點角色列＝進入遊戲：無密碼直接進；有密碼（#391）展開驗證面板（再點列收合）。
 function enterAsCharacter(saveId) {
+  const target = listAccountCharacters().find((entry) => entry.saveId === saveId);
+  if (!target) return;
+  if (target.pinHash) {
+    pendingPinSaveId = pendingPinSaveId === saveId ? "" : saveId;
+    buildCharacterHome();
+    return;
+  }
+  pendingPinSaveId = "";
+  proceedEnter(saveId);
+}
+
+// 進入遊戲：active 直接進；非 active 先非破壞切換（#378，帳號時鐘不重置）再進。
+function proceedEnter(saveId) {
   const target = listAccountCharacters().find((entry) => entry.saveId === saveId);
   if (!target) return;
   if (!target.active) switchToCharacter(saveId);
