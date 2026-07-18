@@ -2,7 +2,8 @@ import { $$ } from "./app/elements.js";
 import { CLOUD_MODE, isLocalDevEnv, isLocalDevHost, WARDROBE_TUNER_DEV_PATH } from "./app/env.js";
 import { setApiFetch, USERNAME_PATTERN, PASSWORD_MIN_LENGTH, validateUsernameInput, validatePasswordInput } from "./system/api-client.js";
 import { adoptServerBase, adoptServerSaveState, cloud, cloudActive, cloudLogin, cloudLogout, cloudRegister, cloudResume, flushCloudSave, installCloudLifecycleFlush, scheduleCloudSave, syncRecentSummary } from "./system/cloud-sync.js";
-import { buildLoginScreen, loginScreenSetMode, migrateLocalAccount, openLoginScreen } from "./app/login-screen.js";
+import { bootCloudEntry, buildLoginScreen, loginScreenSetMode, migrateLocalAccount, openLoginScreen } from "./app/login-screen.js";
+import { buildCharacterHome, closeCharacterHome, openCharacterHome } from "./app/character-home.js"; // #390
 import { loadCachedSession, loadMigratedLocalIds, loadRecentAccounts, MIGRATED_FLAG_KEY, RECENT_ACCOUNTS_KEY, removeRecentAccount, SESSION_CACHE_KEY, upsertRecentAccount } from "./state/cloud-session.js";
 import { areaForHotspot, categoryForType, itemMatchesCategory, hotspotById, itemById, nodeMapForArea, sceneConfigFor } from "./core/lookups.js";
 import { areaRegistry, castleMapNodes, categories, characterScaleContract, characterRegistry, defaultActiveCharacterId, defaultProfileColorFor, difficultyConfig, playableCharacterById, normalizeProfileColor, randomProfileColor, backgroundPatternIds, normalizeBackgroundPattern, randomBackgroundPattern, mapNodes, paperDollBaseLayer, wardrobeLayerBoundsByType, wardrobeLayerBoundsForType, playableVoiceById, profileColorPalette, shopItems, worldMap, composeVoiceProfile, resolveVoiceProfile, DEFAULT_VOICE_PROFILE, recommendedVoiceNamesForGender, usedVoiceBuckets } from "./data/game-data.js";
@@ -71,7 +72,8 @@ if (CLOUD_MODE) {
     renderPlayClock();
   };
   installCloudLifecycleFlush();
-  openLoginScreen({ mustChoose: true });
+  // #390 兩表單 canon：先靜默續玩（保持登入）→ 選角色頁；無快取/失效才見登入表單。
+  void bootCloudEntry();
 }
 if (!hasSelftest) startPlayClock(); // selftest 模式由測試以注入時鐘自行驅動，不啟動真實 ticker。
 
@@ -144,6 +146,9 @@ installTestingHooks({
   returnToInitialSelect,
   listAccountCharacters, // #378
   switchToCharacter, // #378
+  openCharacterHome, // #390：選角色頁（自測）
+  closeCharacterHome, // #390
+  buildCharacterHome, // #390
   startAddCharacter, // #378
   deleteActiveCharacter, // #379
   rosterAtCap, // #379

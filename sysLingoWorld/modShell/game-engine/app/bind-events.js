@@ -58,6 +58,7 @@ import {
   startAddCharacter,
   switchToCharacter
 } from "./select-screens.js";
+import { addCharacterFromHome, logoutFromHome } from "./character-home.js"; // #390 選角色頁
 import {
   changeSystemPanel,
   changeView,
@@ -86,6 +87,8 @@ export function bindEvents() {
   elements.removeCharacterButton?.addEventListener("click", () => { // #379：刪除目前公主（守最後一員＋確認）
     if (window.confirm(`Remove ${princessName()}? Her coins, diary and dress-up will be deleted. This can't be undone.`)) deleteActiveCharacter();
   });
+  elements.characterHomeAdd?.addEventListener("click", addCharacterFromHome); // #390：選角色頁新增角色
+  elements.characterHomeLogout?.addEventListener("click", () => { void logoutFromHome(); }); // #390：帳號層登出
   elements.characterConfirm?.addEventListener("click", confirmCharacterSelect);
   elements.characterCancel?.addEventListener("click", cancelCharacterSelect);
   // issue #212：本機開發環境才揭示「衣物調整工具」dev 入口；正式發佈站保持 hidden、不接線。

@@ -36,6 +36,7 @@ import { changeView } from "./views.js";
 import { clockNow, formatClock, tickPlayClock } from "../state/play-session.js";
 import { playStatus } from "../system/play-clock.js";
 import { openCharacterSelect } from "./select-screens.js";
+import { openCharacterHome } from "./character-home.js"; // #390：登入後家門口（兩表單 canon）
 import { elements, session } from "../core/session.js";
 
 let uiMode = "cards"; // cards | login | register
@@ -225,8 +226,26 @@ async function enterGame(serverState, { isNew = false } = {}) {
     openCharacterSelect({ forced: true });
     return;
   }
-  elements.statusMessage.textContent = `Welcome back, ${princessName()}. Choose a place to start.`;
-  tickPlayClock();
+  // #390 兩表單 canon：登入/續玩成功後落「選角色頁」（每次上線經過，在此回答「你是誰」）；
+  // 歡迎訊息與遊玩時鐘改於選角色頁點角色進入時處理（character-home.enterAsCharacter）。
+  openCharacterHome();
+}
+
+// #390 開機動線：先靜默續玩（帳號登入一次即保持登入），成功落選角色頁；
+// 無裝置快取或 session 失效才顯示登入表單。離線時亦回登入表單（卡上 Continue 可重試）。
+export async function bootCloudEntry() {
+  if (loadCachedSession()) {
+    try {
+      const resumed = await cloudResume();
+      if (resumed?.ok) {
+        await enterGame(resumed.state);
+        return;
+      }
+    } catch (error) {
+      console.warn("silent resume failed", error);
+    }
+  }
+  openLoginScreen({ mustChoose: true });
 }
 
 async function submitLogin(username, password, errorEl, button = null, usernameField = null) {
