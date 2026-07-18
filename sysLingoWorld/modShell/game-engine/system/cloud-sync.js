@@ -17,6 +17,7 @@ import {
 } from "../state/cloud-session.js";
 import { session } from "../core/session.js";
 import { setPlayLimitPolicy } from "./play-clock.js";
+import { rosterEnvelopeOf, activeCharacterStateOf, reassembleEnvelope } from "../state/game-state.js"; // #377：多角色 roster envelope wrap/unwrap
 
 export const SAVE_DEBOUNCE_MS = 2000;
 const RETRY_BASE_MS = 5000;
@@ -27,6 +28,7 @@ export const cloud = {
   token: null,
   accountCreatedAt: 0,
   baseUpdatedAt: null,
+  roster: null, // #377：目前雲端存檔之 roster envelope（保留使 flush 只更新 active 角色、不覆蓋其他角色）
   status: "idle", // idle | saving | offline | conflict | expired
   pending: false,
   inFlight: false,
@@ -87,7 +89,9 @@ export async function cloudLogin(username, password) {
   applyServerTime(save.body.serverTime);
   adoptSession(username, res.body.token, res.body.account, save.body.updatedAt !== null ? { updatedAt: save.body.updatedAt } : null);
   applyPlayLimitPolicy(save.body.playLimitPolicy);
-  return { ok: true, state: save.body.state };
+  const serverState = save.body.state;
+  cloud.roster = serverState ? rosterEnvelopeOf(serverState) : null; // #377：保留雲端 roster
+  return { ok: true, state: serverState ? activeCharacterStateOf(serverState) : null }; // 回 active 角色切片（unwrap）
 }
 
 // 註冊（sysCase#6.2）：成功即自動登入（無存檔、由呼叫端建立新局並首寫）。
@@ -96,6 +100,7 @@ export async function cloudRegister(username, password) {
   if (res.status !== 201) return { ok: false, status: res.status, code: res.body?.error?.code || "error", retryAfterSeconds: res.body?.error?.retryAfterSeconds };
   adoptSession(username, res.body.token, res.body.account, null);
   applyPlayLimitPolicy(null); // 新帳號無覆寫
+  cloud.roster = null; // #377：新帳號無雲端 roster，首寫由 flush 以 session.state wrap
   return { ok: true, state: null };
 }
 
@@ -117,7 +122,9 @@ export async function cloudResume() {
   applyServerTime(save.body.serverTime);
   adoptSession(cached.username, cached.token, { createdAt: 0 }, save.body.updatedAt !== null ? { updatedAt: save.body.updatedAt } : null);
   applyPlayLimitPolicy(save.body.playLimitPolicy);
-  return { ok: true, username: cached.username, state: save.body.state };
+  const serverState = save.body.state;
+  cloud.roster = serverState ? rosterEnvelopeOf(serverState) : null; // #377
+  return { ok: true, username: cached.username, state: serverState ? activeCharacterStateOf(serverState) : null };
 }
 
 // 登出（sysCase#6.3）：先 flush 一次即時保存，再撤銷 session、清 token 快取（保留最近帳號摘要）。
@@ -143,6 +150,7 @@ export async function cloudLogout() {
   cloud.username = null;
   cloud.token = null;
   cloud.baseUpdatedAt = null;
+  cloud.roster = null; // #377
   cloud.pending = false;
   if (cloud.debounceTimer) { clearTimeout(cloud.debounceTimer); cloud.debounceTimer = 0; }
   if (cloud.retryTimer) { clearTimeout(cloud.retryTimer); cloud.retryTimer = 0; }
@@ -175,10 +183,13 @@ export async function flushCloudSave() {
   cloud.inFlight = true;
   setStatus("saving");
   let result;
+  // #377：PUT 整個 roster envelope——以保留之 cloud.roster 併入 active 角色（read-modify-write），
+  // 永不覆蓋其他角色；size==1 時等同 wrap session.state。root mirror 使 admin listAccounts 讀值不變。
+  const envelope = reassembleEnvelope(session.state, cloud.roster || rosterEnvelopeOf(session.state));
   try {
     result = await apiPutSave(cloud.token, {
-      state: session.state,
-      schemaVersion: "1",
+      state: envelope,
+      schemaVersion: "2",
       baseUpdatedAt: cloud.baseUpdatedAt
     });
   } catch (error) {
@@ -192,6 +203,7 @@ export async function flushCloudSave() {
   cloud.inFlight = false;
   if (result.status === 200) {
     cloud.baseUpdatedAt = result.body.updatedAt;
+    cloud.roster = envelope; // #377：同步保留已上傳之 roster envelope
     applyServerTime(result.body.serverTime);
     applyPlayLimitPolicy(result.body.playLimitPolicy);
     cloud.retryDelayMs = RETRY_BASE_MS;
@@ -230,6 +242,12 @@ function scheduleRetry() {
 // 409 解法（spec#24）：呼叫端確認後，改以伺服器現值為基準覆寫（使用者明示）或改載入伺服器進度。
 export function adoptServerBase(updatedAt) {
   cloud.baseUpdatedAt = Number.isFinite(updatedAt) ? updatedAt : null;
+}
+
+// #377：採納伺服器存檔 state（409 重載等）→ 保留 roster、回 active 角色 raw 切片供呼叫端 normalizeState。
+export function adoptServerSaveState(saveState) {
+  cloud.roster = saveState ? rosterEnvelopeOf(saveState) : null;
+  return saveState ? activeCharacterStateOf(saveState) : null;
 }
 
 // 帳號卡摘要（sysCase#6.1）：每次成功保存時更新，使登入畫面離線亦可渲染。

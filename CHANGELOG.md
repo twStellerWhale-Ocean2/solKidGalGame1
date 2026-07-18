@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（incrFlow genVersion，SSOT 工具）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更。
 
+## 0.71.0 — 2026-07-18 _(internal)_
+- feat (#377): （內部）雲端存檔升為多角色 roster envelope（Increment 2，承 #375 epic）：雲端 PUT 改送整個 roster envelope、只更新使用中角色而不覆蓋其他角色，登入/續玩自動 unwrap 為使用中角色；既有雲端帳號首次存檔即自動升版（後端與資料庫零改動、admin 讀值不變）。目前每帳號恆一位角色、玩法與存檔行為零變更，為後續新增/切換公主（#378）鋪路
+
 ## 0.70.0 — 2026-07-18 _(internal)_
 - feat (#376): （內部）本機存檔升為多角色 roster envelope 基礎結構（Increment 1，承 #375 epic）：每帳號 blob 由單一角色 state 升為含 characters 映射之 envelope、root 鏡射使用中角色以維持相容；目前每帳號恆一位角色、玩法與存檔行為零變更，為後續新增/切換公主（#378）鋪路。既有存檔自動相容（讀到即 wrap、無損 round-trip）
 

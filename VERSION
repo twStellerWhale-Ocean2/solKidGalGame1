@@ -1,8 +1,16 @@
 {
-  "version": "0.70.0",
+  "version": "0.71.0",
   "date": "2026-07-18",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.71.0",
+      "date": "2026-07-18",
+      "type": "feat",
+      "playerVisible": false,
+      "issue": "#377",
+      "summaryZh": "（內部）雲端存檔升為多角色 roster envelope（Increment 2，承 #375 epic）：雲端 PUT 改送整個 roster envelope、只更新使用中角色而不覆蓋其他角色，登入/續玩自動 unwrap 為使用中角色；既有雲端帳號首次存檔即自動升版（後端與資料庫零改動、admin 讀值不變）。目前每帳號恆一位角色、玩法與存檔行為零變更，為後續新增/切換公主（#378）鋪路"
+    },
     {
       "version": "0.70.0",
       "date": "2026-07-18",

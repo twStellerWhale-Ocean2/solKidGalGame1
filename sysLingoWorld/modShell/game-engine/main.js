@@ -1,7 +1,7 @@
 import { $$ } from "./app/elements.js";
 import { CLOUD_MODE, isLocalDevEnv, isLocalDevHost, WARDROBE_TUNER_DEV_PATH } from "./app/env.js";
 import { setApiFetch, USERNAME_PATTERN, PASSWORD_MIN_LENGTH, validateUsernameInput, validatePasswordInput } from "./system/api-client.js";
-import { adoptServerBase, cloud, cloudActive, cloudLogin, cloudLogout, cloudRegister, cloudResume, flushCloudSave, installCloudLifecycleFlush, scheduleCloudSave, syncRecentSummary } from "./system/cloud-sync.js";
+import { adoptServerBase, adoptServerSaveState, cloud, cloudActive, cloudLogin, cloudLogout, cloudRegister, cloudResume, flushCloudSave, installCloudLifecycleFlush, scheduleCloudSave, syncRecentSummary } from "./system/cloud-sync.js";
 import { buildLoginScreen, loginScreenSetMode, migrateLocalAccount, openLoginScreen } from "./app/login-screen.js";
 import { loadCachedSession, loadMigratedLocalIds, loadRecentAccounts, MIGRATED_FLAG_KEY, RECENT_ACCOUNTS_KEY, removeRecentAccount, SESSION_CACHE_KEY, upsertRecentAccount } from "./state/cloud-session.js";
 import { areaForHotspot, categoryForType, itemMatchesCategory, hotspotById, itemById, nodeMapForArea, sceneConfigFor } from "./core/lookups.js";
@@ -54,7 +54,7 @@ if (CLOUD_MODE) {
     // spec#24 並發保護：他裝置有較新進度時提示重載，不靜默覆蓋。
     const loadNewer = window.confirm("A newer save from another device was found. Load it now? (Cancel keeps this device's progress and overwrites the server.)");
     if (serverSave && loadNewer && serverSave.state) {
-      session.state = normalizeState(serverSave.state);
+      session.state = normalizeState(adoptServerSaveState(serverSave.state)); // #377：unwrap 雲端 roster→active 角色、並保留 roster
       adoptServerBase(serverSave.updatedAt);
       render();
       elements.statusMessage.textContent = "Loaded the newer save from the server.";
