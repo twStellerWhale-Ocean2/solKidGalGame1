@@ -236,8 +236,14 @@ function runCharacterHomeSelfTest(api) {
           if (!rawNow2 || rawNow2.characters.chF) errors.push("#392: 正確密碼應刪除 chF");
         }
       }
-      // 守最後一員：僅剩 1 員時不顯示刪除鈕。
-      if (overlay.querySelector(".account-delete")) errors.push("#392: 僅剩 1 員仍顯示刪除鈕（守最後一員破功）");
+      // 守最後一員（0.78.2 起）：刪除鈕恆顯，但僅剩 1 員時面板只說明不可刪、無破壞性確認鈕。
+      const lastDel = overlay.querySelector(".account-delete");
+      if (!lastDel) errors.push("#392: 僅剩 1 員應仍顯示刪除鈕（逐列三動作恆顯）");
+      lastDel?.click();
+      const lastPanel = overlay.querySelector(".character-delete-panel");
+      if (!lastPanel || /only princess/i.test(lastPanel.textContent) === false) errors.push("#392: 僅剩 1 員之刪除面板應說明「only princess」不可刪");
+      if (lastPanel?.querySelector(".character-delete-confirm")) errors.push("#392: 僅剩 1 員之刪除面板不應有破壞性確認鈕（守最後一員）");
+      lastPanel?.querySelector(".soft-button")?.click(); // OK 關面板
       // 刪 active：重灌 2 員、刪 active chD → session 切到存活者。
       const D2 = api.normalizeState({ activeCharacterId: "lumi", playerName: "Ddd", coins: 50 });
       const E2 = api.normalizeState({ activeCharacterId: "lumi", playerName: "Eee", coins: 60 });

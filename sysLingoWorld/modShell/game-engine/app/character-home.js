@@ -99,26 +99,25 @@ export function buildCharacterHome() {
       buildCharacterHome();
     });
     row.append(infoBtn);
-    if (characters.length > 1) {
-      const removeBtn = document.createElement("button");
-      removeBtn.type = "button";
-      removeBtn.className = "account-delete";
-      removeBtn.dataset.saveId = entry.saveId;
-      removeBtn.setAttribute("aria-label", `Delete ${displayName}`);
-      removeBtn.textContent = "×";
-      removeBtn.addEventListener("click", (event) => {
-        event.stopPropagation();
-        const open = pendingDeleteSaveId === entry.saveId;
-        resetPanels();
-        pendingDeleteSaveId = open ? "" : entry.saveId;
-        buildCharacterHome();
-      });
-      row.append(removeBtn);
-    }
+    // 刪除鈕逐列恆顯（每列三動作：檢視／進入／刪除）；守最後一員之保底改由刪除面板說明，不再靠隱藏鈕。
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "account-delete";
+    removeBtn.dataset.saveId = entry.saveId;
+    removeBtn.setAttribute("aria-label", `Delete ${displayName}`);
+    removeBtn.textContent = "×";
+    removeBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const open = pendingDeleteSaveId === entry.saveId;
+      resetPanels();
+      pendingDeleteSaveId = open ? "" : entry.saveId;
+      buildCharacterHome();
+    });
+    row.append(removeBtn);
     // #391/#392：三就地面板互斥——pin 驗證／資訊／刪除確認。
     if (entry.pinHash && entry.saveId === pendingPinSaveId) row.append(buildPinPanel(entry));
     if (entry.saveId === pendingInfoSaveId) row.append(buildInfoPanel(entry, displayName, character));
-    if (entry.saveId === pendingDeleteSaveId) row.append(buildDeletePanel(entry, displayName));
+    if (entry.saveId === pendingDeleteSaveId) row.append(buildDeletePanel(entry, displayName, characters.length <= 1));
     list.appendChild(row);
   });
   if (elements.characterHomeAdd) elements.characterHomeAdd.disabled = rosterAtCap();
@@ -153,11 +152,23 @@ function buildInfoPanel(entry, displayName, character) {
 }
 
 // #392：刪除確認面板——有 pin 須驗證；無 pin 兩段防呆（點 × 第一段、Yes 第二段）。
-function buildDeletePanel(entry, displayName) {
+// 守最後一員（isOnly）：僅剩一位時鈕仍在，但面板只說明不可刪、不給破壞性確認。
+function buildDeletePanel(entry, displayName, isOnly) {
   const panel = document.createElement("div");
   panel.className = "login-expand character-delete-panel";
   const warn = document.createElement("p");
   warn.className = "character-delete-warning";
+  if (isOnly) {
+    warn.textContent = `${displayName} is your only princess — add another before you can remove her.`;
+    panel.append(warn);
+    const okBtn = document.createElement("button");
+    okBtn.type = "button";
+    okBtn.className = "soft-button";
+    okBtn.textContent = "OK";
+    okBtn.addEventListener("click", () => { resetPanels(); buildCharacterHome(); });
+    panel.append(okBtn);
+    return panel;
+  }
   warn.textContent = `Delete ${displayName}? Her coins, diary and dress-up will be gone. Progress of other princesses stays.`;
   panel.append(warn);
   const error = document.createElement("p");

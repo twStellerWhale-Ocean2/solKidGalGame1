@@ -52,7 +52,15 @@
 .account-row {
   display: flex;
   align-items: stretch;
+  flex-wrap: wrap;
   gap: 8px;
+}
+
+/* #392 修正：就地展開面板（pin 驗證／檢視資訊／刪除確認）換行至整列下方，
+   不與角色列（大頭照＋名字＋動作鈕）擠在同一 flex 行而重疊。 */
+.account-row > .login-expand {
+  flex: 1 1 100%;
+  order: 9;
 }
 
 .account-pick {
