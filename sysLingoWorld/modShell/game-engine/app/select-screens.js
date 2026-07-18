@@ -298,7 +298,24 @@ export function listAccountCharacters() {
   return Object.keys(env.characters).map((saveId) => {
     const active = saveId === env.activeCharacterSaveId;
     const s = active ? session.state : normalizeState(env.characters[saveId]);
-    return { saveId, active, characterId: s.activeCharacterId, playerName: s.playerName, profileColor: s.profileColor, backgroundPattern: normalizeBackgroundPattern(s.backgroundPattern), outfit: s.outfit, coins: s.coins, pinHash: s.pinHash || "" }; // #391：曝 pinHash 供選角色頁守門
+    return {
+      saveId,
+      active,
+      characterId: s.activeCharacterId,
+      playerName: s.playerName,
+      profileColor: s.profileColor,
+      backgroundPattern: normalizeBackgroundPattern(s.backgroundPattern),
+      outfit: s.outfit,
+      coins: s.coins,
+      pinHash: s.pinHash || "", // #391：曝 pinHash 供選角色頁守門
+      // #392：檢視資訊面板之唯讀統計。
+      stats: {
+        wardrobe: Array.isArray(s.owned) ? s.owned.length : 0,
+        words: Array.isArray(s.learnedWords) ? s.learnedWords.length : 0,
+        diary: Array.isArray(s.diary) ? s.diary.length : 0,
+        badges: Array.isArray(s.badges) ? s.badges.length : 0
+      }
+    };
   });
 }
 
@@ -333,25 +350,36 @@ export function rosterAtCap() {
   return Object.keys(getActiveRoster().characters).length >= ROSTER_CAP;
 }
 
-// #379：刪除目前使用中角色（守最後一員不可刪）；刪 active 後切到其餘首員（帳號時鐘 account-scoped）。
-export function deleteActiveCharacter() {
+// #392：通用逐角色刪除（守最後一員不可刪）。刪 active＝切到其餘首員（帳號時鐘 account-scoped）；
+// 刪非 active＝先回寫 active 最新變動再刪，session 不動。
+export function deleteCharacter(saveId) {
   if (!hasRosterContext()) return;
   const env = getActiveRoster();
   const ids = Object.keys(env.characters);
-  if (ids.length <= 1) return; // 守最後一員：不可刪到零角色
-  const removing = env.activeCharacterSaveId;
-  const nextId = ids.find((id) => id !== removing);
-  delete env.characters[removing];
-  const next = normalizeState(env.characters[nextId]);
-  carryAccountClock(session.state, next); // 帳號時鐘 account-scoped
-  env.activeCharacterSaveId = nextId;
-  env.characters[nextId] = characterSliceOf(next);
-  session.state = next;
+  if (ids.length <= 1 || !env.characters[saveId]) return; // 守最後一員／未知 id
+  if (saveId === env.activeCharacterSaveId) {
+    const nextId = ids.find((id) => id !== saveId);
+    delete env.characters[saveId];
+    const next = normalizeState(env.characters[nextId]);
+    carryAccountClock(session.state, next); // 帳號時鐘 account-scoped
+    env.activeCharacterSaveId = nextId;
+    env.characters[nextId] = characterSliceOf(next);
+    session.state = next;
+  } else {
+    env.characters[env.activeCharacterSaveId] = characterSliceOf(session.state); // 保存 active 最新變動
+    delete env.characters[saveId];
+  }
   commitRoster(env);
   syncActiveAccountMeta({ touched: true });
   closeSystemMenu();
   render();
   elements.statusMessage.textContent = `${princessName()} is ready. Choose a place to start.`;
+}
+
+// #379：刪除目前使用中角色（守最後一員不可刪）；#392 起委派通用 deleteCharacter。
+export function deleteActiveCharacter() {
+  if (!hasRosterContext()) return;
+  deleteCharacter(getActiveRoster().activeCharacterSaveId);
 }
 
 // issue #153：取消創角。若為「既有帳號下新增」之未確認新帳號，丟棄該空帳號並返回帳號選擇（還原先前使用中帳號）；
