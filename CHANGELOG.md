@@ -3,6 +3,9 @@
 本檔自 repo 根目錄 `VERSION` 投影產生（incrFlow genVersion，SSOT 工具）；請勿手改，改沿革請編輯 `VERSION`。
 版號釘選於 PR merge（依變更型別 bump VERSION），release 與版號解耦；本檔收全部變更。
 
+## 0.78.1 — 2026-07-18 _(internal)_
+- docs (#394): （內部）設計文件與手冊追平兩表單登入模式（Increment 5，承 #389 epic 收尾）：修訂 spec#8、新增 spec#29（登入恆兩表單＋成效指標）、HMI 頁表增「選角色頁」；README 遊玩章改兩表單動線＋新增多帳號家庭合併說明；契約副本 techApp遊戲webApp 同步 canon 2026-07-18 版（補 07-10 漂移）；方案層 e2e（account-cloud／register-topology）改兩表單斷言並實跑綠。無程式行為變更
+
 ## 0.78.0 — 2026-07-18
 - feat (#393): 登入畫面大幅簡化（兩表單登入動線 Increment 4，承 #389）：登入頁只剩「帳號＋密碼」與「建立新帳號」，移除多帳號卡、Remove card 與逐卡密碼；登入一次就保持登入，之後開遊戲直接到選角色頁。遊戲內 ⟳ 按鈕改名「Switch princess」＝回選角色頁換公主；設定選單裡的公主切換清單與登出按鈕也一併移到選角色頁（單一路徑，不再兩套）
 

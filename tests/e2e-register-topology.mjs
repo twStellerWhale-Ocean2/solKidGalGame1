@@ -129,6 +129,10 @@ try {
   check("submit button shows busy state while pending", busyState.disabled === true && /creating/i.test(busyState.text), JSON.stringify(busyState));
   await page.waitForSelector("#characterSelect.show", { timeout: 15000 });
   check("valid register still enters character select", true);
+  // #390：先完成創角命名（後續重整→靜默續玩需已具名角色，落點才是選角色頁）。
+  await page.fill("#playerNameInput", "Mimi");
+  await page.click("#characterConfirm");
+  await page.waitForFunction(() => !document.querySelector("#characterSelect.show"), { timeout: 10000 });
 
   // ── C. 登入回饋三小項（issue #336） ──
   const mimiName = `mimi${suffix}`.slice(0, 16);
@@ -151,66 +155,45 @@ try {
   check("error box uses 12px radius (matches form language)", errRadius === "12px", errRadius);
   await phone2.close();
 
-  // C-B1：Continue（免密續玩）忙碌視覺——延遲 resume 讀檔請求，按下瞬間鈕面 disabled＋Signing in…。
+  // C-B1（#390 兩表單）：重整→靜默續玩（保持登入）直落選角色頁、不見登入表單。
   await page.unroute("**/api/auth/register");
   await page.reload({ waitUntil: "networkidle" });
-  await page.waitForSelector(`#accountList .account-pick[data-username="${mimiName}"]`, { timeout: 15000 });
-  await page.route("**/api/save**", async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    await route.continue();
-  });
-  await page.click(`#accountList .account-pick[data-username="${mimiName}"]`);
-  await page.waitForSelector(".login-continue", { timeout: 10000 });
-  await page.click(".login-continue");
-  await page.waitForTimeout(150);
-  const continueBusy = await page.evaluate(() => {
-    const btn = document.querySelector(".login-continue");
-    return btn ? { disabled: btn.disabled, text: btn.textContent } : null;
-  });
-  check("Continue button shows busy state while resuming", continueBusy?.disabled === true && /signing/i.test(continueBusy?.text || ""), JSON.stringify(continueBusy));
-  await page.waitForFunction(() => !document.querySelector("#accountSelect.show"), { timeout: 15000 });
-  await page.unroute("**/api/save**");
+  await page.waitForSelector("#characterHome.show", { timeout: 15000 });
+  check("#390 reload silently resumes to character page (no login form)", await page.evaluate(() => !document.querySelector("#accountSelect.show")));
 
-  // C-Enter 路徑準備：登出清 session 快取 → 帳號卡展開改為密碼＋Enter 面板。
-  await page.reload({ waitUntil: "networkidle" });
-  await page.waitForSelector(`#accountList .account-pick[data-username="${mimiName}"]`, { timeout: 15000 });
-  await page.click(`#accountList .account-pick[data-username="${mimiName}"]`);
-  await page.waitForSelector(".login-logout", { timeout: 10000 });
-  await page.click(".login-logout");
-  await page.waitForFunction(() => !document.querySelector(".login-logout"), { timeout: 10000 }); // 登出後重繪完成
-  if (!(await page.$(`.login-expand #loginPassword-${mimiName}`))) {
-    await page.click(`#accountList .account-pick[data-username="${mimiName}"]`);
-  }
-  await page.waitForSelector(`.login-expand #loginPassword-${mimiName}`, { timeout: 10000 });
-  check("card Log out clears cached session (dead-button regression)", !(await page.$(".login-continue")));
+  // C-Enter 路徑準備（#393）：選角色頁 Log out（帳號層唯一登出處）→ 回登入表單、帳號欄預填。
+  await page.click("#characterHomeLogout");
+  await page.waitForSelector("#accountSelect.show", { timeout: 15000 });
+  await page.waitForSelector("#loginOtherUsername", { timeout: 10000 });
+  check("#393 log out returns to sign-in with prefilled username", (await page.inputValue("#loginOtherUsername")) === mimiName, await page.inputValue("#loginOtherUsername"));
 
-  // C-offline：連線失敗於面板就地呈現（route abort＝伺服器不可達）。
+  // C-offline：連線失敗於表單就地呈現（route abort＝伺服器不可達）。
   await page.route("**/api/auth/login", (route) => route.abort("connectionrefused"));
-  await page.fill(`.login-expand #loginPassword-${mimiName}`, "wrong123");
-  await page.click(".login-expand .login-enter");
-  await page.waitForSelector(".login-expand .login-error:not(:empty)", { timeout: 5000 });
-  const offlineText = ((await page.textContent(".login-expand .login-error")) || "").trim();
+  await page.fill("#loginOtherPassword", "wrong123");
+  await page.click(".login-form .login-enter");
+  await page.waitForSelector(".login-form .login-error:not(:empty)", { timeout: 5000 });
+  const offlineText = ((await page.textContent(".login-form .login-error")) || "").trim();
   check("connection failure shows inline error (browser layer)", /cannot reach the server/i.test(offlineText) && /^⚠/.test(offlineText), offlineText);
   await page.unroute("**/api/auth/login");
 
-  // C-Enter 位置：展開面板內錯誤行在 Enter 鈕上方且於視野內。
+  // C-Enter 位置：表單內錯誤行在 Sign in 鈕上方且於視野內。
   const panelLayout = await page.evaluate(() => {
-    const err = document.querySelector(".login-expand .login-error").getBoundingClientRect();
-    const btn = document.querySelector(".login-expand .login-enter").getBoundingClientRect();
+    const err = document.querySelector(".login-form .login-error").getBoundingClientRect();
+    const btn = document.querySelector(".login-form .login-enter").getBoundingClientRect();
     return { above: err.top < btn.top, inView: err.top >= 0 && err.bottom <= window.innerHeight && err.height > 0 };
   });
-  check("expanded-panel error line sits above Enter and in viewport", panelLayout.above && panelLayout.inView, JSON.stringify(panelLayout));
+  check("form error line sits above Sign in and in viewport", panelLayout.above && panelLayout.inView, JSON.stringify(panelLayout));
 
   // C-429：三次錯密（401 記失敗）後第四次觸發限流，瀏覽器顯示等待秒數句。
   for (let i = 0; i < 3; i += 1) {
-    await page.fill(`.login-expand #loginPassword-${mimiName}`, "wrong123");
-    await page.click(".login-expand .login-enter");
-    await page.waitForSelector(".login-expand .login-error:not(:empty)", { timeout: 5000 });
+    await page.fill("#loginOtherPassword", "wrong123");
+    await page.click(".login-form .login-enter");
+    await page.waitForSelector(".login-form .login-error:not(:empty)", { timeout: 5000 });
   }
-  await page.fill(`.login-expand #loginPassword-${mimiName}`, "wrong123");
-  await page.click(".login-expand .login-enter");
-  await page.waitForFunction(() => /wait \d+ (seconds|minutes?)/i.test(document.querySelector(".login-expand .login-error")?.textContent || ""), { timeout: 5000 });
-  const limitText = ((await page.textContent(".login-expand .login-error")) || "").trim();
+  await page.fill("#loginOtherPassword", "wrong123");
+  await page.click(".login-form .login-enter");
+  await page.waitForFunction(() => /wait \d+ (seconds|minutes?)/i.test(document.querySelector(".login-form .login-error")?.textContent || ""), { timeout: 5000 });
+  const limitText = ((await page.textContent(".login-form .login-error")) || "").trim();
   check("429 shows wait-seconds message (browser layer)", /^⚠/.test(limitText), limitText);
   await page.screenshot({ path: path.join(SHOTS, "issue336-01-login-429-mobile.png") }); // GATE ＜2.5節＞ 證據
 

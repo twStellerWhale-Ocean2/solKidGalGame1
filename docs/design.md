@@ -101,7 +101,7 @@ HOST -->|"param整包 image＋chart 部署"| SYS
 * **spec#5-可保存並還原玩家進度（每帳號可多位角色）**：讓每帳號各自的進度可被保存並於再次遊玩時還原；一個帳號下可存在多位角色，每位角色各自保有 coins、學習紀錄、擁有與穿搭、所在位置、名字與識別色，並可於角色間無損切換（多角色養成與切換見 spec#28）。
 * **spec#6-可選擇與命名自己的公主**：讓玩家選定公主外觀（Lumi、Yumi、Rosa 三位可辨識）、命名並確認識別色與背景花紋，之後可重選或調整而不影響既有進度。
 * **spec#7-可以自架伺服器形態部署並模組化擴充內容**：能以「靜態遊戲殼＋node API 核」自架伺服器形態部署遊玩，且地區、角色、可玩公主與衣物等內容可以 raster 內容包模組化新增與調整。
-* **spec#8-可用伺服器帳號分離不同玩家進度**：讓同一自架伺服器上多位玩家各自擁有帳號、每次進入先登入，使不同玩家的進度與換裝成果互不混用；同一帳號下之多位角色其進度亦各自分離（見 spec#28）。
+* **spec#8-可用伺服器帳號分離不同玩家進度**：讓同一自架伺服器上多個家庭／玩家各自擁有帳號（未登入時先登入；登入後保持登入、動線見 spec#29），使不同帳號的進度與換裝成果互不混用；同一帳號下之多位角色其進度亦各自分離（見 spec#28）。
 * **spec#9-可限制每次遊玩時長並強制休息以護眼**：連續遊玩達設定時長後自動結算並進入強制休息，休息屆滿前不可續玩；預設遊玩／休息各 15 分鐘，可由玩家調整、亦可由維護者對個別帳號覆寫並鎖定。護眼鎖定為 per-account 伺服器端計、屬家長輔助非防駭防線——兒童可自助註冊新帳號繞過，故建議維護者於初裝成員到齊後關閉註冊（spec#26）。
 * **spec#10-可查看作品版權與版本沿革**：於設定 About 頁呈現作品版權宣告、授權條款（PolyForm Noncommercial 1.0.0）與歷次版本中文短主旨，使玩家與家長識別來源並了解版本演進。
 * **spec#11-可依場景情境分流生活聊天與打工任務並給予不同回饋**：各可互動場景可提供生活聊天（2 選項、答對提升心情並延長當次可玩時間）與打工任務（3 選項、切合場景之勞務、以 coins 回饋），使精神回饋與勞動所得明確分流。
@@ -122,6 +122,7 @@ HOST -->|"param整包 image＋chart 部署"| SYS
 * **spec#26-可由維護者線上管理執行期遊戲設定**：讓維護者於同一線上管理頁調整執行期設定（新帳號預設時長、個別帳號時長覆寫與鎖定、註冊開關），存於伺服器、儲存即生效、不需改版或重新部署。
 * **spec#27-可取得版本化整包發行物並於自架環境安裝升級與保全資料**：以單一 container image＋單一 helm chart 之版本化整包作為對外散佈單位，供維護者於自有 K8s 一鍵安裝與升級，且升級與重啟不遺失玩家帳號、雲端存檔與執行期設定，並提供資料庫備份還原程序。
 * **spec#28-可於同一帳號養成並切換多位角色**：讓同一帳號下可新增、切換與刪除多位角色（每位各自存檔：coins／日記／學習／擁有與換裝／位置／名字／識別色），切換為**非破壞**（不覆蓋彼此），並限每帳號角色數上限（預設 6）、且不可刪至零（保底至少一位）；護眼遊玩／休息時鐘**綁定帳號、跨角色共用**——切換角色不重置休息鎖（防兒童以切換繞過，承 spec#9）；可玩角色之外觀類型仍為 spec#19 之三位。既有單角色存檔於讀取時自動升級為單員多角色結構（相容、無損），存檔匯出／匯入涵蓋帳號下所有角色。
+* **spec#29-登入恆兩表單（帳號登入一次＋每次上線選角色）**：讓「你是誰」只在角色層回答（追平 [techApp遊戲webApp] ＜III.B 帳號/角色動線 canon＞）——帳號層：以帳密登入一次後本裝置**保持登入**（登出或 session 失效才需重登；登入表單僅未登入時出現，帳號欄預填本裝置最近帳號）；角色層：登入後恆經**選角色頁**（頂＝帳號資訊＋登出、中＝角色清單〔逐角色 檢視資訊／進入遊戲／刪除〕、底＝新增角色），自遊戲切換角色為**單一路徑**（返回選角色頁）。角色可選設**角色密碼**（防共用裝置互玩之家庭防呆——有設則進入與刪除須驗證、未設點即進入且刪除採兩段防呆）。玩家端不並列多帳號卡、不設裝置卡管理、無刪除帳號入口。
 
 **端對端驗收課目（e2eTest，依 productReadme，每 orgSop 至少一案，回扣 orgSop／spec）**：
 
@@ -142,7 +143,7 @@ HOST -->|"param整包 image＋chart 部署"| SYS
 * **spec#5**：還原欄位完整度、識別色補齊正確率、重整後狀態保留率。
 * **spec#6**：選角完成率、三位公主辨識正確率、識別色與背景花紋設定與舊存檔相容率、帶已移除 id 舊存檔升級正確率。
 * **spec#7**：自架部署成功率、新增內容包後既有功能未回歸、可玩公主／衣物 layer／場景背景獨立擴充成功率、raster 素材與資產標準（尺寸／檔重）合規率。
-* **spec#8**：帳號間進度隔離正確率、帳號卡摘要與識別色辨識清晰度、切換帳號後狀態一致性、玩家端無刪除入口合格率。
+* **spec#8**：帳號間進度隔離正確率、切換帳號（登出再登入）後狀態一致性、玩家端無刪除帳號入口合格率。
 * **spec#9**：達上限後休息遵守率、本回合結算呈現正確率、剩餘可玩時間呈現正確率、返回初始選單後鎖定維持率、維護者鎖定時玩家端唯讀與強制值生效率。
 * **spec#10**：About 頁開啟率、版本沿革顯示完整度、版權宣告呈現正確率。
 * **spec#11**：各模組（聊天／逛店／打工）開啟場景比例、聊天延時與心情累加正確率、打工 coins 回饋與地區級距正確率、聊天 2 選項／打工 3 選項符合率、回饋型別未混用率。
@@ -163,6 +164,7 @@ HOST -->|"param整包 image＋chart 部署"| SYS
 * **spec#26**：設定儲存後即時生效率（不需重啟）、新帳號預設時長套用正確率、鎖定帳號強制值與唯讀正確率、解除鎖定回復自調率、註冊關閉時 API 拒絕與入口隱藏率、DB 缺值程式預設遞補正確率、非法值拒絕率。
 * **spec#27**：依手冊安裝成功率、安裝後健康檢查與遊戲／管理頁可用率、升級後帳號／存檔／執行期設定保留率、uninstall 預設保留資料卷合格率、重裝續用資料完整率、備份可還原率、chart 版本鏈一致率、image 混入 dev 工具檢出率（應 0%）。
 * **spec#28**：同帳號多角色新增／切換／刪除正確率、切換非破壞（他角色存檔保留）率、角色數上限強制率、守最後一員（不可刪至零）率、切換角色休息鎖不重置率、既有單角色存檔升級為多角色相容率（無損）、存檔匯出／匯入涵蓋所有角色完整率。
+* **spec#29**：登入一次後保持登入率（重啟免重登、靜默續玩成功率）、每次上線經選角色頁率、角色密碼守門正確率（有設非驗證不得進入／刪除、未設不受影響）、切換角色單一路徑合格率（全站無第二套切換 UI）、登入頁無多帳號卡／裝置卡管理合格率、登出後回登入表單且帳號預填率。
 
 # II. 方案設計
 
@@ -385,8 +387,9 @@ API ==>|"comIntf自訂資料庫連線<br/>apiIntf標準Postgres連線"| DB
 
 | 頁面 | 導覽 orgSop／teamSop（L1／L2） | 版型（MD3）＋主要元件 | prsnSop（L3 leaf） | surface |
 | --- | --- | --- | --- | --- |
-| [通用登入頁] | 帳號存檔／teamSop#2.1 | feed：產品識別（品牌名＋頁尾版本＝`buildInfo` 投影，issue #358）＋帳號卡清單（頭胸照＋識別色底＋摘要）＋密碼欄＋切換／註冊＋就地錯誤回饋（見表下錯誤回饋通則）。**預設態＝登入（issue #357）**：帳號存伺服器非裝置，無帳號卡之新裝置預設呈現登入表單、註冊降為表單內次要連結（預設導向註冊會使既有玩家重建帳號、進度分裂）；「Create new account」大鈕僅存於帳號卡列表（家庭新增玩家）；root auth 畫面不放返回鈕（無上一步），返回僅見於「自子表單回卡片列表」。文案漸進揭露（issue #359）：規則不前置攤開，由 placeholder 與就地錯誤呈現 | #2.1.1 | 遊戲殼 |
-| 選角命名頁 | 兒童遊玩／teamSop#1.3 | 對話框：三公主選擇＋名字 TextField＋識別色／花紋 picker | #1.3.1 | 遊戲殼 |
+| [通用登入頁] | 帳號存檔／teamSop#2.1 | feed：產品識別（品牌名＋頁尾版本＝`buildInfo` 投影，issue #358）＋登入表單（帳號欄**預填本裝置最近帳號**＋密碼欄＋顯示切換）＋註冊次要連結＋就地錯誤回饋（見表下錯誤回饋通則）。**兩表單 canon（spec#29／issue #393）**：本頁＝帳號層唯一表單、**僅未登入時出現**（登入成功即保持登入、落選角色頁）；不並列多帳號卡、無裝置卡管理、無返回鈕；註冊為表單內次要連結（issue #357 收斂）、註冊關閉時不渲染任何建立入口並顯示友善說明（spec#26 (c)）。文案漸進揭露（issue #359）：規則不前置攤開，由 placeholder 與就地錯誤呈現 | #2.1.1 | 遊戲殼 |
+| 選角色頁 | 兒童遊玩／teamSop#1.3 | feed：登入後家門口（每次上線經過，spec#29）——頂＝帳號行（名稱·角色數·遊玩狀態）＋Log out（帳號層唯一登出處）；中＝角色清單（頭胸照＋名字＋coins，點列進入遊戲；逐列 ⓘ 檢視資訊與 × 刪除——有角色密碼須驗證、無則兩段防呆、守最後一員）；底＝Add princess（達上限停用）。⟳（Switch princess）自遊戲返回本頁＝單一切換路徑 | #1.3.1 | 遊戲殼 |
+| 選角命名頁 | 兒童遊玩／teamSop#1.3 | 對話框：三公主選擇＋名字 TextField＋識別色／花紋 picker＋角色密碼欄（選配，僅建立新角色時顯示，spec#29） | #1.3.1 | 遊戲殼 |
 | 世界地圖頁 | 兒童遊玩／teamSop#1.2 | 全幅場景：世界地圖＋公主 token＋地區入口 | #1.2.1 | 遊戲殼 |
 | 地區地圖頁 | 兒童遊玩／teamSop#1.2 | 全幅場景：地區地圖＋地點 hotspot＋公主 token | #1.2.1 | 遊戲殼 |
 | 場景選單頁 | 兒童遊玩／teamSop#1.1·1.2 | 全幅場景：第一層互動選單（聊天／打工／逛店／換裝／離開）＋即時 coins | #1.1.1·#1.2.1 | 遊戲殼 |
@@ -442,7 +445,7 @@ APP ==>|"comIntf自訂資料庫連線<br/>apiIntf標準Postgres連線"| PG
 > 圖例（三線通則）：`==>` 粗＝運行（系統／裝置間通訊，標 comIntf／apiIntf）｜`-.->` 虛＝人員操作（維護者部署營運）｜`-->` 細＝部署設定。
 
 * **建置指令**：遊戲殼無打包（靜態收集）；modApi `cd sysLingoWorld/modApi && npm ci && npm run build`（TypeScript→`dist/`）；正式 image 根目錄 Dockerfile 多階段 `docker build -t ghcr.io/twstellerwhale-ocean2/sollingoworld:<VERSION> .`（非 root、COPY 對齊靜態 allowlist、`devtool/`／測試不入包、`linux/amd64`、OCI 標籤 `org.opencontainers.image.source` 指本 repo 使 GHCR package 自動關聯——issue #343）；chart `helm package sysLingoWorld/deploy/helm`（chart `version`／`appVersion` 與 `VERSION` 同源）。
-* **測試指令**：modApi 單元 `cd sysLingoWorld/modApi && npm test`（vitest，涵蓋率 ≥80%）＋整合 `npm run integration`（compose PostgreSQL 專用測試庫 `luminara_test`）＋依賴安全 `npm audit`；方案層端對端 `node tests/e2e-account-cloud.mjs`／`node tests/e2e-admin-console.mjs`（含證據截圖）／`node tests/e2e-register-topology.mjs`（intTest#13 客戶模擬拓撲：代理標頭限流隔離＋手機視口錯誤回饋可見性＋登入回饋三類錯誤〔撞名／限流／連線失敗〕瀏覽器層與帳號卡面板路徑、免密續玩忙碌態與卡面登出有效性——issue #336）；helm 機判 `node tests/scripts/chartLint.mjs`＋真裝 e2e `node tests/e2e-helm.mjs`（k8s 專用 ns `luminara-e2e`）；結構守門 `node tests/scripts/structureLint.mjs`、`node tests/scripts/assetLint.mjs`、`pwsh tests/scripts/docLint.ps1 -Path docs/design.md`、`pwsh tests/scripts/repoLint.ps1 -Path .`（機判 lint 一律住 `tests/scripts/`，issue #355）；版號防漂移 `node "$HOME/.claude/skills/2tech-incrFlow-0shared/scripts/genVersion.mjs" --check`（投影工具＝skill SSOT、repo 不落副本，投影目標宣告於根 `VERSION` 之 `projections`；重生投影＝同指令去 `--check`）。**設計約束：任何測試一律指向專用測試庫（`luminara_test`／ns `luminara-e2e`）、禁對營運庫 `luminara` 讀寫**。
+* **測試指令**：modApi 單元 `cd sysLingoWorld/modApi && npm test`（vitest，涵蓋率 ≥80%）＋整合 `npm run integration`（compose PostgreSQL 專用測試庫 `luminara_test`）＋依賴安全 `npm audit`；方案層端對端 `node tests/e2e-account-cloud.mjs`／`node tests/e2e-admin-console.mjs`（含證據截圖）／`node tests/e2e-register-topology.mjs`（intTest#13 客戶模擬拓撲：代理標頭限流隔離＋手機視口錯誤回饋可見性＋登入回饋三類錯誤〔撞名／限流／連線失敗〕瀏覽器層表單路徑、靜默續玩保持登入與選角色頁登出（含帳號預填）有效性——issue #336/#393）；helm 機判 `node tests/scripts/chartLint.mjs`＋真裝 e2e `node tests/e2e-helm.mjs`（k8s 專用 ns `luminara-e2e`）；結構守門 `node tests/scripts/structureLint.mjs`、`node tests/scripts/assetLint.mjs`、`pwsh tests/scripts/docLint.ps1 -Path docs/design.md`、`pwsh tests/scripts/repoLint.ps1 -Path .`（機判 lint 一律住 `tests/scripts/`，issue #355）；版號防漂移 `node "$HOME/.claude/skills/2tech-incrFlow-0shared/scripts/genVersion.mjs" --check`（投影工具＝skill SSOT、repo 不落副本，投影目標宣告於根 `VERSION` 之 `projections`；重生投影＝同指令去 `--check`）。**設計約束：任何測試一律指向專用測試庫（`luminara_test`／ns `luminara-e2e`）、禁對營運庫 `luminara` 讀寫**。
 * **部署指令**：正式＝`helm install luminara <chart> -f secrets.yaml`／`helm upgrade luminara <chart>`／`helm uninstall luminara`（PVC keep）；備份 `kubectl exec <db-pod> -- pg_dump -U luminara luminara > backup.sql`、還原 `kubectl exec -i <db-pod> -- psql -U luminara luminara < backup.sql`；admin 忘密後門 `kubectl exec <app-pod> -- npm run reset-password -- <username> <new-password>`。開發期＝`docker compose -f deploy/compose.yaml up -d`（port 5433）＋`cd sysLingoWorld/modApi && npm start`。
 * **發行物命名（結構化）**：container image＝`ghcr.io/twstellerwhale-ocean2/sollingoworld`（單一 sys＝方案級 image，取最短結構名幹 `sollingoworld`）＋helm chart＝`sollingoworld-chart`（涵蓋層路徑＋`-chart` 後綴）。**image 與 chart 同名會撞同一 GHCR OCI path 同 tag**（v0.64.3 首發時兩者皆 `sollingoworld`，chart 被迫只掛 GitHub Release、無法上 OCI）；chart 加 `-chart` 使 image 保留最短名、chart 亦能正常上 OCI，兩者分流不撞。發行名依發佈列車命名紀律（image `sol[-sys[-mod]]`／chart `sol-chart` 結構）算出、於此宣告定案（取代舊 image `solkidgalgame1`／chart `solkidgalgame` 之不一致；registry push 與 GitHub Release 由發佈列車執行，本 repo 增量只交付可發行 build 產物）。
 * **命名層對照（四名並存、各有其位）**：方案／repo codename＝`solLingoWorld`（自 `solKidGalGame` 改名）｜發行物名＝image `sollingoworld` ＋ chart `sollingoworld-chart`（同一結構名幹 `sollingoworld`、chart 帶 `-chart` 後綴分流 OCI；自舊 `solkidgalgame1`／`solkidgalgame` 收斂）｜helm release／DB／測試 ns＝`luminara`／`luminara_test`／`luminara-e2e`（沿用不改）｜玩家端品牌＝`Luminara — Princess English Adventure`（遊戲內顯示，沿用不改）。
