@@ -123,9 +123,14 @@
               <div class="settings-actions">
                 <button class="soft-button" id="speakToggleButton" type="button">Voice: On</button>
                 <!-- #371：角色/造型 與 帳號/玩家 動作分組正名，消除與帳號切換/登出混用之困惑（1 帳號＝1 公主，spec#5）。 -->
-                <h3 class="settings-group-title">Your princess</h3>
-                <button class="soft-button" id="changeCharacterButton" type="button">Change princess</button>
-                <p class="settings-group-hint" id="changePrincessHint">Changes how your princess looks. Each player has one princess — to play as a different child, tap ⟳ Switch player at the top.</p>
+                <h3 class="settings-group-title">Your princesses</h3>
+                <!-- #378：同帳號多角色 roster——點卡切換（非破壞，各自存檔）；Add 新增、Change 改當前造型。 -->
+                <div class="character-roster" id="characterRoster" role="list" aria-label="Your princesses"></div>
+                <div class="character-roster-actions">
+                  <button class="soft-button" id="addCharacterButton" type="button">Add princess</button>
+                  <button class="soft-button" id="changeCharacterButton" type="button">Change this princess&rsquo;s look</button>
+                </div>
+                <p class="settings-group-hint" id="changePrincessHint">Add more princesses to this player and tap one to switch — each keeps her own coins and dress-up. To play as a different child, tap &#x27F3; Switch player at the top.</p>
                 <h3 class="settings-group-title">This player</h3>
                 <button class="soft-button" id="signOutButton" type="button" hidden>Sign out</button>
                 <button class="danger-button" id="resetButton" type="button">Reset Progress</button>

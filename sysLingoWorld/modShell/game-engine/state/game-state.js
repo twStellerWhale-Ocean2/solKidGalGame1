@@ -66,10 +66,31 @@ function isRosterEnvelope(obj) {
 }
 
 // 取角色 state 之 clean 切片（去 envelope meta，避免存進 characters slice 後再讀汙染）。
-function characterSliceOf(obj) {
+export function characterSliceOf(obj) {
   const slice = { ...obj };
   ROSTER_META_KEYS.forEach((key) => delete slice[key]);
   return slice;
+}
+
+// #378：帳號時鐘 account-scoped——切換/新增角色時由現行 active 攜帶時鐘欄位，切角色不重置休息鎖（防孩子繞過）；
+// playMinutes/restMinutes（可調設定值）留各角色自身。
+const ACCOUNT_CLOCK_KEYS = Object.freeze(["sessionEndsAt", "restEndsAt", "sessionMaxEndsAt", "cycle"]);
+export function carryAccountClock(fromState, toState) {
+  if (fromState && fromState.playLimit && toState && toState.playLimit) {
+    ACCOUNT_CLOCK_KEYS.forEach((key) => { toState.playLimit[key] = fromState.playLimit[key]; });
+  }
+  return toState;
+}
+
+// #378：寫整個 roster envelope 至本機 active 帳號 blob（含所有角色；供新增/切換角色寫全 roster，非只 active）。
+export function writeRosterEnvelope(accountId, envelope) {
+  if (!accountId) return;
+  const activeSlice = envelope.characters[envelope.activeCharacterSaveId] || freshState();
+  try {
+    localStorage.setItem(accountStateKey(accountId), JSON.stringify(reassembleEnvelope(activeSlice, envelope)));
+  } catch (error) {
+    console.warn("writeRosterEnvelope failed", error);
+  }
 }
 
 // 乾淨一員 roster（新帳號用）。

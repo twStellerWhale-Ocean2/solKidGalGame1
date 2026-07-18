@@ -250,6 +250,11 @@ export function adoptServerSaveState(saveState) {
   return saveState ? activeCharacterStateOf(saveState) : null;
 }
 
+// #378：新增/切換角色寫整個 roster 後，同步雲端保留之 roster（下次 flush 送整個 envelope）。
+export function setCloudRoster(envelope) {
+  cloud.roster = envelope ? rosterEnvelopeOf(envelope) : null;
+}
+
 // 帳號卡摘要（sysCase#6.1）：每次成功保存時更新，使登入畫面離線亦可渲染。
 export function syncRecentSummary() {
   if (!cloud.username || !session.state) return;
