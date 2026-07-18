@@ -19,15 +19,22 @@ import {
 import { changeView, closeSystemMenu } from "./views.js";
 import { clockNow, formatClock, hidePlayBreak, tickPlayClock } from "../state/play-session.js";
 import {
+  carryAccountClock,
+  characterSliceOf,
   createFreshAccount,
   freshState,
   loadAccountState,
-  sanitizePlayerName
+  newCharacterSaveId,
+  normalizeState,
+  readRosterEnvelope,
+  rosterEnvelopeOf,
+  sanitizePlayerName,
+  writeRosterEnvelope
 } from "../state/game-state.js";
 import { deleteAccount, getActiveAccountId, listAccounts, setActiveAccountId } from "../state/accounts.js";
 import { itemById } from "../core/lookups.js";
 import { CLOUD_MODE } from "./env.js";
-import { flushCloudSave } from "../system/cloud-sync.js";
+import { cloud, cloudActive, flushCloudSave, scheduleCloudSave, setCloudRoster } from "../system/cloud-sync.js";
 import { openLoginScreen } from "./login-screen.js";
 import { persist } from "../system/persistence.js";
 import { playStatus } from "../system/play-clock.js";
@@ -200,12 +207,14 @@ export function applyCharacterStarterOutfit(character) {
 
 export function confirmCharacterSelect() {
   const character = playableCharacterById(session.pendingCharacterId);
-  session.state.activeCharacterId = character.id;
-  applyCharacterStarterOutfit(character);
-  session.state.profileColor = profileColorFor(character.id, session.pendingProfileColor);
-  session.state.backgroundPattern = normalizeBackgroundPattern(session.pendingBackgroundPattern);
-  session.state.playerName = sanitizePlayerName(elements.playerNameInput.value) || character.defaultName;
-  persist();
+  const adding = session.pendingAddCharacter === true; // #378：新增模式（append 而非就地覆寫）
+  session.pendingAddCharacter = false;
+  if (adding) {
+    confirmAddCharacter(character);
+  } else {
+    applyChosenAppearance(character);
+    persist();
+  }
   const activeAccountId = getActiveAccountId();
   if (activeAccountId) syncActiveAccountMeta({ touched: true });
   session.pendingNewAccount = null; // issue #153：已確認創角，此新帳號不再是可丟棄的待定帳號。
@@ -214,9 +223,91 @@ export function confirmCharacterSelect() {
   elements.statusMessage.textContent = `${princessName()} is ready. Choose a place to start.`;
 }
 
+// 套用選角畫面選定之外觀到 session.state（re-skin 就地覆寫 與 #378 新增角色 共用）。
+function applyChosenAppearance(character) {
+  session.state.activeCharacterId = character.id;
+  applyCharacterStarterOutfit(character);
+  session.state.profileColor = profileColorFor(character.id, session.pendingProfileColor);
+  session.state.backgroundPattern = normalizeBackgroundPattern(session.pendingBackgroundPattern);
+  session.state.playerName = sanitizePlayerName(elements.playerNameInput.value) || character.defaultName;
+}
+
+// #378：目前使用中帳號之 roster——雲端優先讀 cloud.roster、本機讀 localStorage envelope；缺則以 active wrap。
+function getActiveRoster() {
+  if (cloudActive()) return cloud.roster || rosterEnvelopeOf(session.state);
+  const activeId = getActiveAccountId();
+  return activeId ? readRosterEnvelope(activeId) : rosterEnvelopeOf(session.state);
+}
+
+function hasRosterContext() {
+  return cloudActive() || Boolean(getActiveAccountId());
+}
+
+// 寫整個 roster：雲端 → 更新 cloud.roster＋排程存檔（PUT 整個 envelope）；本機 → 寫 account blob。
+function commitRoster(env) {
+  if (cloudActive()) {
+    setCloudRoster(env);
+    scheduleCloudSave();
+    return;
+  }
+  const activeId = getActiveAccountId();
+  if (activeId) writeRosterEnvelope(activeId, env);
+}
+
+// #378：新增一位角色（非破壞）——保存目前 active 回 roster，新建一員 fresh 角色套用選定外觀、設為 active、寫全 roster。
+function confirmAddCharacter(character) {
+  if (!hasRosterContext()) { applyChosenAppearance(character); persist(); return; } // 無帳號情境（不應發生）：退回 re-skin
+  const env = getActiveRoster();
+  env.characters[env.activeCharacterSaveId] = characterSliceOf(session.state); // 保存目前 active 之最新變動
+  const fresh = freshState({ randomizeTheme: false });
+  carryAccountClock(session.state, fresh); // 新角色沿帳號時鐘（account-scoped）
+  session.state = fresh;
+  applyChosenAppearance(character); // 對 fresh 套用選定外觀
+  const saveId = newCharacterSaveId();
+  env.activeCharacterSaveId = saveId;
+  env.characters[saveId] = characterSliceOf(session.state);
+  commitRoster(env);
+}
+
+// #378：列出使用中帳號之角色（供 settings picker）；active 併入 session.state 之最新變動。
+export function listAccountCharacters() {
+  if (!hasRosterContext()) return [];
+  const env = getActiveRoster();
+  return Object.keys(env.characters).map((saveId) => {
+    const active = saveId === env.activeCharacterSaveId;
+    const s = active ? session.state : normalizeState(env.characters[saveId]);
+    return { saveId, active, characterId: s.activeCharacterId, playerName: s.playerName, profileColor: s.profileColor, backgroundPattern: normalizeBackgroundPattern(s.backgroundPattern), outfit: s.outfit, coins: s.coins };
+  });
+}
+
+// #378：切換至 roster 中另一角色（非破壞；帳號時鐘 account-scoped 不重置）。
+export function switchToCharacter(saveId) {
+  if (!hasRosterContext()) return;
+  const env = getActiveRoster();
+  if (!env.characters[saveId] || saveId === env.activeCharacterSaveId) return;
+  env.characters[env.activeCharacterSaveId] = characterSliceOf(session.state); // 存目前 active
+  const next = normalizeState(env.characters[saveId]);
+  carryAccountClock(session.state, next); // 帳號時鐘 account-scoped：切角色不重置休息鎖
+  env.activeCharacterSaveId = saveId;
+  env.characters[saveId] = characterSliceOf(next);
+  session.state = next;
+  commitRoster(env);
+  syncActiveAccountMeta({ touched: true });
+  closeSystemMenu();
+  render();
+  elements.statusMessage.textContent = `${princessName()} is ready. Choose a place to start.`;
+}
+
+// #378：開始新增角色——開選角畫面於「新增」模式（confirm 時 append）。
+export function startAddCharacter() {
+  session.pendingAddCharacter = true;
+  openCharacterSelect({ forced: false, cancelable: true });
+}
+
 // issue #153：取消創角。若為「既有帳號下新增」之未確認新帳號，丟棄該空帳號並返回帳號選擇（還原先前使用中帳號）；
 // 一般換角（changeCharacter）或無待定新帳號時，僅關閉覆蓋層。
 export function cancelCharacterSelect() {
+  session.pendingAddCharacter = false; // #378：取消新增角色亦清旗標（回退不 append）
   if (session.pendingNewAccount) {
     const { id, prevActiveId, prevMustChoose } = session.pendingNewAccount;
     session.pendingNewAccount = null;

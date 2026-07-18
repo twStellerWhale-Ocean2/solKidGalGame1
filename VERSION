@@ -1,8 +1,16 @@
 {
-  "version": "0.71.0",
+  "version": "0.72.0",
   "date": "2026-07-18",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.72.0",
+      "date": "2026-07-18",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#378",
+      "summaryZh": "同一玩家可養多位公主、點卡即可切換（Increment 3，承 #375）：設定選單新增「Your princesses」角色卡列，可「Add princess」新增、點另一張卡切換——每位公主各自保有自己的金幣、日記、學過的單字與換裝，切換不會覆蓋彼此（原本每玩家只有一位、換公主是就地覆寫）；「Change this princess's look」仍可改當前公主造型。切換公主不會重置護眼休息鎖（時鐘綁定帳號、防止靠切角色繞過休息）。想換成別的小孩仍用畫面上方「⟳ 切換玩家」。既有存檔自動相容"
+    },
     {
       "version": "0.71.0",
       "date": "2026-07-18",

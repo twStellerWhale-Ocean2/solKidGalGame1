@@ -53,7 +53,9 @@ import {
   confirmCharacterSelect,
   createNewAccount,
   openCharacterSelect,
-  returnToInitialSelect
+  returnToInitialSelect,
+  startAddCharacter,
+  switchToCharacter
 } from "./select-screens.js";
 import {
   changeSystemPanel,
@@ -75,6 +77,11 @@ export function bindEvents() {
   elements.systemMenuButton.addEventListener("click", () => openSystemMenu(session.systemMenuPanel || "diary"));
   elements.switchPlayerQuickButton?.addEventListener("click", returnToInitialSelect);
   elements.changeCharacterButton?.addEventListener("click", () => openCharacterSelect({ forced: false }));
+  elements.addCharacterButton?.addEventListener("click", startAddCharacter); // #378：新增公主
+  elements.characterRoster?.addEventListener("click", (event) => { // #378：點卡切換公主（非破壞）
+    const item = event.target.closest("[data-character-save-id]");
+    if (item) switchToCharacter(item.dataset.characterSaveId);
+  });
   elements.characterConfirm?.addEventListener("click", confirmCharacterSelect);
   elements.characterCancel?.addEventListener("click", cancelCharacterSelect);
   // issue #212：本機開發環境才揭示「衣物調整工具」dev 入口；正式發佈站保持 hidden、不接線。

@@ -22,6 +22,7 @@ import { renderAbout, renderBuildInfo } from "./settings.js";
 import { renderPlayClock } from "../state/play-session.js";
 import { effectivePlayLimit } from "../system/play-clock.js";
 import { elements, session } from "../core/session.js";
+import { listAccountCharacters } from "../app/select-screens.js"; // #378：settings 角色 roster picker（cyclic，runtime 呼叫安全）
 import { cloud, cloudActive, syncRecentSummary } from "../system/cloud-sync.js";
 
 function cloudUsername() { return cloud.username || ""; }
@@ -232,6 +233,31 @@ export function renderCollectionSummary() {
   `;
 }
 
+// #378：設定選單之角色 roster picker——列出使用中帳號各角色（點卡由 bind-events 切換）。
+function renderCharacterRoster() {
+  const roster = elements.characterRoster;
+  if (!roster) return;
+  const characters = listAccountCharacters();
+  roster.innerHTML = "";
+  characters.forEach((c) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "character-roster-item" + (c.active ? " active" : "");
+    btn.dataset.characterSaveId = c.saveId;
+    btn.setAttribute("role", "listitem");
+    if (c.active) btn.setAttribute("aria-current", "true");
+    const bust = document.createElement("span");
+    bust.className = "paper-doll bust-doll";
+    bust.setAttribute("aria-hidden", "true");
+    renderBustInto(bust, c.characterId, c.outfit, c.profileColor, c.backgroundPattern);
+    const label = document.createElement("span");
+    label.className = "character-roster-name";
+    label.textContent = c.active ? `${c.playerName} ✓` : c.playerName;
+    btn.append(bust, label);
+    roster.appendChild(btn);
+  });
+}
+
 export function renderSettings() {
   elements.speakToggleButton.textContent = `Voice: ${session.state.speechEnabled ? "On" : "Off"}`;
   // issue #309（spec#8）：登入後於設定顯示目前帳號 username（帳號資訊呈現；本機模式隱藏）。
@@ -241,6 +267,7 @@ export function renderSettings() {
     if (username) elements.settingsAccountLine.textContent = `Signed in as: ${username}`;
   }
   if (elements.signOutButton) elements.signOutButton.hidden = !cloudUsername(); // #309 審查 C14：遊戲內登出入口
+  renderCharacterRoster(); // #378：多角色 roster picker
 
   // issue #310（spec#26／sysCase#16.1）：維護者鎖定時長時，欄位唯讀顯示強制值並明示由維護者管理；
   // 政策不回寫 state.playLimit（解除鎖定即回復玩家自調值）。

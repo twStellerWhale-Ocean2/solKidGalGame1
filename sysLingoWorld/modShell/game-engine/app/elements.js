@@ -27,6 +27,8 @@ export function createElements() {
     sideProfileFrame: $("#sideProfileFrame"),
     switchPlayerQuickButton: $("#switchPlayerQuickButton"),
     changeCharacterButton: $("#changeCharacterButton"),
+    characterRoster: $("#characterRoster"),
+    addCharacterButton: $("#addCharacterButton"),
     characterSelect: $("#characterSelect"),
     characterSelectCard: $(".character-select-card"),
     characterGrid: $("#characterGrid"),

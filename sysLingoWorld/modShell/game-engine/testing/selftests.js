@@ -141,6 +141,36 @@ function runRosterSelfTest(api) {
     errors.push("#376: unexpected error(3) " + ((error && error.message) || error));
   }
 
+  // 4) #378：切換角色非破壞＋帳號時鐘 account-scoped（切換不重置休息鎖＝防繞過）；他角色存檔保留。
+  try {
+    if (!api.accounts.activeId()) api.accounts.create();
+    const activeId = api.accounts.activeId();
+    const aKey = api.accountStateKey(activeId);
+    const savedBlob = localStorage.getItem(aKey);
+    try {
+      const A = api.normalizeState({ activeCharacterId: "lumi", playerName: "Aaa", coins: 10 });
+      A.playLimit.restEndsAt = 999999; // A 在休息鎖中
+      const B = api.normalizeState({ activeCharacterId: "lumi", playerName: "Bbb", coins: 20 });
+      B.playLimit.restEndsAt = 0;
+      localStorage.setItem(aKey, JSON.stringify({ schema: "2", activeCharacterSaveId: "chA", characters: { chA: A, chB: B } }));
+      api.state = api.normalizeState(A); // session 反映 active A
+      const before = api.listAccountCharacters();
+      if (before.length !== 2) errors.push("#378: roster 應 2 員（實得 " + before.length + "）");
+      api.switchToCharacter("chB");
+      if (api.state.playerName !== "Bbb" || api.state.coins !== 20) errors.push("#378: 切換後 active 非 B（切換未載入目標角色）");
+      if (api.state.playLimit.restEndsAt !== 999999) errors.push("#378: 切換未帶帳號時鐘（休息鎖被重置＝可繞過）");
+      const raw = JSON.parse(localStorage.getItem(aKey) || "null");
+      if (!raw || !raw.characters.chA || raw.characters.chA.coins !== 10) errors.push("#378: 切換破壞了角色 A 存檔（非破壞性失敗）");
+      if (raw && raw.activeCharacterSaveId !== "chB") errors.push("#378: 切換後 active id 未更新");
+      api.switchToCharacter("chA");
+      if (api.state.playerName !== "Aaa" || api.state.coins !== 10) errors.push("#378: 切回 A 資料遺失");
+    } finally {
+      if (savedBlob === null) localStorage.removeItem(aKey); else localStorage.setItem(aKey, savedBlob);
+    }
+  } catch (error) {
+    errors.push("#378: unexpected error(4) " + ((error && error.message) || error));
+  }
+
   const result = document.createElement("pre");
   result.id = "rosterResult";
   result.textContent = JSON.stringify({ test: "roster", passed: errors.length === 0, errors });
