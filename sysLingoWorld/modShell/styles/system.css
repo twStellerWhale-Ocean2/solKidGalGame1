@@ -114,42 +114,6 @@
   opacity: 0.72;
 }
 
-/* issue #378：設定選單多角色 roster picker（點卡切換公主，非破壞）。 */
-.character-roster {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 6px 0;
-}
-.character-roster-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  width: 78px;
-  padding: 6px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: #fff;
-  color: var(--rose-dark);
-  cursor: pointer;
-}
-.character-roster-item.active {
-  border-color: var(--rose);
-  box-shadow: 0 0 0 2px rgba(216, 103, 140, 0.35);
-}
-.character-roster-item .bust-doll {
-  width: 56px;
-  height: 56px;
-}
-.character-roster-name {
-  font-size: 0.72rem;
-  font-weight: 700;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .character-roster-actions {
   display: flex;
   flex-wrap: wrap;

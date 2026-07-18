@@ -608,32 +608,25 @@ function runCloudAuthSelfTest(api) {
       if (!cloudAuth.loadMigratedLocalIds().includes(legacy.id)) errors.push("migration flag not recorded after successful upload");
       api.accounts.remove(legacy.id);
 
-      // 8) 登入畫面 UI 煙霧：卡片渲染含 username 副標、點卡展開密碼欄（[hmiIntf自訂登入註冊頁]）
-      await cloudAuth.logout(); // 先登出：無有效 session 之卡片點選應展開密碼欄（有 session 則為 Continue，見步驟 2）
+      // 8) 登入畫面 UI 煙霧（#393 兩表單 canon）：預設＝登入表單（無帳號卡/Remove card）、
+      //    帳號欄預填最近帳號、密碼顯示切換、註冊為次要連結。
+      await cloudAuth.logout();
       cloudAuth.upsertRecentAccount("mimi", { playerName: "CloudMimi", characterId: "lumi", coins: 555, outfit: api.state.outfit, playLimit: api.state.playLimit, lastPlayedAt: Date.now() });
-      cloudAuth.openLoginScreen({ mustChoose: false });
-      const card = document.querySelector("#accountList .account-pick[data-username=\"mimi\"]");
-      if (!card) errors.push("login card for mimi not rendered");
-      if (card && !card.textContent.includes("mimi")) errors.push("login card missing username subtitle");
-      if (card) card.click();
-      const passwordInput = document.getElementById("loginPassword-mimi");
-      if (!passwordInput) errors.push("clicking card did not expand password field");
-      const toggle = document.querySelector(".login-show-toggle");
-      if (!toggle) errors.push("password show/hide toggle missing");
-      // #317：自本裝置移除卡片——兩段確認（單擊只 armed 不執行）、僅清本機快取、不打任何伺服器請求。
-      const removeBtn = document.querySelector(".login-remove-card");
-      if (!removeBtn) errors.push("remove-card button missing in expanded panel");
-      if (removeBtn) {
-        removeBtn.click();
-        if (!cloudAuth.loadRecentAccounts().some((e) => e.username === "mimi")) errors.push("single tap must not remove card (two-step confirm)");
-        if (!removeBtn.classList.contains("is-armed")) errors.push("remove button not armed after first tap");
-        if (!removeBtn.disabled) errors.push("armed button should briefly disable to absorb double-tap (#317)");
-        removeBtn.disabled = false; // 測試取消冷卻（真實動線由 700ms 冷卻吃掉連點）
-        removeBtn.click();
-        await Promise.resolve();
-        if (cloudAuth.loadRecentAccounts().some((e) => e.username === "mimi")) errors.push("armed tap did not remove card from device cache");
-        if (document.querySelector("#accountList .account-pick[data-username=\"mimi\"]")) errors.push("removed card still rendered after rebuild");
-        cloudAuth.upsertRecentAccount("mimi", { playerName: "CloudMimi", characterId: "lumi", coins: 555, outfit: api.state.outfit, playLimit: api.state.playLimit, lastPlayedAt: Date.now() }); // 還原供後續步驟
+      cloudAuth.openLoginScreen({ mustChoose: true });
+      if (document.querySelector("#accountList .account-pick")) errors.push("#393: 登入畫面不應再渲染帳號卡");
+      if (document.querySelector(".login-remove-card")) errors.push("#393: Remove card 應已拆除");
+      const loginUser = document.getElementById("loginOtherUsername");
+      const loginPwd = document.getElementById("loginOtherPassword");
+      if (!loginUser || !loginPwd) errors.push("#393: 預設應為登入表單（帳號＋密碼欄）");
+      if (loginUser && loginUser.value !== "mimi") errors.push("#393: 帳號欄應預填最近登入帳號（實得 " + (loginUser ? loginUser.value : "") + "）");
+      if (!document.querySelector(".login-show-toggle")) errors.push("password show/hide toggle missing");
+      const regLink = [...document.querySelectorAll(".login-link")].find((b) => /Create an account/.test(b.textContent));
+      if (!regLink) {
+        errors.push("#393: 缺「Create an account」次要連結");
+      } else {
+        regLink.click();
+        if (!document.getElementById("registerUsername")) errors.push("#393: 點次要連結未開註冊表單");
+        cloudAuth.setLoginMode("login");
       }
       const overlay = document.getElementById("accountSelect");
       if (overlay) {
@@ -642,17 +635,15 @@ function runCloudAuthSelfTest(api) {
       }
       document.body.classList.remove("account-select-open");
 
-      // 8b) #372：由「進行中遊戲」按 ⟳Switch player 進入登入畫面（有使用中帳號、非啟動 gate）須提供 Back 回程並可關閉回遊戲；
-      //     啟動登入 gate（無使用中帳號之 bootstrap，如 main.js）仍不可退出（#309 不可繞過）。
+      // 8b) #393：帳號層無回程——登入畫面任何情境不顯示 Back（僅未登入時出現本畫面）。
       if (!api.accounts.activeId()) api.accounts.create();
       const backBtn = document.getElementById("accountBack");
-      cloudAuth.openLoginScreen({ mustChoose: false }); // 模擬 returnToInitialSelect 由遊戲中進入
-      if (!backBtn) errors.push("#372: accountBack 元素缺失");
-      if (backBtn && backBtn.hidden) errors.push("#372: 由遊戲進入登入畫面應顯示 Back（可回程）");
-      api.closeAccountSelect(); // Back 之行為：有使用中帳號、非 mustChoose 時放行關閉、回到遊戲
-      if (document.getElementById("accountSelect")?.classList.contains("show")) errors.push("#372: 有使用中帳號時 Back 未能關閉登入覆蓋層（回不了遊戲）");
-      cloudAuth.openLoginScreen({ mustChoose: true }); // 啟動 gate（bootstrap，無使用中 session 時不可繞過）
-      if (backBtn && !backBtn.hidden) errors.push("#372: 啟動登入 gate 不應顯示 Back（#309 不可繞過）");
+      cloudAuth.openLoginScreen({ mustChoose: false });
+      if (backBtn && !backBtn.hidden) errors.push("#393: 登入畫面不應顯示 Back（帳號層無回程）");
+      cloudAuth.openLoginScreen({ mustChoose: true });
+      if (backBtn && !backBtn.hidden) errors.push("#393: 啟動 gate 亦不應顯示 Back");
+      const newBtn393 = document.getElementById("accountNewButton");
+      if (newBtn393 && !newBtn393.hidden) errors.push("#393: Create new account 大鈕應退場（註冊走表單內連結）");
       const gateOverlay = document.getElementById("accountSelect");
       if (gateOverlay) {
         gateOverlay.classList.remove("show");
@@ -696,6 +687,8 @@ function runCloudAuthSelfTest(api) {
       if (newButton && !newButton.hidden) errors.push("create-account entry visible while registration closed");
       if (!document.querySelector(".login-registration-closed")) errors.push("registration-closed notice missing");
       if (document.getElementById("registerUsername")) errors.push("register form rendered while registration closed");
+      // #393：註冊關閉時，登入表單之「Create an account」次要連結亦不得出現。
+      if ([...document.querySelectorAll(".login-link")].some((b) => /Create an account/.test(b.textContent))) errors.push("#393: 註冊關閉仍見建立帳號連結");
       fake.setRegistrationOpen(true);
       if (overlay) {
         overlay.classList.remove("show");
@@ -1170,8 +1163,11 @@ function runAboutSelfTest(api) {
   const settingsGroupTitles = [...(settingsView?.querySelectorAll(".settings-group-title") || [])];
   if (settingsGroupTitles.length < 2) errors.push("#371: 設定選單缺少分組標題（角色/帳號分組，實得 " + settingsGroupTitles.length + "）");
   const princessHint = settingsView?.querySelector("#changePrincessHint");
-  if (!princessHint) errors.push("#371: 設定選單缺少換公主說明（一帳號一公主導引）");
-  else if (!princessHint.textContent.includes("Switch player")) errors.push("#371: 換公主說明未導引玩家改用 ⟳ Switch player 切換玩家");
+  if (!princessHint) errors.push("#371: 設定選單缺少換公主說明");
+  // #393 兩表單 canon：說明導引玩家用 ⟳ 回選角色頁（單一切換路徑）；設定內不得殘留第二套 roster 切換。
+  else if (!princessHint.textContent.includes("Switch princess")) errors.push("#393: 換公主說明未導引 ⟳ Switch princess（回選角色頁）");
+  if (settingsView?.querySelector("#characterRoster")) errors.push("#393: 設定選單仍殘留 roster 切換清單（第二套切換應拆除）");
+  if (settingsView?.querySelector("#signOutButton")) errors.push("#393: 設定選單仍殘留 Sign out（登出歸選角色頁）");
   // issue #370：遊戲畫面（側欄）顯示品牌 wordmark，文字取品牌 SSOT（render 套用，非硬編）。
   const wordmark = document.getElementById("appWordmark");
   if (!wordmark) errors.push("#370: 遊戲畫面缺品牌 wordmark 元素");

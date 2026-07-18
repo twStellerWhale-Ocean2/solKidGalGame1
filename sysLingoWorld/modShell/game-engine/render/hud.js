@@ -22,7 +22,6 @@ import { renderAbout, renderBuildInfo } from "./settings.js";
 import { renderPlayClock } from "../state/play-session.js";
 import { effectivePlayLimit } from "../system/play-clock.js";
 import { elements, session } from "../core/session.js";
-import { listAccountCharacters, rosterAtCap } from "../app/select-screens.js"; // #378/#379：settings 角色 roster picker（cyclic，runtime 呼叫安全）
 import { cloud, cloudActive, syncRecentSummary } from "../system/cloud-sync.js";
 
 function cloudUsername() { return cloud.username || ""; }
@@ -233,43 +232,15 @@ export function renderCollectionSummary() {
   `;
 }
 
-// #378：設定選單之角色 roster picker——列出使用中帳號各角色（點卡由 bind-events 切換）。
-function renderCharacterRoster() {
-  const roster = elements.characterRoster;
-  if (!roster) return;
-  const characters = listAccountCharacters();
-  roster.innerHTML = "";
-  characters.forEach((c) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "character-roster-item" + (c.active ? " active" : "");
-    btn.dataset.characterSaveId = c.saveId;
-    btn.setAttribute("role", "listitem");
-    if (c.active) btn.setAttribute("aria-current", "true");
-    const bust = document.createElement("span");
-    bust.className = "paper-doll bust-doll";
-    bust.setAttribute("aria-hidden", "true");
-    renderBustInto(bust, c.characterId, c.outfit, c.profileColor, c.backgroundPattern);
-    const label = document.createElement("span");
-    label.className = "character-roster-name";
-    label.textContent = c.active ? `${c.playerName} ✓` : c.playerName;
-    btn.append(bust, label);
-    roster.appendChild(btn);
-  });
-  if (elements.addCharacterButton) elements.addCharacterButton.disabled = rosterAtCap(); // #379：達上限停用 Add
-  if (elements.removeCharacterButton) elements.removeCharacterButton.hidden = characters.length <= 1; // #379：僅一員時不顯示 Remove（守最後一員）
-}
-
 export function renderSettings() {
   elements.speakToggleButton.textContent = `Voice: ${session.state.speechEnabled ? "On" : "Off"}`;
   // issue #309（spec#8）：登入後於設定顯示目前帳號 username（帳號資訊呈現；本機模式隱藏）。
+  // #393 兩表單 canon：設定內 roster picker／Add／Remove／Sign out 拆除——角色與帳號動作一律回選角色頁。
   if (elements.settingsAccountLine) {
     const username = cloudUsername();
     elements.settingsAccountLine.hidden = !username;
     if (username) elements.settingsAccountLine.textContent = `Signed in as: ${username}`;
   }
-  if (elements.signOutButton) elements.signOutButton.hidden = !cloudUsername(); // #309 審查 C14：遊戲內登出入口
-  renderCharacterRoster(); // #378：多角色 roster picker
 
   // issue #310（spec#26／sysCase#16.1）：維護者鎖定時長時，欄位唯讀顯示強制值並明示由維護者管理；
   // 政策不回寫 state.playLimit（解除鎖定即回復玩家自調值）。

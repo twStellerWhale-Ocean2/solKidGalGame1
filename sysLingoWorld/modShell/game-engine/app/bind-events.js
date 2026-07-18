@@ -1,8 +1,6 @@
 // app/bind-events.js — 全域事件接線：按鍵、點擊、拖曳與表單（issue #298 自 main.js 拆出，行為零變更）。
 import { CLOUD_MODE } from "./env.js";
-import { loginScreenSetMode, openLoginScreen as openLoginScreenForSignOut } from "./login-screen.js";
-import { cloudLogout } from "../system/cloud-sync.js";
-import { hidePlayBreak as hidePlayBreakForSignOut } from "../state/play-session.js";
+import { loginScreenSetMode } from "./login-screen.js";
 import { CHINESE_AUDIO_LANG, playLessonAudio, speechManager } from "../scene/speech.js";
 import { WARDROBE_TUNER_DEV_PATH, isLocalDevEnv } from "./env.js";
 import { _positionAdjustBtn, buyItemInAdv, patchWardrobeItem } from "../wardrobe/shop-panel.js";
@@ -52,11 +50,8 @@ import {
   closeAccountSelect,
   confirmCharacterSelect,
   createNewAccount,
-  deleteActiveCharacter,
   openCharacterSelect,
-  returnToInitialSelect,
-  startAddCharacter,
-  switchToCharacter
+  returnToInitialSelect
 } from "./select-screens.js";
 import { addCharacterFromHome, logoutFromHome } from "./character-home.js"; // #390 選角色頁
 import {
@@ -79,14 +74,7 @@ export function bindEvents() {
   elements.systemMenuButton.addEventListener("click", () => openSystemMenu(session.systemMenuPanel || "diary"));
   elements.switchPlayerQuickButton?.addEventListener("click", returnToInitialSelect);
   elements.changeCharacterButton?.addEventListener("click", () => openCharacterSelect({ forced: false }));
-  elements.addCharacterButton?.addEventListener("click", startAddCharacter); // #378：新增公主
-  elements.characterRoster?.addEventListener("click", (event) => { // #378：點卡切換公主（非破壞）
-    const item = event.target.closest("[data-character-save-id]");
-    if (item) switchToCharacter(item.dataset.characterSaveId);
-  });
-  elements.removeCharacterButton?.addEventListener("click", () => { // #379：刪除目前公主（守最後一員＋確認）
-    if (window.confirm(`Remove ${princessName()}? Her coins, diary and dress-up will be deleted. This can't be undone.`)) deleteActiveCharacter();
-  });
+  // #393 兩表單 canon：設定內第二套 roster 切換/新增/刪除與 Sign out 拆除——一律經 ⟳ 回選角色頁（單一路徑）。
   elements.characterHomeAdd?.addEventListener("click", addCharacterFromHome); // #390：選角色頁新增角色
   elements.characterHomeLogout?.addEventListener("click", () => { void logoutFromHome(); }); // #390：帳號層登出
   elements.characterConfirm?.addEventListener("click", confirmCharacterSelect);
@@ -174,13 +162,6 @@ export function bindEvents() {
     session.state.diary = [];
     persist();
     render();
-  });
-  // #309 審查 C14：設定頁登出（先保存、撤銷 session、回登入畫面）。
-  elements.signOutButton?.addEventListener("click", async () => {
-    await cloudLogout();
-    hidePlayBreakForSignOut();
-    closeSystemMenu();
-    openLoginScreenForSignOut({ mustChoose: true });
   });
   elements.resetButton.addEventListener("click", () => {
     if (!window.confirm(`Reset ${princessName()}'s coins, clothes, quests, and diary? This also overwrites the saved progress on the family server for this account (all devices) and cannot be undone.`)) return;

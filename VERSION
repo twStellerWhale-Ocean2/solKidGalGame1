@@ -1,8 +1,17 @@
 {
-  "version": "0.77.0",
+  "version": "0.78.0",
   "date": "2026-07-18",
   "copyright": "carlton0521@gmail.com, copyright reserved, 2026",
   "history": [
+    {
+      "version": "0.78.0",
+      "date": "2026-07-18",
+      "type": "feat",
+      "playerVisible": true,
+      "issue": "#393",
+      "summaryZh": "登入畫面大幅簡化（兩表單登入動線 Increment 4，承 #389）：登入頁只剩「帳號＋密碼」與「建立新帳號」，移除多帳號卡、Remove card 與逐卡密碼；登入一次就保持登入，之後開遊戲直接到選角色頁。遊戲內 ⟳ 按鈕改名「Switch princess」＝回選角色頁換公主；設定選單裡的公主切換清單與登出按鈕也一併移到選角色頁（單一路徑，不再兩套）",
+      "breaking": "升級後首次開啟看到的畫面由帳號卡改為選角色頁／登入表單（預期行為；帳號與進度不受影響）"
+    },
     {
       "version": "0.77.0",
       "date": "2026-07-18",
