@@ -234,7 +234,7 @@ function applyChosenAppearance(character) {
 }
 
 // #378：目前使用中帳號之 roster——雲端優先讀 cloud.roster、本機讀 localStorage envelope；缺則以 active wrap。
-function getActiveRoster() {
+export function getActiveRoster() {
   if (cloudActive()) return cloud.roster || rosterEnvelopeOf(session.state);
   const activeId = getActiveAccountId();
   return activeId ? readRosterEnvelope(activeId) : rosterEnvelopeOf(session.state);
@@ -245,7 +245,7 @@ function hasRosterContext() {
 }
 
 // 寫整個 roster：雲端 → 更新 cloud.roster＋排程存檔（PUT 整個 envelope）；本機 → 寫 account blob。
-function commitRoster(env) {
+export function commitRoster(env) {
   if (cloudActive()) {
     setCloudRoster(env);
     scheduleCloudSave();
